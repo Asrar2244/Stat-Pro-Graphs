@@ -1,0 +1,13 @@
+{
+  "runHistory": "Run History",
+  "runName": "Run-{{index}}",
+  "title": "Title",
+  "bold": "Bold",
+  "italic": "Italic",
+  "fontSize": "Font Size",
+  "fontColor": "Font Color",
+  "executedOn": "Executed on",
+  "lcl-lpl-ucl-upl":"LCL LPL UCL UPL",
+  "andersonDarlingStatistics":"Anderson-Darling Statistics",
+  "outlierData":"Outlier Data"
+}

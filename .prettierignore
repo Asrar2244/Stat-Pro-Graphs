@@ -1,0 +1,15 @@
+out
+dist
+pnpm-lock.yaml
+LICENSE.md
+tsconfig.json
+tsconfig.*.json
+node_modules
+dev-tools-extensions
+resources
+.vscode
+yarn.lock
+.git
+.github
+.husky
+src-tauri/*

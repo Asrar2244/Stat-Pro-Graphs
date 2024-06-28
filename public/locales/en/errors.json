@@ -1,0 +1,12 @@
+{
+  "projectExistsError": "This project name already exists!",
+  "fileAndProjectNameError": "Please provide Business objects and Project Name",
+  "noSuchRecord": "No Such records exists",
+  "nothingFound":"Nothing found",
+  "errorInFetchWelcome":"Some error in fetching page",
+  "allowOnlyOneRecord":"Allow only one record",
+  "error":"Error",
+  "warn":"Warning",
+  "info":"Information",
+  "success":"Success"
+}

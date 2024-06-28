@@ -1,0 +1,9 @@
+{
+  "terminal": "Terminal",
+  "welcome": "Welcome",
+  "file": "File",
+  "workspace": "Workspace",
+  "data": "Data.syz",
+  "output": "Output.syo",
+  "tableRender": "Table Render"
+}

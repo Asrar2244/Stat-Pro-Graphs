@@ -1,0 +1,20 @@
+{
+    "title": "Regression: Liner: Ridge",
+    "ok": "Ok",
+    "selectAll": "Select all",
+    "close": "Cancel",
+    "availableVar": "Available Variable(s)",
+    "dependent": "Dependent Variable",
+    "independent": "Independent Variable(s)",
+    "sendToDependent": "Dependent's",
+    "sendToIndependent": "Independent's",
+    "saveCoefficient": "Save coefficient(s)",
+    "removeFromDependent": "Remove from dependent",
+    "removeFromIndependent": "Remove from independent",
+    "rangeOfValues":"Range Of Values",
+     "lambda": "Lambda",
+     "minimum": "Minimum",
+     "maximum": "Maximum",
+     "increment":"Increment",
+     "individual": "Individual Values"
+}

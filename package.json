@@ -1,0 +1,52 @@
+{
+  "name": "start-pro",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "prepare": "husky",
+    "format": "prettier . --write --ignore-path ./.prettierignore",
+    "create:release": "release-it --no-npm.publish"
+  },
+  "dependencies": {
+    "@fluentui/react-components": "9.54.2",
+    "@tauri-apps/api": ">=2.0.0-beta.0",
+    "@tauri-apps/plugin-fs": "^2.0.0-beta.5",
+    "@tauri-apps/plugin-shell": ">=2.0.0-beta.0",
+    "@tauri-apps/plugin-sql": "2.0.0-beta.5",
+    "axios": "1.7.2",
+    "dayjs": "1.11.11",
+    "flexlayout-react": "0.7.15",
+    "i18next": "23.11.5",
+    "i18next-browser-languagedetector": "8.0.0",
+    "i18next-http-backend": "2.5.2",
+    "plotly.js": "2.33.0",
+    "plotly.js-dist": "2.33.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-full-screen": "1.1.1",
+    "react-i18next": "14.1.2",
+    "react-icons": "5.2.1",
+    "react-virtualized": "9.22.5",
+    "zustand": "4.5.2"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": ">=2.0.0-beta.0",
+    "@types/i18next": "13.0.0",
+    "@types/node": "^20.14.9",
+    "@types/plotly.js": "2.29.5",
+    "@types/react": "18.2.25",
+    "@types/react-dom": "18.2.7",
+    "@types/react-i18next": "8.1.0",
+    "@vitejs/plugin-react": "4.2.1",
+    "husky": "9.0.11",
+    "prettier": "3.3.2",
+    "release-it": "17.4.0",
+    "typescript": "5.0.2",
+    "vite": "5.0.0"
+  }
+}

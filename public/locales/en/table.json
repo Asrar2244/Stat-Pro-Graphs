@@ -1,0 +1,12 @@
+{
+  "searchQuery": "Search your query",
+  "next": "Next",
+  "previous": "Previous",
+  "first": "First",
+  "last": "Last",
+  "jump": "Jump",
+  "pageSize":"Page Size",
+  "totalRecords": "Total Records",
+  "totalPages": "Total Pages",
+  "allColumns": "All Columns"
+}
