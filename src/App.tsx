@@ -1,8 +1,9 @@
 import { Textarea } from '@fluentui/react-components';
-
+const { MODE } = import.meta.env;
 function App() {
   return (
     <div>
+      {MODE}
       <Textarea
         rows={4}
         defaultValue={`
