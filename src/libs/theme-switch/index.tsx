@@ -8,16 +8,16 @@ import {
   ToggleButton,
 } from '@fluentui/react-components';
 import { IoSunny, IoMoon } from 'react-icons/io5';
-import { WiMoonAltFirstQuarter } from 'react-icons/wi';
 import { useThemeStore } from '@store/theme-store';
 import { useThemeSwitchStyles } from './styles-hook/use-theme-switch';
 import { useTranslation } from 'react-i18next';
+import { VscColorMode } from 'react-icons/vsc';
 
 //Icon selection
 const icons = {
   light: <IoSunny />,
   dark: <IoMoon />,
-  auto: <WiMoonAltFirstQuarter />,
+  auto: <VscColorMode />,
 };
 
 export const ThemeSwitch: FC = memo(() => {
@@ -90,7 +90,7 @@ export const ThemeSwitch: FC = memo(() => {
             <ToggleButton
               appearance="transparent"
               name="auto"
-              icon={<WiMoonAltFirstQuarter />}
+              icon={<VscColorMode />}
               size="small"
               onClick={onClickAutoChange}
               checked={isAuto}
