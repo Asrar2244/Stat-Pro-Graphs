@@ -5,7 +5,6 @@ export const useLayout = makeStyles({
     display: 'flex',
     flexDirection: 'row',
     height: '100vh',
-    ...shorthands.padding(tokens.spacingHorizontalXS),
     '& .flexlayout__layout': {
       top: '42px',
       backgroundColor: tokens.colorNeutralForegroundInverted,

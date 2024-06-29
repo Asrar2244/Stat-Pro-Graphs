@@ -6,7 +6,7 @@ export const useMenuLayout = makeStyles({
     flexDirection: 'row',
     ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralForegroundDisabled),
     justifyContent: 'space-between',
-    height: '40px',
+    height: '36px',
     width: '100%',
     alignItems: 'center',
   },
@@ -28,6 +28,6 @@ export const useMenuLayout = makeStyles({
     display: 'flex',
     flexDirection: 'row',
     // justifyContent: window.electron.process.platform === 'darwin' ? 'flex-end' : 'space-between',
-    ...shorthands.padding(0, tokens.spacingHorizontalXS, 0, '0'),
+    // ...shorthands.padding(0, tokens.spacingHorizontalXS, 0, '0'),
   },
 });

@@ -13,10 +13,15 @@
       {
         "title": "start-pro",
         "width": 800,
-        "height": 600,
+        "height": 800,
         "visible": true,
         "label": "main",
-        "fullscreen": true
+        "resizable": true,
+        "fullscreen": false,
+        "skipTaskbar": false,
+        "decorations": true,
+        "alwaysOnTop": false
+   
       },
       {
         "title": "start-pro",
@@ -25,8 +30,8 @@
         "url": "/splash-screen/splash.html",
         "label": "splashscreen",
         "center": true,
-        "decorations": false,
-        "resizable": false
+        "decorations": false
+ 
       }
     ],
     "security": {

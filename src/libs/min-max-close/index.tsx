@@ -1,14 +1,48 @@
-import { useMinMaxCloseStyles } from './style-hook/use-min-max-close';
+import { getCurrent } from '@tauri-apps/api/window';
+import { mergeClasses, Divider } from '@fluentui/react-components';
+import { useMinMaxCloseStyles } from './styles-hook/use-min-max-close';
 import { FC, memo } from 'react';
-import { StatusList } from '../common-messages/status-list';
+import { StatusList } from './status-list';
 import { ThemeSwitch } from '../theme-switch';
-
+import { Minimize } from './minimize';
+import { Maximize } from './maximize';
+import { Close } from './close';
 const MinMaxCloseComponent: FC = () => {
   const classes = useMinMaxCloseStyles();
+  const classMerge = mergeClasses(classes.ul, classes.liCloseMaxMin);
+  const onHandleMaximize = () => {
+    getCurrent().toggleMaximize();
+  };
+
+  const onHandleMinimize = () => {
+    getCurrent().minimize();
+  };
+
+  const onHandleClose = () => {
+    getCurrent().close();
+  };
   return (
     <div className={classes.minMaxClose}>
-      <StatusList />
-      <ThemeSwitch />
+      <ul className={classes.ul}>
+        <li>
+          <StatusList />
+        </li>
+        <li>
+          <ThemeSwitch />
+        </li>
+      </ul>
+      <Divider vertical />
+      <ul className={classMerge}>
+        <li onClick={onHandleMinimize}>
+          <Minimize />
+        </li>
+        <li onClick={onHandleMaximize}>
+          <Maximize />
+        </li>
+        <li data-close-window="true" onClick={onHandleClose}>
+          <Close />
+        </li>
+      </ul>
     </div>
   );
 };

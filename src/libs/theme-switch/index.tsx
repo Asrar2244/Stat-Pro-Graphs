@@ -50,11 +50,7 @@ export const ThemeSwitch: FC = memo(() => {
   return (
     <Popover withArrow>
       <PopoverTrigger disableButtonEnhancement>
-        <Badge
-          appearance={!platformIsMac ? 'ghost' : 'tint'}
-          color={theme === 'light' ? 'warning' : theme === 'auto' ? 'subtle' : 'important'}
-          icon={icons[theme]}
-        />
+        <Badge appearance="ghost" icon={icons[theme]} />
       </PopoverTrigger>
       <PopoverSurface tabIndex={-1}>
         <div className={classes.wrapper}>

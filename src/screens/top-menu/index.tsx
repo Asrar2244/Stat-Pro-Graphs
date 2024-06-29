@@ -85,7 +85,7 @@ const TopMenus: FC = (props) => {
     if (item.execute) setMenuItem(item.execute);
   };
   return (
-    <div className={classes.wrapper}>
+    <div data-tauri-drag-region className={classes.wrapper}>
       <div className={classes.layout}>
         {menus.map((menu: IMenuItem) => (
           <Menu key={menu.id}>
