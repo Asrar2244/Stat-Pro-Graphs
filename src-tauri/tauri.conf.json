@@ -14,8 +14,9 @@
         "title": "start-pro",
         "width": 800,
         "height": 600,
-        "visible": false,
-        "label": "main"
+        "visible": true,
+        "label": "main",
+        "fullscreen": true
       },
       {
         "title": "start-pro",

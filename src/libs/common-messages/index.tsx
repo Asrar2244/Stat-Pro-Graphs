@@ -59,3 +59,6 @@ export const CommonMessages: FC = () => {
     </div>
   );
 };
+export interface ITranslate {
+  t: (key: string | string[], option?: any) => string;
+}

@@ -14,7 +14,8 @@ import { LuSettings2 } from 'react-icons/lu';
 import { PiDownloadSimple } from 'react-icons/pi';
 
 import { FullScreenHandle } from 'react-full-screen';
-import { IZoomGraph, useModal, SuspenseLoad, IPlotlyGraphOutput } from '@libs';
+import { SuspenseLoad } from '@libs';
+import { IZoomGraph, useModal, IPlotlyGraphOutput } from '@hooks';
 import { useTranslation } from 'react-i18next';
 import { useToolsStyles } from './styles-hook/use-tools-style';
 import { AnnotationModal } from './annotations';

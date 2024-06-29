@@ -1,12 +1,13 @@
 import { FC, useState } from 'react';
 import { Text } from '@fluentui/react-components';
-import { Modal, IPlotlyGraphOutput, IPoints, useModal } from '@libs';
+import { Modal } from '@libs';
+import { IPlotlyGraphOutput, IPoints, useModal } from '@hooks';
 import { useTranslation } from 'react-i18next';
 import { Annotations } from 'plotly.js';
 import { useGraphAnnotationsStyles } from './styles-hook/use-graph-annotations-style';
-import ReactQuill from 'react-quill';
+// import ReactQuill from 'react-quill';
 
-import 'react-quill/dist/quill.snow.css';
+// import 'react-quill/dist/quill.snow.css';
 interface IGraphAnnotation {
   plotly: IPlotlyGraphOutput;
 }
@@ -44,7 +45,7 @@ export const AnnotationModal: FC<IGraphAnnotation> = ({ plotly }) => {
         },
       }}
     >
-      <ReactQuill
+      {/* <ReactQuill
         className={classes.annotations}
         theme="snow"
         value={text}
@@ -56,7 +57,7 @@ export const AnnotationModal: FC<IGraphAnnotation> = ({ plotly }) => {
           ],
         }}
         onChange={setText}
-      />
+      /> */}
       <Text>{`${t('points')}: X[${plotly.points?.x}] || Y[${plotly.points?.y}] ${
         plotly.points?.z ? `|| Z[${plotly.points?.z}]` : ''
       }`}</Text>

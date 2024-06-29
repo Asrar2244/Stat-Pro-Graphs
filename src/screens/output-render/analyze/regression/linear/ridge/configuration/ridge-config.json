@@ -1,0 +1,134 @@
+{
+  "tables": [
+    {
+      "name": "ridge-estimates",
+      "showCaption": false,
+      "showHeaders": false,
+      "columns": [
+        {
+          "key": "input_key"
+        },
+        {
+          "key": "hkb_estimator",
+          "get": "result"
+        }
+      ],
+      "data": [
+        {
+          "input_key": "HoerI-Kennard-Baldwin (HKB) Estimator",
+          "hkb_estimator": "hkb_estimator"
+        },
+        {
+          "input_key": "Lawless & Wang (LW) Estimator",
+          "hkb_estimator": "lw_estimator"
+        },
+        {
+          "input_key": "Minimum Value of Generalized Cross Validation (GCV) is at Lambda",
+          "hkb_estimator": "min_gcv_lambda"
+        }
+      ]
+    },
+    {
+      "name": "Coefficients have been saved:",
+      "showCaption": true,
+      "showHeaders": false,
+      "columns": [
+        {
+          "key": "feature_key"
+        },
+        {
+          "key": "feature_names",
+          "get": "result"
+        }
+      ],
+      "data": [
+        {
+          "feature_key": "Feature Names",
+          "feature_names": "feature_names"
+        }
+      ]
+    },
+    {
+      "name": "cv_values",
+      "showHeaders": false,
+      "showCaption": true,
+      "columns": [
+        {
+          "key": "cv_values",
+          "label": ""
+        }
+      ],
+      "array": true
+    },
+    {
+      "name": "ridge-coefficients",
+      "showCaption": false,
+      "showHeaders": false,
+      "columns": [
+        {
+          "key": "n_features_in_key"
+        },
+        {
+          "key": "n_features_in",
+          "get": "result"
+        }
+      ],
+      "data": [
+        {
+          "n_features_in_key": "Names of features",
+          "n_features_in": "n_features_in"
+        },
+        {
+          "n_features_in_key": "Weight vectors",
+          "n_features_in": "coef"
+        },
+        {
+          "n_features_in_key": "NIndependent term in decision function",
+          "n_features_in": "intercept"
+        },
+        {
+          "n_features_in_key": "The estimated regularization parameter for each target",
+          "n_features_in": "alpha"
+        },
+        {
+          "n_features_in_key": "Score of base estimator for each target",
+          "n_features_in": "best_score"
+        },
+        {
+          "n_features_in_key": "Unstandardized Coefficients",
+          "n_features_in": "unstandardized_coefficients"
+        }
+      ]
+    }
+  ],
+  "graphOptions": {
+    "default": {
+      "graph": "scatter",
+      "mode": "marks"
+    },
+    "graphs": ["bar", "scatter", "line"],
+    "modes": [
+      "lines",
+      "markers",
+      "text",
+      "lines+markers",
+      "text+markers",
+      "text+lines",
+      "text+lines+markers",
+      "none",
+      "gauge",
+      "number",
+      "delta",
+      "number+delta",
+      "gauge+number",
+      "gauge+number+delta",
+      "gauge+delta"
+    ],
+    "download": [
+      { "format": "png", "description": "pngFormat" },
+      { "format": "jpeg", "description": "jpegFormat" },
+      { "format": "svg", "description": "svgFormat" },
+      { "format": "webp", "description": "webpFormat" }
+    ]
+  }
+}

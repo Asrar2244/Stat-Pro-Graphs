@@ -82,7 +82,7 @@ export const StatusList: FC = () => {
     <Popover withArrow>
       <PopoverTrigger disableButtonEnhancement>
         <Badge
-          appearance={window.electron.process.platform !== 'darwin' ? 'ghost' : 'tint'}
+          // appearance={window.electron.process.platform !== 'darwin' ? 'ghost' : 'tint'}
           color="informative"
           icon={<IoNotificationsSharp />}
         />
