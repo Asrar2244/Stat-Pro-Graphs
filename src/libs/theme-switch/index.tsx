@@ -25,26 +25,13 @@ export const ThemeSwitch: FC = memo(() => {
   const { theme, setTheme } = useThemeStore();
   const classes = useThemeSwitchStyles();
   const [isAuto, setIsAuto] = useState<boolean>(theme === 'auto');
-  const platformIsMac = useMemo(() => {
-    return navigator.userAgent.indexOf('Mac') != -1;
-  }, []);
-  // useEffect(() => {
-  //   const updateDarkMode = (_event: any, isDarkTheme: boolean): void => {
-  //     setTheme(isDarkTheme === true ? 'dark' : 'light');
-  //   };
-  //   // if (isAuto || theme === 'auto') {
-  //   //   window.api.setSystemTheme('auto');
-  //   //   window.api.systemTheme(updateDarkMode);
-  //   // } else {
-  //   //   window.api.removeSystemTheme(updateDarkMode);
-  //   // }
-  // }, [theme, isAuto]);
+
   const onClickHandler = (e: any): void => {
-    // window.api.setSystemTheme(e.target.name as 'light' | 'dark' | 'auto');
     setTheme(e.target.name as 'light' | 'dark' | 'auto');
   };
   const onClickAutoChange = (): void => {
     setIsAuto(!isAuto);
+    setTheme('auto');
   };
 
   return (
@@ -60,43 +47,45 @@ export const ThemeSwitch: FC = memo(() => {
 
           <div className={classes.themeSelection}>
             <ul className={classes.ul}>
-              <li>
+              <li data-theme-selected={!isAuto && theme === 'light'}>
                 <ToggleButton
                   appearance="transparent"
                   name="light"
-                  icon={<IoSunny color="#efb839" />}
+                  icon={<IoSunny />}
                   size="small"
                   onClick={onClickHandler}
-                  disabled={isAuto}
                   checked={theme === 'light'}
+                  disabled={isAuto}
                 >
                   {t('light')}
                 </ToggleButton>
               </li>
-              <li>
+              <li data-theme-selected={!isAuto && theme === 'dark'}>
                 <ToggleButton
                   appearance="transparent"
                   name="dark"
-                  icon={<IoMoon color="#292929" />}
+                  icon={<IoMoon />}
                   onClick={onClickHandler}
                   size="small"
-                  disabled={isAuto}
                   checked={theme === 'dark'}
+                  disabled={isAuto}
                 >
                   {t('dark')}
                 </ToggleButton>
               </li>
+              <li data-theme-selected={isAuto}>
+                <ToggleButton
+                  appearance="transparent"
+                  name="auto"
+                  icon={<VscColorMode />}
+                  size="small"
+                  onClick={onClickAutoChange}
+                  checked={isAuto}
+                >
+                  {t('auto')}
+                </ToggleButton>
+              </li>
             </ul>
-            <ToggleButton
-              appearance="transparent"
-              name="auto"
-              icon={<VscColorMode />}
-              size="small"
-              onClick={onClickAutoChange}
-              checked={isAuto}
-            >
-              {t('auto')}
-            </ToggleButton>
           </div>
         </div>
       </PopoverSurface>

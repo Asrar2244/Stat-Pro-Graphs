@@ -1,9 +1,7 @@
 import { FC, useEffect } from 'react';
 
 export const OpenDevTools: FC = () => {
-  useEffect(() => {
-    window.api.openDevTools();
-  }, []);
+  useEffect(() => {}, []);
 
   return null;
 };

@@ -19,3 +19,12 @@ export const volumeDirectory = async (): Promise<string> => {
   }
   return await homeDirectory();
 };
+
+// Platform Info normal js method to find is windows | mac | linux
+
+export const platformInfo = (): string => {
+  if (navigator.userAgent.indexOf('Mac') !== -1) return 'mac';
+  if (navigator.userAgent.indexOf('Win') !== -1) return 'windows';
+  if (navigator.userAgent.indexOf('Linux') !== -1) return 'linux';
+  return 'unknown';
+};

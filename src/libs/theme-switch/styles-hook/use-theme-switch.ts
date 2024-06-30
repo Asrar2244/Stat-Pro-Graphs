@@ -13,6 +13,38 @@ export const useThemeSwitchStyles = makeStyles({
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
+      '& svg': {
+        fill: tokens.colorNeutralBackgroundInverted,
+      },
+      '& button': {
+        color: tokens.colorNeutralBackgroundInverted,
+      },
+      '& :disabled': {
+        color: tokens.colorNeutralForegroundDisabled,
+        '& button': {
+          color: tokens.colorNeutralForegroundDisabled,
+        },
+        '& svg': {
+          fill: tokens.colorNeutralForegroundDisabled,
+        },
+      },
+      '& :hover': {
+        '& button': {
+          color: tokens.colorNeutralStrokeAccessibleSelected,
+        },
+        '& svg': {
+          fill: tokens.colorNeutralStrokeAccessibleSelected,
+        },
+      },
+    },
+
+    '& li[data-theme-selected="true"]': {
+      '& button': {
+        color: tokens.colorNeutralStrokeAccessibleSelected,
+      },
+      '& svg': {
+        fill: tokens.colorNeutralStrokeAccessibleSelected,
+      },
     },
   },
   title: {
