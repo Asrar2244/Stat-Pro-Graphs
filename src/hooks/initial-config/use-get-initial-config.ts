@@ -12,12 +12,11 @@ export const useGetInitialConfig = (): ISetInitial => {
   const getConfigurations = useCallback(async () => {
     try {
       const db = new Database(CONFIGURATION_DB);
-      db.selectQuery(CONFIGURATION_DB, [selectFromProject])
+      db.selectQuery(selectFromProject)
         .then((result) => {
-          const projectsTable: any[] = result[0];
-          if (projectsTable.length > 0) {
+          if (result.length > 0) {
             const bulkProjectData: any = {};
-            for (let i = 0; i < projectsTable.length; i++) {
+            for (let i = 0; i < result.length; i++) {
               const {
                 id,
                 projectName,
@@ -27,7 +26,7 @@ export const useGetInitialConfig = (): ISetInitial => {
                 modifiedDateTime,
                 createdDateTime,
                 isOpenedOutput,
-              } = projectsTable[i];
+              } = result[i];
               bulkProjectData[projectName] = {
                 fileSize,
                 isOpenedData,

@@ -32,12 +32,20 @@ export const useModelStyle = makeStyles({
         overflowY: 'auto',
         ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralBackground1Pressed),
       },
+      '& .select-size': {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      },
       '& .dependent-list': {
         display: 'flex',
         flexDirection: 'column',
         height: '340px',
         overflowY: 'auto',
         ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralBackground1Pressed),
+      },
+      '& .remove-button': {
+        backgroundColor: tokens.colorPaletteRedBorder1,
       },
     },
   },

@@ -1,161 +1,41 @@
-import { ChangeEvent, FC, MouseEvent, useEffect, useState } from 'react';
-import { Checkbox, Divider, Button } from '@fluentui/react-components';
+import { ChangeEvent, FC, MouseEvent, useState } from 'react';
+import { Checkbox, Button } from '@fluentui/react-components';
 import {
   MdKeyboardDoubleArrowLeft,
   MdKeyboardDoubleArrowRight,
   MdOutlineRemove,
 } from 'react-icons/md';
-import { ITranslate, Fieldset } from '@libs';
+import { Fieldset } from '@libs';
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import { useLinearLeastSquares } from './use-squares-hook';
 import { useModelStyle } from './styles-hook/use-model-style';
-
-export const Model: FC<ITranslate> = ({ t }) => {
+import { ListCheckboxWithSelectAll } from '@libs';
+export const Model: FC = () => {
   const classes = useModelStyle();
-  const [avaSelectAll, setAvaSelectAll] = useState<boolean | 'mixed' | undefined>(false);
-  const [depSelectAll, setDepSelectAll] = useState<boolean | 'mixed' | undefined>(false);
-  const [indSelectAll, setIndSelectAll] = useState<boolean | 'mixed' | undefined>(false);
-  const { model, setModel } = useLinearLeastSquares(
-    useShallow((state) => ({ model: state.model, setModel: state.setModel })),
+  const { t } = useTranslation('regLinearLeastSquare');
+  const { includeConst, save, setModel } = useLinearLeastSquares(
+    useShallow((state) => ({
+      includeConst: state.model.includeConst,
+      save: state.model.save,
+      setModel: state.setModel,
+    })),
   );
-  const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
-    const { name } = e.target as any;
-    const availList: any = {};
-    const insertList: any = {};
-    Object.keys(model.availableList).forEach((key: string) => {
-      if (model.availableList[key]) {
-        insertList[key] = false;
-      } else {
-        availList[key] = false;
-      }
-    });
-    const list: any = {};
-    if (name === 'dependent') {
-      list['dependentList'] = insertList;
-    } else {
-      list['independentList'] = insertList;
-    }
-    if (Object.keys(availList).length === 0) setAvaSelectAll(false);
-
-    setModel({ availableList: availList, ...list });
-  };
-
-  const onRemoveHandler = (e: MouseEvent<HTMLButtonElement>): void => {
-    const { name } = e.target as any;
-    const availList = model.availableList;
-    const list = name === 'dependent' ? model.dependentList : model.independentList;
-    const insertList: any = {};
-    Object.keys(list).forEach((key: string) => {
-      if (list[key]) {
-        availList[key] = false;
-      } else {
-        insertList[key] = false;
-      }
-    });
-    const listOpt: any = {};
-    if (name === 'dependent') {
-      listOpt['dependentList'] = insertList;
-      if (Object.keys(insertList).length === 0) {
-        setDepSelectAll(false);
-      }
-    } else {
-      if (Object.keys(insertList).length === 0) {
-        setIndSelectAll(false);
-      }
-      listOpt['independentList'] = insertList;
-    }
-    setModel({ availableList: availList, ...listOpt });
-  };
   const onChangeHandler = (e: ChangeEvent<HTMLInputElement>): void => {
     setModel({ [e.target.name]: e.target.checked });
-  };
-  const onChangeSelectAll = (e: ChangeEvent<HTMLInputElement>): void => {
-    const { name, checked } = e.target;
-    //@ts-expect-error
-    const list: any = model[name];
-    Object.keys(list).forEach((key) => {
-      list[key] = checked;
-    });
-
-    switch (name) {
-      case 'dependentList':
-        setDepSelectAll(checked);
-        break;
-      case 'availableList':
-        setAvaSelectAll(checked);
-        break;
-      default:
-        setIndSelectAll(checked);
-    }
-    setModel({ [name]: { ...list } });
   };
 
   return (
     <div className={classes.modelLayout}>
       <div className={classes.modelWrapper}>
         <Fieldset title={t('dependent', { ns: 'regLinearLeastSquare' })}>
-          <div className="section-available">
-            <Checkbox
-              name="dependentList"
-              label={t('selectAll', { ns: 'regLinearLeastSquare' })}
-              onChange={onChangeSelectAll}
-              checked={depSelectAll}
-            />
-            <ListRender list={model.dependentList} selected={depSelectAll} />
-            <Button
-              icon={<MdOutlineRemove />}
-              className={classes.removeButtons}
-              name="dependent"
-              onClick={onRemoveHandler}
-            >
-              {t('removeFromDependent', { ns: 'regLinearLeastSquare' })}
-            </Button>
-          </div>
+          <DependentListRender />
         </Fieldset>
         <Fieldset title={t('availableVar', { ns: 'regLinearLeastSquare' })}>
-          <div className="section-available">
-            <Checkbox
-              name="availableList"
-              label={t('selectAll', { ns: 'regLinearLeastSquare' })}
-              onChange={onChangeSelectAll}
-              checked={avaSelectAll}
-            />
-            <ListRender list={model.availableList} selected={avaSelectAll} />
-            <div className="send-buttons">
-              <Button icon={<MdKeyboardDoubleArrowLeft />} name="dependent" onClick={onSendHandler}>
-                {t('sendToDependent', { ns: 'regLinearLeastSquare' })}
-              </Button>
-
-              <Button
-                icon={<MdKeyboardDoubleArrowRight />}
-                iconPosition="after"
-                name="independent"
-                onClick={onSendHandler}
-              >
-                {t('sendToIndependent', { ns: 'regLinearLeastSquare' })}
-              </Button>
-            </div>
-          </div>
+          <AvailableListRender />
         </Fieldset>
         <Fieldset title={t('independent', { ns: 'regLinearLeastSquare' })}>
-          <div className="section-available">
-            <Checkbox
-              name="independentList"
-              label={t('selectAll', { ns: 'regLinearLeastSquare' })}
-              onChange={onChangeSelectAll}
-              checked={indSelectAll}
-            />
-            <ListRender list={model.independentList} selected={indSelectAll} />
-
-            <Button
-              icon={<MdOutlineRemove />}
-              className={classes.removeButtons}
-              name="independent"
-              onClick={onRemoveHandler}
-            >
-              {t('removeFromIndependent', { ns: 'regLinearLeastSquare' })}
-            </Button>
-          </div>
+          <IndependentListRender />
         </Fieldset>
       </div>
       <Fieldset>
@@ -163,7 +43,7 @@ export const Model: FC<ITranslate> = ({ t }) => {
           <Checkbox
             name="includeConst"
             label={t('includeConst', { ns: 'regLinearLeastSquare' })}
-            checked={model.includeConst}
+            checked={includeConst}
             onChange={onChangeHandler}
           />
         </div>
@@ -171,7 +51,7 @@ export const Model: FC<ITranslate> = ({ t }) => {
           <Checkbox
             name="save"
             label={t('save', { ns: 'regLinearLeastSquare' })}
-            checked={model.save}
+            checked={save}
             onChange={onChangeHandler}
           />
         </div>
@@ -179,41 +59,148 @@ export const Model: FC<ITranslate> = ({ t }) => {
     </div>
   );
 };
+const IndependentListRender: FC = () => {
+  const [selectAll, setSelectAll] = useState<boolean | undefined>(false);
 
-const ListRender: FC<{
-  list: { [key: string]: boolean };
-  selected: boolean | 'mixed' | undefined;
-}> = ({ list, selected }) => {
-  const [localList, setLocalList] = useState<{ [key: string]: boolean }>({});
-  const [loading, setLoading] = useState<boolean>(false);
+  const { t } = useTranslation('regLinearLeastSquare');
+  const { availableList, independentList, setModelBulk } = useLinearLeastSquares(
+    useShallow((state) => ({
+      availableList: state.model.availableList,
+      independentList: state.model.independentList,
+      setModelBulk: state.setModelBulk,
+    })),
+  );
 
-  useEffect(() => {
-    setLocalList(list);
-    setLoading(true);
-  }, [selected, list]);
-  useEffect(() => {
-    setLoading(false);
-  }, [localList]);
-  const onChangeHandler = (e: ChangeEvent<HTMLInputElement>): void => {
-    list[e.target.name] = e.target.checked;
+  const onRemoveHandler = (): void => {
+    independentList.forEach((value: boolean, name: string) => {
+      if (value) {
+        availableList.set(name, false);
+        independentList.delete(name);
+      }
+    });
+    setModelBulk(availableList, 'availableList');
+    setModelBulk(independentList, 'independentList');
+    if (independentList.size === 0) setSelectAll(false);
   };
   return (
-    <div className="dependent-list">
-      {loading ? (
-        <div>Loading</div>
-      ) : (
-        Object.keys(localList).map((key: string, index: number) => (
-          <div key={key + '-' + index}>
-            <Checkbox
-              label={key}
-              name={key}
-              defaultChecked={localList[key]}
-              onChange={onChangeHandler}
-            />
-            <Divider />
-          </div>
-        ))
-      )}
+    <div className="section-available">
+      <ListCheckboxWithSelectAll
+        listSize={independentList.size}
+        list={independentList}
+        selectAllText={t('selectAll')}
+        selectValue={selectAll}
+        requiredSelectAll
+      />
+
+      <Button
+        icon={<MdOutlineRemove />}
+        className="remove-button"
+        name="independent"
+        onClick={onRemoveHandler}
+      >
+        {t('removeFromIndependent', { ns: 'regLinearLeastSquare' })}
+      </Button>
+    </div>
+  );
+};
+const DependentListRender: FC = () => {
+  const [selectAll, setSelectAll] = useState<boolean | undefined>(false);
+
+  const { t } = useTranslation('regLinearLeastSquare');
+  const { availableList, dependentList, setModelBulk } = useLinearLeastSquares(
+    useShallow((state) => ({
+      availableList: state.model.availableList,
+      dependentList: state.model.dependentList,
+      setModelBulk: state.setModelBulk,
+    })),
+  );
+
+  const onRemoveHandler = (): void => {
+    dependentList.forEach((value: boolean, name: string) => {
+      if (value) {
+        availableList.set(name, false);
+        dependentList.delete(name);
+      }
+    });
+    setModelBulk(availableList, 'availableList');
+    setModelBulk(dependentList, 'dependentList');
+    if (dependentList.size === 0) setSelectAll(false);
+  };
+  return (
+    <div className="section-available">
+      <ListCheckboxWithSelectAll
+        listSize={dependentList.size}
+        list={dependentList}
+        selectAllText={t('selectAll')}
+        selectValue={selectAll}
+        requiredSelectAll
+      />
+
+      <Button
+        icon={<MdOutlineRemove />}
+        className="remove-button"
+        name="dependent"
+        onClick={onRemoveHandler}
+      >
+        {t('removeFromDependent', { ns: 'regLinearLeastSquare' })}
+      </Button>
+    </div>
+  );
+};
+
+const AvailableListRender: FC = () => {
+  const [selectAll, setSelectAll] = useState<boolean | undefined>(false);
+
+  const { t } = useTranslation('regLinearLeastSquare');
+  const { availableList, dependentList, independentList, setModelBulk } = useLinearLeastSquares(
+    useShallow((state) => ({
+      availableList: state.model.availableList,
+      dependentList: state.model.dependentList,
+      independentList: state.model.independentList,
+      setModelBulk: state.setModelBulk,
+    })),
+  );
+
+  const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
+    const { name } = e.target as any;
+    availableList.forEach((value: boolean, key: string) => {
+      if (value) {
+        if (name === 'dependent') {
+          dependentList.set(key, false);
+        } else {
+          independentList.set(key, false);
+        }
+        availableList.delete(key);
+      }
+    });
+
+    setModelBulk(availableList, 'availableList');
+    if (availableList.size === 0) setSelectAll(false);
+  };
+  return (
+    <div className="section-available">
+      <ListCheckboxWithSelectAll
+        listSize={availableList.size}
+        list={availableList}
+        selectAllText={t('selectAll')}
+        selectValue={selectAll}
+        requiredSelectAll
+      />
+
+      <div className="send-buttons">
+        <Button icon={<MdKeyboardDoubleArrowLeft />} name="dependent" onClick={onSendHandler}>
+          {t('sendToDependent')}
+        </Button>
+
+        <Button
+          icon={<MdKeyboardDoubleArrowRight />}
+          iconPosition="after"
+          name="independent"
+          onClick={onSendHandler}
+        >
+          {t('sendToIndependent')}
+        </Button>
+      </div>
     </div>
   );
 };

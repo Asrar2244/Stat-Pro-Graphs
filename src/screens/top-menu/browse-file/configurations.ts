@@ -1,3 +1,3 @@
 export const browseFile = {
-  acceptFiles: ['.xlsx', '.xls', '.csv'],
+  acceptFiles: ['xlsx', 'xls', 'csv'],
 };

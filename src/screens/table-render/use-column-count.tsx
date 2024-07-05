@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useToaster } from '@hooks';
 import { ITableProps } from './index';
 import { EXCEL } from '@constants';
+import { Database } from '@utils';
 export type IItem = {
   [key: string]: string;
 };
 export interface IColumn {
   columnId: string;
+  name?: string;
 }
 interface IOutput {
   columns: IColumn[];
@@ -22,24 +24,22 @@ export const useColumnsRowsCount = ({ id, tabName, noRowCount }: IColumnsRowsCou
 
   useEffect(() => {
     if (id) {
-      //ToDo
-      /*  const dbName = tabName;
-      const columnQuery = `PRAGMA table_info(${EXCEL})`;
+      const db = new Database(tabName);
+      const columnQuery = `PRAGMA table_info(${EXCEL});`;
       const countQuery = `SELECT COUNT(*) as count from ${EXCEL};`;
       const queries: Promise<any>[] = [];
-      
-      queries.push(window.api.selectQuery(dbName, columnQuery, []));
+
+      queries.push(db.selectQuery(columnQuery));
       if (!noRowCount) {
-        queries.push(window.api.selectQuery(dbName, countQuery));
+        queries.push(db.selectQuery(countQuery));
       }
       Promise.all(queries)
         .then((result) => {
-          const createColumns: IColumn[] = result[0].map((column) => {
+          const createColumns: IColumn[] = result[0].map((column: IColumn) => {
             return {
               columnId: column.name,
             };
           });
-
           if (!noRowCount) {
             const { count: cnt } = result[1][0];
             setCount(cnt);
@@ -48,10 +48,9 @@ export const useColumnsRowsCount = ({ id, tabName, noRowCount }: IColumnsRowsCou
           setColumns(createColumns);
         })
         .catch((error) => {
-          window.api.log('error', error);
+          console.error('error', error);
           toast.error({ body: error.message });
         });
-        */
     }
   }, [id]);
   return {

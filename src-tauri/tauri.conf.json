@@ -14,7 +14,7 @@
         "title": "start-pro",
         "width": 800,
         "height": 800,
-        "visible": true,
+        "visible": false,
         "label": "main",
         "resizable": true,
         "fullscreen": false,

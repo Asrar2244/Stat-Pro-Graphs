@@ -41,6 +41,7 @@ export const usePaginationStyles = makeStyles({
   },
   select: {
     backgroundColor: 'transparent',
+    appearance: 'initial',
     ...shorthands.border('none'),
     color: tokens.colorNeutralForeground1,
   },

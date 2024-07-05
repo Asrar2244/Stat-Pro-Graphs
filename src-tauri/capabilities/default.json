@@ -2,7 +2,9 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "path:default",
     "event:default",
@@ -51,6 +53,8 @@
     "fs:write-files",
     "fs:allow-home-meta-recursive",
     "fs:allow-home-write-recursive",
-    "fs:scope-home-recursive"
+    "fs:scope-home-recursive",
+    "dialog:default",
+    "dialog:allow-open"
   ]
 }

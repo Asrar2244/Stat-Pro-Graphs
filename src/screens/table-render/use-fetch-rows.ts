@@ -24,7 +24,7 @@ export const useFetchRecords = (tabName: string, pageSize?: number): IFetch => {
   const fetchData = async (startIndex: number, stopIndex: number): Promise<any> => {
     try {
       setLoading(true);
-      const db = new Database('tabName');
+      const db = new Database(tabName);
       const result = await db.selectQuery(
         `SELECT * FROM ${EXCEL}
             LIMIT ${startIndex},${stopIndex}`,

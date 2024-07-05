@@ -1,7 +1,7 @@
 import DB from '@tauri-apps/plugin-sql';
 import { join } from '@tauri-apps/api/path';
 import { homeDirectory } from './app-apis';
-
+const { MODE } = import.meta.env;
 export class Database {
   private db: Promise<DB>;
   constructor(dbName: string) {
@@ -11,7 +11,6 @@ export class Database {
   private async loadSqlLiteFile(dbName: string) {
     const appFolder = await homeDirectory();
     const dbFile = await join(appFolder, 'collections', dbName);
-    console.log('dbFile===>', dbFile);
     return await DB.load(`sqlite:${dbFile}`);
   }
 
@@ -20,7 +19,11 @@ export class Database {
     if (query === '') {
       return Promise.reject('Query can not be empty');
     }
-    console.log('query===>', query);
+
+    if (MODE === 'development') {
+      console.log(`Query: ${query} with parameters: ${parameters}`);
+    }
+
     return (await this.db).execute(query, parameters);
   }
   //To Execute selections queries
@@ -28,6 +31,11 @@ export class Database {
     if (query === '') {
       return Promise.reject('Query can not be empty');
     }
+
+    if (MODE === 'development') {
+      console.log(`Query: ${query} with parameters: ${parameters}`);
+    }
+
     return (await this.db).select(query, parameters);
   }
 }

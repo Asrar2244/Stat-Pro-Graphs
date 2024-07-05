@@ -7,9 +7,9 @@ interface IPayload {
   [key: string]: any;
 }
 interface IModel {
-  availableList: IList;
-  dependentList: IList;
-  independentList: IList;
+  availableList: Map<string, boolean>;
+  dependentList: Map<string, boolean>;
+  independentList: Map<string, boolean>;
   includeConst: boolean;
   save: boolean;
   init: boolean;
@@ -56,6 +56,7 @@ interface ILinearLeastSquare {
   options: IOptions;
   predict: IPredict;
   resampling: IResampling;
+  setModelBulk(payload: Map<string, boolean>, listName: string): void;
   setModel: (payload: IPayload) => void;
   setEstimate: (payload: IPayload) => void;
   setOptions: (payload: IPayload) => void;
@@ -65,9 +66,9 @@ interface ILinearLeastSquare {
 }
 const initValues = {
   model: {
-    availableList: {},
-    dependentList: {},
-    independentList: {},
+    availableList: new Map<string, boolean>(),
+    dependentList: new Map<string, boolean>(),
+    independentList: new Map<string, boolean>(),
     includeConst: true,
     save: false,
     init: false,
@@ -117,6 +118,12 @@ export const useLinearLeastSquares = create<ILinearLeastSquare>((set) => ({
       return { ...state, model: { ...model, ...payload } };
     });
   },
+  setModelBulk(payload, listName): void {
+    set((state: any) => {
+      return { ...state, model: { ...state.model, [listName]: payload } };
+    });
+  },
+
   setEstimate(payload): void {
     set((state: any) => {
       const estimate = state.estimate;

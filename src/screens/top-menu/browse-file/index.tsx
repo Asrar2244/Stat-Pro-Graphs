@@ -1,44 +1,30 @@
-import { ChangeEvent, FC, FormEvent, useRef, useState } from 'react';
-import {
-  Field,
-  Input,
-  Button,
-  Dropdown,
-  Option,
-  makeStyles,
-  shorthands,
-  tokens,
-  Spinner,
-} from '@fluentui/react-components';
+import { FC, FormEvent, useState } from 'react';
+import { Field, Input, Button, Dropdown, Option, Spinner } from '@fluentui/react-components';
 import { BiDotsHorizontalRounded, BiPlayCircle } from 'react-icons/bi';
 import { Modal, ITranslate } from '@libs';
+import { open } from '@tauri-apps/plugin-dialog';
+
 import { IModal, useFileSize, useGetInitialConfig, useAxios, useToaster } from '@hooks';
 import { useStartProStore } from '@store';
 import { browseFile } from './configurations';
 import { useShallow } from 'zustand/react/shallow';
-import { volumeDirectory } from '@utils';
+import {
+  copyExcelFileToVolume,
+  getExtension,
+  volumeExcelFilePath,
+  removeExcelFileFromVolume,
+  collectionsLocation,
+  fileNameWithExtension,
+  Database,
+} from '@utils';
+import { API } from '@constants';
+
 // import { volumeName } from '@constants/locale';
 import { CONFIGURATION_DB } from '@constants';
 import { insertIntoProject } from '@backend';
 import { outputTable } from '@backend';
-const useBrowseLayout = makeStyles({
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: tokens.spacingHorizontalXXS,
-  },
-  fieldset: {
-    ...shorthands.border('none'),
-    ...shorthands.padding('0'),
-  },
-  iconHover: {
-    cursor: 'pointer',
-  },
-  processor: {
-    display: 'flex',
-    flexDirection: 'row',
-  },
-});
+
+import { useBrowseLayout } from './styles-hook/use-browse-style';
 export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   const [file, setFile] = useState<string | undefined>(undefined);
   const [selectedSheet, setSelectedSheet] = useState<string>('');
@@ -46,7 +32,6 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   const [fileSize, setFileSize] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [sheets, setSheets] = useState<string[]>([]);
-  const fileHandler = useRef<HTMLInputElement>(null);
   const axios = useAxios();
   const { getConfigurations } = useGetInitialConfig();
   const { mb } = useFileSize();
@@ -61,57 +46,65 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   );
 
   const classes = useBrowseLayout();
-  const onBrowseFileHandler = (): void => {
-    if (fileHandler.current) {
-      fileHandler.current.click();
-    }
-  };
-  //ToDo
-  /* const onChangeFile = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
-    if (e.target.files) {
-      try {
-        const { path, size, name } = e.target.files[0];
-        setLoading(true);
-        const { appStoragePath, copyFile } = window.api;
-        const appPath = await appStoragePath();
-        const volumePath = appPath + '/excelDir/' + name;
-
-        setFileSize(size);
+  const onBrowseFileHandler = async (): Promise<void> => {
+    try {
+      const openedFile = await open({
+        multiple: false,
+        directory: false,
+        filters: [
+          {
+            name: 'Excel Files',
+            extensions: browseFile.acceptFiles,
+          },
+        ],
+      });
+      if (openedFile) {
+        const { path, size, name } = openedFile;
         setFile(path);
+        setLoading(true);
+        setFileSize(size);
         setNewProject('impBusinessObjFile', path);
         setNewProject('fileSize', size.toString());
-        copyFile({
-          from: path,
-          to: volumePath,
-          async cb(errorIn, error) {
-            if (errorIn) {
-              setFile('');
-              setNewProject('impBusinessObjFile', '');
-              setNewProject('fileSize', '');
-              console.error(errorIn, error);
-              toast.error({ body: `${errorIn} : ${error?.message}` });
-              return;
-            }
-            const { data } = await axios.post('/api/receive-json', {
-              data_name: volumeName + '/excelDir/' + name,
-              input_data_type: 'file',
-              operation: 'get_timeout',
-            });
-            if (window.api.getExtension(path).toUpperCase() === '.CSV') {
-              setSheets(['Sheet1']);
-            } else {
-              setSheets(data?.sheet_names);
-            }
-          },
-        });
-      } catch (error: any) {
-        toast.error({ body: error.message });
-      } finally {
-        setLoading(false);
+
+        copyExcelFileToVolume(path, name as string)
+          .then(async (savePath: string) => {
+            const volumePath = await volumeExcelFilePath(savePath);
+            axios
+              .post(`api/${API.analysis}`, {
+                data_name: volumePath,
+                input_data_type: 'file',
+                operation: 'get_timeout',
+              })
+              .then(async ({ data }) => {
+                const extension = await getExtension(path);
+                if (extension.toUpperCase() === 'CSV') {
+                  setSheets(['Sheet1']);
+                } else {
+                  setSheets(data?.sheet_names);
+                }
+              })
+              .catch((error) => {
+                console.error('Error===>', error);
+                toast.error({ body: ` ${error?.message}` });
+              })
+              .finally(() => {
+                setLoading(false);
+              });
+          })
+          .catch((error) => {
+            setLoading(false);
+            setFile('');
+            setNewProject('impBusinessObjFile', '');
+            setNewProject('fileSize', '');
+            console.error('Error===>', error);
+            toast.error({ body: ` ${error?.message}` });
+          });
       }
+    } catch (e) {
+      console.error('error==>', e);
     }
   };
-  */
+
   const onOpenChangeHandler = (_e: any, data: any): void => {
     setSelectedSheet(data?.optionValue);
     setNewProject('selectedSheet', data?.optionValue);
@@ -137,34 +130,34 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
     setProjectExists(isExists);
   };
   //ToDo
-  /* const onClickCreateProject = async (): Promise<void> => {
+  const onClickCreateProject = async (): Promise<void> => {
     try {
+      console.log('newProject===>', newProject);
+
       if (newProject?.name && newProject?.impBusinessObjFile) {
-        const nameAndExtension = window.api.fileNameWithExtension(newProject?.impBusinessObjFile);
-        const volumeFilePath = volumeName + '/excelDir/' + nameAndExtension;
-        const { data } = await axios.post('/api/receive-json', {
+        const volumeFilePath = await volumeExcelFilePath(file as string);
+        const collectionsDir = await collectionsLocation();
+        const { data } = await axios.post(`api/${API.analysis}`, {
           data_name: volumeFilePath,
           input_data_type: 'file',
           operation: 'store_data_in_db',
           sheet_name: selectedSheet, //'Sheet1', //EXCEL,
-          db_location: `${volumeName}/collections`,
+          db_location: collectionsDir,
         });
-        const appPath = await window.api.appStoragePath();
-        const actualPath = appPath + '/excelDir/' + nameAndExtension;
-        if (data?.return_value === 'success') {
-        
-          const dbName = window.api.fileNameWithExtension(data?.db_name);
 
-          window.api
-            .executeQuery(CONFIGURATION, insertIntoProject, [
-              dbName,
-              data?.data_name,
-              data?.sheet_name,
-              newProject?.fileSize,
-              new Date().toISOString(),
-              new Date().toISOString(),
-              1,
-            ])
+        const actualPath = await volumeExcelFilePath(file as string);
+        if (data?.return_value === 'success') {
+          const dbName = await fileNameWithExtension(data?.db_name);
+          const db = new Database(CONFIGURATION_DB);
+          db.executeQuery(insertIntoProject, [
+            dbName,
+            data?.data_name,
+            data?.sheet_name,
+            newProject?.fileSize,
+            new Date().toISOString(),
+            new Date().toISOString(),
+            1,
+          ])
             .then(async () => {
               await outputTable(dbName);
               setNewProject('name', '');
@@ -176,24 +169,24 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               setProjectExists(undefined);
               setFileSize(0);
               setSheets([]);
-
-              window.api.deleteFile(actualPath);
               getConfigurations();
               props.closeModal();
             })
             .catch((error) => {
-              window.api.deleteFile(actualPath);
-              window.api.log('error', error);
+              console.error('error==>', error);
               toast.error({
                 body: t('fileAndProjectNameError', { ns: 'errors' }),
               });
+            })
+            .finally(() => {
+              removeExcelFileFromVolume(actualPath);
             });
         } else {
-          window.api.deleteFile(actualPath);
+          removeExcelFileFromVolume(actualPath);
           toast.error({
             body: data.error,
           });
-          window.api.log('error', data.error);
+          console.error('error==>', data.error);
           props.closeModal();
         }
       } else {
@@ -203,7 +196,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
       toast.error({ body: error.message });
     }
   };
-*/
+
   const okDisabled = !!file && newProject?.name && newProject?.name !== '';
   return (
     <Modal
@@ -214,9 +207,24 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
       title={t('workspace', { ns: 'common' })}
       ok={{
         disabled: !okDisabled,
-        // onClick: onClickCreateProject,
+        onClick: onClickCreateProject,
         icon: loading ? <Spinner size="tiny" /> : null,
         disabledFocusable: loading,
+      }}
+      cancel={{
+        onClick: () => {
+          setProjectExists(undefined);
+          setNewProject('name', '');
+          setNewProject('fileSize', '');
+          setNewProject('impBusinessObjFile', '');
+          setNewProject('selectedSheet', '');
+          setFile(undefined);
+          setSelectedSheet('');
+          setProjectExists(undefined);
+          setFileSize(0);
+          setSheets([]);
+          props.closeModal();
+        },
       }}
     >
       <div className={classes.wrapper}>
@@ -275,13 +283,6 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
                   icon={<BiDotsHorizontalRounded />}
                 />
               }
-            />
-            <input
-              type="file"
-              ref={fileHandler}
-              style={{ display: 'none' }}
-              accept={browseFile.acceptFiles.join(',')}
-              // onChange={onChangeFile}
             />
           </Field>
         </fieldset>

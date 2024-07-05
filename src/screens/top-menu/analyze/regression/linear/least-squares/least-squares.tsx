@@ -96,7 +96,7 @@ const LoadTabDetails: FC<ITranslate & { selectedTab: string; columns: IColumn[] 
 }) => {
   switch (selectedTab) {
     case 'model':
-      return <Model {...props} />;
+      return <Model />;
     case 'estimation':
       return <Estimation {...props} />;
     case 'options':

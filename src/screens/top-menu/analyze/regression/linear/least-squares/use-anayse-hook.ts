@@ -5,7 +5,7 @@ import { useTasks } from '@store';
 import { useEffect } from 'react';
 import { IColumn } from '../../../../../table-render/use-column-count';
 import { EXCEL, API } from '@constants';
-import { volumeDirectory } from '@utils';
+import { collectionsLocation } from '@utils';
 //import { volumeName } from '@constants/locale';
 interface IOutput {
   executeAnalysis: () => void;
@@ -16,40 +16,37 @@ export const usePrepareAnalysis = ({
   queueFor,
   queueType,
 }: IActiveNode & { columns: IColumn[]; queueFor: string; queueType: string }): IOutput => {
-  const { setModel, model, estimate, options, predict, resampling } = useLinearLeastSquares(
+  const { setModelBulk, model, estimate, options, predict, resampling } = useLinearLeastSquares(
     useShallow((state) => ({
       model: state.model,
       estimate: state.estimate,
       options: state.options,
       predict: state.predict,
       resampling: state.resampling,
-      setModel: state.setModel,
+      setModelBulk: state.setModelBulk,
     })),
   );
   const { setQueueTask } = useTasks(useShallow((state) => ({ setQueueTask: state.setQueueTask })));
 
   useEffect(() => {
-    const availList: any = {};
+    const columnMap = new Map<string, boolean>();
     columns.forEach((column) => {
-      if (
-        model.dependentList[column.columnId] === undefined &&
-        model.independentList[column.columnId] === undefined
-      )
-        availList[column.columnId] = false;
+      if (!model.dependentList.has(column.columnId) && !model.independentList.has(column.columnId))
+        columnMap.set(column.columnId, false);
     });
-    setModel({ availableList: availList });
-  }, [columns]);
+    setModelBulk(columnMap, 'availableList');
+  }, [columns.length]);
   const executeAnalysis = async (): Promise<void> => {
-    const volumeName = await volumeDirectory();
+    const tableName = await collectionsLocation(config.tabName);
     const parameters = {
-      data_name: `${volumeName}/collections/${config.tabName}`,
+      data_name: tableName,
       input_data_type: 'file',
       operation: 'regression',
       sheet_name: EXCEL,
-      db_name: `${volumeName}/collections/${config.tabName}`,
+      db_name: tableName,
       table_name: EXCEL,
-      dependent_var_names: Object.keys(model.dependentList),
-      independent_var_names: Object.keys(model.independentList),
+      dependent_var_names: model.dependentList.keys(),
+      independent_var_names: model.independentList.keys(),
       regressionType: 'linear_db',
       linearparameters: {
         inc_constant: model.includeConst,
