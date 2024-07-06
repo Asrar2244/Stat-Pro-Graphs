@@ -16,6 +16,7 @@ import {
   collectionsLocation,
   fileNameWithExtension,
   Database,
+  convertToLinuxPath,
 } from '@utils';
 import { API } from '@constants';
 
@@ -71,7 +72,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             const volumePath = await volumeExcelFilePath(savePath);
             axios
               .post(`api/${API.analysis}`, {
-                data_name: volumePath,
+                data_name: convertToLinuxPath(volumePath),
                 input_data_type: 'file',
                 operation: 'get_timeout',
               })
@@ -132,17 +133,15 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   //ToDo
   const onClickCreateProject = async (): Promise<void> => {
     try {
-      console.log('newProject===>', newProject);
-
       if (newProject?.name && newProject?.impBusinessObjFile) {
         const volumeFilePath = await volumeExcelFilePath(file as string);
         const collectionsDir = await collectionsLocation();
         const { data } = await axios.post(`api/${API.analysis}`, {
-          data_name: volumeFilePath,
+          data_name: convertToLinuxPath(volumeFilePath),
           input_data_type: 'file',
           operation: 'store_data_in_db',
-          sheet_name: selectedSheet, //'Sheet1', //EXCEL,
-          db_location: collectionsDir,
+          sheet_name: selectedSheet,
+          db_location: convertToLinuxPath(collectionsDir),
         });
 
         const actualPath = await volumeExcelFilePath(file as string);
@@ -170,6 +169,9 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               setFileSize(0);
               setSheets([]);
               getConfigurations();
+              toast.success({
+                body: data.error,
+              });
               props.closeModal();
             })
             .catch((error) => {
@@ -198,6 +200,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   };
 
   const okDisabled = !!file && newProject?.name && newProject?.name !== '';
+
   return (
     <Modal
       modalType="alert"

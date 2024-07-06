@@ -57,3 +57,11 @@ export const volumeExcelFilePath = async (filePath: string): Promise<string> => 
   }
   return filePath;
 };
+
+// Convert to linux path if set docker
+export const convertToLinuxPath = (filePath: string): string => {
+  if (VITE_DOCKER_VOLUME_LOCATION && platformInfo() === 'windows') {
+    return filePath.replace(/\\/g, '/').replace(/^([a-zA-Z]):/, '/$1');
+  }
+  return filePath;
+};

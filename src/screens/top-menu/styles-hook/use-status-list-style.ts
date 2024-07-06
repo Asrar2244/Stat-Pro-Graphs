@@ -12,8 +12,12 @@ export const useMenuLayout = makeStyles({
   },
   layout: {
     // width: '65%',
+    display: 'contents',
     cursor: 'pointer',
     // ...shorthands.flex(1),
+    '& span': {
+      wordSpacing: 'nowrap',
+    },
   },
   menuText: {
     ...shorthands.padding(tokens.spacingHorizontalS),
@@ -27,7 +31,5 @@ export const useMenuLayout = makeStyles({
   tools: {
     display: 'flex',
     flexDirection: 'row',
-    // justifyContent: window.electron.process.platform === 'darwin' ? 'flex-end' : 'space-between',
-    // ...shorthands.padding(0, tokens.spacingHorizontalXS, 0, '0'),
   },
 });

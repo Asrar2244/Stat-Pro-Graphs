@@ -5,6 +5,7 @@ export const useBrowseLayout = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalXXS,
+    overflow: 'hidden',
   },
   fieldset: {
     ...shorthands.border('none'),

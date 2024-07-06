@@ -35,7 +35,7 @@ const useModalLayout = makeStyles({
 });
 
 const sizeConversion = (size: 'small' | 'medium' | 'large' | undefined): string => {
-  return size === 'small' ? '35%' : size === 'medium' ? '60%' : size === 'large' ? '95%' : '35%';
+  return size === 'small' ? '35%' : size === 'medium' ? '60%' : size === 'large' ? '95%' : '25%';
 };
 
 export const Modal: FC<IDialogProps & DialogProps> = ({
