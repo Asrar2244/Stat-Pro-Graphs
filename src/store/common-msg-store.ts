@@ -16,6 +16,7 @@ interface ITask {
 }
 interface IQueueTask {
   url?: string;
+  uuid: string;
   parameters?: any;
   queueFor?: string;
   queueType?: string;
@@ -24,6 +25,7 @@ interface IQueueTask {
 }
 interface ICommonMsgStore {
   commonMsg?: ICommonMessage;
+
   tasks?: ITask[];
   queueTasks?: IQueueTask[];
   setQueueTask: (queueTask: IQueueTask) => void;

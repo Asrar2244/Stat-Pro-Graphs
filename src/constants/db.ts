@@ -4,9 +4,17 @@ export const CONFIGURATION_DB = 'CONFIGURATION';
 export const CONFIGURATION_TABLE = 'CONFIGURATION';
 //Table name inside a DB File
 export const PROJECTS_TABLE = 'PROJECTS';
+//Table name inside a DB File
+export const NOTIFICATION_TABLE = 'NOTIFICATION';
 //Table name for excel data
 export const EXCEL = 'input';
 //Table name for output
 export const OUTPUT = 'OUTPUT';
 //Layout render
 export const DATA = 'DATA';
+//Notification table status
+export const NOTIFICATION_STATUS = {
+  SUCCESS: 'SUCCESS',
+  ERROR: 'ERROR',
+  PROCESSING: 'PROCESSING',
+};

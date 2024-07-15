@@ -35,7 +35,9 @@
       "@store/*": ["src/store/*"],
       "@store": ["src/store"],
       "@hooks/*": ["src/hooks/*"],
-      "@hooks": ["src/hooks"]
+      "@hooks": ["src/hooks"],
+      "@workers/*": ["src/workers/*"],
+      "@workers": ["src/workers"]
     }
   },
   "include": ["src"],

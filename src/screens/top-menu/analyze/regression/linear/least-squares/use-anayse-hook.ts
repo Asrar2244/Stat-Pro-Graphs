@@ -5,8 +5,8 @@ import { useTasks } from '@store';
 import { useEffect } from 'react';
 import { IColumn } from '../../../../../table-render/use-column-count';
 import { EXCEL, API } from '@constants';
-import { collectionsLocation } from '@utils';
-//import { volumeName } from '@constants/locale';
+import { collectionsLocation, convertToLinuxPath } from '@utils';
+import { v4 as uuidv4 } from 'uuid';
 interface IOutput {
   executeAnalysis: () => void;
 }
@@ -27,7 +27,7 @@ export const usePrepareAnalysis = ({
     })),
   );
   const { setQueueTask } = useTasks(useShallow((state) => ({ setQueueTask: state.setQueueTask })));
-
+  const uuid = uuidv4();
   useEffect(() => {
     const columnMap = new Map<string, boolean>();
     columns.forEach((column) => {
@@ -36,8 +36,10 @@ export const usePrepareAnalysis = ({
     });
     setModelBulk(columnMap, 'availableList');
   }, [columns.length]);
+
   const executeAnalysis = async (): Promise<void> => {
-    const tableName = await collectionsLocation(config.tabName);
+    const tableName = convertToLinuxPath(await collectionsLocation(config.tabName));
+
     const parameters = {
       data_name: tableName,
       input_data_type: 'file',
@@ -45,8 +47,8 @@ export const usePrepareAnalysis = ({
       sheet_name: EXCEL,
       db_name: tableName,
       table_name: EXCEL,
-      dependent_var_names: model.dependentList.keys(),
-      independent_var_names: model.independentList.keys(),
+      dependent_var_names: Array.from(model.dependentList.keys()),
+      independent_var_names: Array.from(model.independentList.keys()),
       regressionType: 'linear_db',
       linearparameters: {
         inc_constant: model.includeConst,
@@ -63,7 +65,9 @@ export const usePrepareAnalysis = ({
         ...resampling,
       },
     };
+
     setQueueTask({
+      uuid,
       parameters,
       tabId: config.id.toString(),
       queueFor,
@@ -72,5 +76,6 @@ export const usePrepareAnalysis = ({
       queueType,
     });
   };
+
   return { executeAnalysis };
 };

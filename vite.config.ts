@@ -1,10 +1,13 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-
+import { comlink } from 'vite-plugin-comlink';
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  plugins: [react()],
+  plugins: [react(), comlink()],
+  worker: {
+    plugins: () => [comlink()],
+  },
   resolve: {
     alias: {
       '@libs': resolve('src/libs'),
@@ -13,6 +16,7 @@ export default defineConfig(async () => ({
       '@backend': resolve('src/backend'),
       '@utils': resolve('src/utils'),
       '@store': resolve('src/store'),
+      '@workers': resolve('src/workers'),
     },
   },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

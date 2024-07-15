@@ -23,7 +23,7 @@ import { API } from '@constants';
 // import { volumeName } from '@constants/locale';
 import { CONFIGURATION_DB } from '@constants';
 import { insertIntoProject } from '@backend';
-import { outputTable } from '@backend';
+// import { outputTable } from '@backend';
 
 import { useBrowseLayout } from './styles-hook/use-browse-style';
 export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
@@ -158,7 +158,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             1,
           ])
             .then(async () => {
-              await outputTable(dbName);
+              // await outputTable(dbName);
               setNewProject('name', '');
               setNewProject('fileSize', '');
               setNewProject('impBusinessObjFile', '');

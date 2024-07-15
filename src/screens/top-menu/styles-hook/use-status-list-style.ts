@@ -12,7 +12,7 @@ export const useMenuLayout = makeStyles({
   },
   layout: {
     // width: '65%',
-    display: 'contents',
+    display: 'inline-flex',
     cursor: 'pointer',
     // ...shorthands.flex(1),
     '& span': {

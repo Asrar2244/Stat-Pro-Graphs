@@ -58,8 +58,8 @@ interface IOutputTable {
   success: boolean;
   message: string;
 }
-export const outputTable = async (dbName: string): Promise<IOutputTable> => {
-  const query = `CREATE TABLE IF NOT EXISTS "OUTPUT" (
+
+export const createOutputTable = `CREATE TABLE IF NOT EXISTS ${OUTPUT} (
       id INTEGER PRIMARY KEY   AUTOINCREMENT,
       parameters TEXT NULL,
       result TEXT NULL,
@@ -68,14 +68,19 @@ export const outputTable = async (dbName: string): Promise<IOutputTable> => {
       outputType Text NULL,
       modifiedDateTime TEXT NOT NULL
      )`;
-  try {
-    const db = new Database(dbName);
-    await db.executeQuery(query, []);
-    return { success: true, message: 'The OUTPUT table has been created successfully.' };
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.message,
-    };
-  }
+
+export const insertToOutputTable = `INSERT INTO ${OUTPUT}
+               (parameters,outputFor,tabName,modifiedDateTime,outputType)
+               VALUES(?,?,?,?,?)`;
+
+export const updateOutputResult = `UPDATE ${OUTPUT} SET result = ? WHERE id =?;`;
+
+export const outputTable = async (dbName: string, parameters: any[]): Promise<number> => {
+  const db = new Database(dbName);
+  const record = await db.executeQuery(`${createOutputTable};${insertToOutputTable}`, parameters);
+  return record.lastInsertId;
+};
+export const outputUpdateResult = async (dbName: string, parameters: any[]): Promise<void> => {
+  const db = new Database(dbName);
+  await db.executeQuery(updateOutputResult, parameters);
 };

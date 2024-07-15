@@ -7,7 +7,7 @@ import {
   SelectTabData,
   SelectTabEvent,
 } from '@fluentui/react-components';
-import { Modal, ITranslate } from '@libs';
+import { Modal, ITranslate, NoIdSelected } from '@libs';
 import { IModal, useActiveNode } from '@hooks';
 import { Model } from './model';
 import { Estimation } from './estimation';
@@ -76,16 +76,26 @@ const LeastSquareComponent: FC<IModal> = ({ ...props }) => {
       ok={{ onClick: onOkModal }}
     >
       <div className={classes.leastSqrWrapper}>
-        <TabList selectedValue={selectedTab} appearance="subtle" onTabSelect={onTabSelectHandler}>
-          <Tab value="model">{t('model', { ns: 'regLinearLeastSquare' })}</Tab>
-          <Tab value="estimation">{t('estimation', { ns: 'regLinearLeastSquare' })}</Tab>
-          <Tab value="options">{t('options', { ns: 'regLinearLeastSquare' })}</Tab>
-          <Tab value="predict">{t('predict', { ns: 'regLinearLeastSquare' })}</Tab>
-          <Tab value="resampling">{t('resampling', { ns: 'regLinearLeastSquare' })}</Tab>
-        </TabList>
-        <div className="details">
-          <LoadTabDetails t={t} selectedTab={selectedTab} columns={[...columns]} />
-        </div>
+        {!id || id === '' ? (
+          <NoIdSelected />
+        ) : (
+          <>
+            <TabList
+              selectedValue={selectedTab}
+              appearance="subtle"
+              onTabSelect={onTabSelectHandler}
+            >
+              <Tab value="model">{t('model', { ns: 'regLinearLeastSquare' })}</Tab>
+              <Tab value="estimation">{t('estimation', { ns: 'regLinearLeastSquare' })}</Tab>
+              <Tab value="options">{t('options', { ns: 'regLinearLeastSquare' })}</Tab>
+              <Tab value="predict">{t('predict', { ns: 'regLinearLeastSquare' })}</Tab>
+              <Tab value="resampling">{t('resampling', { ns: 'regLinearLeastSquare' })}</Tab>
+            </TabList>
+            <div className="details">
+              <LoadTabDetails t={t} selectedTab={selectedTab} columns={[...columns]} />
+            </div>
+          </>
+        )}
       </div>
     </Modal>
   );

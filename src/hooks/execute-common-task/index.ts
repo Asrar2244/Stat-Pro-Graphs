@@ -1,14 +1,20 @@
 import { useCallback, useEffect } from 'react';
-import { useAxios } from '@hooks';
+
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
-import { OUTPUT } from '@constants';
-import { API } from '@constants';
+import { insertToNotificationTable, outputTable, outputUpdateResult } from '@backend';
+import { API, CONFIGURATION_DB } from '@constants';
 import { useTasks } from '@store';
-import { outputTable } from './create-output-table';
-import { Database, sleep } from '@utils';
+import {
+  Database,
+  collectionFolder,
+  saveLargeJsonToFile,
+  removeFileFromGivenPath,
+  sleep,
+} from '@utils';
+import { mainWorker } from '@workers/worker';
+
 export const useExecuteTask = (): void => {
-  const axios = useAxios();
   const { t } = useTranslation('common');
   const { queueTasks, setAddTask, setCommonMsg } = useTasks(
     useShallow((state) => ({
@@ -18,6 +24,21 @@ export const useExecuteTask = (): void => {
     })),
   );
 
+  const insertInNotifications = async (
+    message: string,
+    openTab: string,
+    outputId: number,
+  ): Promise<number> => {
+    const db = new Database(CONFIGURATION_DB);
+    const inserted = await db.executeQuery(insertToNotificationTable, [
+      message,
+      openTab,
+      outputId,
+      new Date().toISOString(),
+    ]);
+    return inserted.lastInsertId;
+  };
+
   const executeQueues = useCallback(async (): Promise<void> => {
     if (!queueTasks) return;
     while (queueTasks.length > 0) {
@@ -25,34 +46,37 @@ export const useExecuteTask = (): void => {
       const messageObj = { description: task?.queueFor, tab: task?.tabName };
       try {
         setCommonMsg({ spinner: true, message: t('analyzing', messageObj) });
-        const response = await axios.post(`api/${API.analysis}`, task?.parameters);
-        const result = await outputTable(`${task?.tabName}`);
+        const jsonFile = await collectionFolder(`${task?.uuid}.json`);
+        saveLargeJsonToFile(jsonFile, task?.parameters)
+          .then(async () => {
+            const outputId = await outputTable(`${task?.tabName}`, [
+              jsonFile,
+              task?.queueFor,
+              task?.tabName,
+              new Date().toISOString(),
+              task?.queueType,
+            ]);
+            const notificationID = await insertInNotifications(
+              t('analyzing', messageObj),
+              task?.tabName as string,
+              outputId,
+            );
 
-        if (!result.success) throw new Error(`${result.success}`);
+            const response = await mainWorker.axios(`${API.backendURL}/api/${API.analysis}`, {
+              ...task?.parameters,
+              notificationId: notificationID,
+            });
+            await outputUpdateResult(`${task?.tabName}`, [JSON.stringify(response), outputId]);
 
-        //Db Call
-        const db = new Database(`${task?.tabName}`);
-        await db.executeQuery(
-          `INSERT INTO ${OUTPUT}
-               (parameters,outputFor,tabName,result,modifiedDateTime,outputType)
-               VALUES(?,?,?,?,?,?)`,
-          [
-            JSON.stringify(task?.parameters),
-            task?.queueFor,
-            task?.tabName,
-            JSON.stringify(response.data),
-            new Date().toISOString(),
-            task?.queueType,
-          ],
-        );
-        setCommonMsg({ spinner: false, message: t('analyzingSuccess', messageObj) });
-        setAddTask({
-          status: 'available',
-          description: t('analyzingSuccess', messageObj),
-          queueFor: task?.queueFor,
-          tabId: task?.tabId,
-          tabName: task?.tabName,
-        });
+            setCommonMsg({
+              spinner: false,
+              message: t('analyzingSuccess', messageObj),
+            });
+          })
+          .catch(async (err) => {
+            await removeFileFromGivenPath(jsonFile);
+            console.log('file not saved', err);
+          });
       } catch (error) {
         setCommonMsg({ spinner: false, message: t('analyzingError', messageObj) });
         setAddTask({
@@ -65,8 +89,8 @@ export const useExecuteTask = (): void => {
         });
         console.error('error', error);
       } finally {
-        await sleep(5000);
         setCommonMsg({ message: '', spinner: false });
+        await sleep(5000);
       }
     }
   }, [queueTasks]);

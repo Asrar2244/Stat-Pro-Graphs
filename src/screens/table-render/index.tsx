@@ -3,7 +3,7 @@ import { FC, ReactNode, memo } from 'react';
 import { useColumnsRowsCount } from './use-column-count';
 import { useFetchRecords } from './use-fetch-rows';
 import { Pagination } from './pagination';
-import { ListSkeleton } from '@libs';
+import { ListSkeleton, DivShowScrollOnHover } from '@libs';
 import ColumnSizer from 'react-virtualized/dist/es/ColumnSizer';
 import CellMeasurer, { CellMeasurerCache } from 'react-virtualized/dist/es/CellMeasurer';
 import MultiGrid from 'react-virtualized/dist/es/MultiGrid';
@@ -94,32 +94,34 @@ const TableDataRender: FC<ITableProps> = (props) => {
   return (
     <div className={classes.completeLayout}>
       <TableSearch {...props} />
-      {isLoading ? (
-        <ListSkeleton skeletonCount={20} />
-      ) : (
-        <AutoSizer>
-          {({ width, height }): ReactNode => (
-            <ColumnSizer columnMinWidth={44} columnCount={columns.length} width={width}>
-              {({ adjustedWidth, registerChild }): ReactNode => (
-                <MultiGrid
-                  className={classes.cellStyle}
-                  ref={registerChild}
-                  fixedColumnCount={1}
-                  fixedRowCount={1}
-                  columnWidth={cache.columnWidth}
-                  columnCount={columns.length}
-                  height={height - 95}
-                  noContentRenderer={noContentRenderer}
-                  cellRenderer={cellRenderer}
-                  rowHeight={35}
-                  rowCount={data.length}
-                  width={isNaN(adjustedWidth) ? 0 : adjustedWidth}
-                />
-              )}
-            </ColumnSizer>
-          )}
-        </AutoSizer>
-      )}
+      <DivShowScrollOnHover>
+        {isLoading ? (
+          <ListSkeleton skeletonCount={20} />
+        ) : (
+          <AutoSizer>
+            {({ width, height }): ReactNode => (
+              <ColumnSizer columnMinWidth={44} columnCount={columns.length} width={width}>
+                {({ adjustedWidth, registerChild }): ReactNode => (
+                  <MultiGrid
+                    className={classes.cellStyle}
+                    ref={registerChild}
+                    fixedColumnCount={1}
+                    fixedRowCount={1}
+                    columnWidth={cache.columnWidth}
+                    columnCount={columns.length}
+                    height={height - 95}
+                    noContentRenderer={noContentRenderer}
+                    cellRenderer={cellRenderer}
+                    rowHeight={35}
+                    rowCount={data.length}
+                    width={isNaN(adjustedWidth) ? 0 : adjustedWidth}
+                  />
+                )}
+              </ColumnSizer>
+            )}
+          </AutoSizer>
+        )}
+      </DivShowScrollOnHover>
       <div className={classes.footerLayout}>
         <Pagination {...pageContext} />
       </div>

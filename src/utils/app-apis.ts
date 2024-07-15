@@ -65,3 +65,10 @@ export const convertToLinuxPath = (filePath: string): string => {
   }
   return filePath;
 };
+export const collectionFolder = async (appendPath?: string): Promise<string> => {
+  const homeDir = await homeDirectory();
+  if (appendPath) {
+    return await join(homeDir, COLLECTION_DIR, appendPath);
+  }
+  return await join(homeDir, COLLECTION_DIR);
+};

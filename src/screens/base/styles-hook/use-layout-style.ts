@@ -54,6 +54,21 @@ export const useLayout = makeStyles({
     '& .flexlayout__border_button--unselected': {
       backgroundColor: tokens.colorNeutralStencil2Alpha,
     },
+    '& div[data-show-scroll]:hover ::-webkit-scrollbar-thumb': {
+      backgroundColor: tokens.colorNeutralBackgroundStatic,
+    },
+    '& ::-webkit-scrollbar': {
+      width: '8px',
+      border: `1px solid ${tokens.colorNeutralBackgroundStatic}`,
+      backgroundColor: 'transparent',
+    },
+    '& ::-webkit-scrollbar-thumb': {
+      borderRadius: '8px',
+    },
+    '& ::-webkit-scrollbar-thumb:hover': {
+      // backgroundColor: tokens.colorNeutralBackgroundInverted,
+      backgroundColor: tokens.colorNeutralBackgroundStatic,
+    },
   },
   titleLayout: {
     display: 'flex',
