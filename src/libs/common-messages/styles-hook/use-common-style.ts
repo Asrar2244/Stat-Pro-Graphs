@@ -6,6 +6,10 @@ export const useCommonLayout = makeStyles({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'end',
+    position: 'absolute',
+    bottom: tokens.spacingVerticalS,
+    zIndex: 9,
+    right: tokens.spacingVerticalS,
     '& label': {
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
@@ -38,6 +42,63 @@ export const useCommonLayout = makeStyles({
         '& label::after': {
           content: '...',
           display: 'inline-block',
+        },
+      },
+    },
+  },
+  statusList: {
+    display: 'grid',
+    gridTemplateColumns: '0.5fr 3fr',
+    alignItems: 'center',
+    '& div:first-child': {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+  },
+  internal: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    '& .status-detail': {
+      display: 'flex',
+      flexDirection: 'row',
+      fontSize: tokens.fontSizeBase100,
+    },
+  },
+  caption: {
+    paddingTop: tokens.spacingVerticalS,
+    fontSize: '6px',
+    textTransform: 'uppercase',
+  },
+  badge: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'end ',
+    '& div': {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    '& .label': {
+      width: '220px',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+    },
+    '& ul': {
+      padding: 0,
+      margin: 0,
+      paddingLeft: tokens.spacingVerticalS,
+      listStyle: 'none',
+      display: 'inline-flex',
+      '& li': {
+        padding: 0,
+        margin: 0,
+        border: 'none',
+        '& svg': {
+          width: '15px',
+          height: '15px',
         },
       },
     },

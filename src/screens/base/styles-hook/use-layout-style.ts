@@ -4,6 +4,7 @@ export const useLayout = makeStyles({
   root: {
     display: 'flex',
     flexDirection: 'row',
+    scrollbarWidth: 'thin',
     height: '100vh',
     '& .flexlayout__layout': {
       top: '42px',
@@ -54,8 +55,11 @@ export const useLayout = makeStyles({
     '& .flexlayout__border_button--unselected': {
       backgroundColor: tokens.colorNeutralStencil2Alpha,
     },
-    '& div[data-show-scroll]:hover ::-webkit-scrollbar-thumb': {
+    '& *[data-show-scroll]:hover ::-webkit-scrollbar-thumb': {
       backgroundColor: tokens.colorNeutralBackgroundStatic,
+    },
+    '& *[data-show-scroll]': {
+      overflow: 'auto',
     },
     '& ::-webkit-scrollbar': {
       width: '8px',
@@ -64,9 +68,9 @@ export const useLayout = makeStyles({
     },
     '& ::-webkit-scrollbar-thumb': {
       borderRadius: '8px',
+      backgroundClip: 'padding-box',
     },
     '& ::-webkit-scrollbar-thumb:hover': {
-      // backgroundColor: tokens.colorNeutralBackgroundInverted,
       backgroundColor: tokens.colorNeutralBackgroundStatic,
     },
   },
