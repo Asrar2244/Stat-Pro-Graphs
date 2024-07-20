@@ -21,10 +21,10 @@ export const LinearLeastSquareRegression: FC = () => {
           {table?.showCaption && (
             <CardHeader header={<Body1Stronger>{t(table.name)}</Body1Stronger>} />
           )}
-          <TableCreator {...table} />
+          {/* <TableCreator {...table} /> */}
         </Card>
       ))}
-      {tables.length > 0 && <ResidualPredictGraph tableRef={tableRef} />}
+      {/* {tables.length > 0 && <ResidualPredictGraph tableRef={tableRef} />} */}
     </div>
   );
 };

@@ -12,3 +12,4 @@ export * from './plotly/zoom-graph';
 export * from './toaster';
 export * from './window-focus';
 export * from './initial-config/use-get-initial-config';
+export * from './pagination';

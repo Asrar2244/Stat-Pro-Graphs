@@ -2,14 +2,13 @@ import { Tooltip } from '@fluentui/react-components';
 import { FC, ReactNode, memo } from 'react';
 import { useColumnsRowsCount } from './use-column-count';
 import { useFetchRecords } from './use-fetch-rows';
-import { Pagination } from './pagination';
-import { ListSkeleton, DivShowScrollOnHover } from '@libs';
+import { ListSkeleton, DivShowScrollOnHover, Pagination } from '@libs';
 import ColumnSizer from 'react-virtualized/dist/es/ColumnSizer';
 import CellMeasurer, { CellMeasurerCache } from 'react-virtualized/dist/es/CellMeasurer';
 import MultiGrid from 'react-virtualized/dist/es/MultiGrid';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 import { useTableStyles } from './styles-hook/use-table-style';
-import { usePagination } from './use-pagination';
+import { usePagination } from '@hooks';
 import { TableSearch } from './table-search';
 
 export interface ITableProps {

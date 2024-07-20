@@ -20,12 +20,19 @@ export interface ITableCreator {
   showCaption?: boolean;
   columns: IColumnCreator[];
   data: any[];
+  dbPath: string;
+  tableName: string;
 }
 
-const TableCreatorComponent: FC<ITableCreator> = ({ showHeaders, columns, data }) => {
+const TableCreatorComponent: FC<ITableCreator> = ({
+  showHeaders,
+  columns,
+  data,
+  dbPath,
+  tableName,
+}) => {
   const { numberFormat } = useFormatter();
   const headers = showHeaders ?? true;
-
   return (
     <table>
       {headers && (

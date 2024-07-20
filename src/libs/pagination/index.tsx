@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { RxDividerVertical } from 'react-icons/rx';
 import { usePaginationStyles } from './styles-hook/use-pagination-style';
 import { DEFAULT_PAGES } from '@constants';
-import { IPagination } from './use-pagination';
+import { IPagination } from '@hooks';
 
 export const Pagination: FC<IPagination> = (props) => {
   const classes = usePaginationStyles();

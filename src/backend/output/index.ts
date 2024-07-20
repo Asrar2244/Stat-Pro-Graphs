@@ -54,11 +54,6 @@ const parseJsonObject = (parameter: string): any => {
   return JSON.parse(!parameter || parameter === '' ? '{}' : parameter);
 };
 
-interface IOutputTable {
-  success: boolean;
-  message: string;
-}
-
 export const createOutputTable = `CREATE TABLE IF NOT EXISTS ${OUTPUT} (
       id INTEGER PRIMARY KEY   AUTOINCREMENT,
       parameters TEXT NULL,

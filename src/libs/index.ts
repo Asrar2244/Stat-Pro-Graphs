@@ -17,3 +17,4 @@ export * from './graphs/tools';
 export * from './modal';
 export * from './list-checkbox-with-select-all';
 export * from './div-show-scroll';
+export * from './pagination';

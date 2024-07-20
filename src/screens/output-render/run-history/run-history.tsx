@@ -6,6 +6,9 @@ import {
   DrawerHeader,
   DrawerHeaderTitle,
   InlineDrawer,
+  Divider,
+  Field,
+  Input,
 } from '@fluentui/react-components';
 
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
@@ -16,6 +19,7 @@ import { useRunHistoryClasses } from '../styles-hook/use-run-history-style';
 import { useFetchOutput } from '../hooks/use-fetch-output';
 import { HistoryListRender } from './list-item';
 import { IoCloseOutline } from 'react-icons/io5';
+import { CiSearch } from 'react-icons/ci';
 interface IHistory {
   showHistory: boolean;
   toggleShowHistory: () => void;
@@ -47,6 +51,14 @@ const RunHistoryComponent: FC<{ history: IHistory }> = ({ history }) => {
         >
           <Text className={classes.runHistoryTitle}>{t('runHistory')}</Text>
         </DrawerHeaderTitle>
+        <Divider />
+        <Field>
+          <Input
+            appearance="filled-lighter"
+            placeholder={t('searchQuery')}
+            contentAfter={<Button appearance="transparent" icon={<CiSearch />} size="small" />}
+          />
+        </Field>
       </DrawerHeader>
       <DrawerBody className={classes.drawerBody}>
         <AutoSizer>

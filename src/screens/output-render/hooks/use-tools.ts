@@ -23,7 +23,7 @@ export const useTools = (): ITools => {
   const [fontItalic, setFontItalic] = useState<boolean>(false);
   const [fontSize, setFontSize] = useState<number>(0);
   const [fontColor, setFontColor] = useState<string>('');
-  const [showRunHistory, setShowRunHistory] = useState<boolean>(false);
+  const [showRunHistory, setShowRunHistory] = useState<boolean>(true);
   const [totalRuns, setTotalRuns] = useState<number>(0);
   const toggleShowHistory = (): void => {
     setShowRunHistory(!showRunHistory);
