@@ -1,7 +1,7 @@
 import { createContext } from 'react';
-import { IToolBar } from '../hooks/use-tools';
+import { IToolBar, ISelectedRun } from '@utils';
 interface IOutputRenderContext {
-  selectedRun?: any;
+  selectedRun?: ISelectedRun;
   toolBar?: IToolBar;
 }
 

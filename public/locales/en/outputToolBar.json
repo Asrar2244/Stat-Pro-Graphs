@@ -1,0 +1,11 @@
+{
+  "runHistory": "Run History",
+  "runName": "Run-{{index}}",
+  "title": "Title",
+  "bold": "Bold",
+  "italic": "Italic",
+  "fontSize": "Font Size",
+  "fontColor": "Font Color",
+  "executedOn": "Executed on",
+  "searchQuery": "Search your query"
+}

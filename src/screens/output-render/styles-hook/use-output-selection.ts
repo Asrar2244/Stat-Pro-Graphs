@@ -12,7 +12,7 @@ export const useOutputSelection = makeStyles({
   lastRunAt: {
     position: 'fixed',
     zIndex: 1,
-    ...shorthands.borderRadius(0, tokens.borderRadiusXLarge, tokens.borderRadiusXLarge, 0),
+    borderRadius: `0 ${tokens.borderRadiusXLarge} ${tokens.borderRadiusXLarge} 0`,
     ...shorthands.padding(tokens.spacingHorizontalS),
     width: 'fit-content',
     backgroundColor: tokens.colorBrandForegroundOnLight,
@@ -22,13 +22,13 @@ export const useOutputSelection = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     height: '94%',
-    alignItems: 'center',
+    alignItems: 'baseline',
     ...shorthands.padding(tokens.spacingHorizontalS),
     overflow: 'auto',
   },
   content: {
     display: 'flex',
     flexDirection: 'column',
-    width: '70%',
+    width: '84%',
   },
 });

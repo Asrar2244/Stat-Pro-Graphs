@@ -29,7 +29,7 @@ interface IHistory {
 const RunHistoryComponent: FC<{ history: IHistory }> = ({ history }) => {
   const classes = useRunHistoryClasses();
   const { config } = useActiveNode([]);
-  const { t } = useTranslation('reqLinearLeastSquareOutput');
+  const { t } = useTranslation('outputToolBar');
   const { data, isLoading } = useFetchOutput(config.tabName);
   useEffect(() => {
     if (Array.isArray(data)) {
@@ -66,8 +66,8 @@ const RunHistoryComponent: FC<{ history: IHistory }> = ({ history }) => {
             <div
               style={{
                 width: width + 40,
-                height: height - 40,
-                overflow: 'auto',
+                height: height,
+                // overflow: 'auto',
                 marginLeft: '-20px',
               }}
             >

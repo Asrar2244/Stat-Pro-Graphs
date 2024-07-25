@@ -4,215 +4,60 @@
       "name": "least-square-inputs",
       "showCaption": false,
       "showHeaders": false,
-      "columns": [
-        {
-          "key": "input_key"
-        },
-        {
-          "key": "input_value",
-          "get": "result"
-        }
-      ],
-      "data": [
-        {
-          "input_value": "dependent_var_names",
-          "input_key": "Dependent Variable"
-        },
-        {
-          "input_value": "independent_var_names",
-          "input_key": "Independent Variable"
-        },
-        {
-          "input_value": "dependent_variables_len",
-          "input_key": "N"
-        },
-        {
-          "input_value": "MultipleR",
-          "input_key": "Multiple R"
-        },
-        {
-          "input_value": "SquaredMultipleR",
-          "input_key": "Squared Multiple R"
-        },
-        {
-          "input_value": "AdjustedSquaredMultiple R",
-          "input_key": "Adjusted Squared Multiple R"
-        },
-        {
-          "input_value": "Standard Error of Estimate",
-          "input_key": "Standard Error of Estimate"
-        },
-        {
-          "input_value": "dw_statistic",
-          "input_key": "Durbin-Watson D-Statistic"
-        },
-        {
-          "input_value": "autocorrelation",
-          "input_key": "First Order Autocorrelation"
-        },
-        {
-          "input_value": "AIC",
-          "input_key": "AIC"
-        },
-        {
-          "input_value": "corrected_AIC",
-          "input_key": "AIC (Corrected)"
-        },
-        {
-          "input_value": "Schwarzs_BIC",
-          "input_key": "Schwarz's BIC"
-        }
+      "view": [
+        ["t-dependent_var_names", "dependent_var_names"],
+        ["t-independent_var_names", "independent_var_names"],
+        ["t-dependent_variables_len", "dependent_variables_len"],
+        ["t-MultipleR", "MultipleR"],
+        ["t-SquaredMultipleR", "SquaredMultipleR"],
+        ["t-AdjustedSquaredMultiple_R", "AdjustedSquaredMultiple_R"],
+        ["t-Standard_Error_of_Estimate", "Standard_Error_of_Estimate"],
+        ["t-dw_statistic", "dw_statistic"],
+        ["t-autocorrelation", "autocorrelation"],
+        ["t-AIC", "AIC"],
+        ["t-corrected_AIC", "corrected_AIC"],
+        ["t-Schwarzs_BIC", "Schwarzs_BIC"]
       ]
     },
     {
       "name": "least-square-statics",
       "showCaption": false,
       "showHeaders": true,
-      "columns": [
-        {
-          "key": "key",
-          "label": ""
-        },
-        {
-          "key": "ks_stat",
-          "label": "Test Statistic",
-          "get": "result"
-        },
-        {
-          "key": "ks_p_value",
-          "label": "P-Value",
-          "get": "result"
-        }
-      ],
-      "data": [
-        {
-          "key": "K-S Test (Lilliefors)",
-          "ks_stat": "ks_stat",
-          "ks_p_value": "ks_p_value"
-        },
-        {
-          "key": "Shapiro-Wilk Test",
-          "ks_stat": "shapiro_stat",
-          "ks_p_value": "shapiro_p_value"
-        }
+      "view": [
+        ["", "t-test_stat", "t-p_value"],
+        ["t-ks_stat", "ks_stat", "ks_p_value"],
+        ["t-shapiro_stat", "shapiro_stat", "shapiro_p_value"]
       ]
     },
     {
       "name": "andersonDarlingStatistics",
       "showCaption": true,
       "showHeaders": false,
-      "columns": [
-        {
-          "key": "key"
-        },
-        {
-          "key": "anderson_stat",
-          "get": "result"
-        }
-      ],
-      "data": [
-        {
-          "key": "Test Statistic",
-          "anderson_stat": "anderson_stat"
-        },
-        {
-          "key": "Critical Values",
-          "anderson_stat": "anderson_critical_values"
-        },
-        {
-          "key": "Critical Values",
-          "anderson_stat": "anderson_significance_level"
-        }
+      "view": [
+        ["t-anderson_stat", "anderson_stat"],
+        ["t-anderson_critical_values", "anderson_critical_values"],
+        ["t-anderson_significance_level", "anderson_significance_level"]
       ]
     },
     {
       "name": "Regression Coefficients B = (X'X)-1X'Y",
       "showHeaders": true,
       "showCaption": false,
-      "columns": [
-        {
-          "key": "results.effect",
-          "label": "Effect"
-        },
-        {
-          "key": "results.coefficeint",
-          "label": "Coefficient"
-        },
-        {
-          "key": "results.bse",
-          "label": "Standard Error"
-        },
-        {
-          "key": "results.tvalues",
-          "label": "t"
-        },
-        {
-          "key": "results.pvalues",
-          "label": "p-Value"
-        }
+      "view": [
+        "t-results.effect",
+        "t-results.coefficeint",
+        "t-results.bse",
+        "t-results.tvalues",
+        "t-results.pvalues"
       ],
-      "array": true
+      "recordType": true
     },
     {
       "name": "lcl-lpl-ucl-upl",
-      "showHeaders": false,
+      "showHeaders": true,
       "showCaption": true,
-      "columns": [
-        {
-          "key": "lcl",
-          "label": "LCL"
-        },
-        {
-          "key": "lpl",
-          "label": "LPL"
-        },
-        {
-          "key": "ucl",
-          "label": "UCL"
-        },
-        {
-          "key": "upl",
-          "label": "t"
-        }
-      ],
-      "array": true
-    },
-    {
-      "name": "other-data",
-      "showHeaders": false,
-      "showCaption": false,
-      "columns": [
-        {
-          "key": "key",
-          "label": ""
-        },
-        {
-          "key": "dw_statistic",
-          "get": "result"
-        }
-      ],
-      "data": [
-        {
-          "key": "Durbin-Watson D-Statistic",
-          "dw_statistic": "dw_statistic"
-        },
-        {
-          "key": "First Order Autocorrelation",
-          "dw_statistic": "fvalue"
-        },
-        {
-          "key": "AIC",
-          "dw_statistic": "AIC"
-        },
-        {
-          "key": "AIC (Corrected)",
-          "dw_statistic": "corrected_AIC"
-        },
-        {
-          "key": "Schwarz's BIC",
-          "dw_statistic": "Schwarzs_BIC"
-        }
-      ]
+      "view": ["t-lcl", "t-lpl", "t-ucl", "t-upl"],
+      "recordType": true
     }
   ],
   "graphOptions": {

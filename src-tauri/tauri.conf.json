@@ -12,9 +12,8 @@
     "windows": [
       {
         "title": "start-pro",
-       
         "height": 800,
-        "visible": true,
+        "visible": false,
         "label": "main",
         "resizable": false,
         "fullscreen": false,
@@ -22,7 +21,6 @@
         "decorations": true,
         "alwaysOnTop": false,
         "width": 900
-   
       },
       {
         "title": "start-pro",
@@ -33,8 +31,8 @@
         "center": true,
         "decorations": false,
         "resizable": false,
-        "dragDropEnabled": false
- 
+        "dragDropEnabled": false,
+        "visible": true
       }
     ],
     "security": {

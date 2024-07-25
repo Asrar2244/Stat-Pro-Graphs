@@ -22,7 +22,7 @@ const ToolBarComponent: FC<{ tools: ITools; title?: string; subTitle?: string }>
   title,
   subTitle,
 }) => {
-  const { t } = useTranslation('reqLinearLeastSquareOutput');
+  const { t } = useTranslation('outputToolBar');
   const classes = useToolsStyle();
   return (
     <div className={classes['output-band']}>
@@ -90,7 +90,7 @@ const ToolBarComponent: FC<{ tools: ITools; title?: string; subTitle?: string }>
                 <CounterBadge
                   count={tools.totalRuns}
                   appearance="filled"
-                  size="extra-small"
+                  size="small"
                   className="counter"
                 />
                 <Button

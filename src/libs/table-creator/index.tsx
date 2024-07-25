@@ -1,12 +1,8 @@
 import { FC, memo } from 'react';
 import { useFormatter } from '@hooks';
-interface IColumnCreator {
-  label?: string;
-  key: string;
-  width?: string;
-  height?: string;
-  cellStyles?: (item: any, rowIndex: number, columnIndex: number) => object;
-}
+import { useTableFetch } from './use-table-hook';
+import { ITranslate, ITableCreator } from '@utils';
+
 /**
  * Table creator component that renders a table based on provided columns and data.
  *
@@ -15,50 +11,48 @@ interface IColumnCreator {
  * @param {ITableCreator} data - Array of data to be rendered in the table
  * @return {ReactNode} The JSX for rendering the table component
  */
-export interface ITableCreator {
-  showHeaders?: boolean;
-  showCaption?: boolean;
-  columns: IColumnCreator[];
-  data: any[];
-  dbPath: string;
-  tableName: string;
-}
 
-const TableCreatorComponent: FC<ITableCreator> = ({
-  showHeaders,
-  columns,
-  data,
-  dbPath,
-  tableName,
-}) => {
+interface ITableComp extends ITranslate {
+  table: ITableCreator;
+  dbFileName: string;
+  dbTableName: string;
+}
+const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName, t }) => {
+  const { showHeaders, view, recordType } = table;
   const { numberFormat } = useFormatter();
+  const { templateView } = useTableFetch({
+    dbName: dbFileName,
+    tableName: dbTableName,
+    t,
+    view: view as any,
+    recordType,
+  });
   const headers = showHeaders ?? true;
+
   return (
     <table>
       {headers && (
         <thead>
           <tr>
-            {columns?.map((col, cIndex) => (
+            {templateView[0]?.map((col) => (
               <th
-                key={cIndex}
-                style={{ width: col?.width ?? 'auto', height: col.height ?? 'fit-content' }}
+                key={col}
+                // style={{ width: col?.width ?? 'auto', height: col.height ?? 'fit-content' }}
               >
-                {col.label}
+                {col && col.startsWith('t-') ? t(col) : col}
               </th>
             ))}
           </tr>
         </thead>
       )}
       <tbody>
-        {data?.map((row, rIndex) => (
+        {templateView.slice(headers ? 1 : 0, templateView.length).map((row, rIndex) => (
           <tr key={rIndex}>
-            {columns?.map((col, cIndex) => {
-              const style =
-                typeof col.cellStyles === 'function' && col.cellStyles(row, rIndex, cIndex);
+            {row?.map((col, cIndex) => {
+              // const style =
+              //   typeof col.cellStyles === 'function' && col.cellStyles(row, rIndex, cIndex);
               return (
-                <td key={cIndex} style={{ ...style }}>
-                  {numberFormat(row[col.key])}
-                </td>
+                <td key={cIndex}>{col && col.startsWith('t-') ? t(col) : numberFormat(col)}</td>
               );
             })}
           </tr>

@@ -4,7 +4,7 @@ import { useActiveNode } from '@hooks';
 import { useSelectedRun } from './hooks/use-selected-run';
 import { useOutputSelection } from './styles-hook/use-output-selection';
 import { OutputRenderContext } from './context';
-import { IToolBar } from './hooks/use-tools';
+import { IToolBar } from '@utils';
 import { useTranslation } from 'react-i18next';
 const LinearLeastSquareRegression = lazy(() =>
   import('./analyze/regression/linear/least-square').then((modules) => ({

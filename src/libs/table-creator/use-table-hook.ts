@@ -1,46 +1,41 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Database } from '@utils';
-
+import { useEffect, useState } from 'react';
+import { Database, ITranslate, IRecordTableType } from '@utils';
+import { tableWorker } from '@workers/table-gen-worker';
 interface IDataResult {
   totalRecords: number;
-  data: any[];
+  templateView: Array<Array<string>>;
+}
+interface ITableFetch extends ITranslate {
+  dbName: string;
+  tableName: string;
+  view: Array<Array<string>>;
+  recordType: IRecordTableType;
 }
 
-const generateQuery = (tableName: string, key: string, columns: any[]): string => {
-  const queryColumns = [];
-  for (const column in columns) {
-    queryColumns.push(column[key as any]);
-  }
-
-  return `SELECT ${queryColumns.join(',')} FROM ${tableName} WHERE ${queryColumns.join(' IS NOT NULL OR ')}`;
-};
-
-export const useTableFetch = (
-  dbName: string,
-  tableName: string,
-  Key: string,
-  columns: any[],
-  dataMapper?: Array<any>,
-): IDataResult => {
-  const [data, setData] = useState<any[]>([]);
+export const useTableFetch = ({
+  dbName,
+  tableName,
+  view,
+  recordType,
+}: ITableFetch): IDataResult => {
+  const [templateView, setTemplateView] = useState<Array<Array<string>>>([]);
   const [totalRecords, setTotalRecords] = useState<number>(0);
 
-  const query = useMemo(() => {
-    if (dataMapper) {
-      return generateQuery(tableName, Key, dataMapper);
+  useEffect(() => {
+    execute();
+  }, [dbName, tableName]);
+
+  const execute = async () => {
+    const { query } = await tableWorker.generateQueryColumn(view, tableName, recordType);
+    if (query !== '') {
+      const db = new Database(dbName);
+      const result = await db.selectQuery(query);
+      const templateView = await tableWorker.mergingData(view, result, recordType);
+      setTemplateView(templateView);
     }
-    return generateQuery(tableName, Key, columns);
-  }, []);
-
-  useCallback(async () => {
-    const db = new Database(dbName);
-    const result = await db.selectQuery(query);
-
-    setData(result);
-  }, []);
-
+  };
   return {
-    data,
+    templateView,
     totalRecords,
   };
 };

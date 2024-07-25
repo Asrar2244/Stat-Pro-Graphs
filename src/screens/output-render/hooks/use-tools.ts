@@ -1,11 +1,5 @@
 import { useState } from 'react';
-
-export interface IToolBar {
-  fontBold: boolean;
-  fontItalic: boolean;
-  fontSize: number;
-  fontColor: string;
-}
+import { IToolBar } from '@utils';
 
 export interface ITools extends IToolBar {
   showRunHistory: boolean;
