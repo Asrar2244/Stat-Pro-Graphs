@@ -4,7 +4,7 @@ import { exists, mkdir, create } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
 import { Database, homeDirectory } from '@utils';
 import { CONFIGURATION_DB, COLLECTION_DIR, EXCEL_DIR } from '@constants';
-import { CREATE_CONFIG_QUERY, CREATE_PROJECT_QUERY } from './query';
+import initialTables from './query';
 
 export const useInitialConfig = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -41,8 +41,9 @@ export const useInitialConfig = () => {
       await createInitialFolders();
       await createInitialFile();
       const db = new Database(CONFIGURATION_DB);
+
       await db
-        .executeQuery(`${CREATE_CONFIG_QUERY};${CREATE_PROJECT_QUERY};`)
+        .executeQuery(`${Object.values(initialTables).join(';')}`)
         .then((res) => {
           console.log('res===>', res);
         })

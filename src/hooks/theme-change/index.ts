@@ -8,15 +8,15 @@ export const useThemeChange = (setIsDarkTheme: (isDark: boolean) => void) => {
 
   useEffect(() => {
     let unListen: any;
-
     (async () => {
       unListen = await getCurrent().onThemeChanged(({ payload }) => {
-        console.log('New theme: ' + payload);
-        setIsDarkTheme(payload === 'dark');
+        if (theme === 'auto') {
+          setIsDarkTheme(payload === 'dark');
+        }
       });
     })();
+
     if (theme !== 'auto') {
-      if (typeof unListen === 'function') unListen();
       setIsDarkTheme(theme === 'dark');
     }
 

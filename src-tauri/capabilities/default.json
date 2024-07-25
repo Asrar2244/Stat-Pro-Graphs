@@ -2,11 +2,21 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "path:default",
     "event:default",
     "window:default",
+    "window:allow-is-resizable",
+    "window:allow-set-resizable",
+    "window:allow-start-dragging",
+    "window:allow-toggle-maximize",
+    "window:allow-start-dragging",
+    "window:allow-internal-toggle-maximize",
+    "window:allow-close",
+    "window:allow-minimize",
     "app:default",
     "image:default",
     "resources:default",
@@ -43,6 +53,8 @@
     "fs:write-files",
     "fs:allow-home-meta-recursive",
     "fs:allow-home-write-recursive",
-    "fs:scope-home-recursive"
+    "fs:scope-home-recursive",
+    "dialog:default",
+    "dialog:allow-open"
   ]
 }

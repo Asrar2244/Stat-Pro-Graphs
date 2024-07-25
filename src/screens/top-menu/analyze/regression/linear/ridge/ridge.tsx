@@ -1,0 +1,267 @@
+import { ChangeEvent, FC, MouseEvent, useState } from 'react';
+import { Checkbox, Button, Input, Field } from '@fluentui/react-components';
+import {
+  MdKeyboardDoubleArrowLeft,
+  MdKeyboardDoubleArrowRight,
+  MdOutlineRemove,
+} from 'react-icons/md';
+import { Fieldset, CheckListRender } from '@libs';
+import { useActiveNode, useToaster } from '@hooks';
+import { useShallow } from 'zustand/react/shallow';
+import { useRidgeStyles } from './styles-hook/use-ridge-hook';
+import { useColumnsRowsCount } from '../../../../../table-render/use-column-count';
+import { useTranslation } from 'react-i18next';
+import { useRidge } from './use-ridge-store-hook';
+import { useRidgePrepare } from './use-ridge-analyze';
+export const Ridge: FC = () => {
+  const [avaSelectAll, setAvaSelectAll] = useState<boolean | 'mixed' | undefined>(false);
+  const [depSelectAll, setDepSelectAll] = useState<boolean | 'mixed' | undefined>(false);
+  const [indSelectAll, setIndSelectAll] = useState<boolean | 'mixed' | undefined>(false);
+  const classes = useRidgeStyles();
+  const toast = useToaster();
+  const { config } = useActiveNode([]);
+  const { t } = useTranslation(['regLinearRidge', 'errors']);
+  const { columns } = useColumnsRowsCount({
+    ...config,
+    noRowCount: true,
+  });
+  useRidgePrepare({ columns });
+  const { ridge, setRidge } = useRidge(
+    useShallow((state) => {
+      const { setRidge, ...others } = state;
+      return { ridge: others, setRidge };
+    }),
+  );
+
+  const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
+    const { name } = e.target as any;
+
+    const availList: any = {};
+    const insertList: any = {};
+    Object.keys(ridge.availableList).forEach((key: string) => {
+      if (ridge.availableList[key]) {
+        insertList[key] = false;
+      } else {
+        availList[key] = false;
+      }
+    });
+    const list: any = {};
+    if (name === 'dependent') {
+      if (Object.keys(ridge.dependentList).length === 0 && Object.keys(insertList).length === 1) {
+        list['dependentList'] = insertList;
+      } else {
+        toast.info({
+          body: t('allowOnlyOneRecord', { ns: 'errors' }),
+        });
+        return;
+      }
+    } else {
+      list['independentList'] = { ...ridge.independentList, ...insertList };
+    }
+    if (Object.keys(availList).length === 0) {
+      setAvaSelectAll(false);
+    }
+    setRidge({ availableList: availList, ...list });
+  };
+
+  const onRemoveHandler = (e: MouseEvent<HTMLButtonElement>): void => {
+    const { name } = e.target as any;
+    const availList = ridge.availableList;
+    const list = name === 'dependent' ? ridge.dependentList : ridge.independentList;
+    const insertList: any = {};
+    Object.keys(list).forEach((key: string) => {
+      if (list[key]) {
+        availList[key] = false;
+      } else {
+        insertList[key] = false;
+      }
+    });
+    const listOpt: any = {};
+    if (name === 'dependent') {
+      listOpt['dependentList'] = insertList;
+      if (Object.keys(insertList).length === 0) {
+        setDepSelectAll(false);
+      }
+    } else {
+      if (Object.keys(insertList).length === 0) {
+        setIndSelectAll(false);
+      }
+      listOpt['independentList'] = insertList;
+    }
+    setRidge({ availableList: availList, ...listOpt });
+  };
+
+  const onChangeHandler = (e: ChangeEvent<HTMLInputElement>): void => {
+    if (e.target.type === 'checkbox') {
+      setRidge({ [e.target.name]: e.target.checked });
+    } else {
+      setRidge({ [e.target.name]: Number(e.target.value) });
+    }
+  };
+  const onChangeSelectAll = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, checked } = e.target;
+    //@ts-expect-error
+    const list: any = ridge[name];
+    Object.keys(list).forEach((key) => {
+      list[key] = checked;
+    });
+    switch (name) {
+      case 'dependentList':
+        setDepSelectAll(checked);
+        break;
+      case 'availableList':
+        setAvaSelectAll(checked);
+        break;
+      default:
+        setIndSelectAll(checked);
+    }
+    setRidge({ [name]: { ...list } });
+  };
+
+  return (
+    <div className={classes.modelLayout}>
+      <div className={classes.modelWrapper}>
+        <Fieldset title={t('dependent', { ns: 'regLinearRidge' })}>
+          <div className="section-available">
+            <Checkbox
+              name="dependentList"
+              label={t('selectAll', { ns: 'regLinearRidge' })}
+              onChange={onChangeSelectAll}
+              checked={depSelectAll}
+            />
+            <CheckListRender
+              className="dependent-list"
+              list={ridge.dependentList}
+              selected={depSelectAll}
+            />
+            <Button
+              icon={<MdOutlineRemove />}
+              className={classes.removeButtons}
+              name="dependent"
+              onClick={onRemoveHandler}
+            >
+              {t('removeFromDependent', { ns: 'regLinearRidge' })}
+            </Button>
+          </div>
+        </Fieldset>
+        <Fieldset title={t('availableVar', { ns: 'regLinearRidge' })}>
+          <div className="section-available">
+            <Checkbox
+              name="availableList"
+              label={t('selectAll', { ns: 'regLinearRidge' })}
+              onChange={onChangeSelectAll}
+              checked={avaSelectAll}
+            />
+            <CheckListRender
+              className="dependent-list"
+              list={ridge.availableList}
+              selected={avaSelectAll}
+            />
+            <div className="send-buttons">
+              <Button icon={<MdKeyboardDoubleArrowLeft />} name="dependent" onClick={onSendHandler}>
+                {t('sendToDependent', { ns: 'regLinearRidge' })}
+              </Button>
+
+              <Button
+                icon={<MdKeyboardDoubleArrowRight />}
+                iconPosition="after"
+                name="independent"
+                onClick={onSendHandler}
+              >
+                {t('sendToIndependent', { ns: 'regLinearRidge' })}
+              </Button>
+            </div>
+          </div>
+        </Fieldset>
+        <Fieldset title={t('independent', { ns: 'regLinearRidge' })}>
+          <div className="section-available">
+            <Checkbox
+              name="independentList"
+              label={t('selectAll', { ns: 'regLinearRidge' })}
+              onChange={onChangeSelectAll}
+              checked={indSelectAll}
+            />
+            <CheckListRender
+              className="dependent-list"
+              list={ridge.independentList}
+              selected={indSelectAll}
+            />
+
+            <Button
+              icon={<MdOutlineRemove />}
+              className={classes.removeButtons}
+              name="independent"
+              onClick={onRemoveHandler}
+            >
+              {t('removeFromIndependent', { ns: 'regLinearRidge' })}
+            </Button>
+          </div>
+        </Fieldset>
+      </div>
+      <Fieldset title={t('lambda')}>
+        <div>
+          <Checkbox
+            name="lambdaRangeOfValues"
+            label={t('rangeOfValues', { ns: 'regLinearRidge' })}
+            onChange={onChangeHandler}
+            checked={ridge.lambdaRangeOfValues}
+          />
+        </div>
+        <div className={classes.lambda}>
+          <Field label={t('minimum', { ns: 'regLinearRidge' })}>
+            <Input
+              type="number"
+              name="lambdaMinimum"
+              value={String(ridge.lambdaMinimum)}
+              disabled={!ridge.lambdaRangeOfValues}
+              onChange={onChangeHandler}
+            />
+          </Field>
+          <Field label={t('maximum', { ns: 'regLinearRidge' })}>
+            <Input
+              type="number"
+              name="lambdaMaximum"
+              value={String(ridge.lambdaMaximum)}
+              disabled={!ridge.lambdaRangeOfValues}
+              onChange={onChangeHandler}
+            />
+          </Field>
+          <Field label={t('increment', { ns: 'regLinearRidge' })}>
+            <Input
+              type="number"
+              name="lambdaIncrement"
+              disabled={!ridge.lambdaRangeOfValues}
+              value={String(ridge.lambdaIncrement)}
+              onChange={onChangeHandler}
+            />
+          </Field>
+          <div className={classes.individualBox}>
+            <Checkbox
+              name="lambdaIndividual"
+              disabled={!ridge.lambdaRangeOfValues}
+              label={t('individual', { ns: 'regLinearRidge' })}
+              checked={ridge.lambdaIndividual}
+              onChange={onChangeHandler}
+            />
+            <Input
+              name="lambdaIndividualValues"
+              type="number"
+              disabled={!ridge.lambdaIndividual}
+              onChange={onChangeHandler}
+              value={String(ridge.lambdaIndividualValues)}
+            />
+          </div>
+        </div>
+      </Fieldset>
+      <Fieldset>
+        <Checkbox
+          name="saveCoefficient"
+          label={t('saveCoefficient', { ns: 'regLinearRidge' })}
+          onChange={onChangeHandler}
+          checked={ridge.saveCoefficient}
+        />
+        <Input name="saveCoefficientFile" type={'file' as any} disabled={!ridge.saveCoefficient} />
+      </Fieldset>
+    </div>
+  );
+};

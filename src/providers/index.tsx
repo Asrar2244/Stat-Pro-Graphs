@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren, useState, useEffect } from 'react';
+import { FC, PropsWithChildren, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import {
   FluentProvider,
@@ -16,7 +16,7 @@ export const StartProProvider: FC<PropsWithChildren> = ({ children }) => {
   return (
     <FluentProvider theme={isDarkTheme ? teamsDarkTheme : teamsLightTheme}>
       <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
-      <Toaster limit={6} position="bottom-end" pauseOnHover timeout={5000} />
+      <Toaster limit={6} position="top-end" pauseOnHover timeout={5000} />
     </FluentProvider>
   );
 };

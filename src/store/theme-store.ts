@@ -5,7 +5,7 @@ interface IThemeStore {
 }
 
 export const useThemeStore = create<IThemeStore>((set) => ({
-  theme: 'auto',
+  theme: 'dark',
   setTheme(theme): void {
     set(() => {
       return { theme };

@@ -1,0 +1,109 @@
+import { IRecordTableType } from '@utils';
+interface IQuery {
+  columns: Array<string>;
+  query: string;
+  totalRecordsQuery: string;
+}
+
+const withOutRecordType = (view: Array<Array<string>>): Array<string> => {
+  const columns: Array<string> = [];
+  for (let i = 0; i < view.length; i++) {
+    for (let j = 0; j < view[i].length; j++) {
+      const cell = view[i][j];
+      if (cell !== '' && !cell.startsWith('t-')) {
+        const sanitized = cell.includes('.') ? `"${cell}"` : cell;
+        columns.push(sanitized);
+      }
+    }
+  }
+  return columns;
+};
+const withRecordType = (view: Array<string>): Array<string> => {
+  const columns: Array<string> = [];
+  for (let i = 0; i < view.length; i++) {
+    const cell = view[i];
+    if (cell !== '') {
+      const sanitized = `"${cell.replace('t-', '')}"`;
+
+      columns.push(sanitized);
+    }
+  }
+  return columns;
+};
+export const generateQueryColumn = (
+  view: Array<Array<string>> | Array<string>,
+  tableName: string,
+  recordType: IRecordTableType,
+): IQuery => {
+  let columns: Array<string> = [];
+  if (recordType) {
+    columns = withRecordType(view as Array<string>);
+  } else {
+    columns = withOutRecordType(view as Array<Array<string>>);
+  }
+
+  const query = `SELECT ${columns.join(',')} FROM ${tableName} WHERE ${columns.join(' IS NOT NULL OR ')} IS NOT NULL`;
+  const totalRecordsQuery =
+    columns.length > 0
+      ? `SELECT COUNT(columns[0]) FROM ${tableName} WHERE ${columns.join(' IS NOT NULL OR ')} IS NOT NULL`
+      : '';
+  return {
+    columns,
+    query,
+    totalRecordsQuery,
+  };
+};
+
+const mergingDataWithOutRecordType = (
+  viewDtl: Array<Array<string>>,
+  result: Array<any>,
+): Array<Array<string>> => {
+  const view: Array<Array<string>> = viewDtl;
+  for (let i = 0; i < view.length; i++) {
+    for (let j = 0; j < view[i].length; j++) {
+      const cell = view[i][j];
+      if (cell !== '') {
+        if (cell.startsWith('t-')) {
+          view[i][j] = cell;
+        } else {
+          const details = [];
+          for (let l = 0; l < result.length; l++) {
+            if (result[l][cell] !== null && result[l][cell] !== undefined) {
+              details.push(result[l][cell]);
+            }
+          }
+          view[i][j] = details.length === 1 ? String(details[0]) : details.join(',');
+        }
+      }
+    }
+  }
+  return view;
+};
+
+const mergingDataWithRecordType = (
+  viewDtl: Array<string>,
+  result: Array<any>,
+): Array<Array<string>> => {
+  const view: Array<Array<string>> = [viewDtl];
+  for (let i = 0; i < result.length; i++) {
+    const row = [];
+    for (let c = 0; c < viewDtl.length; c++) {
+      const sanitizedCell = viewDtl[c].replace('t-', '');
+      row.push(String(result[i][sanitizedCell]));
+    }
+    view.push(row);
+  }
+  return view;
+};
+
+export const mergingData = (
+  view: Array<Array<string>> | Array<string>,
+  result: Array<any>,
+  recordType: IRecordTableType,
+): Array<Array<string>> => {
+  if (recordType) {
+    return mergingDataWithRecordType(view as Array<string>, result);
+  } else {
+    return mergingDataWithOutRecordType(view as Array<Array<string>>, result);
+  }
+};

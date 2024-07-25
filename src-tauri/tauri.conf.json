@@ -12,10 +12,15 @@
     "windows": [
       {
         "title": "start-pro",
-        "width": 800,
-        "height": 600,
+        "height": 800,
         "visible": false,
-        "label": "main"
+        "label": "main",
+        "resizable": false,
+        "fullscreen": false,
+        "skipTaskbar": false,
+        "decorations": true,
+        "alwaysOnTop": false,
+        "width": 900
       },
       {
         "title": "start-pro",
@@ -25,7 +30,9 @@
         "label": "splashscreen",
         "center": true,
         "decorations": false,
-        "resizable": false
+        "resizable": false,
+        "dragDropEnabled": false,
+        "visible": true
       }
     ],
     "security": {
