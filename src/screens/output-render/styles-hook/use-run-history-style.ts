@@ -58,4 +58,7 @@ export const useRunHistoryClasses = makeStyles({
     position: 'absolute',
     height: '100%',
   },
+  selectedItem: {
+    ...shorthands.borderLeft('4px', 'solid', tokens.colorBrandBackground),
+  },
 });

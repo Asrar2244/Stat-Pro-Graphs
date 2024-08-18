@@ -21,7 +21,7 @@ export const useOutputSelection = makeStyles({
   outputContainer: {
     display: 'flex',
     flexDirection: 'column',
-    height: '94%',
+    height: '92%',
     alignItems: 'baseline',
     ...shorthands.padding(tokens.spacingHorizontalS),
     overflow: 'auto',

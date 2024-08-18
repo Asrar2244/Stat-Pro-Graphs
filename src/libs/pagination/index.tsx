@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Tooltip, Caption1Strong, Button, Caption2 } from '@fluentui/react-components';
+import { Tooltip, Caption1Strong, Button } from '@fluentui/react-components';
 import { LuChevronFirst, LuChevronLast, LuChevronLeft, LuChevronRight } from 'react-icons/lu';
 import { useTranslation } from 'react-i18next';
 import { RxDividerVertical } from 'react-icons/rx';
@@ -19,30 +19,39 @@ export const Pagination: FC<IPagination> = (props) => {
       props.jumpChanged(Number(value));
     }
   };
+  const showPageSize = props.showPageSize ?? true;
+  const enableJump = props.enableJump ?? true;
   return (
     <div className={classes.wrapper}>
       <Caption1Strong>
-        {t('totalRecords')} : {props.totalRecords}
+        {t('totalRecords')} <span>{props.totalRecords}</span>
       </Caption1Strong>
 
       <div className={classes.navigation}>
-        <div className={classes.pageSize}>
-          <div className={classes.internalPageSize}>
-            <select className={classes.select} value={props.pageSize} onChange={onPageSizeChange}>
-              {DEFAULT_PAGES.map((page) => (
-                <option
-                  key={page}
-                  className={classes.selectOptions}
-                  disabled={page === props.pageSize}
-                  value={page}
+        {showPageSize && (
+          <div className={classes.pageSize}>
+            <div className={classes.internalPageSize}>
+              <Tooltip content={t('pageSize')} relationship="label" withArrow>
+                <select
+                  className={classes.select}
+                  value={props.pageSize}
+                  onChange={onPageSizeChange}
                 >
-                  {page}
-                </option>
-              ))}
-            </select>
+                  {DEFAULT_PAGES.map((page) => (
+                    <option
+                      key={page}
+                      className={classes.selectOptions}
+                      disabled={page === props.pageSize}
+                      value={page}
+                    >
+                      {page}
+                    </option>
+                  ))}
+                </select>
+              </Tooltip>
+            </div>
           </div>
-          <Caption2>{t('pageSize')}</Caption2>
-        </div>
+        )}
         <Tooltip content={t('first')} relationship="label" withArrow>
           <Button
             icon={<LuChevronFirst />}
@@ -65,8 +74,9 @@ export const Pagination: FC<IPagination> = (props) => {
           <Tooltip content={t('jump')} relationship="label" withArrow>
             <input
               type="text"
+              disabled={!enableJump}
               className={classes.select}
-              defaultValue={props.currentPage}
+              value={props.currentPage}
               onChange={onChangeJump}
             />
           </Tooltip>

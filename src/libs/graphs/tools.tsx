@@ -7,60 +7,65 @@ import {
   MenuTrigger,
   MenuPopover,
 } from '@fluentui/react-components';
-import { SlRefresh } from 'react-icons/sl';
-import { CiZoomIn, CiZoomOut } from 'react-icons/ci';
-import { RiFullscreenLine } from 'react-icons/ri';
+
 import { LuSettings2 } from 'react-icons/lu';
 import { PiDownloadSimple } from 'react-icons/pi';
-
 import { FullScreenHandle } from 'react-full-screen';
-import { SuspenseLoad } from '@libs';
-import { IZoomGraph, useModal, IPlotlyGraphOutput } from '@hooks';
+
+import { useModal } from '@hooks';
 import { useTranslation } from 'react-i18next';
 import { useToolsStyles } from './styles-hook/use-tools-style';
 import { AnnotationModal } from './annotations';
-const GraphOptions = lazy(() =>
-  import('./graph-options').then((modules) => ({ default: modules.GraphOptions })),
-);
+import { GraphPaging } from './graph-paging';
+import { IGraph } from '@utils';
+import { useTableFetch } from './use-fetch-hook';
+import { useGraphInit } from './use-graph-init';
 
+import { GraphOptions } from './graph-options';
+import { DownloadGraph } from './graph-download';
+import { ZoomGraph, ZoomReset, FullScreen } from './zooming';
 interface IGraphTool {
   handle: FullScreenHandle;
-  zoomed: IZoomGraph;
   direction?: 'row' | 'column';
-  title?: string;
-  plotly: IPlotlyGraphOutput;
+  plotly: any;
+  graph: IGraph;
+  dbFileName: string;
+  dbTableName: string;
 }
-const GraphTool: FC<IGraphTool> = ({ handle, zoomed, direction, title, plotly }) => {
+const GraphTool: FC<IGraphTool> = ({
+  handle,
+  direction,
+  plotly,
+  graph,
+  dbFileName,
+  dbTableName,
+}) => {
   const classes = useToolsStyles();
   const { t } = useTranslation('common');
+  const { totalRecords, loadPagingData, loading } = useTableFetch({
+    dbName: dbFileName,
+    tableName: dbTableName,
+    graph,
+    plotly,
+  });
+
+  useGraphInit(plotly, graph);
+
   const toolsClass = mergeClasses(
     classes.toolsLayout,
     direction ? classes[direction] : classes.row,
   );
+
   //For Graph options
   const modal = useModal({ initialOpen: false });
-  const resetZoomHandler = (): void => {
-    zoomed.zoomReset();
-  };
-  const zoomHandler = (value: number[]) => (): void => {
-    zoomed.zoom(value);
-  };
+
   const handelGraphOptions = (): void => {
     modal.toggleModal();
   };
-  const fullScreenHandler = (): void => {
-    if (handle.active) {
-      handle.exit();
-    } else {
-      handle.enter();
-    }
-    zoomed.zoomReset();
-  };
-  const onClickDownload = (format: string) => (): void => {
-    plotly.download(format, title);
-  };
+
   return (
     <>
+      <GraphPaging totalRecords={totalRecords} loading={loading} loadPagingData={loadPagingData} />
       <ul className={toolsClass}>
         <li>
           <Menu>
@@ -70,18 +75,7 @@ const GraphTool: FC<IGraphTool> = ({ handle, zoomed, direction, title, plotly })
               </FTooltip>
             </MenuTrigger>
             <MenuPopover>
-              <ul className={classes.downloadMenu}>
-                {plotly?.editedConfig?.download?.map(
-                  (menu): React.ReactElement => (
-                    <li key={menu.format} onClick={onClickDownload(menu.format)}>
-                      <div>{menu.format}</div>
-                      {menu.description && (
-                        <small className={classes.description}>{t(menu.description)}</small>
-                      )}
-                    </li>
-                  ),
-                )}
-              </ul>
+              <DownloadGraph graph={graph} plotly={plotly} />
             </MenuPopover>
           </Menu>
         </li>
@@ -96,50 +90,20 @@ const GraphTool: FC<IGraphTool> = ({ handle, zoomed, direction, title, plotly })
           </FTooltip>
         </li>
         <li>
-          <FTooltip content={t('resetZoom')} withArrow relationship="label">
-            <Button
-              size="small"
-              icon={<SlRefresh />}
-              appearance="transparent"
-              onClick={resetZoomHandler}
-            />
-          </FTooltip>
+          <ZoomReset plotly={plotly} />
         </li>
         <li>
-          <FTooltip content="Zoom in" withArrow relationship="label">
-            <Button
-              size="small"
-              icon={<CiZoomIn />}
-              appearance="transparent"
-              onClick={zoomHandler([2, 3])}
-            />
-          </FTooltip>
+          <ZoomGraph plotly={plotly} zoomIn={true} />
         </li>
         <li>
-          <FTooltip content={t('zoomOut')} withArrow relationship="label">
-            <Button
-              size="small"
-              icon={<CiZoomOut />}
-              appearance="transparent"
-              onClick={zoomHandler([1, 5])}
-            />
-          </FTooltip>
+          <ZoomGraph plotly={plotly} zoomIn={false} />
         </li>
         <li>
-          <FTooltip content={t('fullScreen')} withArrow relationship="label">
-            <Button
-              size="small"
-              icon={<RiFullscreenLine />}
-              appearance="transparent"
-              onClick={fullScreenHandler}
-            />
-          </FTooltip>
+          <FullScreen handle={handle} plotly={plotly} />
         </li>
       </ul>
-      <SuspenseLoad>
-        {modal.open && <GraphOptions {...modal} plotly={plotly} />}
-        {plotly.points && <AnnotationModal plotly={plotly} />}
-      </SuspenseLoad>
+      {modal.open && <GraphOptions {...modal} plotly={plotly} />}
+      {/* {plotly.points && <AnnotationModal plotly={plotly} />} */}
     </>
   );
 };

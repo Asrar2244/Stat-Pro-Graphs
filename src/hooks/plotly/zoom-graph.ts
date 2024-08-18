@@ -1,27 +1,24 @@
-import { Layout } from 'plotly.js';
-import { useState } from 'react';
-type ILayoutGraph = Partial<Layout> | undefined;
+import { relayout } from 'plotly.js-dist';
+
 export interface IZoomGraph {
-  zoom: (value: number[]) => void;
+  zoom: (xAxis: number[], yAxis: number[]) => void;
   zoomReset: () => void;
-  layoutGraph: ILayoutGraph;
 }
 
-export const useZoomGraph = (layoutGraph: ILayoutGraph): IZoomGraph => {
-  const [layout, setLayout] = useState<ILayoutGraph>(layoutGraph ?? {});
-  const zoom = (value: number[]): void => {
-    if (!layoutGraph) {
-      layoutGraph = {};
-    }
-    layoutGraph['xaxis'] = { range: value };
-    setLayout(layoutGraph);
+export const useZoomGraph = (plotly: any): IZoomGraph => {
+  const zoom = (xAxis: number[], yAxis: number[]): void => {
+    relayout(plotly.current, {
+      'xaxis.range': xAxis,
+      'yaxis.range': yAxis,
+    });
   };
   const zoomReset = (): void => {
-    if (!layoutGraph) {
-      layoutGraph = {};
-    }
-    layoutGraph['xaxis'] = { range: undefined };
-    setLayout(layoutGraph);
+    relayout(plotly.current, {
+      'xaxis.autorange': true,
+      'yaxis.autorange': true,
+    });
+
+    window.dispatchEvent(new Event('resize'));
   };
-  return { zoom, zoomReset, layoutGraph: layout };
+  return { zoom, zoomReset };
 };

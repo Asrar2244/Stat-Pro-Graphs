@@ -57,16 +57,48 @@
       "showHeaders": true,
       "showCaption": true,
       "view": ["t-lcl", "t-lpl", "t-ucl", "t-upl"],
-      "recordType": true
+      "recordType": {
+        "pageSize": 500
+      }
+    },
+    {
+      "name": "other-data",
+      "showHeaders": false,
+      "showCaption": false,
+      "view": [
+        ["t-dw_statistic", "dw_statistic"],
+        ["t-fvalue", "fvalue"],
+        ["t-AIC", "AIC"],
+        ["t-corrected_AIC", "corrected_AIC"],
+        ["t-Schwarzs_BIC", "Schwarzs_BIC"]
+      ]
+    },
+    {
+      "name": "outlierData",
+      "showHeaders": true,
+      "showCaption": true,
+      "type": "columns",
+      "appendColumn": ["outlier_const"],
+      "prefix": "outlier_",
+      "view": ["independent_var_names", "dependent_var_names"],
+      "recordType": {
+        "pageSize": 500
+      }
     }
   ],
-  "graphOptions": {
-    "default": {
-      "graph": "scatter",
-      "mode": "marks"
+  "graph": {
+    "traces": {
+      "traces1": {
+        "x": "dependent_var_names",
+        "y": "independent_var_names",
+        "type": "scatter",
+        "mode": "lines+markers"
+      }
     },
-    "graphs": ["bar", "scatter", "line"],
-    "modes": [
+    "multipleTraces": {
+      "commonAxis": "x"
+    },
+    "supportedGraph": [
       "lines",
       "markers",
       "text",
@@ -83,11 +115,33 @@
       "gauge+number+delta",
       "gauge+delta"
     ],
+    "layout": {
+      "xaxis": {
+        "showgrid": true,
+        "showticklabels": false
+      },
+      "yaxis": {
+        "showgrid": true,
+        "showticklabels": false
+      }
+    },
     "download": [
-      { "format": "png", "description": "pngFormat" },
-      { "format": "jpeg", "description": "jpegFormat" },
-      { "format": "svg", "description": "svgFormat" },
-      { "format": "webp", "description": "webpFormat" }
+      {
+        "format": "png",
+        "description": "pngFormat"
+      },
+      {
+        "format": "jpeg",
+        "description": "jpegFormat"
+      },
+      {
+        "format": "svg",
+        "description": "svgFormat"
+      },
+      {
+        "format": "webp",
+        "description": "webpFormat"
+      }
     ]
   }
 }

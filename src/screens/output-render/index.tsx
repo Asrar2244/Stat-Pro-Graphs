@@ -27,6 +27,7 @@ export const OutputRender: FC = () => {
             fontColor={tools.fontColor}
           />
           <RunHistory
+            selectedID={selectedRun.id}
             history={{
               showHistory: tools.showRunHistory,
               toggleShowHistory: tools.toggleShowHistory,

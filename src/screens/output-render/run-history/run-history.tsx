@@ -26,7 +26,10 @@ interface IHistory {
   setTotalRuns: (value: number) => void;
   selectedRun: (id: number, title: string) => void;
 }
-const RunHistoryComponent: FC<{ history: IHistory }> = ({ history }) => {
+const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
+  history,
+  selectedID,
+}) => {
   const classes = useRunHistoryClasses();
   const { config } = useActiveNode([]);
   const { t } = useTranslation('outputToolBar');
@@ -36,6 +39,7 @@ const RunHistoryComponent: FC<{ history: IHistory }> = ({ history }) => {
       history.setTotalRuns(data.length);
     }
   }, [data]);
+
   return (
     <InlineDrawer open={history.showHistory} position={'end'} className={classes.drawerContainer}>
       <DrawerHeader className={classes.drawerHeader}>
@@ -76,7 +80,12 @@ const RunHistoryComponent: FC<{ history: IHistory }> = ({ history }) => {
                   <ListSkeleton skeletonCount={20} />
                 ) : (
                   data?.map((dtl, index) => (
-                    <HistoryListRender key={index} {...dtl} selectedRun={history.selectedRun} />
+                    <HistoryListRender
+                      key={index}
+                      {...dtl}
+                      selectedRun={history.selectedRun}
+                      selectedID={selectedID}
+                    />
                   ))
                 )}
               </ul>

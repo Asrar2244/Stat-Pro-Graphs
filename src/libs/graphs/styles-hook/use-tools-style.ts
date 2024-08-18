@@ -41,4 +41,25 @@ export const useToolsStyles = makeStyles({
     fontSize: '8px',
     fontWeight: 'normal',
   },
+  downloadItem: {
+    width: '100%',
+  },
+  downloadConfig: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
+  },
+  downloadTitle: {
+    textTransform: 'uppercase',
+  },
+  downloadHeightWidth: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '50%',
+    gap: tokens.spacingVerticalS,
+  },
+  vectorQuality: {
+    minWidth: '300px',
+  },
 });

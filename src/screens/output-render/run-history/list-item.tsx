@@ -1,4 +1,4 @@
-import { Text, Caption2 } from '@fluentui/react-components';
+import { Text, Caption2, mergeClasses } from '@fluentui/react-components';
 import { FC } from 'react';
 import { useRunHistoryClasses } from '../styles-hook/use-run-history-style';
 import { IFetchSingleOutput } from '@backend';
@@ -7,15 +7,23 @@ import { useFormatter } from '@hooks';
 import dayjs from 'dayjs';
 
 export const HistoryListRender: FC<
-  IFetchSingleOutput & { selectedRun: (id: number, title: string, subTitle?: string) => void }
-> = ({ id, outputFor, modifiedDateTime, selectedRun }) => {
+  IFetchSingleOutput & {
+    selectedID?: number;
+    selectedRun: (id: number, title: string, subTitle?: string) => void;
+  }
+> = ({ id, outputFor, modifiedDateTime, selectedRun, selectedID }) => {
   const classes = useRunHistoryClasses();
   const { dateTimeFormat } = useFormatter();
   const handleClick = (): void => {
     selectedRun(id, outputFor, dateTimeFormat(modifiedDateTime as string));
   };
+  const applyIfSelected = mergeClasses(
+    classes.cardList,
+    selectedID === id ? classes.selectedItem : '',
+  );
+
   return (
-    <li className={classes.cardList} key={id} onClick={handleClick}>
+    <li className={applyIfSelected} key={id} onClick={handleClick}>
       <div className={classes.horizontalCardImage}>
         <div className="calender">
           <CalenderTablet date={modifiedDateTime} />

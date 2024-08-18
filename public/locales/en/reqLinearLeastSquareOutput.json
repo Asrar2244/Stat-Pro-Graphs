@@ -30,5 +30,6 @@
   "t-lcl": "LCL",
   "t-lpl": "LPL",
   "t-ucl": "UCL",
-  "t-upl": "UPL"
+  "t-upl": "UPL",
+  "t-fvalue": "First Order Autocorrelation"
 }

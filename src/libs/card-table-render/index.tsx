@@ -20,7 +20,7 @@ export const CardTableRender: FC<ICardTableRenderProps> = ({
     <div className={classes.regressionsLayout}>
       <Card>
         {table.showCaption && (
-          <CardHeader header={<Body1Stronger>{t(table.name)}</Body1Stronger>} />
+          <CardHeader header={<Body1Stronger>{t(table?.name as string)}</Body1Stronger>} />
         )}
         <TableCreator t={t} table={table} dbFileName={dbFileName} dbTableName={dbTableName} />
       </Card>

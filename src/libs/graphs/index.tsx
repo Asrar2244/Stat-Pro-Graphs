@@ -1,26 +1,44 @@
-// global: Plotly
-import { forwardRef } from 'react';
+import { Card, CardFooter, CardPreview } from '@fluentui/react-components';
+import { FC, useRef, lazy } from 'react';
 import { useGraphStyles } from './styles-hook/use-graph-style';
-interface IScreenFix {
-  width?: string;
-  height?: string;
+import { FullScreen, useFullScreenHandle } from 'react-full-screen';
+import { IGraph, IGraphRef } from '@utils';
+
+const GraphTools = lazy(() =>
+  import('./tools').then((modules) => ({ default: modules.GraphTools })),
+);
+
+interface IGraphProps {
+  graph: IGraph;
+  dbFileName: string;
+  dbTableName: string;
 }
-interface IGraph {
-  isFullScreen?: boolean | IScreenFix;
-}
-export const GraphPlot = forwardRef<any, IGraph>((graphProps, ref) => {
-  const { isFullScreen } = graphProps;
+export const GraphPlot: FC<IGraphProps> = ({ graph, dbFileName, dbTableName }) => {
+  const plotly = useRef<IGraphRef | undefined>(undefined);
   const classes = useGraphStyles();
-  const screen =
-    isFullScreen === true
-      ? {
-          width: '100%',
-          height: '100%',
-        }
-      : isFullScreen;
+  const handle = useFullScreenHandle();
+
   return (
-    <div className={classes.graph}>
-      <div ref={ref} style={screen as object} />
-    </div>
+    <FullScreen handle={handle}>
+      <div className={classes.graph}>
+        <Card>
+          <CardPreview>
+            <div ref={plotly as any} />
+          </CardPreview>
+          <CardFooter>
+            <div className={classes.toolsWrapper}>
+              <GraphTools
+                handle={handle}
+                // zoomed={zoomed}
+                plotly={plotly as any}
+                graph={graph}
+                dbFileName={dbFileName}
+                dbTableName={dbTableName}
+              />
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
+    </FullScreen>
   );
-});
+};

@@ -1,5 +1,5 @@
 import { Tooltip } from '@fluentui/react-components';
-import { FC, ReactNode, memo } from 'react';
+import { FC, ReactNode, memo, useEffect } from 'react';
 import { useColumnsRowsCount } from './use-column-count';
 import { useFetchRecords } from './use-fetch-rows';
 import { ListSkeleton, DivShowScrollOnHover, Pagination } from '@libs';
@@ -27,14 +27,14 @@ const TableDataRender: FC<ITableProps> = (props) => {
   const { columns, count } = useColumnsRowsCount(props);
   const pageContext = usePagination(count);
   const { data, isLoading, loadMoreFun } = useFetchRecords(props.tabName, pageContext.pageSize);
-  pageContext.dataLoader(loadMoreFun);
-  const CellHelper = ({
-    columnIndex,
-    rowIndex,
-  }: {
+  useEffect(() => {
+    pageContext.dataLoader(loadMoreFun);
+  }, [pageContext.startIndex, pageContext.stopIndex]);
+
+  const CellHelper: FC<{
     columnIndex: number;
     rowIndex: number;
-  }): ReactNode => {
+  }> = ({ columnIndex, rowIndex }) => {
     if (!data || !Array.isArray(data)) {
       return null;
     }
@@ -46,12 +46,13 @@ const TableDataRender: FC<ITableProps> = (props) => {
         </Tooltip>
       );
     }
-    if (columnIndex === 0)
+    if (columnIndex === 0) {
       return (
         <div className={classes.rowIndex}>
           {rowIndex + (pageContext.currentPage - 1) * pageContext.pageSize}
         </div>
       );
+    }
     return (
       <input
         type="text"
@@ -60,7 +61,7 @@ const TableDataRender: FC<ITableProps> = (props) => {
       />
     );
   };
-  const cellRenderer = ({ columnIndex, key, rowIndex, style, parent }: any): ReactNode => {
+  const cellRenderer = ({ columnIndex, key, rowIndex, style, parent }: any) => {
     const _width = rowIndex !== 0 ? { width: 'auto' } : {};
     return (
       <CellMeasurer

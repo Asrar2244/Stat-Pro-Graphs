@@ -1,8 +1,21 @@
-import { FC, memo } from 'react';
-import { useFormatter } from '@hooks';
+import { FC, memo, useEffect } from 'react';
+import {
+  TableBody,
+  TableCell,
+  TableRow,
+  Table,
+  TableHeader,
+  TableHeaderCell,
+  mergeClasses,
+  CardPreview,
+  CardFooter,
+} from '@fluentui/react-components';
+import { useFormatter, usePagination } from '@hooks';
 import { useTableFetch } from './use-table-hook';
 import { ITranslate, ITableCreator } from '@utils';
-
+import { Pagination } from '@libs';
+import { DEFAULT_OUTPUT_TABLE_PAGE_SIZE } from '@constants';
+import { useCreateTableStyles } from './styles-hook/use-table-create-style';
 /**
  * Table creator component that renders a table based on provided columns and data.
  *
@@ -18,47 +31,83 @@ interface ITableComp extends ITranslate {
   dbTableName: string;
 }
 const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName, t }) => {
-  const { showHeaders, view, recordType } = table;
+  const { showHeaders, view, recordType, appendColumn, postfix, prefix, type } = table;
   const { numberFormat } = useFormatter();
-  const { templateView } = useTableFetch({
+  const { templateView, totalRecords, loadTemplateView, loading } = useTableFetch({
     dbName: dbFileName,
     tableName: dbTableName,
     t,
     view: view as any,
     recordType,
+    appendColumn,
+    postfix,
+    prefix,
+    type,
   });
+  const pageContext = usePagination(totalRecords, DEFAULT_OUTPUT_TABLE_PAGE_SIZE);
+  useEffect(() => {
+    if (typeof recordType !== 'boolean' && recordType?.pageSize && totalRecords > 0) {
+      loadTemplateView(pageContext.startIndex, pageContext.stopIndex);
+    } else if (!recordType || typeof recordType === 'boolean') {
+      loadTemplateView(0, 0);
+    }
+  }, [totalRecords, pageContext.startIndex, pageContext.stopIndex]);
+  const classes = useCreateTableStyles();
   const headers = showHeaders ?? true;
-
+  const tableBodyClass = mergeClasses(
+    classes.tbody,
+    typeof recordType !== 'boolean' && recordType?.pageSize ? classes.tbodyHeight : '',
+  );
   return (
-    <table>
-      {headers && (
-        <thead>
-          <tr>
-            {templateView[0]?.map((col) => (
-              <th
-                key={col}
-                // style={{ width: col?.width ?? 'auto', height: col.height ?? 'fit-content' }}
-              >
-                {col && col.startsWith('t-') ? t(col) : col}
-              </th>
-            ))}
-          </tr>
-        </thead>
+    <div className={classes.tableLayout}>
+      <CardPreview>
+        <Table noNativeElements className={classes.table}>
+          {headers && (
+            <TableHeader className="table-header">
+              <TableRow>
+                {templateView[0]?.map((col) => (
+                  <TableHeaderCell
+                    key={col}
+                    className="cell"
+                    // style={{ width: col?.width ?? 'auto', height: col.height ?? 'fit-content' }}
+                  >
+                    {col && col.startsWith('t-') ? t(col) : col}
+                  </TableHeaderCell>
+                ))}
+              </TableRow>
+            </TableHeader>
+          )}
+          <TableBody className={tableBodyClass}>
+            {loading ? (
+              <TableRow>
+                <TableCell>Fetching Records</TableCell>
+              </TableRow>
+            ) : (
+              templateView.slice(headers ? 1 : 0, templateView.length).map((row, rIndex) => (
+                <TableRow key={rIndex}>
+                  {row?.map((col, cIndex) => {
+                    // const style =
+                    //   typeof col.cellStyles === 'function' && col.cellStyles(row, rIndex, cIndex);
+                    return (
+                      <TableCell key={cIndex}>
+                        {col && col.startsWith('t-') ? t(col) : numberFormat(col)}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </CardPreview>
+      {typeof recordType !== 'boolean' && recordType?.pageSize && (
+        <div className={classes.pagingList}>
+          <CardFooter>
+            <Pagination {...pageContext} />
+          </CardFooter>
+        </div>
       )}
-      <tbody>
-        {templateView.slice(headers ? 1 : 0, templateView.length).map((row, rIndex) => (
-          <tr key={rIndex}>
-            {row?.map((col, cIndex) => {
-              // const style =
-              //   typeof col.cellStyles === 'function' && col.cellStyles(row, rIndex, cIndex);
-              return (
-                <td key={cIndex}>{col && col.startsWith('t-') ? t(col) : numberFormat(col)}</td>
-              );
-            })}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    </div>
   );
 };
 

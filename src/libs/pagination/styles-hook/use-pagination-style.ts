@@ -20,9 +20,9 @@ export const usePaginationStyles = makeStyles({
     rowGap: 0,
     height: '40px',
     '& div, button': {
-      height: '98%!important',
-      ...shorthands.padding(0, tokens.spacingHorizontalXXS),
-      ...shorthands.borderRight('1px', 'solid', `${tokens.colorNeutralForeground1} !important`),
+      height: '98%',
+      padding: tokens.spacingHorizontalXXS,
+      ...shorthands.borderRight('1px', 'solid', `${tokens.colorNeutralForeground1} `),
     },
   },
   jump: {
@@ -44,18 +44,19 @@ export const usePaginationStyles = makeStyles({
     appearance: 'initial',
     ...shorthands.border('none'),
     color: tokens.colorNeutralForeground1,
+    padding: tokens.spacingHorizontalS,
   },
   pageSize: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-between',
-    ...shorthands.borderLeft('1px', 'solid', `${tokens.colorNeutralForeground1} !important`),
+    ...shorthands.borderLeft('1px', 'solid', `${tokens.colorNeutralForeground1}`),
   },
   internalPageSize: {
     display: 'flex',
     justifyContent: 'center',
-    ...shorthands.borderRight(`0 !important`),
+    ...shorthands.borderRight(`0`),
   },
   selectOptions: {
     backgroundColor: tokens.colorNeutralBackground6,

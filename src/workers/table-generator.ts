@@ -2,7 +2,8 @@ import { IRecordTableType } from '@utils';
 interface IQuery {
   columns: Array<string>;
   query: string;
-  totalRecordsQuery: string;
+  pageQuery: string;
+  viewNew?: Array<string>;
 }
 
 const withOutRecordType = (view: Array<Array<string>>): Array<string> => {
@@ -30,10 +31,12 @@ const withRecordType = (view: Array<string>): Array<string> => {
   }
   return columns;
 };
+
 export const generateQueryColumn = (
   view: Array<Array<string>> | Array<string>,
   tableName: string,
   recordType: IRecordTableType,
+  noPaging: boolean = false,
 ): IQuery => {
   let columns: Array<string> = [];
   if (recordType) {
@@ -43,14 +46,18 @@ export const generateQueryColumn = (
   }
 
   const query = `SELECT ${columns.join(',')} FROM ${tableName} WHERE ${columns.join(' IS NOT NULL OR ')} IS NOT NULL`;
-  const totalRecordsQuery =
-    columns.length > 0
-      ? `SELECT COUNT(columns[0]) FROM ${tableName} WHERE ${columns.join(' IS NOT NULL OR ')} IS NOT NULL`
-      : '';
+  let pageQuery = '';
+  if (!noPaging && typeof recordType !== 'boolean' && recordType?.pageSize) {
+    pageQuery =
+      columns.length > 0
+        ? `SELECT COUNT(${columns[0]}) as CNT FROM ${tableName} WHERE ${columns.join(' IS NOT NULL OR ')} IS NOT NULL`
+        : '';
+  }
+
   return {
     columns,
     query,
-    totalRecordsQuery,
+    pageQuery,
   };
 };
 
