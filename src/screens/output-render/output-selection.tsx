@@ -16,12 +16,18 @@ const LinearRidgeRegression = lazy(() =>
     default: modules.LinearRidgeRegression,
   })),
 );
+const BasicStatistics = lazy(() =>
+  import('./analyze/basic-statistics').then((modules) => ({
+    default: modules.BasicStatisticsRegression,
+  })),
+);
 interface IOutputSelection extends IToolBar {
   id: number;
 }
 const load: any = {
   regLinearLeastSquare: <LinearLeastSquareRegression />,
   regLinearRidge: <LinearRidgeRegression />,
+  basicStatistics: <BasicStatistics />,
 };
 export const OutputSelection: FC<IOutputSelection> = ({ id, ...props }) => {
   const { config } = useActiveNode([]);

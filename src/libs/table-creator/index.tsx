@@ -31,7 +31,8 @@ interface ITableComp extends ITranslate {
   dbTableName: string;
 }
 const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName, t }) => {
-  const { showHeaders, view, recordType, appendColumn, postfix, prefix, type } = table;
+  const { showHeaders, view, recordType, appendColumn, postfix, prefix, type, translationColumns } =
+    table;
   const { numberFormat } = useFormatter();
   const { templateView, totalRecords, loadTemplateView, loading } = useTableFetch({
     dbName: dbFileName,
@@ -66,11 +67,7 @@ const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName,
             <TableHeader className="table-header">
               <TableRow>
                 {templateView[0]?.map((col) => (
-                  <TableHeaderCell
-                    key={col}
-                    className="cell"
-                    // style={{ width: col?.width ?? 'auto', height: col.height ?? 'fit-content' }}
-                  >
+                  <TableHeaderCell key={col} className="cell">
                     {col && col.startsWith('t-') ? t(col) : col}
                   </TableHeaderCell>
                 ))}
@@ -86,11 +83,13 @@ const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName,
               templateView.slice(headers ? 1 : 0, templateView.length).map((row, rIndex) => (
                 <TableRow key={rIndex}>
                   {row?.map((col, cIndex) => {
-                    // const style =
-                    //   typeof col.cellStyles === 'function' && col.cellStyles(row, rIndex, cIndex);
+                    const transCell =
+                      Array.isArray(translationColumns) && translationColumns[cIndex];
                     return (
                       <TableCell key={cIndex}>
-                        {col && col.startsWith('t-') ? t(col) : numberFormat(col)}
+                        {col && (col.startsWith('t-') || transCell !== undefined)
+                          ? t(col)
+                          : numberFormat(col)}
                       </TableCell>
                     );
                   })}

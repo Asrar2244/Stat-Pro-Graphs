@@ -160,109 +160,109 @@ export const Main: React.FC = () => {
           <div className={classes.options}>
             <Checkbox
               data-type="mainOptions"
-              name="n"
+              name="isN"
               label={t('n')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="median"
+              name="isMedian"
               label={t('median')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="range"
+              name="isRange"
               label={t('range')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="minimum"
+              name="isMin"
               label={t('minimum')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="mode"
+              name="isMode"
               label={t('mode')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="integuartileRange"
+              name="isInterquartileRange"
               label={t('integuartileRange')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="maximum"
+              name="isMax"
               label={t('maximum')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="geometricMean"
+              name="isGeoMean"
               label={t('geometricMean')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="skeewness"
+              name="isSkewness"
               label={t('skeewness')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="sum"
+              name="isSum"
               label={t('sum')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="harmonicMean"
+              name="isHarmonicMean"
               label={t('harmonicMean')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="seOfSkewness"
+              name="isSEofSkewness"
               label={t('seOfSkewness')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="arithmeticMean"
+              name="isArithMean"
               label={t('arithmeticMean')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="sd"
+              name="isSD"
               label={t('sd')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="kurtosis"
+              name="isKurtosis"
               label={t('kurtosis')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="seOfAm"
+              name="isSEofAM"
               label={t('seOfAm')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="cv"
+              name="isCV"
               label={t('cv')}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
-              name="seOfKutosis"
+              name="isSEofKurtosis"
               label={t('seOfKutosis')}
               onChange={onChangeSelection}
             />
@@ -275,16 +275,40 @@ export const Main: React.FC = () => {
               />
               <Input
                 data-type="mainOptions"
-                defaultValue={`${mainOptions?.ciOfAmValue}`}
-                name="ciOfAmValue"
+                defaultValue={`${mainOptions?.CIofAM}`}
+                name="CIofAM"
                 disabled={!mainOptions?.ciOfAm}
                 onBlur={onBlurText}
               />
             </div>
             <Checkbox
               data-type="mainOptions"
-              name="variance"
-              label={t('variance')}
+              name="isShaprioWilk"
+              label={t('shaprioWilk')}
+              onChange={onChangeSelection}
+            />
+            <Checkbox
+              data-type="mainOptions"
+              name="isAndersonDarling"
+              label={t('andersonDarling')}
+              onChange={onChangeSelection}
+            />
+            <Checkbox
+              data-type="mainOptions"
+              name="isMardiaSkewness"
+              label={t('mardiaSkewness')}
+              onChange={onChangeSelection}
+            />
+            <Checkbox
+              data-type="mainOptions"
+              name="isMardiaKurtosis"
+              label={t('mardiaKurtosis')}
+              onChange={onChangeSelection}
+            />
+            <Checkbox
+              data-type="mainOptions"
+              name="isHenzeZirkler"
+              label={t('HenzeZirkler')}
               onChange={onChangeSelection}
             />
           </div>

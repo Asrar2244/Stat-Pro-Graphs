@@ -1,0 +1,12 @@
+{
+  "tables": [
+    {
+      "name": "basic-stat",
+      "showHeaders": true,
+      "showCaption": false,
+      "view": ["t-id", "t-value"],
+      "recordType": true,
+      "translationColumns": [0]
+    }
+  ]
+}

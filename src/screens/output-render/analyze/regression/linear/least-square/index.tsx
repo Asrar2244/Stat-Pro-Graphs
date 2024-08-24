@@ -22,12 +22,11 @@ export const LinearLeastSquareRegression: FC = () => {
       ))}
       {configurations.graph && (
         <GraphPlot
-          graph={configurations.graph}
+          graph={configurations.graph as any}
           dbFileName={context?.selectedRun?.tabName as string}
           dbTableName={context?.selectedRun?.result.output_table_name as string}
         />
       )}
-      {/* {tables.length > 0 && <ResidualPredictGraph tableRef={tableRef} />} */}
     </div>
   );
 };

@@ -35,6 +35,7 @@ export interface ITableCreator {
   view: Array<string> | Array<Array<string>>;
   name?: string;
   recordType: IRecordTableType;
+  translationColumns?: Array<number>;
   type?: 'columns';
   appendColumn?: Array<string>;
   postfix?: string;
@@ -42,9 +43,9 @@ export interface ITableCreator {
 }
 
 interface IGraphAxis {
-  x: string|string[];
-  y: string|string[];
-  z?: string|string[];
+  x: string | string[];
+  y: string | string[];
+  z?: string | string[];
   type?: string;
   name?: string;
 }
@@ -59,10 +60,10 @@ export interface IGraph {
   title?: string;
   layout?: Partial<Layout>;
   config?: Partial<Config>;
-  multipleTraces?:{
-    commonAxis:string;
-    multipleAxis:string;
-  }
+  multipleTraces?: {
+    commonAxis: string;
+    multipleAxis: string;
+  };
 }
 export interface IGraphRef {
   data: Data[];

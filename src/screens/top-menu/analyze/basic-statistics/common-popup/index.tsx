@@ -6,7 +6,12 @@ import { useTranslation } from 'react-i18next';
 import { useCommonStyles } from './styles-hook/use-basic-statistics';
 import { Main } from './main';
 import { NoIdSelected } from '@libs/no-id-selected-msg';
+import { useTasks } from '@store';
+import { v4 as uuidv4 } from 'uuid';
 import { useBasicStatistics } from '../use-basic-statistics';
+import { convertToLinuxPath, collectionsLocation } from '@utils';
+import { useShallow } from 'zustand/react/shallow';
+import { API } from '@constants';
 interface ICommonPopup extends IModal {
   type: string;
 }
@@ -15,40 +20,41 @@ const CommonStatisticsComponent: FC<ICommonPopup> = ({ type, ...props }) => {
   const [selectedTab, setSelectedTab] = useState<string>('main');
   const classes = useCommonStyles();
   const { t } = useTranslation(['basicStatistics', 'common']);
-  const { mainOptions, mainSelectedList, mainTermedMean, mainWeightedMean } = useBasicStatistics();
-  //   const { setReset } = useLinearLeastSquares(
-  //     useShallow((state) => ({
-  //       setReset: state.setReset,
-  //     })),
-  //   );
-  const { id } = useActiveNode([props.open]);
-  //   const { columns } = useColumnsRowsCount({
-  //     ...config,
-  //     noRowCount: true,
-  //   });
-  //   const { executeAnalysis } = usePrepareAnalysis({
-  //     config,
-  //     columns,
-  //     queueFor: t('title'),
-  //     queueType: 'regLinearLeastSquare',
-  //   });
+  const { mainOptions, mainSelectedList, mainTermedMean, mainWeightedMean, setReset } =
+    useBasicStatistics();
+  const { setQueueTask } = useTasks(useShallow((state) => ({ setQueueTask: state.setQueueTask })));
+
+  const { id, config } = useActiveNode([props.open]);
   const onTabSelectHandler = (_event: SelectTabEvent, { value }: SelectTabData): void => {
     setSelectedTab(value as string);
   };
   const onCloseModal = (): void => {
-    // setReset();
+    setReset();
     props.closeModal();
   };
-  const onOkModal = (): void => {
+  const onOkModal = async (): Promise<void> => {
+    const uuid = uuidv4();
+    const tableName = convertToLinuxPath(await collectionsLocation(config.tabName));
     // executeAnalysis();
-    console.log(
-      'mainOptions,mainSelectedList,mainTermedMean,mainWeightedMean==>',
-      mainOptions,
-      mainSelectedList,
-      mainTermedMean,
-      mainWeightedMean,
-    );
-    props.closeModal();
+    const parameters = {
+      data_name: tableName,
+      input_data_type: 'file',
+      db_name: tableName,
+      selected_vars: mainSelectedList,
+      operation: 'descriptive_statistics',
+      desparameters: { ...mainOptions, CIofAM: Number(mainOptions.CIofAM) },
+    };
+    setQueueTask({
+      uuid,
+      parameters,
+      tabId: config.id.toString(),
+      queueFor: t('title', { ns: 'basicStatistics' }),
+      tabName: config.tabName,
+      url: `${API.analysis}/api`,
+      queueType: 'basicStatistics',
+    });
+
+    onCloseModal();
   };
   return (
     <Modal

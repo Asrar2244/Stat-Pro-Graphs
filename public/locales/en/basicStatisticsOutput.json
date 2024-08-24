@@ -1,0 +1,23 @@
+{
+  "t-id": "Name",
+  "t-value": "Values",
+  "num_of_cases": "N of Cases",
+  "median": "Median",
+  "minimum": "Minimum",
+  "maximum": "Maximum",
+  "data_range": "Data Range",
+  "arithemetic_mean": "Arithmetic Mean",
+  "data_sum": "Data Sum",
+  "variance": "Variance",
+  "cv": "CV",
+  "standard_error_of_mean": "Standard Error of Mean",
+  "skewness": "Skewness",
+  "se_skewness": "SE Skewness",
+  "geometric_mean": "Geometric Mean",
+  "harmonic_mean": "Harmonic Mean",
+  "Mode": "Mode",
+  "interquartile_range": "Inter Quartile Range",
+  "sd": "SD",
+  "shapiro_test_stat": "Shapiro Test Statistic",
+  "shapiro_p_value": "Shapiro P-Value"
+}
