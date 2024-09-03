@@ -47,13 +47,15 @@ export const useCommonLayout = makeStyles({
     },
   },
   statusList: {
-    display: 'grid',
-    gridTemplateColumns: '0.5fr 3fr',
+    display: 'flex',
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: tokens.spacingVerticalS,
     '& div:first-child': {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
+      gap: tokens.spacingVerticalXS,
     },
   },
   internal: {
@@ -74,33 +76,22 @@ export const useCommonLayout = makeStyles({
   badge: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'end ',
+    flex: 1,
+    // alignItems: 'end ',
+    gap: tokens.spacingVerticalXS,
     '& div': {
       display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
     },
     '& .label': {
-      width: '220px',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
       overflow: 'hidden',
+      display: '-webkit-box',
+      WebkitBoxOrient: 'vertical',
+      WebkitLineClamp: 2,
     },
-    '& ul': {
-      padding: 0,
-      margin: 0,
-      paddingLeft: tokens.spacingVerticalS,
-      listStyle: 'none',
-      display: 'inline-flex',
-      '& li': {
-        padding: 0,
-        margin: 0,
-        border: 'none',
-        '& svg': {
-          width: '15px',
-          height: '15px',
-        },
-      },
-    },
+  },
+  trash: {
+    borderLeft: '1px solid gray',
   },
 });

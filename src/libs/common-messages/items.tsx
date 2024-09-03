@@ -1,10 +1,16 @@
-import { PresenceBadge, Caption2, Tooltip, Button } from '@fluentui/react-components';
+import {
+  PresenceBadge,
+  Caption2,
+  Tooltip,
+  Button,
+  Caption2Strong,
+} from '@fluentui/react-components';
 import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCommonLayout } from './styles-hook/use-common-style';
 import { NOTIFICATION_ICON_STATUS } from '@constants';
 import { useFormatter } from '@hooks';
-import { PiBrowsersFill, PiTrashFill } from 'react-icons/pi';
+import { PiTrashFill } from 'react-icons/pi';
 
 export type IStatus = 'available' | 'away' | 'offline' | 'blocked' | 'do-not-disturb';
 interface IItem {
@@ -36,20 +42,14 @@ export const ContentItem: FC<IItem> = ({ id, status, description, createdDateTim
           withArrow
           content={description as string}
         >
-          <label className="label">{description}</label>
+          <Caption2Strong className="label">{description}</Caption2Strong>
         </Tooltip>
         <div>
-          <small>{dateTimeFormat(createdDateTime as string)}</small>
-
-          <ul>
-            <li>
-              <Button size="small" appearance="transparent" icon={<PiBrowsersFill />} />
-            </li>
-            <li>
-              <Button size="small" appearance="transparent" icon={<PiTrashFill />} />
-            </li>
-          </ul>
+          <Caption2>{dateTimeFormat(createdDateTime as string)}</Caption2>
         </div>
+      </div>
+      <div>
+        <Button size="small" appearance="outline" icon={<PiTrashFill />} />
       </div>
     </div>
   );

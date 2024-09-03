@@ -67,9 +67,22 @@ export const createOutputTable = `CREATE TABLE IF NOT EXISTS ${OUTPUT} (
 export const insertToOutputTable = `INSERT INTO ${OUTPUT}
                (parameters,outputFor,tabName,modifiedDateTime,outputType)
                VALUES(?,?,?,?,?)`;
+export const generateIDOutputTable = `INSERT INTO ${OUTPUT}
+               (parameters,tabName,outputFor,outputType,modifiedDateTime)
+               VALUES(?,?,?,?,?)`;
 
 export const updateOutputResult = `UPDATE ${OUTPUT} SET result = ? WHERE id =?;`;
-
+export const deleteByIDOutputTableQuery = `DELETE FROM ${OUTPUT} WHERE id = ?;`;
+export const deleteByIDOutputTable = async (dbName: string, parameters: any[]): Promise<number> => {
+  const db = new Database(dbName);
+  const record = await db.executeQuery(deleteByIDOutputTableQuery, parameters);
+  return record.lastInsertId;
+};
+export const outputGenerateIDTable = async (dbName: string, parameters: any[]): Promise<number> => {
+  const db = new Database(dbName);
+  const record = await db.executeQuery(`${createOutputTable};${generateIDOutputTable}`, parameters);
+  return record.lastInsertId;
+};
 export const outputTable = async (dbName: string, parameters: any[]): Promise<number> => {
   const db = new Database(dbName);
   const record = await db.executeQuery(`${createOutputTable};${insertToOutputTable}`, parameters);

@@ -14,10 +14,10 @@ export const useFetchOutput = (tabName: string): IFetch => {
   const loadRunHistory = useCallback(async () => {
     const newData = await fetchData();
     setData(newData);
-  }, [tabName, focus]);
-  useEffect(() => {
-    if (tabName !== '') loadRunHistory();
   }, [tabName]);
+  useEffect(() => {
+    if (tabName !== '' && focus) loadRunHistory();
+  }, [tabName, focus]);
   const fetchData = async (): Promise<any> => {
     try {
       setLoading(true);

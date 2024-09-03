@@ -16,7 +16,7 @@ export const StartProProvider: FC<PropsWithChildren> = ({ children }) => {
   return (
     <FluentProvider theme={isDarkTheme ? teamsDarkTheme : teamsLightTheme}>
       <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
-      <Toaster limit={6} position="top-end" pauseOnHover timeout={5000} />
+      <Toaster limit={4} position="bottom-end" pauseOnHover timeout={5000} />
     </FluentProvider>
   );
 };

@@ -1,4 +1,4 @@
-import { getCurrent } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { mergeClasses, Divider } from '@fluentui/react-components';
 import { useMinMaxCloseStyles } from './styles-hook/use-min-max-close';
 import { FC, memo, useMemo } from 'react';
@@ -15,15 +15,15 @@ const MinMaxCloseComponent: FC = () => {
     return platformInfo() === 'mac';
   }, []);
   const onHandleMaximize = () => {
-    getCurrent().toggleMaximize();
+    getCurrentWindow().toggleMaximize();
   };
 
   const onHandleMinimize = () => {
-    getCurrent().minimize();
+    getCurrentWindow().minimize();
   };
 
   const onHandleClose = () => {
-    getCurrent().close();
+    getCurrentWindow().close();
   };
   return (
     <div className={classes.minMaxClose}>

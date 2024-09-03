@@ -51,6 +51,7 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
   ...others
 }) => {
   const classes = useModalLayout();
+  if (!open) return null;
   return (
     <Dialog open={open} onOpenChange={closeModal} {...others}>
       <DialogSurface style={{ maxWidth: sizeConversion(size) }}>

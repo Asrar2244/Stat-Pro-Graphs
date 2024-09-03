@@ -54,5 +54,7 @@
   "loadingConfigurations": "Please wait application configurations are loading",
   "width": "Width",
   "height": "Height",
-  "filename": "Filename"
+  "filename": "Filename",
+  "showAll": "Show All",
+  "addingTaskToQueue": "Adding Task to Queue"
 }

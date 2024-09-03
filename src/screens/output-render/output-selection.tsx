@@ -36,15 +36,17 @@ export const OutputSelection: FC<IOutputSelection> = ({ id, ...props }) => {
   const run = useSelectedRun(config.tabName, id);
   return (
     <div className={classes.selectionLayout}>
-      {id > 0 && (
-        <OutputRenderContext.Provider
-          value={{
-            toolBar: props,
-            selectedRun: run?.selectedRun,
-          }}
-        >
-          <div className={classes.outputContainer}>
-            <div className={classes.content}>
+      <OutputRenderContext.Provider
+        value={{
+          toolBar: props,
+          selectedRun: run?.selectedRun,
+        }}
+      >
+        <div className={classes.outputContainer}>
+          <div className={classes.content} key={id}>
+            {run?.loading ? (
+              <p>{t('loadingConfigurations')}</p>
+            ) : (
               <SuspenseLoad>
                 {run?.selectedRun?.outputType && load[run?.selectedRun?.outputType] ? (
                   load[run?.selectedRun?.outputType]
@@ -52,10 +54,10 @@ export const OutputSelection: FC<IOutputSelection> = ({ id, ...props }) => {
                   <center>{t('typeNotFound')}</center>
                 )}
               </SuspenseLoad>
-            </div>
+            )}
           </div>
-        </OutputRenderContext.Provider>
-      )}
+        </div>
+      </OutputRenderContext.Provider>
     </div>
   );
 };

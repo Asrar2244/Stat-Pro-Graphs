@@ -42,14 +42,9 @@ export const useInitialConfig = () => {
       await createInitialFile();
       const db = new Database(CONFIGURATION_DB);
 
-      await db
-        .executeQuery(`${Object.values(initialTables).join(';')}`)
-        .then((res) => {
-          console.log('res===>', res);
-        })
-        .catch((error) => {
-          throw error;
-        });
+      await db.executeQuery(`${Object.values(initialTables).join(';')}`).catch((error) => {
+        throw error;
+      });
     } catch (e) {
       console.error('Error in Seeding Initial Configurations=>', e);
     } finally {

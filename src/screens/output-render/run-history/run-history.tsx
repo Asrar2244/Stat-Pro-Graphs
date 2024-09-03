@@ -37,6 +37,9 @@ const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
   useEffect(() => {
     if (Array.isArray(data)) {
       history.setTotalRuns(data.length);
+      if ((!selectedID || selectedID === 0) && data.length > 0) {
+        history.selectedRun(data[0].id, data[0].outputFor);
+      }
     }
   }, [data]);
 

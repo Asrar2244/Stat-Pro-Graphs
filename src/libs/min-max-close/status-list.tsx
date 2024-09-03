@@ -5,12 +5,14 @@ import {
   PopoverSurface,
   PopoverTrigger,
   Caption1Stronger,
+  Button,
 } from '@fluentui/react-components';
 import { ContentItem } from '../common-messages/items';
 import { VscBell, VscBellDot } from 'react-icons/vsc';
 import { useTranslation } from 'react-i18next';
 import { useCommonLayout } from './styles-hook/use-status-list-style';
-import { useFetchNotifications } from './notifiaction-hook/use-fetch-notification';
+import { useFetchNotifications } from './notification-hook/use-fetch-notification';
+
 export const StatusList: FC = () => {
   const classes = useCommonLayout();
   const notifications = useFetchNotifications();
@@ -20,12 +22,15 @@ export const StatusList: FC = () => {
       <PopoverTrigger disableButtonEnhancement>
         <Badge appearance="ghost" icon={notifications.length > 0 ? <VscBellDot /> : <VscBell />} />
       </PopoverTrigger>
-      <PopoverSurface tabIndex={-1}>
+      <PopoverSurface className={classes.popoverStyle} tabIndex={-1}>
         <div className={classes.title}>
           <Caption1Stronger>{t('tasks')}</Caption1Stronger>
+          <Button appearance="transparent" size="small">
+            {t('showAll')}
+          </Button>
         </div>
 
-        <ul className={classes.popoverWrapper}>
+        <ul data-show-scroll className={classes.popoverWrapper}>
           {notifications.length === 0 && (
             <li className={classes.noTasks}>
               <label className={classes.caption}> {t('noTaskRunning')}</label>

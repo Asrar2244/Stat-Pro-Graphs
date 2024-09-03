@@ -60,7 +60,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
         ],
       });
       if (openedFile) {
-        const { path, size, name } = openedFile;
+        const { path, size, name }: any = openedFile;
         setFile(path);
         setLoading(true);
         setFileSize(size);

@@ -1,4 +1,4 @@
-import { getCurrent } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useThemeStore } from '@store';
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
@@ -9,7 +9,7 @@ export const useThemeChange = (setIsDarkTheme: (isDark: boolean) => void) => {
   useEffect(() => {
     let unListen: any;
     (async () => {
-      unListen = await getCurrent().onThemeChanged(({ payload }) => {
+      unListen = await getCurrentWindow().onThemeChanged(({ payload }) => {
         if (theme === 'auto') {
           setIsDarkTheme(payload === 'dark');
         }

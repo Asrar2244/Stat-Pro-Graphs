@@ -1,0 +1,16 @@
+name: Start Pro Health Check
+
+on:
+  pull_request:
+    branches: ['develop']
+
+jobs:
+   vulnerability-scanner:
+     runs-on: ubuntu-latest
+     steps:
+     - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

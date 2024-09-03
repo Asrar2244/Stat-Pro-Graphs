@@ -2,11 +2,13 @@
   "projectExistsError": "This project name already exists!",
   "fileAndProjectNameError": "Please provide Business objects and Project Name",
   "noSuchRecord": "No Such records exists",
-  "nothingFound":"Nothing found",
-  "errorInFetchWelcome":"Some error in fetching page",
-  "allowOnlyOneRecord":"Allow only one record",
-  "error":"Error",
-  "warn":"Warning",
-  "info":"Information",
-  "success":"Success"
+  "nothingFound": "Nothing found",
+  "errorInFetchWelcome": "Some error in fetching page",
+  "allowOnlyOneRecord": "Allow only one record",
+  "error": "Error",
+  "warn": "Warning",
+  "info": "Information",
+  "success": "Success",
+  "errorInSaveFile": "Some error in saving file",
+  "urlNotFoundInInput": "URL not found in input file"
 }

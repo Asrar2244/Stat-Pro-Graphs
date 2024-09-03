@@ -1,12 +1,10 @@
 import { useLinearLeastSquares } from './use-squares-hook';
 import { useShallow } from 'zustand/react/shallow';
-import { IActiveNode } from '@hooks';
-import { useTasks } from '@store';
+import { IActiveNode, useAnalyzeSave } from '@hooks';
 import { useEffect } from 'react';
 import { IColumn } from '../../../../../table-render/use-column-count';
 import { EXCEL, API } from '@constants';
 import { collectionsLocation, convertToLinuxPath } from '@utils';
-import { v4 as uuidv4 } from 'uuid';
 interface IOutput {
   executeAnalysis: () => void;
 }
@@ -26,8 +24,7 @@ export const usePrepareAnalysis = ({
       setModelBulk: state.setModelBulk,
     })),
   );
-  const { setQueueTask } = useTasks(useShallow((state) => ({ setQueueTask: state.setQueueTask })));
-  const uuid = uuidv4();
+  const { save } = useAnalyzeSave();
   useEffect(() => {
     const columnMap = new Map<string, boolean>();
     columns.forEach((column) => {
@@ -65,14 +62,10 @@ export const usePrepareAnalysis = ({
         ...resampling,
       },
     };
-
-    setQueueTask({
-      uuid,
-      parameters,
-      tabId: config.id.toString(),
+    save(config.tabName, parameters, {
       queueFor,
-      tabName: config.tabName,
-      url: `${API.analysis}/api`,
+      url: `/api/${API.analysis}`,
+      method: 'POST',
       queueType,
     });
   };
