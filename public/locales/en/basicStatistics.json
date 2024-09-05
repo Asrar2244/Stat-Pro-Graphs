@@ -47,5 +47,6 @@
   "andersonDarling": "Anderson-Darling",
   "mardiaSkewness": "Mardia Skewness",
   "mardiaKurtosis": "Mardia Kurtosis",
-  "henzeZirkler": "Henze-Zirkler"
+  "henzeZirkler": "Henze-Zirkler",
+  "variance": "Variance"
 }

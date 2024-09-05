@@ -308,7 +308,13 @@ export const Main: React.FC = () => {
             <Checkbox
               data-type="mainOptions"
               name="isHenzeZirkler"
-              label={t('HenzeZirkler')}
+              label={t('henzeZirkler')}
+              onChange={onChangeSelection}
+            />
+            <Checkbox
+              data-type="mainOptions"
+              name="isVariance"
+              label={t('variance')}
               onChange={onChangeSelection}
             />
           </div>
