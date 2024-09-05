@@ -1,4 +1,4 @@
-name: 'Release Start Pro App'
+name: 'Publish Start Pro App'
 
 on:
  workflow_call:
