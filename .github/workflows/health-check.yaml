@@ -1,9 +1,9 @@
 name: Start Pro Health Check
 
 on:
-  pull_request:
-    branches: ['develop']
-
+ workflow_call:
+  workflow_dispatch:
+  
 jobs:
   vulnerability-scanner:
     runs-on: ubuntu-latest
