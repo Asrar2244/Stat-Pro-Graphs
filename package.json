@@ -20,7 +20,7 @@
     "@tauri-apps/plugin-fs": "^2.0.0-beta.5",
     "@tauri-apps/plugin-shell": ">=2.0.0-beta.0",
     "@tauri-apps/plugin-sql": "2.0.0-beta.5",
-    "axios": "1.7.2",
+    "axios": "1.7.4",
     "comlink": "4.4.1",
     "dayjs": "1.11.11",
     "flexlayout-react": "0.7.15",
