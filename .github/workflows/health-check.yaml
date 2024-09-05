@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Install pnpm manager
+      run: npm install -g pnpm
+    - name: Install Node dependencies
+      run: pnpm install
     - name: Run Snyk to check for vulnerabilities
       uses: snyk/actions/node@master
       env:
