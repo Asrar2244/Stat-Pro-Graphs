@@ -2,7 +2,8 @@
   "git": {
     "commitMessage": "chore: release v${version}",
     "changelog": "pnpm auto-changelog --stdout --commit-limit false --unreleased --template changelog.hbs",
-    "tag": true
+    "tag": true,
+    "push": true
   },
   "github": {
     "release": false,
