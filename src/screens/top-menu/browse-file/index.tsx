@@ -77,6 +77,9 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
                 operation: 'get_timeout',
               })
               .then(async ({ data }) => {
+                if (data.error) {
+                  throw new Error(data.error);
+                }
                 const extension = await getExtension(path);
                 if (extension.toUpperCase() === 'CSV') {
                   setSheets(['Sheet1']);
@@ -143,7 +146,9 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
           sheet_name: selectedSheet,
           db_location: convertToLinuxPath(collectionsDir),
         });
-
+        if (data.error) {
+          throw new Error(data.error);
+        }
         const actualPath = await volumeExcelFilePath(file as string);
         if (data?.return_value === 'success') {
           const dbName = await fileNameWithExtension(data?.db_name);

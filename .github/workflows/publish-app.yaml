@@ -1,6 +1,9 @@
 name: 'Publish Start Pro App'
 
 on:
+ push:
+   tags:
+      - 'v*.*.*' 
  workflow_call:
  workflow_dispatch:
 
@@ -50,14 +53,30 @@ jobs:
         
       - name: install frontend dependencies
         run: pnpm install # change this to npm, pnpm or bun depending on which one you use.
-
-      - uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build Start Pro app
+        uses: tauri-apps/tauri-action@v0
         with:
-          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'App v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
+          configPath: src-tauri/tauri.conf.json
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          repo: ${{ secrets.RELEASE_REPO }}
+          draft: false
           prerelease: false
-          args: ${{ matrix.args }}
+          token: ${{ secrets.GITHUB_TOKEN  }}
+       
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./target/release/start-pro
+          asset_name: start-pro
+          asset_content_type: application/octet-stream
+          token: ${{ secrets.GITHUB_TOKEN }}

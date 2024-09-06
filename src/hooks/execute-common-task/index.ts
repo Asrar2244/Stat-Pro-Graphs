@@ -66,6 +66,9 @@ export const useExecuteTask = (): void => {
               ...task?.parameters,
               notificationId: notificationID,
             });
+            if (response.error) {
+              throw new Error(response.error);
+            }
             await outputUpdateResult(`${task?.tabName}`, [JSON.stringify(response), outputId]);
 
             setCommonMsg({

@@ -1,0 +1,15 @@
+{
+  "git": {
+    "commitMessage": "chore: release v${version}",
+    "changelog": "pnpm auto-changelog --stdout --commit-limit false --unreleased --template changelog.hbs",
+    "tag": true
+  },
+  "github": {
+    "release": false,
+    "host": "https://github.com/yusra-noor/start-pro.git"
+  },
+  "hooks": {
+    "after:bump": "pnpm auto-changelog -p",
+    "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
+  }
+}
