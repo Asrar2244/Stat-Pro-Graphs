@@ -3,7 +3,7 @@ name: 'Publish Start Pro App'
 on:
  push:
    tags:
-      - 'v*.*.*' 
+    - '*.*.*' 
  workflow_call:
  workflow_dispatch:
 
@@ -71,6 +71,8 @@ jobs:
           draft: false
           prerelease: false
           owner: ${{ secrets.RELEASE_OWNER }}
+          token: ${{ secrets.GH_TOKEN }}
+          repository: ${{secrets.RELEASE_OWNER}}/${{ secrets.RELEASE_REPO }}
        
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
