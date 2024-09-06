@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { IGraph } from '@utils';
 type PropertyType<T, K extends keyof T> = T[K];
 

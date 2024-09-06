@@ -4,18 +4,16 @@ import { Modal } from '@libs';
 import { IPlotlyGraphOutput, IPoints, useModal } from '@hooks';
 import { useTranslation } from 'react-i18next';
 import { Annotations } from 'plotly.js';
-import { useGraphAnnotationsStyles } from './styles-hook/use-graph-annotations-style';
-// import ReactQuill from 'react-quill';
+// import { useGraphAnnotationsStyles } from './styles-hook/use-graph-annotations-style';
 
-// import 'react-quill/dist/quill.snow.css';
 interface IGraphAnnotation {
   plotly: IPlotlyGraphOutput;
 }
 export const AnnotationModal: FC<IGraphAnnotation> = ({ plotly }) => {
-  const [text, setText] = useState<string>('');
+  const [text /*setText*/] = useState<string>('');
   const { t } = useTranslation('common');
   const modal = useModal({ initialOpen: false });
-  const classes = useGraphAnnotationsStyles();
+  // const classes = useGraphAnnotationsStyles();
   return (
     <Modal
       {...modal}

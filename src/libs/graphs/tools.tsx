@@ -1,4 +1,4 @@
-import { FC, lazy, memo } from 'react';
+import { FC, memo } from 'react';
 import {
   Button,
   Tooltip as FTooltip,
@@ -15,7 +15,7 @@ import { FullScreenHandle } from 'react-full-screen';
 import { useModal } from '@hooks';
 import { useTranslation } from 'react-i18next';
 import { useToolsStyles } from './styles-hook/use-tools-style';
-import { AnnotationModal } from './annotations';
+// import { AnnotationModal } from './annotations';
 import { GraphPaging } from './graph-paging';
 import { IGraph } from '@utils';
 import { useTableFetch } from './use-fetch-hook';

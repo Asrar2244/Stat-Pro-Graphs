@@ -1,8 +1,5 @@
 import { create } from 'zustand';
 
-interface IList {
-  [key: string]: boolean;
-}
 interface IPayload {
   [key: string]: any;
 }

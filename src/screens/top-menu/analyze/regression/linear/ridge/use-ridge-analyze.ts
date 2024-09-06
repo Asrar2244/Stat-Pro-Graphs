@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { IColumn } from '@renderer/components/table-render/use-column-count';
+import { IColumn } from '../../../../../table-render/use-column-count';
 import { useRidge } from './use-ridge-store-hook';
 
 interface IUseRidge {
@@ -22,7 +22,7 @@ export const useRidgePrepare = ({ columns }: IUseRidge): void => {
   );
   const getActivateList = (): void => {
     if (columns.length > 0) {
-      const availList = {};
+      const availList: any = {};
       columns.forEach((column) => {
         if (
           ridge.dependentList[column.columnId] === undefined &&

@@ -1,14 +1,5 @@
 import { ChangeEvent, FC, memo } from 'react';
-import {
-  makeStyles,
-  tokens,
-  shorthands,
-  Dropdown,
-  Checkbox,
-  Option,
-  Field,
-  Input,
-} from '@fluentui/react-components';
+import { Dropdown, Checkbox, Option, Field, Input } from '@fluentui/react-components';
 import { ITranslate, Fieldset } from '@libs';
 import { useShallow } from 'zustand/react/shallow';
 import { useLinearLeastSquares } from './use-squares-hook';

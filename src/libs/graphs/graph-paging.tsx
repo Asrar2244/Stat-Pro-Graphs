@@ -8,7 +8,7 @@ interface IRangeSelectorProps {
   loadPagingData: (startIndex: number, stopIndex: number) => Promise<void>;
   loading: boolean;
 }
-export const GraphPaging: FC<IRangeSelectorProps> = ({ totalRecords, loadPagingData, loading }) => {
+export const GraphPaging: FC<IRangeSelectorProps> = ({ totalRecords, loadPagingData }) => {
   const pageContext = usePagination(totalRecords, DEFAULT_GRAPH_PAGE_SIZE);
   useEffect(() => {
     initialCall();

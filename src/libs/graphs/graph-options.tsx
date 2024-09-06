@@ -3,7 +3,7 @@ import { Modal } from '@libs';
 import { Select } from '@fluentui/react-components';
 import { useTranslation } from 'react-i18next';
 import { useGraphOptionStyles } from './styles-hook/use-graph-options-style';
-import { PlotType, PlotData, Data } from 'plotly.js';
+import { PlotType, PlotData } from 'plotly.js';
 import { IModal } from '@hooks';
 type IModes = Pick<PlotData, 'mode'>;
 interface IGraphOptions extends IModal {
@@ -37,7 +37,7 @@ export const GraphOptions: FC<IGraphOptions> = ({ plotly, ...props }) => {
   }, []);
 
   const onSelectChanges =
-    (item) =>
+    (item: any) =>
     (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>): void => {
       const { name, value } = event.target;
       item[name] = value;

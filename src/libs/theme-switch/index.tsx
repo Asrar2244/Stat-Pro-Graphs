@@ -1,4 +1,4 @@
-import { FC, memo, useEffect, useState, useMemo } from 'react';
+import { FC, memo, useState } from 'react';
 import {
   Badge,
   Popover,
