@@ -71,7 +71,7 @@ jobs:
           draft: false
           prerelease: false
           owner: ${{ secrets.RELEASE_OWNER }}
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
           repository: ${{secrets.RELEASE_OWNER}}/${{ secrets.RELEASE_REPO }}
        
       - name: Upload Release Asset
@@ -81,4 +81,4 @@ jobs:
           asset_path: ./target/release/start-pro
           asset_name: start-pro
           asset_content_type: application/octet-stream
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
