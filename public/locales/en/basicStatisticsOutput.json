@@ -17,7 +17,7 @@
   "harmonic_mean": "Harmonic Mean",
   "Mode": "Mode",
   "interquartile_range": "Inter Quartile Range",
-  "sd": "SD",
+  "sd": "Standard Deviation",
   "shapiro_test_stat": "Shapiro Test Statistic",
   "shapiro_p_value": "Shapiro P-Value"
 }

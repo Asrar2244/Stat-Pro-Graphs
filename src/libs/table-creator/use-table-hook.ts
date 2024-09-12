@@ -11,6 +11,7 @@ interface IDataResult {
 interface ITableFetch extends ITranslate, ITableCreator {
   dbName: string;
   tableName: string;
+  rawData?: boolean;
 }
 
 export const useTableFetch = ({
@@ -22,8 +23,9 @@ export const useTableFetch = ({
   postfix,
   prefix,
   type,
+  rawData = false,
 }: ITableFetch): IDataResult => {
-  const [templateView, setTemplateView] = useState<Array<Array<string>>>([]);
+  const [templateView, setTemplateView] = useState<Array<Array<string>> | Array<any>>([]);
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const statements = useMemo(async () => {
@@ -77,8 +79,13 @@ export const useTableFetch = ({
       const result = await db.selectQuery(
         `${query} ${totalRecords > 0 ? `LIMIT ${startIndex},${stopIndex}` : ''}`,
       );
-      const templateView = await tableWorker.mergingData(viewNew ?? view, result, recordType);
-      setTemplateView(templateView);
+      if (!rawData) {
+        const templateView = await tableWorker.mergingData(viewNew ?? view, result, recordType);
+        setTemplateView(templateView);
+      } else {
+        setTemplateView(result);
+      }
+
       setLoading(false);
     }
   };

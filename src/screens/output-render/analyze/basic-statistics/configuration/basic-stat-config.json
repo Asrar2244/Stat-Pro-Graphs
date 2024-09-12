@@ -1,12 +1,39 @@
 {
-  "tables": [
+  "card": [
     {
       "name": "basic-stat",
-      "showHeaders": true,
       "showCaption": false,
-      "view": ["t-id", "t-value"],
-      "recordType": true,
-      "translationColumns": [0]
+      "columnCount": 10,
+      "columns": [
+        {
+          "type": "static",
+          "label": "",
+          "rows": [
+            { "label": "" },
+            { "label": "num_of_cases" },
+            { "label": "minimum" },
+            { "label": "maximum" },
+            { "label": "arithemetic_mean" },
+            { "label": "sd" },
+            { "label": "shapiro_test_stat" },
+            { "label": "shapiro_p_value" }
+          ]
+        },
+        {
+          "type": "dynamic",
+          "path": "input_variable_names",
+          "rows": [
+            { "path": "input_variable_names" },
+            { "path": "num_of_cases" },
+            { "path": "minimum" },
+            { "path": "maximum" },
+            { "path": "arithemetic_mean" },
+            { "path": "sd" },
+            { "path": "shapiro_test_stat" },
+            { "path": "shapiro_p_value" }
+          ]
+        }
+      ]
     }
   ]
 }

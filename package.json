@@ -13,7 +13,7 @@
     "create:release": "release-it --no-npm.publish"
   },
   "dependencies": {
-    "@fluentui/react-components": "9.54.2",
+    "@fluentui/react-components": "9.54.13",
     "@hookform/resolvers": "^3.9.0",
     "@tauri-apps/api": ">=2.0.0-beta.0",
     "@tauri-apps/plugin-dialog": "^2.0.0-beta.5",
@@ -27,6 +27,7 @@
     "i18next": "23.11.5",
     "i18next-browser-languagedetector": "8.0.0",
     "i18next-http-backend": "2.5.2",
+    "lodash.get": "4.4.2",
     "plotly.js": "2.33.0",
     "plotly.js-dist": "2.29.1",
     "react": "18.2.0",
@@ -44,6 +45,7 @@
     "@commitlint/config-conventional": "19.1.0",
     "@tauri-apps/cli": ">=2.0.0-beta.0",
     "@types/i18next": "13.0.0",
+    "@types/lodash.get": "^4.4.9",
     "@types/node": "^20.14.9",
     "@types/plotly.js": "2.29.5",
     "@types/react": "18.2.25",

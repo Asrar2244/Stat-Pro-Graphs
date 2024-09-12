@@ -22,7 +22,7 @@ export const usePaginationStyles = makeStyles({
     '& div, button': {
       height: '98%',
       padding: tokens.spacingHorizontalXXS,
-      ...shorthands.borderRight('1px', 'solid', `${tokens.colorNeutralForeground1} `),
+      // ...shorthands.borderRight('1px', 'solid', `${tokens.colorNeutralForeground1} `),
     },
   },
   jump: {
@@ -51,7 +51,7 @@ export const usePaginationStyles = makeStyles({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-between',
-    ...shorthands.borderLeft('1px', 'solid', `${tokens.colorNeutralForeground1}`),
+    // ...shorthands.borderLeft('1px', 'solid', `${tokens.colorNeutralForeground1}`),
   },
   internalPageSize: {
     display: 'flex',

@@ -44,7 +44,6 @@ export const generateQueryColumn = (
   } else {
     columns = withOutRecordType(view as Array<Array<string>>);
   }
-
   const query = `SELECT ${columns.join(',')} FROM ${tableName} WHERE ${columns.join(' IS NOT NULL OR ')} IS NOT NULL`;
   let pageQuery = '';
   if (!noPaging && typeof recordType !== 'boolean' && recordType?.pageSize) {

@@ -50,3 +50,11 @@ export const removeFileFromGivenPath = async (filePath: string): Promise<void> =
     await remove(filePath);
   }
 };
+
+export const chunkArray = (arr: Array<any>, chunkSize: number): Array<any> => {
+  const result = [];
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    result.push(arr.slice(i, i + chunkSize));
+  }
+  return result;
+};
