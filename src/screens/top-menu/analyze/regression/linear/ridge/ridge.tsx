@@ -25,6 +25,7 @@ export const Ridge: FC = () => {
     ...config,
     noRowCount: true,
   });
+
   useRidgePrepare({ columns });
   const { ridge, setRidge } = useRidge(
     useShallow((state) => {
@@ -97,6 +98,12 @@ export const Ridge: FC = () => {
     } else {
       setRidge({ [e.target.name]: Number(e.target.value) });
     }
+  };
+  const onBlurHandler = (e: React.FocusEvent<HTMLInputElement>): void => {
+    if (e.target.value === '') {
+      setRidge({ [e.target.name]: [] });
+    }
+    setRidge({ [e.target.name]: e.target.value.split(',') });
   };
   const onChangeSelectAll = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, checked } = e.target;
@@ -198,7 +205,7 @@ export const Ridge: FC = () => {
           </div>
         </Fieldset>
       </div>
-      <Fieldset title={t('lambda')}>
+      <Fieldset title={t('lambdaRang')}>
         <div>
           <Checkbox
             name="lambdaRangeOfValues"
@@ -235,22 +242,22 @@ export const Ridge: FC = () => {
               onChange={onChangeHandler}
             />
           </Field>
-          <div className={classes.individualBox}>
-            <Checkbox
-              name="lambdaIndividual"
-              disabled={!ridge.lambdaRangeOfValues}
-              label={t('individual', { ns: 'regLinearRidge' })}
-              checked={ridge.lambdaIndividual}
-              onChange={onChangeHandler}
-            />
-            <Input
-              name="lambdaIndividualValues"
-              type="number"
-              disabled={!ridge.lambdaIndividual}
-              onChange={onChangeHandler}
-              value={String(ridge.lambdaIndividualValues)}
-            />
-          </div>
+        </div>
+      </Fieldset>
+      <Fieldset title={t('lambdaIndivisal')}>
+        <div className={classes.individualBox}>
+          <Checkbox
+            name="lambdaIndividual"
+            label={t('individual', { ns: 'regLinearRidge' })}
+            checked={ridge.lambdaIndividual}
+            onChange={onChangeHandler}
+          />
+          <Input
+            name="lambdaIndividualValues"
+            type="text"
+            disabled={!ridge.lambdaIndividual}
+            onBlur={onBlurHandler}
+          />
         </div>
       </Fieldset>
       <Fieldset>

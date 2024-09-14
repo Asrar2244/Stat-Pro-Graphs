@@ -4,110 +4,45 @@
       "name": "ridge-estimates",
       "showCaption": false,
       "showHeaders": false,
-      "columns": [
-        {
-          "key": "input_key"
-        },
-        {
-          "key": "hkb_estimator",
-          "get": "result"
-        }
-      ],
-      "data": [
-        {
-          "input_key": "HoerI-Kennard-Baldwin (HKB) Estimator",
-          "hkb_estimator": "hkb_estimator"
-        },
-        {
-          "input_key": "Lawless & Wang (LW) Estimator",
-          "hkb_estimator": "lw_estimator"
-        },
-        {
-          "input_key": "Minimum Value of Generalized Cross Validation (GCV) is at Lambda",
-          "hkb_estimator": "min_gcv_lambda"
-        }
+      "view": [
+        ["t-hkb_estimator", "hkb_estimator"],
+        ["t-lw_estimator", "lw_estimator"],
+        ["t-min_gcv_lambda", "min_gcv_lambda"]
       ]
     },
     {
-      "name": "Coefficients have been saved:",
+      "name": "coefficients-saved",
       "showCaption": true,
       "showHeaders": false,
-      "columns": [
-        {
-          "key": "feature_key"
-        },
-        {
-          "key": "feature_names",
-          "get": "result"
-        }
-      ],
-      "data": [
-        {
-          "feature_key": "Feature Names",
-          "feature_names": "feature_names"
-        }
-      ]
-    },
-    {
-      "name": "cv_values",
-      "showHeaders": false,
-      "showCaption": true,
-      "columns": [
-        {
-          "key": "cv_values",
-          "label": ""
-        }
-      ],
-      "array": true
+      "view": [["t-feature_names", "feature_names"]]
     },
     {
       "name": "ridge-coefficients",
       "showCaption": false,
       "showHeaders": false,
-      "columns": [
-        {
-          "key": "n_features_in_key"
-        },
-        {
-          "key": "n_features_in",
-          "get": "result"
-        }
-      ],
-      "data": [
-        {
-          "n_features_in_key": "Names of features",
-          "n_features_in": "n_features_in"
-        },
-        {
-          "n_features_in_key": "Weight vectors",
-          "n_features_in": "coef"
-        },
-        {
-          "n_features_in_key": "NIndependent term in decision function",
-          "n_features_in": "intercept"
-        },
-        {
-          "n_features_in_key": "The estimated regularization parameter for each target",
-          "n_features_in": "alpha"
-        },
-        {
-          "n_features_in_key": "Score of base estimator for each target",
-          "n_features_in": "best_score"
-        },
-        {
-          "n_features_in_key": "Unstandardized Coefficients",
-          "n_features_in": "unstandardized_coefficients"
-        }
+      "view": [
+        ["t-n_features_in", "n_features_in"],
+        ["t-coef", "coef"],
+        ["t-intercept", "intercept"],
+        ["t-alpha", "alpha"],
+        ["t-best_score", "best_score"],
+        ["t-unstandardized_coefficients", "unstandardized_coefficients"]
       ]
     }
   ],
-  "graphOptions": {
-    "default": {
-      "graph": "scatter",
-      "mode": "marks"
+  "graph": {
+    "traces": {
+      "traces1": {
+        "x": "dependent_var_names",
+        "y": "independent_var_names",
+        "type": "scatter",
+        "mode": "lines+markers"
+      }
     },
-    "graphs": ["bar", "scatter", "line"],
-    "modes": [
+    "multipleTraces": {
+      "commonAxis": "x"
+    },
+    "supportedGraph": [
       "lines",
       "markers",
       "text",
@@ -124,11 +59,33 @@
       "gauge+number+delta",
       "gauge+delta"
     ],
+    "layout": {
+      "xaxis": {
+        "showgrid": true,
+        "showticklabels": false
+      },
+      "yaxis": {
+        "showgrid": true,
+        "showticklabels": false
+      }
+    },
     "download": [
-      { "format": "png", "description": "pngFormat" },
-      { "format": "jpeg", "description": "jpegFormat" },
-      { "format": "svg", "description": "svgFormat" },
-      { "format": "webp", "description": "webpFormat" }
+      {
+        "format": "png",
+        "description": "pngFormat"
+      },
+      {
+        "format": "jpeg",
+        "description": "jpegFormat"
+      },
+      {
+        "format": "svg",
+        "description": "svgFormat"
+      },
+      {
+        "format": "webp",
+        "description": "webpFormat"
+      }
     ]
   }
 }

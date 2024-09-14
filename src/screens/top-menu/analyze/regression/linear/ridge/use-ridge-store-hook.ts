@@ -14,7 +14,7 @@ interface IRidge {
   lambdaMinimum: number;
   lambdaMaximum: number;
   lambdaIncrement: number;
-  lambdaIndividualValues: number;
+  lambdaIndividualValues: number[];
   saveCoefficient: boolean;
   lambdaIndividual: boolean;
   setRidge: (payload: IPayload) => void;
@@ -27,7 +27,7 @@ const initialValues = {
   lambdaMinimum: 0,
   lambdaMaximum: 0,
   lambdaIncrement: 0,
-  lambdaIndividualValues: 0,
+  lambdaIndividualValues: [0],
   lambdaRangeOfValues: false,
   saveCoefficient: false,
   lambdaIndividual: false,

@@ -17,7 +17,7 @@ const RidgeModuleComponent: FC<IModal> = ({ ...props }) => {
 
   const onOkModal = (): void => {
     if (!id && id !== '') return;
-    ridgeAnalyzeData(config.tabName, config.id.toString(), t('title'), 'regLinearRidge');
+    ridgeAnalyzeData(config.tabName, t('title'), 'regLinearRidge');
     props.closeModal();
   };
   return (

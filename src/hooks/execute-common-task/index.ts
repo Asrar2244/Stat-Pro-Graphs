@@ -66,15 +66,16 @@ export const useExecuteTask = (): void => {
               ...task?.parameters,
               notificationId: notificationID,
             });
-            if (response.error) {
-              throw new Error(response.error);
-            }
-            await outputUpdateResult(`${task?.tabName}`, [JSON.stringify(response), outputId]);
 
-            setCommonMsg({
-              spinner: false,
-              message: t('analyzingSuccess', messageObj),
-            });
+            await outputUpdateResult(`${task?.tabName}`, [JSON.stringify(response), outputId]);
+            if (response.error) {
+              setCommonMsg({ spinner: false, message: response.error as string });
+            } else {
+              setCommonMsg({
+                spinner: false,
+                message: t('analyzingSuccess', messageObj),
+              });
+            }
           })
           .catch(async (err) => {
             await removeFileFromGivenPath(jsonFile);
