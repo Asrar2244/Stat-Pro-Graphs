@@ -60,12 +60,17 @@ __macOs__ <br />
 ```
 brew install nvm
 ```
+### To install node via nvm:
+```
+nvm install 20.11.1
+nvm use 20.11.1
+```
 
+### To install pnpm:
+```
+npm i -g pnpm
+```
 ### Command to run:
 ```
-npm tauri dev
-# or
-yarn tauri dev
-# or
 pnpm tauri dev
 ```
