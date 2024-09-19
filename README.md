@@ -69,6 +69,7 @@ nvm use 20.11.1
 ### To install pnpm:
 ```
 npm i -g pnpm
+pnpm install
 ```
 ### Command to run:
 ```
