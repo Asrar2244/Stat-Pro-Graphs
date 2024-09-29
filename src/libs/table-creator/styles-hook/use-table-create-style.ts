@@ -9,8 +9,6 @@ export const useCreateTableStyles = makeStyles({
     overflow: 'hidden',
   },
   pagingList: {
-    // border: `1px solid`,
-
     '& div': {
       '& div, button': {
         border: 'none',
@@ -25,6 +23,10 @@ export const useCreateTableStyles = makeStyles({
       backgroundColor: tokens.colorCompoundBrandForeground1,
       '& .cell': {
         color: tokens.colorNeutralForegroundStaticInverted,
+      },
+      '& .header': {
+        textTransform: 'uppercase',
+        fontWeight: tokens.fontWeightBold,
       },
     },
   },

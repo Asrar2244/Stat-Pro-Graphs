@@ -5,5 +5,6 @@
   "workspace": "Workspace",
   "data": "Data.syz",
   "output": "Output.syo",
-  "tableRender": "Table Render"
+  "tableRender": "Table Render",
+  "currentVersion": "Current Version"
 }

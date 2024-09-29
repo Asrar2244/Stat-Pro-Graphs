@@ -4,11 +4,13 @@ import { useRegressions } from '../../../../styles-hook/use-regressions-style';
 import { CardTableRender, GraphPlot } from '@libs';
 import configurations from './configuration/least-square-config.json';
 import { useTranslation } from 'react-i18next';
-import { ITableCreator } from '@utils';
+import { ITableCreator, IGraph } from '@utils';
+import { useGraphConfig } from '@hooks';
 export const LinearLeastSquareRegression: FC = () => {
   const context = useContext(OutputRenderContext);
   const { t } = useTranslation('reqLinearLeastSquareOutput');
   const classes = useRegressions();
+  const graphConfig = useGraphConfig(configurations.graph as any);
   return (
     <div className={classes.regressionsLayout}>
       {configurations.tables.map((table) => (
@@ -20,13 +22,14 @@ export const LinearLeastSquareRegression: FC = () => {
           dbTableName={context?.selectedRun?.result.output_table_name as string}
         />
       ))}
-      {configurations.graph && (
+      {graphConfig.map((graph: IGraph) => (
         <GraphPlot
-          graph={configurations.graph as any}
+          key={graph.name}
+          graph={graph as any}
           dbFileName={context?.selectedRun?.tabName as string}
           dbTableName={context?.selectedRun?.result.output_table_name as string}
         />
-      )}
+      ))}
     </div>
   );
 };

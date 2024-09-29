@@ -2,8 +2,9 @@ export const INITIAL_GRAPH_LAYOUT = {
   layout: {
     showlegend: true,
     autosize: true,
+
     margin: {
-      b: 10,
+      b: 0,
       l: 20,
       r: 20,
       t: 20,

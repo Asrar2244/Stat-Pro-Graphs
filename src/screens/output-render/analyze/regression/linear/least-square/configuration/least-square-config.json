@@ -86,62 +86,148 @@
       }
     }
   ],
-  "graph": {
-    "traces": {
-      "traces1": {
-        "x": "dependent_var_names",
-        "y": "independent_var_names",
-        "type": "scatter",
-        "mode": "lines+markers"
-      }
+  "graph": [
+    {
+      "traces": {
+        "traces1": {
+          "x": "dependent_var_names",
+          "y": "independent_var_names",
+          "type": "scatter",
+          "mode": "lines+markers"
+        }
+      },
+      "layout": {
+        "xaxis": {
+          "tickformat": ".4s"
+        },
+        "yaxis": {
+          "tickformat": ".4s"
+        }
+      },
+      "multipleTraces": {
+        "commonAxis": "x"
+      },
+      "supportedGraph": [
+        "lines",
+        "markers",
+        "text",
+        "lines+markers",
+        "text+markers",
+        "text+lines",
+        "text+lines+markers",
+        "none",
+        "gauge",
+        "number",
+        "delta",
+        "number+delta",
+        "gauge+number",
+        "gauge+number+delta",
+        "gauge+delta"
+      ],
+      "download": [
+        {
+          "format": "png",
+          "description": "pngFormat"
+        },
+        {
+          "format": "jpeg",
+          "description": "jpegFormat"
+        },
+        {
+          "format": "svg",
+          "description": "svgFormat"
+        },
+        {
+          "format": "webp",
+          "description": "webpFormat"
+        }
+      ]
     },
-    "multipleTraces": {
-      "commonAxis": "x"
-    },
-    "supportedGraph": [
-      "lines",
-      "markers",
-      "text",
-      "lines+markers",
-      "text+markers",
-      "text+lines",
-      "text+lines+markers",
-      "none",
-      "gauge",
-      "number",
-      "delta",
-      "number+delta",
-      "gauge+number",
-      "gauge+number+delta",
-      "gauge+delta"
-    ],
-    "layout": {
-      "xaxis": {
-        "showgrid": true,
-        "showticklabels": false
+    {
+      "name": "linear-lms",
+      "traces": {
+        "traces1": {
+          "x": "dependent_var_names",
+          "y": "lcl",
+          "dynamicTableColumns": ["lcl"],
+          "type": "scatter",
+          "mode": "markers"
+        },
+        "traces2": {
+          "x": "dependent_var_names",
+          "y": "upl",
+          "dynamicTableColumns": ["upl"],
+          "type": "scatter",
+          "mode": "lines+markers"
+        },
+        "traces3": {
+          "x": "dependent_var_names",
+          "y": "Estimate",
+          "dynamicTableColumns": ["Estimate"],
+          "type": "scatter",
+          "mode": "lines+markers"
+        },
+        "traces4": {
+          "x": "dependent_var_names",
+          "y": "ucl",
+          "dynamicTableColumns": ["ucl"],
+          "type": "scatter",
+          "mode": "lines+markers"
+        },
+        "traces5": {
+          "x": "dependent_var_names",
+          "y": "lpl",
+          "dynamicTableColumns": ["lpl"],
+          "type": "scatter",
+          "mode": "lines+markers"
+        }
       },
-      "yaxis": {
-        "showgrid": true,
-        "showticklabels": false
-      }
-    },
-    "download": [
-      {
-        "format": "png",
-        "description": "pngFormat"
+      "multipleTraces": {
+        "commonAxis": "x"
       },
-      {
-        "format": "jpeg",
-        "description": "jpegFormat"
+      "layout": {
+        "xaxis": {
+          "tickformat": ".4s"
+        },
+        "yaxis": {
+          "tickformat": ".4s"
+        }
       },
-      {
-        "format": "svg",
-        "description": "svgFormat"
-      },
-      {
-        "format": "webp",
-        "description": "webpFormat"
-      }
-    ]
-  }
+      "supportedGraph": [
+        "lines",
+        "markers",
+        "text",
+        "lines+markers",
+        "text+markers",
+        "text+lines",
+        "text+lines+markers",
+        "none",
+        "gauge",
+        "number",
+        "delta",
+        "number+delta",
+        "gauge+number",
+        "gauge+number+delta",
+        "gauge+delta"
+      ],
+      "download": [
+        {
+          "format": "png",
+          "description": "pngFormat"
+        },
+        {
+          "format": "jpeg",
+          "description": "jpegFormat"
+        },
+        {
+          "format": "svg",
+          "description": "svgFormat"
+        },
+        {
+          "format": "webp",
+          "description": "webpFormat"
+        }
+      ]
+    }
+  ]
 }

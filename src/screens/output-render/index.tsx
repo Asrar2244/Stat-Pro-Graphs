@@ -25,6 +25,7 @@ export const OutputRender: FC = () => {
             fontItalic={tools.fontItalic}
             fontSize={tools.fontSize}
             fontColor={tools.fontColor}
+            showHistory={tools.showRunHistory}
           />
           <RunHistory
             selectedID={selectedRun.id}

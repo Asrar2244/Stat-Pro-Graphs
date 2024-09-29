@@ -4,7 +4,7 @@ export const useOutputSelection = makeStyles({
   selectionLayout: {
     display: 'flex',
     flexDirection: 'column',
-    width: '90%',
+    width: '76%',
     wordWrap: 'break-word',
     ...shorthands.padding(tokens.spacingHorizontalS),
     overflow: 'hidden',
@@ -29,6 +29,6 @@ export const useOutputSelection = makeStyles({
   content: {
     display: 'flex',
     flexDirection: 'column',
-    width: '84%',
+    width: '99%',
   },
 });

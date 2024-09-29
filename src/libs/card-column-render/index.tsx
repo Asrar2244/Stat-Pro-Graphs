@@ -61,22 +61,23 @@ export const CardColumnRender: FC<ICardColumnRenderProps> = memo(
       }
     }, [loading]);
 
-    const TemplateGen = ({
-      type,
-      row,
-    }: {
+    const TemplateGen: FC<{
       type: 'static' | 'dynamic';
       row?: Record<string, string | number | boolean>;
-    }) => {
+    }> = ({ type, row }) => {
       let list = staticColumns;
       if (type === 'dynamic') {
         list = dynamicColumns;
       }
-      return list.map((cols) => {
-        return cols.rows.map((r) => (
-          <li>{type === 'static' ? t(r.label as string) : get(row, r.path as string)}</li>
-        ));
-      });
+      return (
+        <>
+          {list.map((cols) => {
+            return cols.rows.map((r) => (
+              <li>{type === 'static' ? t(r.label as string) : get(row, r.path as string)}</li>
+            ));
+          })}
+        </>
+      );
     };
 
     return (

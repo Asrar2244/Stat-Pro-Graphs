@@ -19,12 +19,8 @@ import {
   convertToLinuxPath,
 } from '@utils';
 import { API } from '@constants';
-
-// import { volumeName } from '@constants/locale';
 import { CONFIGURATION_DB } from '@constants';
 import { insertIntoProject } from '@backend';
-// import { outputTable } from '@backend';
-
 import { useBrowseLayout } from './styles-hook/use-browse-style';
 export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   const [file, setFile] = useState<string | undefined>(undefined);
@@ -84,6 +80,9 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
                 if (extension.toUpperCase() === 'CSV') {
                   setSheets(['Sheet1']);
                 } else {
+                  if (typeof data?.sheet_names === 'string') {
+                    throw new Error('error in reading sheets');
+                  }
                   setSheets(data?.sheet_names);
                 }
               })

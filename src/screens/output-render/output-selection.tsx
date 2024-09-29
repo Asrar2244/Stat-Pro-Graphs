@@ -23,19 +23,21 @@ const BasicStatistics = lazy(() =>
 );
 interface IOutputSelection extends IToolBar {
   id: number;
+  showHistory: boolean;
 }
 const load: any = {
   regLinearLeastSquare: <LinearLeastSquareRegression />,
   regLinearRidge: <LinearRidgeRegression />,
   basicStatistics: <BasicStatistics />,
 };
-export const OutputSelection: FC<IOutputSelection> = ({ id, ...props }) => {
+export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...props }) => {
   const { config } = useActiveNode([]);
   const classes = useOutputSelection();
   const { t } = useTranslation('common');
   const run = useSelectedRun(config.tabName, id);
+  const forceStyle = !showHistory ? { width: '100%' } : {};
   return (
-    <div className={classes.selectionLayout}>
+    <div className={classes.selectionLayout} style={forceStyle}>
       <OutputRenderContext.Provider
         value={{
           toolBar: props,

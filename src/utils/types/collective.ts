@@ -42,18 +42,20 @@ export interface ITableCreator {
   prefix?: string;
 }
 
-interface IGraphAxis {
+export interface IGraphAxis {
   x: string | string[];
   y: string | string[];
   z?: string | string[];
   type?: string;
   name?: string;
+  dynamicTableColumns?: string[];
 }
 interface IGraphDownload {
   format: string;
   description?: string;
 }
 export interface IGraph {
+  name: string;
   traces: { [key: string]: IGraphAxis };
   modes?: string[];
   download?: IGraphDownload[];

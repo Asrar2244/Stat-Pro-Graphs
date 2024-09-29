@@ -15,3 +15,4 @@ export * from './initial-config/use-get-initial-config';
 export * from './pagination';
 export * from './execute-common-task/execute-task';
 export * from './analyze-save';
+export * from './plotly/use-graph-config';

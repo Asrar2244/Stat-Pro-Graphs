@@ -59,7 +59,7 @@ const GraphTool: FC<IGraphTool> = ({
   //For Graph options
   const modal = useModal({ initialOpen: false });
 
-  const handelGraphOptions = (): void => {
+  const handleGraphOptions = (): void => {
     modal.toggleModal();
   };
 
@@ -85,7 +85,7 @@ const GraphTool: FC<IGraphTool> = ({
               size="small"
               icon={<LuSettings2 />}
               appearance="transparent"
-              onClick={handelGraphOptions}
+              onClick={handleGraphOptions}
             />
           </FTooltip>
         </li>

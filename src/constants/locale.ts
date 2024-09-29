@@ -8,3 +8,4 @@ export const API = {
   backendURL: VITE_API,
   analysis: 'receive-json',
 };
+export const DECIMAL_PLACES = 4;

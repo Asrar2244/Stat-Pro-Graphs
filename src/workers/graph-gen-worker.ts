@@ -1,32 +1,60 @@
 //@ts-nocheck
-import { IGraph } from '@utils';
+import { IGraph, IGraphAxis } from '@utils';
 type PropertyType<T, K extends keyof T> = T[K];
-
+interface IDynamicTableTrace {
+  columns?: Set<sting>;
+}
 const sanitizedCell = (column: string): string => {
   return `"${column}"`;
 };
-
+const checkDynamicTable = (
+  trace: IGraphAxis,
+  axis: string,
+  columnSet: Set<sting>,
+  dynamicTableCols: IDynamicTableTrace,
+) => {
+  if (trace.dynamicTableColumns) {
+    const existsDynamicCol = trace.dynamicTableColumns.find((col) => col === trace[axis]);
+    if (existsDynamicCol) {
+      if (!dynamicTableCols.columns) {
+        dynamicTableCols.columns = new Set<sting>();
+      }
+      dynamicTableCols.columns.add(trace[axis]);
+    } else {
+      columnSet.add(sanitizedCell(trace[axis] as string));
+    }
+  } else {
+    columnSet.add(sanitizedCell(trace[axis] as string));
+  }
+};
 //Create a query for columns given in the configurations object
 export const generateQueryForColumns = (
   traces: PropertyType<IGraph, 'traces'>,
   tableName: string,
-): string => {
+): { initialQuery: string; dynamic?: { query?: string; columns?: Set<string> } } => {
   const columnSet = new Set<string>();
+  const dynamicTableCols: IDynamicTableTrace = {};
   Object.keys(traces).forEach((key) => {
     const trace = traces[key];
-    if (trace.x) {
-      columnSet.add(sanitizedCell(trace.x as string));
-    }
-    if (trace.y) {
-      columnSet.add(sanitizedCell(trace.y as string));
-    }
-    if (trace.z) {
-      columnSet.add(sanitizedCell(trace.z as string));
-    }
+    ['x', 'y', 'z'].forEach((axis) => {
+      if (trace[axis]) {
+        checkDynamicTable(trace, axis, columnSet, dynamicTableCols);
+      }
+    });
   });
   const columns = Array.from(columnSet);
   const query = `SELECT ${columns.join(',')} FROM ${tableName} WHERE ${columns.join(' IS NOT NULL OR ')} IS NOT NULL`;
-  return query;
+  if (Object.keys(dynamicTableCols).length > 0) {
+    const dynamicColumns = Array.from(dynamicTableCols.columns);
+    const dynamicQuery = `SELECT ${dynamicColumns.join(',')} FROM ${tableName} WHERE ${dynamicColumns.join(
+      ' IS NOT NULL OR ',
+    )} IS NOT NULL`;
+    return {
+      initialQuery: query,
+      dynamic: { query: dynamicQuery, columns: dynamicTableCols.columns },
+    };
+  }
+  return { initialQuery: query };
 };
 
 const generatedNewTraces = (
@@ -77,43 +105,65 @@ const generatedNewTraces = (
 const generatedMultipleTraces = (
   graph: IGraph,
   fetchedColumns: Array<{ [key: string]: string | number }>,
+  dynamicColumns?: Set<string>,
 ) => {
   const { traces, multipleTraces } = graph;
   const newTraces: any = {};
   const columnSet = new Set<string>();
 
-  if (!traces['traces1']) {
+  if (!traces) {
     return new Error('Required trace1');
   }
-  const { x, y, z, ...others } = traces['traces1'];
   const commonAxisData: Array<string> = [];
   let commonAxis: string = multipleTraces?.commonAxis as string;
   if (multipleTraces?.commonAxis) {
     //@ts-ignore
     commonAxis = traces['traces1'][multipleTraces?.commonAxis];
   }
+  const hasValue = (keyName: string, traceIdPass: number) => {
+    if (!dynamicColumns) {
+      return traces[`traces${traceIdPass}`] ?? traces[`traces1`];
+    }
+    let trace: any = traces[`traces1`];
+    const traceId = Array.from(dynamicColumns).indexOf(keyName);
+    if (traceId !== -1) {
+      trace = traces[`traces${traceId + 1}`];
+    }
+    return trace;
+  };
   for (let i = 0; i < fetchedColumns.length; i++) {
     const column = fetchedColumns[i];
+
     Object.keys(column).forEach((key: string) => {
+      const { x, y, z, ...others } = hasValue(key, i + 1);
       if (commonAxis === key && column[key]) {
-        columnSet.add(sanitizedCell(column[key] as string));
+        if (dynamicColumns && dynamicColumns.size > 0) {
+          const haskey = dynamicColumns.has(column[key]);
+          if (!haskey) {
+            columnSet.add(sanitizedCell(column[key] as string));
+          }
+        } else {
+          columnSet.add(sanitizedCell(column[key] as string));
+        }
         commonAxisData.push(column[key] as string);
       } else {
         if (column[key]) {
-          columnSet.add(sanitizedCell(column[key] as string));
+          if (dynamicColumns && dynamicColumns.size > 0) {
+            const haskey = dynamicColumns.has(column[key]);
+            if (!haskey) {
+              columnSet.add(sanitizedCell(column[key] as string));
+            }
+          } else {
+            columnSet.add(sanitizedCell(column[key] as string));
+          }
           if (!newTraces[column[key]]) {
             newTraces[column[key]] = { ...others, name: column[key], yaxis: column[key] };
-            if (x) {
-              newTraces[column[key]]['x'] = [];
-            }
-            if (y) {
-              newTraces[column[key]]['y'] = [];
-            }
-            if (z) {
-              newTraces[column[key]]['z'] = [];
-            }
+            ['x', 'y', 'z'].forEach((axis) => {
+              if (axis === 'x' || axis === 'y' || axis === 'z') {
+                newTraces[column[key]][axis] = [];
+              }
+            });
           }
-
           if (x === key) {
             newTraces[column[key]]['x'].push(column[key]);
           }
@@ -132,12 +182,6 @@ const generatedMultipleTraces = (
 
   if (axisType && commonAxisData.length > 0) {
     Object.keys(newTraces).forEach((key, index) => {
-      if (axisType === 'x') {
-        newTraces[key]['yaxis'] = `y${index + 1}`;
-      } else if (axisType === 'y') {
-        newTraces[key]['xaxis'] = `x${index + 1}`;
-      }
-
       //@ts-ignore
       newTraces[key][axisType] = commonAxisData;
     });
@@ -148,25 +192,53 @@ const generatedMultipleTraces = (
   };
 };
 
+const dynamicColumnSetToArray = (
+  fetchedColumns: Array<{ [key: string]: string | number }>,
+  dynamicColumns?: Set<string>,
+) => {
+  if (dynamicColumns && dynamicColumns.size > 0) {
+    dynamicColumns.forEach((item) => {
+      fetchedColumns.push({
+        [item]: item,
+      });
+    });
+  }
+};
+
 // This calls after initial columns created to get actual vertical columns
 export const generateColumnsToFetch = (
   graph: IGraph,
   fetchedColumns: Array<{ [key: string]: string | number }>,
   tableName: string,
+  dynamicTable?: string,
+  dynamicColumns?: Set<string>,
 ) => {
   const { multipleTraces } = graph;
 
   let refObj: any = {};
+  dynamicColumnSetToArray(fetchedColumns, dynamicColumns);
+
   if (multipleTraces) {
-    refObj = generatedMultipleTraces(graph, fetchedColumns);
+    refObj = generatedMultipleTraces(graph, fetchedColumns, dynamicColumns);
   } else {
     refObj = generatedNewTraces(graph, fetchedColumns);
   }
-
   const { columnSet, newTraces } = refObj;
   const columns = Array.from(columnSet);
   const query = `SELECT ${columns.join(',')} FROM ${tableName} WHERE ${columns.join(' IS NOT NULL OR ')} IS NOT NULL`;
   const pagingQuery = `SELECT COUNT(${columns[0]}) as CNT FROM ${tableName} WHERE ${columns.join(' IS NOT NULL OR ')} IS NOT NULL`;
+  if (dynamicColumns && dynamicColumns.size > 0) {
+    const dynamicColumnsArray = Array.from(dynamicColumns);
+    const dynamicQuery = `SELECT ${dynamicColumnsArray.join(',')} FROM ${dynamicTable} WHERE ${dynamicColumnsArray.join(
+      ' IS NOT NULL OR ',
+    )} IS NOT NULL`;
+    return {
+      newTraces,
+      query,
+      pagingQuery,
+      dynamicQuery: dynamicQuery,
+    };
+  }
 
   return {
     newTraces,
@@ -186,6 +258,7 @@ export const generatingPlotlyData = (
   traces: PropertyType<IGraph, 'traces'>,
 ): IExtendGraph => {
   const newTraces: any = {};
+
   for (let i = 0; i < data.length; i++) {
     Object.keys(traces).forEach((key) => {
       const { x, y, z, ...others } = traces[key];
@@ -197,7 +270,6 @@ export const generatingPlotlyData = (
           }
         });
       }
-
       if (x) {
         for (let x = 0; x < traces[key].x.length; x++) {
           newTraces[key].x.push(data[i][traces[key].x[x]]);
@@ -215,7 +287,6 @@ export const generatingPlotlyData = (
       }
     });
   }
-
   const newData: IExtendGraph = {
     extendTrace: {},
     noOfTraces: [],
@@ -240,4 +311,14 @@ export const generatingPlotlyData = (
     newData.noOfTraces.push(index);
   });
   return newData;
+};
+
+export const createSingleArray = (mainArray: Array<any>, dynamicArray: Array<any>): Array<any> => {
+  const newArray: Array<any> = [];
+  for (let i = 0; i < mainArray.length; i++) {
+    if (dynamicArray.length >= i) {
+      newArray.push({ ...mainArray[i], ...dynamicArray[i] });
+    }
+  }
+  return newArray;
 };

@@ -71,7 +71,7 @@ const DownloadConfig: FC<IDownloadTools & { format: string; description: string 
   const onClickDownload = (format: string) => (): void => {
     downloadImage(plotly.current, { format, filename, width, height });
   };
-  const onChangeHandel = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const onChangeHandle = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e.target.type === 'number') {
       const value = Number(e.target.value);
       if (e.target.name === 'width') {
@@ -93,14 +93,14 @@ const DownloadConfig: FC<IDownloadTools & { format: string; description: string 
       {format !== 'svg' ? (
         <>
           <Field label={t('filename')}>
-            <Input defaultValue={filename} onChange={onChangeHandel} />
+            <Input defaultValue={filename} onChange={onChangeHandle} />
           </Field>
           <div className={classes.downloadHeightWidth}>
             <Field label={t('width')}>
-              <Input type="number" value={width} name="width" onChange={onChangeHandel} />
+              <Input type="number" value={width} name="width" onChange={onChangeHandle} />
             </Field>
             <Field label={t('height')}>
-              <Input type="number" value={height} name="height" onChange={onChangeHandel} />
+              <Input type="number" value={height} name="height" onChange={onChangeHandle} />
             </Field>
           </div>
         </>

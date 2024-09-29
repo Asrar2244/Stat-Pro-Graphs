@@ -1,3 +1,4 @@
+import { app } from '@tauri-apps/api';
 import { create } from 'zustand';
 interface ICommonMessage {
   message: string;
@@ -29,15 +30,21 @@ interface ICommonMsgStore {
   tasks?: ITask[];
   queueTasks?: IQueueTask[];
   setQueueTask: (queueTask: IQueueTask) => void;
-  setCommonMsg: (common: ICommonMessage) => void;
+  setCommonMsg: (common: ICommonMessage, translationVersion?: string) => void;
   setAddTask: (task: ITask) => void;
   setTaskArray: (task: ITask[]) => void;
 }
 export const useTasks = create<ICommonMsgStore>((set) => ({
   commonMsg: undefined,
   tasks: undefined,
-  setCommonMsg(common): void {
-    set({ commonMsg: common });
+  setCommonMsg(common, translationVersion): void {
+    if (!common || common?.message === '') {
+      app.getVersion().then((version) => {
+        set({ commonMsg: { message: `${translationVersion}:${version}` } });
+      });
+    } else {
+      set({ commonMsg: common });
+    }
   },
   setAddTask(task): void {
     set(({ tasks }) => {

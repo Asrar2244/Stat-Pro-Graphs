@@ -3,7 +3,6 @@ import { Database, IGraph } from '@utils';
 import { graphWorker } from '@workers/graph-worker';
 import { EXCEL } from '@constants';
 import { extendTraces, addTraces, relayout } from 'plotly.js-dist';
-// import { INITIAL_GRAPH_LAYOUT } from '@constants';
 interface IDataResult {
   totalRecords: number;
   loadPagingData: (startIndex: number, stopIndex: number) => Promise<void>;
@@ -20,7 +19,10 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const statements = useMemo(async () => {
     setLoading(true);
-    const initialQuery = await graphWorker.generateQueryForColumns(graph.traces, tableName);
+    const { initialQuery, dynamic } = await graphWorker.generateQueryForColumns(
+      graph.traces,
+      tableName,
+    );
     const db = new Database(dbName);
     const recordColumns = await db.selectQuery(initialQuery);
     if (recordColumns.length === 0) {
@@ -29,18 +31,21 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
         query: '',
       };
     }
-    const { query, pagingQuery, newTraces } = await graphWorker.generateColumnsToFetch(
-      graph,
-      recordColumns,
-      EXCEL,
-    );
-
+    const { query, pagingQuery, newTraces, dynamicQuery } =
+      await graphWorker.generateColumnsToFetch(
+        graph,
+        recordColumns,
+        EXCEL,
+        tableName,
+        dynamic?.columns,
+      );
     addInitialTrace(newTraces);
     const recordCount = await db.selectQuery(pagingQuery);
     setTotalRecords(recordCount[0]['CNT']);
     setLoading(false);
     return {
       query,
+      dynamicQuery,
       newTraces,
     };
   }, []);
@@ -48,31 +53,56 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
   const addInitialTrace = (newTraces: any) => {
     const traceArray: any = [];
     const layout: any = { ...plotly.current?.layout };
-    Object.keys(newTraces).forEach((key) => {
-      if (newTraces[key]['xaxis']) {
-        const xaxis = `xaxis${newTraces[key]['xaxis'].replace(/^\D+/g, '')}`;
-        layout[xaxis] = { overlaying: 'x', showticklabels: false, showgrid: false };
-      } else if (newTraces[key]['yaxis']) {
-        const yaxis = `yaxis${newTraces[key]['yaxis'].replace(/^\D+/g, '')}`;
-        layout[yaxis] = { overlaying: 'y', showticklabels: false, showgrid: false };
+    Object.keys(newTraces).forEach((key: string, index: number) => {
+      newTraces[key].name = String(newTraces[key].name).toUpperCase();
+      if (index === 0) {
+        layout['xaxis'] = {
+          showline: false,
+          zeroline: true,
+          showticklabels: true,
+          ticklabelposition: 'inside',
+          ...graph?.layout?.xaxis,
+        };
+        layout['yaxis'] = {
+          showline: false,
+          showticklabels: true,
+          zeroline: true,
+          ticklabelposition: 'inside',
+          ...graph?.layout?.yaxis,
+        };
       }
+
       traceArray.push(newTraces[key]);
     });
-
     relayout(plotly.current, layout);
-    addTraces(plotly.current, traceArray);
+
+    addTraces(
+      plotly.current,
+      traceArray.map((tra: any) => {
+        return { ...tra, x: [], y: [], z: [] };
+      }),
+    );
   };
 
   const loadPagingData = async (startIndex: number, stopIndex: number) => {
     setLoading(true);
-    const { query, newTraces } = await statements;
+    const { query, newTraces, dynamicQuery } = await statements;
     if (query !== '') {
       const db = new Database(dbName);
-      const result = await db.selectQuery(
-        `${query} ${totalRecords > 0 ? `LIMIT ${startIndex},${stopIndex}` : ''}`,
-      );
-      const { extendTrace, noOfTraces } = await graphWorker.generatingPlotlyData(result, newTraces);
+      const appendLimit = totalRecords > 0 ? `LIMIT ${startIndex},${stopIndex}` : '';
+      const initQuery = `${query} ${appendLimit}`;
+      const dynamics = dynamicQuery && dynamicQuery !== '' ? `${dynamicQuery} ${appendLimit}` : '';
+      const result = await db.selectQuery(`${initQuery}`);
+      let resultArray: Array<any> = result;
+      if (dynamics !== '') {
+        const dynamicResult = await db.selectQuery(`${dynamics}`);
+        resultArray = await graphWorker.createSingleArray(result, dynamicResult);
+      }
 
+      const { extendTrace, noOfTraces } = await graphWorker.generatingPlotlyData(
+        resultArray,
+        newTraces,
+      );
       extendTraces(plotly.current, extendTrace, noOfTraces);
       setLoading(false);
     }

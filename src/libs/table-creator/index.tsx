@@ -33,7 +33,7 @@ interface ITableComp extends ITranslate {
 const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName, t }) => {
   const { showHeaders, view, recordType, appendColumn, postfix, prefix, type, translationColumns } =
     table;
-  const { numberFormat } = useFormatter();
+  const { numberFormat, snitizedSpecialChar } = useFormatter();
   const { templateView, totalRecords, loadTemplateView, loading } = useTableFetch({
     dbName: dbFileName,
     tableName: dbTableName,
@@ -67,8 +67,8 @@ const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName,
             <TableHeader className="table-header">
               <TableRow>
                 {templateView[0]?.map((col) => (
-                  <TableHeaderCell key={col} className="cell">
-                    {col && col.startsWith('t-') ? t(col) : col}
+                  <TableHeaderCell key={col} className="cell header">
+                    {col && col.startsWith('t-') ? t(col) : snitizedSpecialChar(col)}
                   </TableHeaderCell>
                 ))}
               </TableRow>
@@ -88,7 +88,7 @@ const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName,
                     return (
                       <TableCell key={cIndex}>
                         {col && (col.startsWith('t-') || transCell !== undefined)
-                          ? t(col)
+                          ? t(numberFormat(col))
                           : numberFormat(col)}
                       </TableCell>
                     );

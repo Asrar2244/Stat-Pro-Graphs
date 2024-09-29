@@ -119,7 +119,7 @@ const ExplorerComp: FC = () => {
                   <TreeItem
                     itemType="leaf"
                     className={`leaf ${project.isOpenedData === 1 && 'selected'}`}
-                    onDoubleClick={onSelectedUpdate({ ...project, projectName }, DATA)}
+                    onClick={onSelectedUpdate({ ...project, projectName }, DATA)}
                   >
                     <TreeItemLayout>
                       <Caption1>
@@ -130,7 +130,7 @@ const ExplorerComp: FC = () => {
                   <TreeItem
                     itemType="leaf"
                     className={`leaf ${project.isOpenedOutput === 1 && 'selected'}`}
-                    onDoubleClick={onSelectedUpdate({ ...project, projectName }, OUTPUT)}
+                    onClick={onSelectedUpdate({ ...project, projectName }, OUTPUT)}
                   >
                     <TreeItemLayout>
                       <Caption1>
