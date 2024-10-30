@@ -23,7 +23,7 @@
           "type": "dynamic",
           "path": "input_variable_names",
           "rows": [
-            { "path": "input_variable_names" },
+            { "path": "" },
             { "path": "num_of_cases" },
             { "path": "minimum" },
             { "path": "maximum" },

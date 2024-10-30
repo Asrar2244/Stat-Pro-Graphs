@@ -1,10 +1,20 @@
 import { IRecordTableType } from '@utils';
+
 interface IQuery {
   columns: Array<string>;
   query: string;
   pageQuery: string;
   viewNew?: Array<string>;
 }
+
+const numberFormat = (value: string | number): string => {
+  if (isNaN(value as number)) {
+    return value?.toString();
+  }
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 4,
+  }).format(Number(value));
+};
 
 const withOutRecordType = (view: Array<Array<string>>): Array<string> => {
   const columns: Array<string> = [];
@@ -25,7 +35,6 @@ const withRecordType = (view: Array<string>): Array<string> => {
     const cell = view[i];
     if (cell !== '') {
       const sanitized = `"${cell.replace('t-', '')}"`;
-
       columns.push(sanitized);
     }
   }
@@ -75,7 +84,7 @@ const mergingDataWithOutRecordType = (
           const details = [];
           for (let l = 0; l < result.length; l++) {
             if (result[l][cell] !== null && result[l][cell] !== undefined) {
-              details.push(result[l][cell]);
+              details.push(numberFormat(result[l][cell]));
             }
           }
           view[i][j] = details.length === 1 ? String(details[0]) : details.join(',');

@@ -150,134 +150,193 @@ export const Main: React.FC = () => {
     const dataType: IBasicTypes = event.target.getAttribute('data-type') as IBasicTypes;
     setMain(dataType, { [name]: value });
   };
+  const onChangeCheckbox = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const { checked } = event.target;
+    const selectedObj: any = {};
+    [
+      'isN',
+      'isMedian',
+      'isRange',
+      'isMin',
+      'isInterquartileRange',
+      'isMax',
+      'isGeoMean',
+      'isSkewness',
+      'isSum',
+      'isHarmonicMean',
+      'isSEofSkewness',
+      'isArithMean',
+      'isSD',
+      'isKurtosis',
+      'isSEofAM',
+      'isCV',
+      'isSEofKurtosis',
+      'ciOfAMChecked',
+      'isShaprioWilk',
+      'isAndersonDarling',
+      'isMardiaSkewness',
+      'isMardiaKurtosis',
+      'isHenzeZirkler',
+      'isMode',
+      'isVariance',
+    ].forEach((key) => {
+      selectedObj[key] = checked;
+    });
+    setMain('mainOptions', selectedObj);
+  };
   return (
     <div className={classes.mainLayout}>
       <div className={classes.availability}>
         <AvailableAndSelectedList />
 
-        <Fieldset title={t('options')} className={classes.optionsGroup}>
-          <Checkbox name="allOptions" label={t('allOptions')} />
+        <Fieldset
+          title={
+            (
+              <Checkbox name="allOptions" label={t('allOptions')} onChange={onChangeCheckbox} />
+            ) as any
+          }
+          className={classes.optionsGroup}
+        >
           <div className={classes.options}>
             <Checkbox
               data-type="mainOptions"
               name="isN"
               label={t('n')}
+              checked={mainOptions?.isN as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isMedian"
               label={t('median')}
+              checked={mainOptions?.isMedian as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isRange"
               label={t('range')}
+              checked={mainOptions?.isRange as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isMin"
               label={t('minimum')}
+              checked={mainOptions?.isMin as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isMode"
               label={t('mode')}
+              checked={mainOptions?.isMode as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isInterquartileRange"
               label={t('integuartileRange')}
+              checked={mainOptions?.isInterquartileRange as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isMax"
               label={t('maximum')}
+              checked={mainOptions?.isMax as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isGeoMean"
               label={t('geometricMean')}
+              checked={mainOptions?.isGeoMean as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isSkewness"
               label={t('skeewness')}
+              checked={mainOptions?.isSkewness as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isSum"
               label={t('sum')}
+              checked={mainOptions?.isSum as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isHarmonicMean"
               label={t('harmonicMean')}
+              checked={mainOptions?.isHarmonicMean as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isSEofSkewness"
               label={t('seOfSkewness')}
+              checked={mainOptions?.isSEofSkewness as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isArithMean"
               label={t('arithmeticMean')}
+              checked={mainOptions?.isArithMean as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isSD"
               label={t('sd')}
+              checked={mainOptions?.isSD as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isKurtosis"
               label={t('kurtosis')}
+              checked={mainOptions?.isKurtosis as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isSEofAM"
               label={t('seOfAm')}
+              checked={mainOptions?.isSEofAM as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isCV"
               label={t('cv')}
+              checked={mainOptions?.isCV as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isSEofKurtosis"
               label={t('seOfKutosis')}
+              checked={mainOptions?.isSEofKurtosis as boolean}
               onChange={onChangeSelection}
             />
             <div className={classes.ciOfAm}>
               <Checkbox
                 data-type="mainOptions"
-                name="ciOfAm"
+                name="ciOfAMChecked"
                 label={t('ciOfAm')}
+                checked={mainOptions?.ciOfAMChecked as boolean}
                 onChange={onChangeSelection}
               />
               <Input
                 data-type="mainOptions"
                 defaultValue={`${mainOptions?.CIofAM}`}
                 name="CIofAM"
-                disabled={!mainOptions?.ciOfAm}
+                disabled={!mainOptions?.ciOfAMChecked}
                 onBlur={onBlurText}
               />
             </div>
@@ -285,36 +344,42 @@ export const Main: React.FC = () => {
               data-type="mainOptions"
               name="isShaprioWilk"
               label={t('shaprioWilk')}
+              checked={mainOptions?.isShaprioWilk as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isAndersonDarling"
               label={t('andersonDarling')}
+              checked={mainOptions?.isAndersonDarling as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isMardiaSkewness"
               label={t('mardiaSkewness')}
+              checked={mainOptions?.isMardiaSkewness as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isMardiaKurtosis"
               label={t('mardiaKurtosis')}
+              checked={mainOptions?.isMardiaKurtosis as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isHenzeZirkler"
               label={t('henzeZirkler')}
+              checked={mainOptions?.isHenzeZirkler as boolean}
               onChange={onChangeSelection}
             />
             <Checkbox
               data-type="mainOptions"
               name="isVariance"
               label={t('variance')}
+              checked={mainOptions?.isVariance as boolean}
               onChange={onChangeSelection}
             />
           </div>

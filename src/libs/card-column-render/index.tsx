@@ -35,7 +35,6 @@ export const CardColumnRender: FC<ICardColumnRenderProps> = memo(
       });
       return Array.from(cols);
     }, []);
-
     const { totalRecords, loadTemplateView, templateView, loading } = useTableFetch({
       dbName: dbFileName,
       tableName: dbTableName,

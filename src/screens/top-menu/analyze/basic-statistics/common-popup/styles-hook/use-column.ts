@@ -88,6 +88,7 @@ export const useMainStyles = makeStyles({
   options: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
+    paddingTop: tokens.spacingVerticalM,
   },
   meanGroup: {
     display: 'grid',

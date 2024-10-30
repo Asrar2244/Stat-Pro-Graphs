@@ -37,6 +37,7 @@ const initial = {
     isSEofAM: false,
     isCV: false,
     isSEofKurtosis: false,
+    ciOfAMChecked: false,
     CIofAM: '0.95',
     isVariance: false,
     isShaprioWilk: false,

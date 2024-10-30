@@ -1,9 +1,17 @@
 import axios, { AxiosStatic } from 'axios';
-const { MODE, VITE_API } = import.meta.env;
+import { logger } from '@utils';
+const { VITE_API } = import.meta.env;
 export const useAxios = (): AxiosStatic => {
   axios.defaults.baseURL = VITE_API;
-  if (MODE === 'development') {
-    axios.defaults.headers.common['x-mock-match-request-body'] = 'false';
-  }
+  axios.interceptors.request.use(
+    (config) => {
+      logger.info({ message: 'Request Sent--', body: config.data });
+      return config;
+    },
+    (error) => {
+      logger.error({ error: error.message });
+      return Promise.reject(error);
+    },
+  );
   return axios;
 };
