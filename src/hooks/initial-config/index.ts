@@ -6,7 +6,7 @@ import { Database, homeDirectory } from '@utils';
 import { useTasks } from '@store';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
-import { CONFIGURATION_DB, COLLECTION_DIR, EXCEL_DIR } from '@constants';
+import { CONFIGURATION_DB, COLLECTION_DIR } from '@constants';
 import initialTables from './query';
 
 export const useInitialConfig = () => {
@@ -25,7 +25,7 @@ export const useInitialConfig = () => {
     if (!(await exists(homeDir))) {
       await mkdir(homeDir);
     }
-    [COLLECTION_DIR, EXCEL_DIR].forEach(async (folder) => {
+    [COLLECTION_DIR].forEach(async (folder) => {
       const fullPath = await join(homeDir, folder);
       if (!(await exists(fullPath))) {
         await mkdir(fullPath);

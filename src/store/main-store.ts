@@ -8,6 +8,7 @@ export interface IProjectDetails {
   isActive: number;
   createdDateTime: string;
   modifiedDateTime: string;
+  workspacePath: string;
   id: string;
 }
 

@@ -35,6 +35,9 @@ export const useColumnsRowsCount = ({ id, tabName, noRowCount }: IColumnsRowsCou
       }
       Promise.all(queries)
         .then((result) => {
+          if (result.length === 0) {
+            return [];
+          }
           const createColumns: IColumn[] = result[0].map((column: IColumn) => {
             return {
               columnId: column.name,

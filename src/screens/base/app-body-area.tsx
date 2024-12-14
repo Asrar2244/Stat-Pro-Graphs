@@ -68,7 +68,8 @@ const AppBody: FC = () => {
           <span>{config?.type ?? t(component, { ns: 'dockLayout' })}</span>
         </div>
         <div className={classes.subTitle}>
-          <span>{config?.tabName}</span>
+          <span>{config?.name}</span> {config?.tabName && '['}
+          <span title={config?.tabName}>{config?.tabName}</span> {config?.tabName && ']'}
         </div>
       </div>
     );

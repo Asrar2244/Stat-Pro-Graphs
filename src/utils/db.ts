@@ -1,6 +1,7 @@
 import DB from '@tauri-apps/plugin-sql';
 import { join } from '@tauri-apps/api/path';
 import { homeDirectory } from './app-apis';
+import { CONFIGURATION_DB } from '@constants';
 const { MODE } = import.meta.env;
 export class Database {
   private db: Promise<DB>;
@@ -9,9 +10,13 @@ export class Database {
   }
   //To loading database file
   private async loadSqlLiteFile(dbName: string) {
-    const appFolder = await homeDirectory();
-    const dbFile = await join(appFolder, 'collections', dbName);
-    return await DB.load(`sqlite:${dbFile}`);
+    let dbLocation = dbName;
+    if (dbName === CONFIGURATION_DB) {
+      const appFolder = await homeDirectory();
+      dbLocation = await join(appFolder, 'collections', dbName);
+    }
+
+    return await DB.load(`sqlite:${dbLocation}`);
   }
 
   //To Execute transaction queries

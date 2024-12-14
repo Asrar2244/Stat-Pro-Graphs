@@ -56,5 +56,7 @@
   "height": "Height",
   "filename": "Filename",
   "showAll": "Show All",
-  "addingTaskToQueue": "Adding Task to Queue"
+  "addingTaskToQueue": "Adding Task to Queue",
+  "workspacePath": "Workspace Path",
+  "selectWorkspacePath": "Select Workspace Path"
 }

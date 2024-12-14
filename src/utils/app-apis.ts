@@ -72,3 +72,7 @@ export const collectionFolder = async (appendPath?: string): Promise<string> => 
   }
   return await join(homeDir, COLLECTION_DIR);
 };
+
+export const joinPaths = (paths: string[]): Promise<string> => {
+  return join(...paths);
+};

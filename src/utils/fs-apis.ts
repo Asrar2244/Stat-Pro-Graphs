@@ -1,5 +1,5 @@
 import { exists, remove, copyFile } from '@tauri-apps/plugin-fs';
-import { join, extname } from '@tauri-apps/api/path';
+import { join, extname, basename, dirname } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/core';
 
 import { homeDirectory } from './app-apis';
@@ -57,4 +57,16 @@ export const chunkArray = (arr: Array<any>, chunkSize: number): Array<any> => {
     result.push(arr.slice(i, i + chunkSize));
   }
   return result;
+};
+
+export const getFileSize = async (filePath: string): Promise<number> => {
+  return await invoke('get_file_size', { path: filePath });
+};
+
+export const getFileNameFromPath = (filePath: string): Promise<string> => {
+  return basename(filePath);
+};
+
+export const getDirPath = async (filePath: string): Promise<string> => {
+  return dirname(filePath);
 };

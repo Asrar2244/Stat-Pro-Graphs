@@ -1,15 +1,23 @@
 import { useTranslation } from 'react-i18next';
+/**
+ *  deleteByIDOutputTable,
+  insertExecuteTaskTable,
+ */
 import {
   insertToNotificationTable,
   deleteNotification,
   outputGenerateIDTable,
-  deleteByIDOutputTable,
-  insertExecuteTaskTable,
+  outputUpdateResult,
 } from '@backend';
-import { v4 as uuidv4 } from 'uuid';
-import { collectionFolder, saveLargeJsonToFile, Database } from '@utils';
+// import { v4 as uuidv4 } from 'uuid';
+/**
+ * collectionFolder, saveLargeJsonToFile,
+ */
+import { Database } from '@utils';
 import { CONFIGURATION_DB } from '@constants';
 import { useToaster } from '@hooks';
+import { mainWorker } from '@workers/worker';
+import { API } from '@constants';
 interface IOthersParameters {
   message?: string;
   queueFor: string;
@@ -23,14 +31,13 @@ interface IOthersParameters {
 }
 export const useAnalyzeSave = () => {
   const { t } = useTranslation(['common', 'errors']);
-  const { error, info } = useToaster();
+  const { error, success } = useToaster();
   const insertInNotifications = async (
     isDeleteID: number = 0,
     message: string,
     openTab: string,
     outputId: number,
   ): Promise<number> => {
-    info({ body: t('addingTaskToQueue') });
     const db = new Database(CONFIGURATION_DB);
     if (isDeleteID > 0) {
       const deleted = await db.executeQuery(deleteNotification, [isDeleteID]);
@@ -44,21 +51,14 @@ export const useAnalyzeSave = () => {
     ]);
     return inserted.lastInsertId;
   };
-  const insertInTasks = async (payload: string, otherJson: string): Promise<number> => {
-    const db = new Database(CONFIGURATION_DB);
 
-    const inserted = await db.executeQuery(insertExecuteTaskTable, [payload, otherJson]);
-    return inserted.lastInsertId;
-  };
-  const save = async (
+  const execute = async (
     dbName: string,
     parameters: Record<string, any>,
     otherParameters: IOthersParameters,
   ) => {
-    const uuid = uuidv4();
-    const jsonFile = await collectionFolder(`${uuid}.json`);
     const outputId = await outputGenerateIDTable(dbName, [
-      jsonFile,
+      '',
       dbName,
       otherParameters.queueFor,
       otherParameters.queueType,
@@ -75,16 +75,21 @@ export const useAnalyzeSave = () => {
     otherParameters['outputId'] = outputId;
     otherParameters['notificationId'] = notificationID;
     otherParameters['dbName'] = dbName;
-    saveLargeJsonToFile(jsonFile, parameters)
-      .then(async () => {
-        await insertInTasks(jsonFile, JSON.stringify(otherParameters));
+    // await insertInTasks('', JSON.stringify(otherParameters));
+    mainWorker
+      .axios(`${API.backendURL}/api/${API.analysis}`, parameters)
+      .then((response: any) => {
+        if (response.error) {
+          throw new Error(response.error);
+        }
+        outputUpdateResult(dbName, [JSON.stringify(response), outputId]).then(() => {
+          success({ body: message });
+        });
       })
-      .catch(async (err) => {
-        console.error(err);
-        await insertInNotifications(notificationID, '', '', 0);
-        await deleteByIDOutputTable(dbName, [outputId]);
-        error({ body: err.message ?? t('errorInSaveFile', { ns: 'errors' }) });
+      .catch((errorMsg: any) => {
+        console.log('errorMsg===>', errorMsg);
+        error({ title: 'Error', body: errorMsg.message });
       });
   };
-  return { save };
+  return { execute };
 };

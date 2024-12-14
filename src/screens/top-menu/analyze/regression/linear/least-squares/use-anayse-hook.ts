@@ -4,7 +4,7 @@ import { IActiveNode, useAnalyzeSave } from '@hooks';
 import { useEffect } from 'react';
 import { IColumn } from '../../../../../table-render/use-column-count';
 import { EXCEL, API } from '@constants';
-import { collectionsLocation, convertToLinuxPath } from '@utils';
+// import { collectionsLocation, convertToLinuxPath } from '@utils';
 interface IOutput {
   executeAnalysis: () => void;
 }
@@ -24,7 +24,7 @@ export const usePrepareAnalysis = ({
       setModelBulk: state.setModelBulk,
     })),
   );
-  const { save } = useAnalyzeSave();
+  const { execute } = useAnalyzeSave();
   useEffect(() => {
     const columnMap = new Map<string, boolean>();
     columns.forEach((column) => {
@@ -35,7 +35,7 @@ export const usePrepareAnalysis = ({
   }, [columns.length]);
 
   const executeAnalysis = async (): Promise<void> => {
-    const tableName = convertToLinuxPath(await collectionsLocation(config.tabName));
+    const tableName = config.tabName;
 
     const parameters = {
       data_name: tableName,
@@ -62,7 +62,7 @@ export const usePrepareAnalysis = ({
         ...resampling,
       },
     };
-    save(config.tabName, parameters, {
+    execute(config.tabName, parameters, {
       queueFor,
       url: `/api/${API.analysis}`,
       method: 'POST',

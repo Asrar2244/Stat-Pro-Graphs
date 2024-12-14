@@ -3,7 +3,7 @@ import { Field, Input, Button, Dropdown, Option, Spinner } from '@fluentui/react
 import { BiDotsHorizontalRounded, BiPlayCircle } from 'react-icons/bi';
 import { Modal, ITranslate } from '@libs';
 import { open } from '@tauri-apps/plugin-dialog';
-
+import { getFileSize, getFileNameFromPath, getDirPath, joinPaths } from '@utils';
 import { IModal, useFileSize, useGetInitialConfig, useAxios, useToaster } from '@hooks';
 import { useStartProStore } from '@store';
 import { browseFile } from './configurations';
@@ -55,15 +55,22 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
           },
         ],
       });
+
       if (openedFile) {
-        const { path, size, name }: any = openedFile;
-        setFile(path);
+        const size = await getFileSize(openedFile);
+        const baseName = await getFileNameFromPath(openedFile);
+        const name = baseName.split('.')[0];
+        // const { path, size, name }: any = openedFile;
+        setFile(openedFile);
         setLoading(true);
         setFileSize(size);
-        setNewProject('impBusinessObjFile', path);
+        setNewProject('impBusinessObjFile', openedFile);
         setNewProject('fileSize', size.toString());
-
-        copyExcelFileToVolume(path, name as string)
+        if (openedFile && openedFile !== '') {
+          const dirName = await getDirPath(openedFile);
+          setNewProject('workspacePath', dirName);
+        }
+        copyExcelFileToVolume(openedFile, name as string)
           .then(async (savePath: string) => {
             const volumePath = await volumeExcelFilePath(savePath);
             axios
@@ -76,7 +83,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
                 if (data.error) {
                   throw new Error(data.error);
                 }
-                const extension = await getExtension(path);
+                const extension = await getExtension(openedFile);
                 if (extension.toUpperCase() === 'CSV') {
                   setSheets(['Sheet1']);
                 } else {
@@ -99,6 +106,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             setFile('');
             setNewProject('impBusinessObjFile', '');
             setNewProject('fileSize', '');
+            setNewProject('workspacePath', '');
             console.error('Error===>', error);
             toast.error({ body: ` ${error?.message}` });
           });
@@ -121,6 +129,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
     setNewProject('fileSize', '');
     setNewProject('impBusinessObjFile', '');
     setNewProject('selectedSheet', '');
+    setNewProject('workspacePath', '');
     if (value === '') {
       setProjectExists(undefined);
       return;
@@ -132,25 +141,27 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
     }
     setProjectExists(isExists);
   };
-  //ToDo
+
   const onClickCreateProject = async (): Promise<void> => {
     try {
       if (newProject?.name && newProject?.impBusinessObjFile) {
         const volumeFilePath = await volumeExcelFilePath(file as string);
-        const collectionsDir = await collectionsLocation();
+        const collectionsDir = newProject?.workspacePath ?? (await collectionsLocation());
+        const dbLocation = convertToLinuxPath(collectionsDir);
         const { data } = await axios.post(`api/${API.analysis}`, {
           data_name: convertToLinuxPath(volumeFilePath),
           input_data_type: 'file',
           operation: 'store_data_in_db',
           sheet_name: selectedSheet,
-          db_location: convertToLinuxPath(collectionsDir),
+          db_location: dbLocation,
         });
         if (data.error) {
           throw new Error(data.error);
         }
-        const actualPath = await volumeExcelFilePath(file as string);
+        const actualPath = volumeFilePath;
         if (data?.return_value === 'success') {
           const dbName = await fileNameWithExtension(data?.db_name);
+          const workspacePath = await joinPaths([dbLocation, dbName]);
           const db = new Database(CONFIGURATION_DB);
           db.executeQuery(insertIntoProject, [
             dbName,
@@ -160,6 +171,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             new Date().toISOString(),
             new Date().toISOString(),
             1,
+            workspacePath,
           ])
             .then(async () => {
               // await outputTable(dbName);
@@ -167,6 +179,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               setNewProject('fileSize', '');
               setNewProject('impBusinessObjFile', '');
               setNewProject('selectedSheet', '');
+              setNewProject('workspacePath', '');
               setFile(undefined);
               setSelectedSheet('');
               setProjectExists(undefined);
@@ -203,6 +216,17 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
     }
   };
 
+  const onChangeWorkSpacePath = async () => {
+    const openedFolder = await open({
+      multiple: false,
+      directory: true,
+      title: t('selectWorkspacePath', { ns: 'common' }),
+    });
+    if (openedFolder) {
+      setNewProject('workspacePath', openedFolder);
+    }
+  };
+
   const okDisabled = !!file && newProject?.name && newProject?.name !== '';
 
   return (
@@ -225,6 +249,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
           setNewProject('fileSize', '');
           setNewProject('impBusinessObjFile', '');
           setNewProject('selectedSheet', '');
+          setNewProject('workspacePath', '');
           setFile(undefined);
           setSelectedSheet('');
           setProjectExists(undefined);
@@ -313,6 +338,26 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             </Dropdown>
           </Field>
         )}
+
+        <fieldset className={classes.fieldset} disabled={projectExists}>
+          <Field label={t('workspacePath', { ns: 'common' })}>
+            <Input
+              disabled
+              value={newProject?.workspacePath ?? ''}
+              contentAfter={
+                <Button
+                  disabled={loading}
+                  className={classes.iconHover}
+                  appearance="transparent"
+                  size="small"
+                  color="primary"
+                  onClick={onChangeWorkSpacePath}
+                  icon={<BiDotsHorizontalRounded />}
+                />
+              }
+            />
+          </Field>
+        </fieldset>
       </div>
     </Modal>
   );

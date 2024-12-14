@@ -1,23 +1,23 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useRidge } from './use-ridge-store-hook';
 import { API } from '@constants';
-import { collectionsLocation } from '@utils';
 import { useAnalyzeSave } from '@hooks';
 interface IOutputAnalyzeData {
   ridgeAnalyzeData: (tableName: string, queueFor: string, queueType: string) => void;
 }
 export const useRidgeAnalyzeData = (): IOutputAnalyzeData => {
   const { ridge } = useRidge(useShallow((state) => ({ ridge: state })));
-  const { save } = useAnalyzeSave();
+  const { execute } = useAnalyzeSave();
   const ridgeAnalyzeData = async (
     tableName: string,
     queueFor: string,
     queueType: string,
   ): Promise<void> => {
-    const db_path = await collectionsLocation(tableName);
+    const db_path = tableName; //await collectionsLocation(tableName);
     const lambdas = ridge.lambdaIndividual
       ? ridge.lambdaIndividualValues.map((value) => Number(value))
       : [ridge.lambdaMinimum, ridge.lambdaMaximum, ridge.lambdaIncrement];
+
     const parameters = {
       db_name: db_path,
       dependent_var_names: Object.keys(ridge.dependentList),
@@ -29,7 +29,7 @@ export const useRidgeAnalyzeData = (): IOutputAnalyzeData => {
       },
       sub_type: 'ridge',
     };
-    save(tableName, parameters, {
+    execute(tableName, parameters, {
       queueFor,
       url: `/api/${API.analysis}`,
       method: 'POST',

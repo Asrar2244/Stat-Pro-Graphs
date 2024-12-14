@@ -7,7 +7,6 @@ import { useCommonStyles } from './styles-hook/use-basic-statistics';
 import { Main } from './main';
 import { NoIdSelected } from '@libs/no-id-selected-msg';
 import { useBasicStatistics } from '../use-basic-statistics';
-import { convertToLinuxPath, collectionsLocation } from '@utils';
 import { API } from '@constants';
 interface ICommonPopup extends IModal {
   type: string;
@@ -20,7 +19,7 @@ const CommonStatisticsComponent: FC<ICommonPopup> = ({ type, ...props }) => {
   const { mainOptions, mainSelectedList, setReset } = useBasicStatistics();
 
   const { id, config } = useActiveNode([props.open]);
-  const { save } = useAnalyzeSave();
+  const { execute } = useAnalyzeSave();
   const onTabSelectHandler = (_event: SelectTabEvent, { value }: SelectTabData): void => {
     setSelectedTab(value as string);
   };
@@ -29,7 +28,7 @@ const CommonStatisticsComponent: FC<ICommonPopup> = ({ type, ...props }) => {
     props.closeModal();
   };
   const onOkModal = async (): Promise<void> => {
-    const tableName = convertToLinuxPath(await collectionsLocation(config.tabName));
+    const tableName = config.tabName;
     const parameters = {
       data_name: tableName,
       input_data_type: 'file',
@@ -38,7 +37,7 @@ const CommonStatisticsComponent: FC<ICommonPopup> = ({ type, ...props }) => {
       operation: 'descriptive_statistics',
       desparameters: { ...mainOptions, CIofAM: Number(mainOptions.CIofAM) },
     };
-    save(config.tabName, parameters, {
+    execute(config.tabName, parameters, {
       queueFor: t('title', { ns: 'basicStatistics' }),
       url: `/api/${API.analysis}`,
       queueType: 'basicStatistics',

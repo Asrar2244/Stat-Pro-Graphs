@@ -48,7 +48,8 @@ fn main() {
         .plugin(tauri_plugin_sql::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             close_splashscreen,
-            tauri_json_file::save_json_to_file
+            tauri_json_file::save_json_to_file,
+            tauri_json_file::get_file_size,
         ])
         .setup({
             // Clone reference for the setup closure

@@ -24,6 +24,7 @@ const CREATE_PROJECT_QUERY = `CREATE TABLE IF NOT EXISTS ${PROJECTS_TABLE} (
     isActive SMALLINT NOT NULL DEFAULT 1,
     isOpenedData  SMALLINT NOT NULL DEFAULT 0,
     isOpenedOutput  SMALLINT NOT NULL DEFAULT 0,
+    workspacePath TEXT NULL DEFAULT '',
     createdDateTime TEXT NOT NULL,
     modifiedDateTime TEXT NOT NULL
   )`;
