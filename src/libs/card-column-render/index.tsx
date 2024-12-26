@@ -1,5 +1,5 @@
 import { FC, memo, useEffect, useMemo, useState } from 'react';
-import { ICardInterface, ITranslate, chunkArray } from '@utils';
+import { ICardInterface, ITranslate, chunkArray, } from '@utils';
 import { usePagination } from '@hooks';
 import { useCardColumnStyle } from './styles-hook/use-card-column-style';
 import {
@@ -13,16 +13,19 @@ import { Pagination } from '@libs';
 import { DEFAULT_OUTPUT_TABLE_PAGE_SIZE } from '@constants';
 import { useTableFetch } from '../table-creator/use-table-hook';
 import get from 'lodash.get';
+import { useUpdatedConfig } from './use-updated-config';
 interface ICardColumnRenderProps extends ITranslate {
   card: ICardInterface;
   dbFileName: string;
   dbTableName: string;
 }
+
 export const CardColumnRender: FC<ICardColumnRenderProps> = memo(
-  ({ card, t, dbTableName, dbFileName }) => {
+  ({ card: config, t, dbTableName, dbFileName }) => {
     const classes = useCardColumnStyle();
-    const dynamicColumns = useMemo(() => card.columns.filter((f) => f.type === 'dynamic'), []);
-    const staticColumns = useMemo(() => card.columns.filter((f) => f.type === 'static'), []);
+    const card = useUpdatedConfig({ dbName: dbFileName, tableName: dbTableName, config });
+    const dynamicColumns = useMemo(() => card.columns.filter((f) => f.type === 'dynamic'), [card]);
+    const staticColumns = useMemo(() => card.columns.filter((f) => f.type === 'static'), [card]);
     const columns = useMemo(() => {
       const cols = new Set();
       dynamicColumns.forEach((r) => {

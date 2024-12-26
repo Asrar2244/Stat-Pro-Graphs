@@ -6,6 +6,7 @@ export interface ICardInterface {
   showCaption: boolean;
   columnCount?: Number;
   columns: Array<ICardColumnInterface>;
+  showSelectedColumn: boolean
 }
 
 export interface ICardColumnInterface {

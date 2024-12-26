@@ -4,6 +4,7 @@
       "name": "basic-stat",
       "showCaption": false,
       "columnCount": 10,
+      "showSelectedColumn": true,
       "columns": [
         {
           "type": "static",
