@@ -17,6 +17,9 @@ const ColumnWise = lazy(() =>
 const OpenDevTools = lazy(() =>
   import('./open-dev-tools').then((module) => ({ default: module.OpenDevTools })),
 );
+const EstimationOfModule = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.estimationOfModule })),
+);
 
 export const withMenuEvents = <P extends object>(
   translationNs: string,
@@ -56,6 +59,8 @@ const MenuSelector: FC<{
       return <Ridge {...modal} />;
     case exporters.basicStatisticsColumnWise:
       return <ColumnWise {...modal} />;
+    case exporters.estimationOfModule:
+      return <EstimationOfModule {...modal} />;
     case exporters.openDevTools:
       return <OpenDevTools />;
     default:

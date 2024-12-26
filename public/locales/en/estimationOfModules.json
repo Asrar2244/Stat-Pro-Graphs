@@ -1,0 +1,16 @@
+{
+  "title": "Analyze: Analysis of Variance Estimation Model",
+  "ok": "Ok",
+  "close": "Close",
+  "model": "Model",
+  "repeatedMeasures": "Repeated Measures",
+  "options": "Options",
+  "resampling": "Resampling",
+  "dependent": "Dependent",
+  "factor": "Factor",
+  "covariate": "Covariate",
+  "available": "Available",
+  "selectAll": "Select All",
+  "delete": "Delete",
+  "anoaDependentError": "Only {{count}} dependent can add"
+}

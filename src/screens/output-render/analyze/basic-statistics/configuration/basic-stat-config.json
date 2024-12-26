@@ -19,8 +19,7 @@
             { "label": "shapiro_test_stat" },
             { "label": "shapiro_p_value" },
             { "label": "anderson_darling_statistics" },
-            { "label": "adjusted_anderson_darling_statistics" },
-            { "label": "p_value" }
+            { "label": "adjusted_anderson_darling_statistics" }
           ]
         },
         {
@@ -36,8 +35,7 @@
             { "path": "shapiro_test_stat" },
             { "path": "shapiro_p_value" },
             { "path": "anderson_darling_statistics" },
-            { "path": "adjusted_anderson_darling_statistics" },
-            { "path": "p_value" }
+            { "path": "adjusted_anderson_darling_statistics" }
           ]
         }
       ]

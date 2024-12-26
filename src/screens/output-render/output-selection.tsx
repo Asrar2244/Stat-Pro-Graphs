@@ -21,6 +21,13 @@ const BasicStatistics = lazy(() =>
     default: modules.BasicStatisticsRegression,
   })),
 );
+
+const EstimationOfModule = lazy(() =>
+  import('./analyze/analysis-of-variance/estimation-of-module').then((modules) => ({
+    default: modules.EstimationOfModule,
+  })),
+);
+
 interface IOutputSelection extends IToolBar {
   id: number;
   showHistory: boolean;
@@ -29,6 +36,7 @@ const load: any = {
   regLinearLeastSquare: <LinearLeastSquareRegression />,
   regLinearRidge: <LinearRidgeRegression />,
   basicStatistics: <BasicStatistics />,
+  estimationOfModules: <EstimationOfModule />
 };
 export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...props }) => {
   const { config } = useActiveNode([]);
@@ -36,6 +44,7 @@ export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...prop
   const { t } = useTranslation('common');
   const run = useSelectedRun(config.tabName, id);
   const forceStyle = !showHistory ? { width: '100%' } : {};
+  console.log(run?.selectedRun?.outputType, "run?.selectedRun?.outputType");
   return (
     <div className={classes.selectionLayout} style={forceStyle}>
       <OutputRenderContext.Provider

@@ -15,12 +15,14 @@
         "height": 800,
         "visible": false,
         "label": "main",
-        "resizable": false,
+        "resizable": true,
         "fullscreen": false,
         "skipTaskbar": false,
+        "maximized": true,
         "decorations": true,
         "alwaysOnTop": false,
-        "width": 900
+        "width": 900,
+        "transparent": true
       },
       {
         "title": "start-pro",

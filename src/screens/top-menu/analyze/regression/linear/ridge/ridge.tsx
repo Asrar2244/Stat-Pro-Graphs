@@ -6,10 +6,9 @@ import {
   MdOutlineRemove,
 } from 'react-icons/md';
 import { Fieldset, CheckListRender } from '@libs';
-import { useActiveNode, useToaster } from '@hooks';
+import { useActiveNode, useToaster, useColumnsRowsCount } from '@hooks';
 import { useShallow } from 'zustand/react/shallow';
 import { useRidgeStyles } from './styles-hook/use-ridge-hook';
-import { useColumnsRowsCount } from '../../../../../table-render/use-column-count';
 import { useTranslation } from 'react-i18next';
 import { useRidge } from './use-ridge-store-hook';
 import { useRidgePrepare } from './use-ridge-analyze';

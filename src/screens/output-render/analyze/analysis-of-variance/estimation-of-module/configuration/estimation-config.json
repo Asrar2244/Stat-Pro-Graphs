@@ -1,0 +1,53 @@
+{
+  "tables": [
+    {
+      "name": "estimation-module-inputs",
+      "showCaption": false,
+      "showHeaders": false,
+      "view": [
+        ["t-no_of_vars", "no_of_vars"],
+        ["t-dependent_variables_len", "dependent_variables_len"],
+        ["t-containing_var", "containing_var"]
+      ]
+    },
+    {
+      "name": "variables",
+      "showCaption": true,
+      "showHeaders": false,
+      "view": [
+        ["t-factor", "factor"],
+        ["t-factor_levels", "factor_levels"],
+        ["t-dependent_var_names", "dependent_var_names"],
+        ["t-dependent_variables", "dependent_variables_len"]
+      ]
+    },
+    {
+      "name": "analysis-of-variance",
+      "showHeaders": true,
+      "showCaption": true,
+      "view": ["t-row_names", "t-sum_sq", "t-df", "t-MS", "t-f_values", "t-p_values"],
+      "recordType": {
+        "pageSize": 500
+      }
+    },
+    {
+      "name": "variables-details",
+      "showCaption": false,
+      "showHeaders": false,
+      "view": [
+        ["t-dw_statistic", "dw_statistic"],
+        ["t-autocorrelation", "autocorrelation"]
+      ]
+    },
+    {
+      "name": "information-criteria",
+      "showCaption": false,
+      "showHeaders": false,
+      "view": [
+        ["t-AIC", "AIC"],
+        ["t-corrected_AIC", "corrected_AIC"],
+        ["t-Schwarzs_BIC", "Schwarzs_BIC"]
+      ]
+    }
+  ]
+}

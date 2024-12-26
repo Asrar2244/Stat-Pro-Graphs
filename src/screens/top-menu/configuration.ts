@@ -11,6 +11,7 @@ export const exporters = {
   regressionRidge: 'ridge',
   basicStatisticsColumnWise: 'basic-statistics-column-wise',
   openDevTools: 'open-dev-tools',
+  estimationOfModule: 'estimation-of-module',
 };
 
 export const topMenuConfig = {
@@ -123,6 +124,17 @@ export const topMenuConfig = {
               id: 'columnWise',
               label: 'columnWise',
               execute: exporters.basicStatisticsColumnWise,
+            },
+          ],
+        },
+        {
+          id: 'analysisOfVariance',
+          label: 'analysisOfVariance',
+          submenu: [
+            {
+              id: 'estimationOfModule',
+              label: 'estimationOfModule',
+              execute: exporters.estimationOfModule,
             },
           ],
         },

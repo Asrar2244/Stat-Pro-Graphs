@@ -26,5 +26,7 @@
   "basicStatistics": "Basic Statistics",
   "columnWise": "Column Wise",
   "rowWise": "Row Wise",
-  "openDevTools": "Open Dev Tools"
+  "openDevTools": "Open Dev Tools",
+  "analysisOfVariance": "Analysis of Variance",
+  "estimationOfModule": "Estimation of Module"
 }
