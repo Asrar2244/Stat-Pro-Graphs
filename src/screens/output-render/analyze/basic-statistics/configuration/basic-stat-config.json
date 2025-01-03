@@ -5,6 +5,7 @@
       "showCaption": false,
       "columnCount": 10,
       "showSelectedColumn": true,
+      "showHeader": true,
       "columns": [
         {
           "type": "static",

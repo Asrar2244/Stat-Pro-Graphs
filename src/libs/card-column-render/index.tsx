@@ -21,11 +21,23 @@ interface ICardColumnRenderProps extends ITranslate {
 }
 
 export const CardColumnRender: FC<ICardColumnRenderProps> = memo(
-  ({ card: config, t, dbTableName, dbFileName }) => {
+  ({ card, dbTableName, dbFileName, ...props }) => {
+    const { config, isLoading } = useUpdatedConfig({ dbName: dbFileName, tableName: dbTableName, config: card });
+    if (isLoading) {
+      return <div>Fetching data please wait</div>
+    }
+    return <ColumnsRenderer card={config} dbTableName={dbTableName} dbFileName={dbFileName} {...props} />
+  }
+);
+
+
+const ColumnsRenderer: FC<ICardColumnRenderProps> = memo(
+  ({ card, t, dbTableName, dbFileName }) => {
     const classes = useCardColumnStyle();
-    const card = useUpdatedConfig({ dbName: dbFileName, tableName: dbTableName, config });
-    const dynamicColumns = useMemo(() => card.columns.filter((f) => f.type === 'dynamic'), [card]);
-    const staticColumns = useMemo(() => card.columns.filter((f) => f.type === 'static'), [card]);
+
+    const dynamicColumns = useMemo(() => card.columns.filter((f) => f.type === 'dynamic'), []);
+    const staticColumns = useMemo(() => card.columns.filter((f) => f.type === 'static'), []);
+
     const columns = useMemo(() => {
       const cols = new Set();
       dynamicColumns.forEach((r) => {
@@ -48,7 +60,6 @@ export const CardColumnRender: FC<ICardColumnRenderProps> = memo(
       view: columns as string[],
       rawData: true,
     });
-
     const pageContext = usePagination(totalRecords, DEFAULT_OUTPUT_TABLE_PAGE_SIZE);
     const [chunks, setChunks] = useState<Array<any>>([]);
 
@@ -74,14 +85,13 @@ export const CardColumnRender: FC<ICardColumnRenderProps> = memo(
       return (
         <>
           {list.map((cols) => {
-            return cols.rows.map((r) => (
-              <li>{type === 'static' ? t(r.label as string) : get(row, r.path as string)}</li>
+            return cols.rows.map((r, i) => (
+              <li key={i} className={`${i === 0 && card.showHeader ? classes.header : ""}`}>{type === 'static' ? t(r.label as string) : get(row, r.path as string)}</li>
             ));
           })}
         </>
       );
     };
-
     return (
       <div className={classes.regressionsLayout}>
         <>
@@ -91,6 +101,7 @@ export const CardColumnRender: FC<ICardColumnRenderProps> = memo(
                 {card.showCaption && (
                   <CardHeader header={<Body1Stronger>{t(card?.name as string)}</Body1Stronger>} />
                 )}
+
                 <CardPreview className={classes.row}>
                   <ul className={classes.ul}>
                     <TemplateGen type="static" />

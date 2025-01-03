@@ -3,6 +3,7 @@ export const useCardColumnStyle = makeStyles({
   regressionsLayout: {
     width: '100%',
   },
+  header: { backgroundColor: tokens.colorCompoundBrandForeground1, },
   row: {
     display: 'flex',
     flexDirection: 'row',

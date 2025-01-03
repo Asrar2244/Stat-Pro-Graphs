@@ -22,5 +22,6 @@
   "shapiro_p_value": "Shapiro P-Value",
   "anderson_darling_statistics": "Anderson-Darling Statistics",
   "adjusted_anderson_darling_statistics": "Adjusted Anderson-Darling Statistics",
-  "p_value": "P-Value"
+  "p_value": "P-Value",
+  "input_variable_names": ""
 }

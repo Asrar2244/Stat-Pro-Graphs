@@ -5,8 +5,9 @@ export interface ICardInterface {
   name: string;
   showCaption: boolean;
   columnCount?: Number;
+  showHeader?: boolean;
   columns: Array<ICardColumnInterface>;
-  showSelectedColumn: boolean
+  showSelectedColumn?: boolean
 }
 
 export interface ICardColumnInterface {

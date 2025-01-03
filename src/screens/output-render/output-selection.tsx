@@ -44,7 +44,6 @@ export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...prop
   const { t } = useTranslation('common');
   const run = useSelectedRun(config.tabName, id);
   const forceStyle = !showHistory ? { width: '100%' } : {};
-  console.log(run?.selectedRun?.outputType, "run?.selectedRun?.outputType");
   return (
     <div className={classes.selectionLayout} style={forceStyle}>
       <OutputRenderContext.Provider
