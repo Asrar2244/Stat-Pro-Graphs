@@ -18,6 +18,7 @@ import { useGetInitialConfig, useFileSize, useFormatter, useToaster } from '@hoo
 import { useStartProStore, IProjectDetails } from '@store';
 import { useExplorerLayout } from './styles-hook/use-explorer-style';
 import { Database } from '@utils';
+import { BiDotsHorizontalRounded } from 'react-icons/bi';
 
 interface ISelector extends IProjectDetails {
   projectName: string;
@@ -107,7 +108,10 @@ const ExplorerComp: FC = () => {
                   }
                 >
                   <div className={classes.treeItemLayout}>
-                    <div className="project-name">{projectName}</div>
+                    <div style={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
+                      <div className="project-name" >{projectName}</div>
+                      <button><BiDotsHorizontalRounded /></button>
+                    </div>
                     <div className="date-file">
                       <Caption2 align="end">
                         {t('modified', { ns: 'workspace' })}:{dateFormat(project.modifiedDateTime)}

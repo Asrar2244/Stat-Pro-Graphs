@@ -28,7 +28,6 @@ export const useExplorerLayout = makeStyles({
   treeItemLayout: {
     display: 'flex',
     flexDirection: 'column',
-
     color: tokens.colorNeutralForeground1,
     '& .project-name': {
       textTransform: 'uppercase',

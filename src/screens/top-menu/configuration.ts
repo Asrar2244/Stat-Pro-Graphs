@@ -28,6 +28,7 @@ export const topMenuConfig = {
             {
               id: 'new_data',
               label: 'data',
+              execute: exporters.importBusinessObject,
             },
             {
               id: 'new_command',
@@ -47,11 +48,7 @@ export const topMenuConfig = {
           id: 'data_capture',
           label: 'dataCapture',
         },
-        {
-          id: 'import_business_object',
-          label: 'ImportBusinessObject',
-          execute: exporters.importBusinessObject,
-        },
+
       ],
     },
     {
