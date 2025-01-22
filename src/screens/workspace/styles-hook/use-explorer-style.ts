@@ -2,6 +2,7 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 
 export const useExplorerLayout = makeStyles({
   explorerLayout: {
+    '& .fui-TreeItemLayout__main': { width: "100%" },
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
@@ -12,6 +13,7 @@ export const useExplorerLayout = makeStyles({
       backgroundColor: tokens.colorNeutralBackground3,
     },
   },
+  treeItem: { display: "flex", width: "100%", justifyContent: "space-between" },
   workspace: {
     display: 'flex',
     justifyContent: 'center',

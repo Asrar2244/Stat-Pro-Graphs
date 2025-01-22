@@ -18,7 +18,7 @@ import { useGetInitialConfig, useFileSize, useFormatter, useToaster } from '@hoo
 import { useStartProStore, IProjectDetails } from '@store';
 import { useExplorerLayout } from './styles-hook/use-explorer-style';
 import { Database } from '@utils';
-import { BiDotsHorizontalRounded } from 'react-icons/bi';
+import { MdDeleteOutline } from 'react-icons/md';
 
 interface ISelector extends IProjectDetails {
   projectName: string;
@@ -90,6 +90,10 @@ const ExplorerComp: FC = () => {
         toast.error({ body: error.message });
       });
   };
+  const onDeleteHandler = (e: any) => {
+    console.log("deleting the work space");
+    e.preventDefault()
+  }
   return (
     <div className={classes.explorerLayout}>
       <div className={classes.workspace}>
@@ -107,10 +111,10 @@ const ExplorerComp: FC = () => {
                     project.isOpenedData === 1 || project.isOpenedOutput === 1 ? 'selected' : ''
                   }
                 >
-                  <div className={classes.treeItemLayout}>
-                    <div style={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
+                  <div className={classes.treeItemLayout}  >
+                    <div className={classes.treeItem} >
                       <div className="project-name" >{projectName}</div>
-                      <button><BiDotsHorizontalRounded /></button>
+                      <MdDeleteOutline onClick={onDeleteHandler} />
                     </div>
                     <div className="date-file">
                       <Caption2 align="end">
