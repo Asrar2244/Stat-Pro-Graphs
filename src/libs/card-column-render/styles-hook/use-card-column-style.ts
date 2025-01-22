@@ -2,6 +2,10 @@ import { tokens, makeStyles } from '@fluentui/react-components';
 export const useCardColumnStyle = makeStyles({
   regressionsLayout: {
     width: '100%',
+    "> div": { overflow: "scroll" }
+  },
+  card: {
+    marginBottom: "14px"
   },
   header: { backgroundColor: tokens.colorCompoundBrandForeground1, },
   row: {
@@ -23,6 +27,7 @@ export const useCardColumnStyle = makeStyles({
     margin: 0,
     '& li': {
       minHeight: '25px',
+      minWidth: "max-content",
       padding: tokens.spacingHorizontalM,
       border: `1px solid ${tokens.colorNeutralStroke1}`,
     },

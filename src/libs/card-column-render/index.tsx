@@ -97,7 +97,7 @@ const ColumnsRenderer: FC<ICardColumnRenderProps> = memo(
         <>
           {chunks.map((chunk, chunkIndex) => {
             return (
-              <Card key={chunkIndex}>
+              <Card key={chunkIndex} className={classes.card}>
                 {card.showCaption && (
                   <CardHeader header={<Body1Stronger>{t(card?.name as string)}</Body1Stronger>} />
                 )}
