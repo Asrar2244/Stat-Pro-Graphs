@@ -233,7 +233,6 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
     setProjectName(e?.target.value)
   }
   const okDisabled = !!file && newProject?.name && newProject?.name !== '';
-
   return (
     <Modal
       modalType="alert"
@@ -291,7 +290,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
                   appearance="transparent"
                   size="small"
                   icon={<BiPlayCircle />}
-                  disabled={projectName?.length === 0}
+                  disabled={!projectName?.trim()}
                 />
               }
             />
