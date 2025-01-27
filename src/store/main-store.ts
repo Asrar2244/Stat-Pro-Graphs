@@ -10,6 +10,8 @@ export interface IProjectDetails {
   modifiedDateTime: string;
   workspacePath: string;
   id: string;
+  inputFileName: string;
+  sheetId: string
 }
 
 interface IStartProStore {

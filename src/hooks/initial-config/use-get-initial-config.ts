@@ -27,6 +27,8 @@ export const useGetInitialConfig = (): ISetInitial => {
                 createdDateTime,
                 isOpenedOutput,
                 workspacePath,
+                sheetId,
+                inputFileName
               } = result[i];
               bulkProjectData[projectName] = {
                 fileSize,
@@ -37,6 +39,8 @@ export const useGetInitialConfig = (): ISetInitial => {
                 isOpenedOutput,
                 workspacePath,
                 id,
+                sheetId,
+                inputFileName
               };
             }
             setBulkProjects(bulkProjectData);

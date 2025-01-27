@@ -133,7 +133,7 @@ const ExplorerComp: FC = () => {
                   >
                     <TreeItemLayout>
                       <Caption1>
-                        <AiFillFileExcel /> {t('data', { ns: 'workspace' })}
+                        <AiFillFileExcel /> {project.inputFileName}
                       </Caption1>
                     </TreeItemLayout>
                   </TreeItem>
