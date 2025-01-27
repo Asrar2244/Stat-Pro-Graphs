@@ -1,5 +1,5 @@
 import { FC, memo } from 'react';
-import { Modal } from '@libs';
+import { Modal, NoIdSelected } from '@libs';
 import { useActiveNode, IModal } from '@hooks';
 import { useTranslation } from 'react-i18next';
 import { useModalRidge } from './styles-hook/use-modal-hook';
@@ -32,7 +32,9 @@ const RidgeModuleComponent: FC<IModal> = ({ ...props }) => {
       ok={{ onClick: onOkModal }}
     >
       <div className={classes.bodyWrapper}>
-        <Ridge />
+        {!id || id === '' ? (
+          <NoIdSelected />
+        ) : <Ridge />}
       </div>
     </Modal>
   );

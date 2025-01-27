@@ -1,4 +1,4 @@
-import { FC, FormEvent, useState } from 'react';
+import { ChangeEvent, FC, FormEvent, useState } from 'react';
 import { Field, Input, Button, Dropdown, Option, Spinner } from '@fluentui/react-components';
 import { BiDotsHorizontalRounded, BiPlayCircle } from 'react-icons/bi';
 import { Modal, ITranslate } from '@libs';
@@ -24,6 +24,7 @@ import { insertIntoProject } from '@backend';
 import { useBrowseLayout } from './styles-hook/use-browse-style';
 export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   const [file, setFile] = useState<string | undefined>(undefined);
+  const [projectName, setProjectName] = useState<string | undefined>(undefined);
   const [selectedSheet, setSelectedSheet] = useState<string>('');
   const [projectExists, setProjectExists] = useState<boolean | undefined>(undefined);
   const [fileSize, setFileSize] = useState<number>(0);
@@ -164,6 +165,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
           const workspacePath = await joinPaths([dbLocation, dbName]);
           const db = new Database(CONFIGURATION_DB);
           db.executeQuery(insertIntoProject, [
+            projectName,
             dbName,
             data?.data_name,
             data?.sheet_name,
@@ -226,7 +228,10 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
       setNewProject('workspacePath', openedFolder);
     }
   };
-
+  const onProjectNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    setProjectName(e?.target.value)
+  }
   const okDisabled = !!file && newProject?.name && newProject?.name !== '';
 
   return (
@@ -277,6 +282,8 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             <Input
               name="projectName"
               placeholder={t('projectPlaceHolder', { ns: 'common' })}
+              value={projectName}
+              onChange={onProjectNameChange}
               contentAfter={
                 <Button
                   type="submit"
@@ -284,6 +291,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
                   appearance="transparent"
                   size="small"
                   icon={<BiPlayCircle />}
+                  disabled={projectName?.length === 0}
                 />
               }
             />
