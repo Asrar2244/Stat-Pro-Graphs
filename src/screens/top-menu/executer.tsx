@@ -59,7 +59,7 @@ const MenuSelector: FC<{
     case exporters.importBusinessObject:
       return <BrowseFile {...modal} t={t} />;
     case exporters.regressionLeastSquare:
-      return <LeastSquare {...modal} />;
+      return modal.open ? <LeastSquare {...modal} /> : <></>;
     case exporters.regressionRidge:
       return <Ridge {...modal} />;
     case exporters.basicStatisticsColumnWise:
@@ -74,3 +74,4 @@ const MenuSelector: FC<{
       return null;
   }
 };
+

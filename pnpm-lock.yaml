@@ -102,6 +102,9 @@ importers:
       '@types/i18next':
         specifier: 13.0.0
         version: 13.0.0
+      '@types/lodash.clonedeep':
+        specifier: ^4.5.9
+        version: 4.5.9
       '@types/lodash.get':
         specifier: ^4.4.9
         version: 4.4.9
@@ -138,6 +141,9 @@ importers:
       husky:
         specifier: 9.0.11
         version: 9.0.11
+      lodash.clonedeep:
+        specifier: 4.5.0
+        version: 4.5.0
       prettier:
         specifier: 3.3.2
         version: 3.3.2
@@ -1362,6 +1368,9 @@ packages:
   '@types/i18next@13.0.0':
     resolution: {integrity: sha512-gp/SIShAuf4WOqi8ey0nuI7qfWaVpMNCcs/xLygrh/QTQIXmlDC1E0TtVejweNW+7SGDY7g0lyxyKZIJuCKIJw==}
     deprecated: This is a stub types definition. i18next provides its own type definitions, so you do not need this installed.
+
+  '@types/lodash.clonedeep@4.5.9':
+    resolution: {integrity: sha512-19429mWC+FyaAhOLzsS8kZUsI+/GmBAQ0HFiCPsKGU+7pBXOQWhyrY6xNNDwUSX8SMZMJvuFVMF9O5dQOlQK9Q==}
 
   '@types/lodash.get@4.4.9':
     resolution: {integrity: sha512-J5dvW98sxmGnamqf+/aLP87PYXyrha9xIgc2ZlHl6OHMFR2Ejdxep50QfU0abO1+CH6+ugx+8wEUN1toImAinA==}
@@ -2799,6 +2808,9 @@ packages:
 
   lodash.capitalize@4.2.1:
     resolution: {integrity: sha512-kZzYOKspf8XVX5AvmQF94gQW0lejFVgb80G85bU4ZWzoJ6C03PQg3coYAUpSTpQWelrZELd3XWgHzw4Ck5kaIw==}
+
+  lodash.clonedeep@4.5.0:
+    resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
 
   lodash.escaperegexp@4.1.2:
     resolution: {integrity: sha512-TM9YBvyC84ZxE3rgfefxUWiQKLilstD6k7PTGt6wfbtXF8ixIJLOL3VYyV/z+ZiPLsVxAsKAFVwWlWeb2Y8Yyw==}
@@ -5762,6 +5774,10 @@ snapshots:
     dependencies:
       i18next: 23.13.0
 
+  '@types/lodash.clonedeep@4.5.9':
+    dependencies:
+      '@types/lodash': 4.17.7
+
   '@types/lodash.get@4.4.9':
     dependencies:
       '@types/lodash': 4.17.7
@@ -7361,6 +7377,8 @@ snapshots:
   lodash.camelcase@4.3.0: {}
 
   lodash.capitalize@4.2.1: {}
+
+  lodash.clonedeep@4.5.0: {}
 
   lodash.escaperegexp@4.1.2: {}
 

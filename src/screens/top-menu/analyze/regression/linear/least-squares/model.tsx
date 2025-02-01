@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, MouseEvent, useState } from 'react';
+import { ChangeEvent, FC, MouseEvent, useEffect, useState } from 'react';
 import { Checkbox, Button } from '@fluentui/react-components';
 import {
   MdKeyboardDoubleArrowLeft,
@@ -60,7 +60,7 @@ export const Model: FC = () => {
   );
 };
 const IndependentListRender: FC = () => {
-  const [selectAll, setSelectAll] = useState<boolean | undefined>(false);
+  const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
 
   const { t } = useTranslation('regLinearLeastSquare');
   const { availableList, independentList, setModelBulk } = useLinearLeastSquares(
@@ -70,6 +70,11 @@ const IndependentListRender: FC = () => {
       setModelBulk: state.setModelBulk,
     })),
   );
+  const [propKey, setPropKey] = useState(generateKey(independentList));
+
+  useEffect(() => {
+    setPropKey(generateKey(independentList))
+  }, [...independentList.values()])
 
   const onRemoveHandler = (): void => {
     independentList.forEach((value: boolean, name: string) => {
@@ -80,7 +85,9 @@ const IndependentListRender: FC = () => {
     });
     setModelBulk(availableList, 'availableList');
     setModelBulk(independentList, 'independentList');
-    if (independentList.size === 0) setSelectAll(false);
+    if (independentList.size === 0) {
+      setSelectAll(false);
+    }
   };
   return (
     <div className="section-available">
@@ -90,6 +97,10 @@ const IndependentListRender: FC = () => {
         selectAllText={t('selectAll')}
         selectValue={selectAll}
         requiredSelectAll
+        onSelectAllChanged={setSelectAll}
+        setModelBulk={setModelBulk}
+        listName='independentList'
+        propKey={propKey}
       />
 
       <Button
@@ -104,7 +115,7 @@ const IndependentListRender: FC = () => {
   );
 };
 const DependentListRender: FC = () => {
-  const [selectAll, setSelectAll] = useState<boolean | undefined>(false);
+  const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
 
   const { t } = useTranslation('regLinearLeastSquare');
   const { availableList, dependentList, setModelBulk } = useLinearLeastSquares(
@@ -114,7 +125,11 @@ const DependentListRender: FC = () => {
       setModelBulk: state.setModelBulk,
     })),
   );
+  const [propKey, setPropKey] = useState(generateKey(dependentList))
 
+  useEffect(() => {
+    setPropKey(generateKey(dependentList))
+  }, [...dependentList.values()])
   const onRemoveHandler = (): void => {
     dependentList.forEach((value: boolean, name: string) => {
       if (value) {
@@ -134,6 +149,10 @@ const DependentListRender: FC = () => {
         selectAllText={t('selectAll')}
         selectValue={selectAll}
         requiredSelectAll
+        onSelectAllChanged={setSelectAll}
+        propKey={propKey}
+        setModelBulk={setModelBulk}
+        listName='dependentList'
       />
 
       <Button
@@ -148,9 +167,16 @@ const DependentListRender: FC = () => {
   );
 };
 
-const AvailableListRender: FC = () => {
-  const [selectAll, setSelectAll] = useState<boolean | undefined>(false);
+const generateKey = (list: Map<string, boolean>) => {
+  let key = "";
+  Array.from(list.entries()).forEach(([k, v]) => {
+    key += `${k}-${v}`
+  })
+  return key
+}
 
+const AvailableListRender: FC = () => {
+  const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
   const { t } = useTranslation('regLinearLeastSquare');
   const { availableList, dependentList, independentList, setModelBulk } = useLinearLeastSquares(
     useShallow((state) => ({
@@ -160,9 +186,14 @@ const AvailableListRender: FC = () => {
       setModelBulk: state.setModelBulk,
     })),
   );
+  const [propKey, setPropKey] = useState(generateKey(availableList))
+
+  useEffect(() => {
+    setPropKey(generateKey(availableList))
+  }, [...availableList.values()])
 
   const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
-    const { name } = e.target as any;
+    const name = (e.currentTarget as HTMLButtonElement).dataset.name;
     availableList.forEach((value: boolean, key: string) => {
       if (value) {
         if (name === 'dependent') {
@@ -185,17 +216,21 @@ const AvailableListRender: FC = () => {
         selectAllText={t('selectAll')}
         selectValue={selectAll}
         requiredSelectAll
+        onSelectAllChanged={setSelectAll}
+        propKey={propKey}
+        setModelBulk={setModelBulk}
+        listName='availableList'
       />
 
       <div className="send-buttons">
-        <Button icon={<MdKeyboardDoubleArrowLeft />} name="dependent" onClick={onSendHandler}>
+        <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler}>
           {t('sendToDependent')}
         </Button>
 
         <Button
           icon={<MdKeyboardDoubleArrowRight />}
           iconPosition="after"
-          name="independent"
+          data-name="independent"
           onClick={onSendHandler}
         >
           {t('sendToIndependent')}

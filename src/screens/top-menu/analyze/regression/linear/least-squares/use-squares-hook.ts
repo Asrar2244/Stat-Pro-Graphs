@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import cloneDeep from 'lodash.clonedeep';
 
 interface IPayload {
   [key: string]: any;
@@ -108,7 +109,7 @@ const initValues = {
   },
 };
 export const useLinearLeastSquares = create<ILinearLeastSquare>((set) => ({
-  ...initValues,
+  ...(cloneDeep(initValues)),
   setModel(payload): void {
     set((state: any) => {
       const model = state.model;

@@ -1,4 +1,4 @@
-import { FC, memo, useState } from 'react';
+import { FC, useState } from 'react';
 import {
   makeStyles,
   tokens,
@@ -128,4 +128,4 @@ const LoadTabDetails: FC<ITranslate & { selectedTab: string; columns: IColumn[] 
       return <p>{selectedTab}</p>;
   }
 };
-export const LeastSquare = memo(LeastSquareComponent);
+export const LeastSquare = LeastSquareComponent;

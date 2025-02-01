@@ -13,24 +13,24 @@ export const usePrepareAnalysis = ({
   queueFor,
   queueType,
 }: IActiveNode & { columns: IColumn[]; queueFor: string; queueType: string }): IOutput => {
-  const { setModelBulk, model, estimate, options, predict, resampling } = useLinearLeastSquares(
+  const { setModel, model, estimate, options, predict, resampling } = useLinearLeastSquares(
     useShallow((state) => ({
       model: state.model,
       estimate: state.estimate,
       options: state.options,
       predict: state.predict,
       resampling: state.resampling,
-      setModelBulk: state.setModelBulk,
+      setModel: state.setModel,
     })),
   );
   const { execute } = useAnalyzeSave();
   useEffect(() => {
     const columnMap = new Map<string, boolean>();
     columns.forEach((column) => {
-      if (!model.dependentList.has(column.columnId) && !model.independentList.has(column.columnId))
+      if (!model.availableList.has(column.columnId))
         columnMap.set(column.columnId, false);
     });
-    setModelBulk(columnMap, 'availableList');
+    setModel({ 'availableList': columnMap, 'independentList': new Map<string, boolean>(), 'dependentList': new Map<string, boolean>() });
   }, [columns.length]);
 
   const executeAnalysis = async (id: string): Promise<void> => {
