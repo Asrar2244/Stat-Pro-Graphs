@@ -28,6 +28,7 @@ const CommonStatisticsComponent: FC<ICommonPopup> = ({ type, ...props }) => {
     props.closeModal();
   };
   const onOkModal = async (): Promise<void> => {
+    if (!id && id !== '') { onCloseModal(); return; }
     const tableName = config.tabName;
     const parameters = {
       data_name: tableName,
@@ -54,7 +55,8 @@ const CommonStatisticsComponent: FC<ICommonPopup> = ({ type, ...props }) => {
       title={t('title', { type: t(type) })}
       size="medium"
       closeModal={onCloseModal}
-      ok={{ onClick: onOkModal, disabled: !id || id === '' }}
+      showCancel={!id || id === '' ? false : true}
+      ok={{ onClick: onOkModal }}
     >
       <div className={classes.commonWrapper}>
         {!id || id === '' ? (

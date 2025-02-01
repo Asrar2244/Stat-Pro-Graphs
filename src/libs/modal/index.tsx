@@ -23,6 +23,7 @@ export interface IDialogProps extends IModal, PropsWithChildren {
   ok?: ButtonProps;
   cancel?: ButtonProps;
   size?: 'small' | 'medium' | 'large';
+  showCancel?: boolean;
 }
 
 const useModalLayout = makeStyles({
@@ -48,6 +49,7 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
   ok,
   size,
   closeModal,
+  showCancel,
   ...others
 }) => {
   const classes = useModalLayout();
@@ -59,11 +61,12 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
           <DialogTitle className={classes.header}>{title}</DialogTitle>
           <DialogContent className={classes.body}>{children}</DialogContent>
           <DialogActions>
-            <DialogTrigger disableButtonEnhancement>
-              <Button appearance="secondary" {...cancel}>
-                {cancelLabel}
-              </Button>
-            </DialogTrigger>
+            {showCancel && (
+              <DialogTrigger disableButtonEnhancement>
+                <Button appearance="secondary" {...cancel}>
+                  {cancelLabel}
+                </Button>
+              </DialogTrigger>)}
             <Button appearance="primary" {...ok}>
               {okLabel}
             </Button>

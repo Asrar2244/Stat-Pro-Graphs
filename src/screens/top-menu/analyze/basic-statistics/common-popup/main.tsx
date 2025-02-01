@@ -411,6 +411,7 @@ export const Main: React.FC = () => {
                   name="twoTrimMeanSidedValue"
                   data-type="mainTermedMean"
                   onBlur={onBlurText}
+                  type='number'
                   defaultValue={`${mainTermedMean.twoTrimMeanSidedValue}`}
                 />
               </div>
@@ -432,6 +433,7 @@ export const Main: React.FC = () => {
                   data-type="mainTermedMean"
                   defaultValue={`${mainTermedMean.ciOfTMValue}`}
                   onBlur={onBlurText}
+                  type='number'
                 />
               </div>
             </div>
@@ -457,12 +459,14 @@ export const Main: React.FC = () => {
                   defaultValue={`${mainWeightedMean.twoWinsorizedMeanSided}`}
                   data-type="mainWeightedMean"
                   onBlur={onBlurText}
+                  type='number'
                 />
                 <Input
                   name="twoWinsorizedMeanSidedValue"
                   defaultValue={`${mainWeightedMean.twoWinsorizedMeanSidedValue}`}
                   data-type="mainWeightedMean"
                   onBlur={onBlurText}
+                  type='number'
                 />
               </div>
               <Checkbox
@@ -483,6 +487,7 @@ export const Main: React.FC = () => {
                   data-type="mainWeightedMean"
                   defaultValue={`${mainWeightedMean.ciOfWMValue}`}
                   onBlur={onBlurText}
+                  type='number'
                 />
               </div>
             </div>

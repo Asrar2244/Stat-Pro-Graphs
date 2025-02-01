@@ -16,7 +16,7 @@ const RidgeModuleComponent: FC<IModal> = ({ ...props }) => {
   };
 
   const onOkModal = (): void => {
-    if (!id && id !== '') return;
+    if (!id && id !== '') { props.closeModal(); return; }
     ridgeAnalyzeData(config.tabName, t('title'), 'regLinearRidge');
     props.closeModal();
   };
@@ -28,6 +28,7 @@ const RidgeModuleComponent: FC<IModal> = ({ ...props }) => {
       okLabel={t('ok')}
       title={t('title')}
       size="medium"
+      showCancel={!id || id === '' ? false : true}
       closeModal={onCloseModal}
       ok={{ onClick: onOkModal }}
     >

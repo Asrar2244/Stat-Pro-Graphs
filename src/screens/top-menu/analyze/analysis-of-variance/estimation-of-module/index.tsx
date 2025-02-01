@@ -8,7 +8,7 @@ import { EstimationOfModuleModel } from '../estimation-of-module/model';
 import { useShallow } from 'zustand/react/shallow';
 import { useEstimateModel } from './use-estimation-store';
 import { useEstimationOfModuleAnalyzeData } from './use-analyze-data';
-interface IEstimationOfModules extends IModal {}
+interface IEstimationOfModules extends IModal { }
 export const estimationOfModule: FC<IEstimationOfModules> = ({ ...props }) => {
   const [selectedTab, setSelectedTab] = useState<string>('model');
   const { estimationOfModuleAnalyzeData } = useEstimationOfModuleAnalyzeData();
@@ -25,6 +25,7 @@ export const estimationOfModule: FC<IEstimationOfModules> = ({ ...props }) => {
     props.closeModal();
   };
   const onOkModal = async (): Promise<void> => {
+    if (!id && id !== '') { onCloseModal(); return; }
     const tableName = config.tabName;
     estimationOfModuleAnalyzeData(tableName, t('title'), 'estimationOfModules');
     onCloseModal();
@@ -41,7 +42,8 @@ export const estimationOfModule: FC<IEstimationOfModules> = ({ ...props }) => {
       title={t('title')}
       size="medium"
       closeModal={onCloseModal}
-      ok={{ onClick: onOkModal, disabled: !id || id === '' }}
+      showCancel={!id || id === '' ? false : true}
+      ok={{ onClick: onOkModal }}
     >
       <div>
         {!id || id === '' ? (

@@ -61,18 +61,20 @@ const LeastSquareComponent: FC<IModal> = ({ ...props }) => {
   };
 
   const onOkModal = (): void => {
-    if (!id && id !== '') return;
+    if (!id && id !== '') { props.closeModal(); return; }
     executeAnalysis();
     props.closeModal();
   };
   return (
     <Modal
+      key={id}
       modalType="alert"
       {...props}
       cancelLabel={t('close', { ns: 'regLinearLeastSquare' })}
       okLabel={t('ok', { ns: 'regLinearLeastSquare' })}
       title={t('title', { ns: 'regLinearLeastSquare' })}
       size="medium"
+      showCancel={!id || id === '' ? false : true}
       closeModal={onCloseModal}
       ok={{ onClick: onOkModal }}
     >
