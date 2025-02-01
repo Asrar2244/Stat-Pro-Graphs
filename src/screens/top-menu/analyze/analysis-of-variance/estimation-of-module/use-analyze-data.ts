@@ -3,7 +3,7 @@ import { useEstimateModel } from './use-estimation-store';
 import { API } from '@constants';
 import { useAnalyzeSave } from '@hooks';
 interface IOutputAnalyzeData {
-  estimationOfModuleAnalyzeData: (tableName: string, queueFor: string, queueType: string) => void;
+  estimationOfModuleAnalyzeData: (tableName: string, queueFor: string, queueType: string, id: string) => void;
 }
 export const useEstimationOfModuleAnalyzeData = (): IOutputAnalyzeData => {
   const { model } = useEstimateModel(useShallow((state) => ({ model: state.model })));
@@ -12,6 +12,7 @@ export const useEstimationOfModuleAnalyzeData = (): IOutputAnalyzeData => {
     tableName: string,
     queueFor: string,
     queueType: string,
+    id: string
   ): Promise<void> => {
     const db_path = tableName; //await collectionsLocation(tableName);
 
@@ -29,7 +30,7 @@ export const useEstimationOfModuleAnalyzeData = (): IOutputAnalyzeData => {
       url: `/api/${API.analysis}`,
       method: 'POST',
       queueType,
-    });
+    }, id);
   };
 
   return { estimationOfModuleAnalyzeData };

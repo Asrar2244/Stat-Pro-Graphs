@@ -8,9 +8,11 @@ import { EstimationOfModuleModel } from '../estimation-of-module/model';
 import { useShallow } from 'zustand/react/shallow';
 import { useEstimateModel } from './use-estimation-store';
 import { useEstimationOfModuleAnalyzeData } from './use-analyze-data';
+import { useStartProStore } from '@store/main-store';
 interface IEstimationOfModules extends IModal { }
 export const estimationOfModule: FC<IEstimationOfModules> = ({ ...props }) => {
   const [selectedTab, setSelectedTab] = useState<string>('model');
+  const { setBlockUI } = useStartProStore();
   const { estimationOfModuleAnalyzeData } = useEstimationOfModuleAnalyzeData();
   const { t } = useTranslation(['estimationOfModules']);
   const { id, config } = useActiveNode([props.open]);
@@ -27,8 +29,9 @@ export const estimationOfModule: FC<IEstimationOfModules> = ({ ...props }) => {
   const onOkModal = async (): Promise<void> => {
     if (!id && id !== '') { onCloseModal(); return; }
     const tableName = config.tabName;
-    estimationOfModuleAnalyzeData(tableName, t('title'), 'estimationOfModules');
+    estimationOfModuleAnalyzeData(tableName, t('title'), 'estimationOfModules', id as string);
     onCloseModal();
+    setBlockUI({ value: true, msg: "processRequest" });
   };
   const onTabSelectHandler = (_event: SelectTabEvent, { value }: SelectTabData): void => {
     setSelectedTab(value as string);
@@ -50,6 +53,7 @@ export const estimationOfModule: FC<IEstimationOfModules> = ({ ...props }) => {
           <NoIdSelected />
         ) : (
           <>
+            {/* <div>{"------"}{id}</div> */}
             <TabList
               selectedValue={selectedTab}
               appearance="subtle"

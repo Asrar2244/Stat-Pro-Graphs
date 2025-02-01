@@ -14,20 +14,30 @@ export interface IProjectDetails {
   sheetId: string
 }
 
+interface IBlockUIProps { value: boolean; msg: string }
+
 interface IStartProStore {
   projects: {
     [projectName: string]: IProjectDetails;
   };
+  blockUI: IBlockUIProps;
   newProject?: {
     [key: string]: any;
   };
   model: Model;
   setBulkProjects: (projects: { [projectName: string]: IProjectDetails }) => void;
   setNewProject: (key: string, value: string) => void;
+  setBlockUI: (value: IBlockUIProps) => void
 }
 
 export const useStartProStore = create<IStartProStore>((set) => ({
   projects: {},
+  blockUI: { value: false, msg: "" },
+  setBlockUI(value: IBlockUIProps): void {
+    set(() => {
+      return { blockUI: value }
+    })
+  },
   model: Model.fromJson(initialDocLayout),
   setBulkProjects(projects): void {
     set(() => {

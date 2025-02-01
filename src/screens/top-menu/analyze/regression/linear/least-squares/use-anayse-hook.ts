@@ -4,9 +4,8 @@ import { IActiveNode, useAnalyzeSave } from '@hooks';
 import { useEffect } from 'react';
 import { IColumn } from '../../../../../table-render/use-column-count';
 import { EXCEL, API } from '@constants';
-// import { collectionsLocation, convertToLinuxPath } from '@utils';
 interface IOutput {
-  executeAnalysis: () => void;
+  executeAnalysis: (id: string) => void;
 }
 export const usePrepareAnalysis = ({
   config,
@@ -34,7 +33,7 @@ export const usePrepareAnalysis = ({
     setModelBulk(columnMap, 'availableList');
   }, [columns.length]);
 
-  const executeAnalysis = async (): Promise<void> => {
+  const executeAnalysis = async (id: string): Promise<void> => {
     const tableName = config.tabName;
 
     const parameters = {
@@ -67,7 +66,7 @@ export const usePrepareAnalysis = ({
       url: `/api/${API.analysis}`,
       method: 'POST',
       queueType,
-    });
+    }, id);
   };
 
   return { executeAnalysis };

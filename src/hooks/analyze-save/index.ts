@@ -15,9 +15,12 @@ import {
  */
 import { Database } from '@utils';
 import { CONFIGURATION_DB } from '@constants';
-import { useToaster } from '@hooks';
+import { useNodeActions, useToaster } from '@hooks';
 import { mainWorker } from '@workers/worker';
 import { API } from '@constants';
+import { useStartProStore } from '@store/main-store';
+import { useShallow } from 'zustand/react/shallow';
+import { ISelector } from 'src/screens/workspace/explorer';
 interface IOthersParameters {
   message?: string;
   queueFor: string;
@@ -31,7 +34,13 @@ interface IOthersParameters {
 }
 export const useAnalyzeSave = () => {
   const { t } = useTranslation(['common', 'errors']);
-  const { error, success } = useToaster();
+  const { setBlockUI } = useStartProStore()
+  const { error } = useToaster();
+  const { projects } = useStartProStore(
+    useShallow((state) => ({ projects: state.projects, model: state.model })),
+  );
+  const { selectTab, openNewTab, getOpenRecords } = useNodeActions();
+
   const insertInNotifications = async (
     isDeleteID: number = 0,
     message: string,
@@ -56,6 +65,7 @@ export const useAnalyzeSave = () => {
     dbName: string,
     parameters: Record<string, any>,
     otherParameters: IOthersParameters,
+    id?: string
   ) => {
     const outputId = await outputGenerateIDTable(dbName, [
       '',
@@ -68,7 +78,7 @@ export const useAnalyzeSave = () => {
       description: otherParameters.queueFor,
       tab: dbName,
       ns: 'common',
-    });
+    })
     const notificationID = await insertInNotifications(0, message, dbName, outputId);
     parameters['notificationId'] = notificationID;
     otherParameters['message'] = message;
@@ -83,12 +93,25 @@ export const useAnalyzeSave = () => {
           throw new Error(response.error);
         }
         outputUpdateResult(dbName, [JSON.stringify(response), outputId]).then(() => {
-          success({ body: message });
-        });
+          const projectId = Number(id?.split("-")[1])
+          const data = Object.values(projects).find(item => Number(item.id) === projectId) as ISelector;
+          const type = 'OUTPUT';
+          const { record } = getOpenRecords(data, type);
+          if (record) {
+            selectTab(`${type}-${data.id}`)
+          } else {
+            openNewTab(data, projectId, type, t)
+          }
+        })
+          .catch((error) => {
+            error({ body: error.message });
+          });
       })
       .catch((errorMsg: any) => {
         console.log('errorMsg===>', errorMsg);
         error({ title: 'Error', body: errorMsg.message });
+      }).finally(() => {
+        setBlockUI({ value: false, msg: "" })
       });
   };
   return { execute };

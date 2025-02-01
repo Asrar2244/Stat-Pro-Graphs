@@ -3,7 +3,7 @@ import { useRidge } from './use-ridge-store-hook';
 import { API } from '@constants';
 import { useAnalyzeSave } from '@hooks';
 interface IOutputAnalyzeData {
-  ridgeAnalyzeData: (tableName: string, queueFor: string, queueType: string) => void;
+  ridgeAnalyzeData: (tableName: string, queueFor: string, queueType: string, id: string) => void;
 }
 export const useRidgeAnalyzeData = (): IOutputAnalyzeData => {
   const { ridge } = useRidge(useShallow((state) => ({ ridge: state })));
@@ -12,6 +12,7 @@ export const useRidgeAnalyzeData = (): IOutputAnalyzeData => {
     tableName: string,
     queueFor: string,
     queueType: string,
+    id: string
   ): Promise<void> => {
     const db_path = tableName; //await collectionsLocation(tableName);
     const lambdas = ridge.lambdaIndividual
@@ -34,7 +35,7 @@ export const useRidgeAnalyzeData = (): IOutputAnalyzeData => {
       url: `/api/${API.analysis}`,
       method: 'POST',
       queueType,
-    });
+    }, id);
   };
 
   return { ridgeAnalyzeData };

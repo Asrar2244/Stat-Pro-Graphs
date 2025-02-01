@@ -19,6 +19,7 @@ import { useColumnsRowsCount, IColumn } from '../../../../../table-render/use-co
 import { useLinearLeastSquares } from './use-squares-hook';
 import { usePrepareAnalysis } from './use-anayse-hook';
 import { useTranslation } from 'react-i18next';
+import { useStartProStore } from '@store/main-store';
 // import { OUTPUT } from '@libs/constants/query-const';
 
 const useClasses = makeStyles({
@@ -45,11 +46,14 @@ const LeastSquareComponent: FC<IModal> = ({ ...props }) => {
     ...config,
     noRowCount: true,
   });
+  const { setBlockUI } = useStartProStore();
+
   const { executeAnalysis } = usePrepareAnalysis({
     config,
     columns,
     queueFor: t('title', { ns: 'regLinearLeastSquare' }),
     queueType: 'regLinearLeastSquare',
+
   });
 
   const onTabSelectHandler = (_event: SelectTabEvent, { value }: SelectTabData): void => {
@@ -61,9 +65,11 @@ const LeastSquareComponent: FC<IModal> = ({ ...props }) => {
   };
 
   const onOkModal = (): void => {
+
     if (!id && id !== '') { props.closeModal(); return; }
-    executeAnalysis();
+    executeAnalysis(id);
     props.closeModal();
+    setBlockUI({ value: true, msg: "processRequest" });
   };
   return (
     <Modal

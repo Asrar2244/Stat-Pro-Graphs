@@ -8,6 +8,7 @@ import { Main } from './main';
 import { NoIdSelected } from '@libs/no-id-selected-msg';
 import { useBasicStatistics } from '../use-basic-statistics';
 import { API } from '@constants';
+import { useStartProStore } from '@store/main-store';
 interface ICommonPopup extends IModal {
   type: string;
 }
@@ -17,6 +18,7 @@ const CommonStatisticsComponent: FC<ICommonPopup> = ({ type, ...props }) => {
   const classes = useCommonStyles();
   const { t } = useTranslation(['basicStatistics', 'common']);
   const { mainOptions, mainSelectedList, setReset } = useBasicStatistics();
+  const { setBlockUI } = useStartProStore();
 
   const { id, config } = useActiveNode([props.open]);
   const { execute } = useAnalyzeSave();
@@ -42,9 +44,9 @@ const CommonStatisticsComponent: FC<ICommonPopup> = ({ type, ...props }) => {
       queueFor: t('title', { ns: 'basicStatistics' }),
       url: `/api/${API.analysis}`,
       queueType: 'basicStatistics',
-    });
-
+    }, id);
     onCloseModal();
+    setBlockUI({ value: true, msg: "processRequest" });;
   };
   return (
     <Modal
