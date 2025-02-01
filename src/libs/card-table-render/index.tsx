@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Card, CardHeader, Body1Stronger } from '@fluentui/react-components';
 import { useCardTableStyle } from './styles-hook/use-card-table-style';
 import { TableCreator } from '../table-creator';
@@ -14,16 +14,20 @@ export const CardTableRender: FC<ICardTableRenderProps> = ({
   table,
   dbFileName,
   dbTableName,
+  ...props
 }) => {
   const classes = useCardTableStyle();
-  return (
-    <div className={classes.regressionsLayout}>
-      <Card>
-        {table.showCaption && (
-          <CardHeader header={<Body1Stronger>{t(table?.name as string)}</Body1Stronger>} />
-        )}
-        <TableCreator t={t} table={table} dbFileName={dbFileName} dbTableName={dbTableName} />
-      </Card>
-    </div>
-  );
+  const [headerClass, setHeaderClass] = useState("show");
+  return <>
+    {
+      <div className={classes.regressionsLayout} {...props}>
+        <Card className={headerClass}>
+          {table.showCaption && (
+            <CardHeader header={<Body1Stronger>{t(table?.name as string)}</Body1Stronger>} />
+          )}
+          <TableCreator t={t} table={table} dbFileName={dbFileName} dbTableName={dbTableName} setHeaderClass={setHeaderClass} />
+        </Card>
+      </div>
+    }</>
+
 };

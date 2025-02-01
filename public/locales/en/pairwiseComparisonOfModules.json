@@ -1,0 +1,13 @@
+{
+    "allOptions": "ALL OPTIONS",
+    "close": "Close",
+    "confidence": "Confidence",
+    "errorTerms": "Error Terms",
+    "isBenferroni": "Benferroni",
+    "isHolmSidak": "Holm Sidak",
+    "isSidak": "Sidak",
+    "isTukeyHSD": "Turkey HSD",
+    "model": "Model",
+    "ok": "Ok",
+    "title": "Analyze: Analysis of Variance: Pairwise Comparison"
+}

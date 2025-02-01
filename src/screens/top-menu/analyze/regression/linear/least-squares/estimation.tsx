@@ -88,7 +88,7 @@ const EstimationComponent: FC<ITranslate> = ({ t }) => {
           <Divider />
           <div className="separation">
             <Field className="sep-text" label={t('maxStep', { ns: 'regLinearLeastSquare' })}>
-              <Input name="maxStep" defaultValue={estimate.maxStep} />
+              <Input name="maxStep" defaultValue={estimate.maxStep} type="number" />
             </Field>
 
             <Field className="sep-text" label={t('force', { ns: 'regLinearLeastSquare' })}>

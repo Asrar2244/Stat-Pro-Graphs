@@ -28,5 +28,6 @@
   "rowWise": "Row Wise",
   "openDevTools": "Open Dev Tools",
   "analysisOfVariance": "Analysis of Variance",
-  "estimationOfModule": "Estimation of Module"
+  "estimationOfModule": "Estimation of Module",
+  "pairwiseComparison": "Pairwise Comparison"
 }

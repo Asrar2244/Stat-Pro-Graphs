@@ -12,6 +12,7 @@ export const exporters = {
   basicStatisticsColumnWise: 'basic-statistics-column-wise',
   openDevTools: 'open-dev-tools',
   estimationOfModule: 'estimation-of-module',
+  pairwiseComparisonOfModule: 'pairwise-comparison'
 };
 
 export const topMenuConfig = {
@@ -132,6 +133,11 @@ export const topMenuConfig = {
               id: 'estimationOfModule',
               label: 'estimationOfModule',
               execute: exporters.estimationOfModule,
+            },
+            {
+              id: 'pairwiseComparison',
+              label: 'pairwiseComparison',
+              execute: exporters.pairwiseComparisonOfModule,
             },
           ],
         },

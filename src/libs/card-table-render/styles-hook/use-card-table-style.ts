@@ -4,6 +4,9 @@ export const useCardTableStyle = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalL,
+    '& .hide': {
+      display: "none"
+    },
     '& table': {
       borderCollapse: 'collapse',
       '& th': {

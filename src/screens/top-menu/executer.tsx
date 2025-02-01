@@ -21,6 +21,11 @@ const EstimationOfModule = lazy(() =>
   import('./analyze').then((module) => ({ default: module.estimationOfModule })),
 );
 
+const PairwiseComparisonOfModule = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.PairwiseComparisonModule })),
+);
+
+
 export const withMenuEvents = <P extends object>(
   translationNs: string,
   WrappedComponent: React.ComponentType<P>,
@@ -63,6 +68,8 @@ const MenuSelector: FC<{
       return <EstimationOfModule {...modal} />;
     case exporters.openDevTools:
       return <OpenDevTools />;
+    case exporters.pairwiseComparisonOfModule:
+      return <PairwiseComparisonOfModule  {...modal} />
     default:
       return null;
   }

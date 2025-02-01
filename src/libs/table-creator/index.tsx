@@ -29,8 +29,9 @@ interface ITableComp extends ITranslate {
   table: ITableCreator;
   dbFileName: string;
   dbTableName: string;
+  setHeaderClass?: (x: "show" | "hide") => void
 }
-const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName, t }) => {
+const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName, t, setHeaderClass }) => {
   const { showHeaders, view, recordType, appendColumn, postfix, prefix, type, translationColumns } =
     table;
   const { numberFormat, snitizedSpecialChar } = useFormatter();
@@ -44,6 +45,7 @@ const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName,
     postfix,
     prefix,
     type,
+    setHeaderClass
   });
   const pageContext = usePagination(totalRecords, DEFAULT_OUTPUT_TABLE_PAGE_SIZE);
   useEffect(() => {

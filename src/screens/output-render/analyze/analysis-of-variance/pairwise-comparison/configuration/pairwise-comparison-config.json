@@ -1,0 +1,38 @@
+{
+  "tables": [
+    {
+      "name": "pairwise-comparison-tukey",
+      "showHeaders": true,
+      "showCaption": true,
+      "view": [ "t-tukey_group1", "t-tukey_group2", "t-tukey_meandiff", "t-tukey_padj", "t-tukey_lower", "t-tukey_upper" ],
+      "recordType": {
+        "pageSize": 500
+      }
+    },
+    {
+      "name": "pairwise-comparison-benf",
+      "showHeaders": true,
+      "showCaption": true,
+      "view": [ "t-benf_group1", "t-benf_group2", "t-benf_stat", "t-benf_pval", "t-benf_pval_corr" ],
+      "recordType": {
+        "pageSize": 500
+      }
+    }, {
+      "name": "pairwise-comparison-sidak",
+      "showHeaders": true,
+      "showCaption": true,
+      "view": [ "t-sidak_group1", "t-sidak_group2", "t-sidak_stat", "t-sidak_pval", "t-sidak_pval_corr" ],
+      "recordType": {
+        "pageSize": 500
+      }
+    }, {
+      "name": "pairwise-comparison-holmsidak",
+      "showHeaders": true,
+      "showCaption": true,
+      "view": [ "t-holmsidak_group1", "t-holmsidak_group2", "t-holmsidak_stat", "t-holmsidak_pval", "t-holmsidak_pval_corr" ],
+      "recordType": {
+        "pageSize": 500
+      }
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import { IRecordTableType } from '@utils';
 
 interface IQuery {
+  checkColumnsExistsQuery: string;
   columns: Array<string>;
   query: string;
   pageQuery: string;
@@ -16,6 +17,11 @@ const numberFormat = (value: string | number): string => {
   }).format(Number(value));
 };
 
+const checkColumnExistsQuery = (columns: Array<string>, tableName: string) => {
+  return tableName ? `SELECT name
+FROM pragma_table_info('${tableName}')
+WHERE name IN(${columns.join(",")})` : ""
+}
 const withOutRecordType = (view: Array<Array<string>>): Array<string> => {
   const columns: Array<string> = [];
   for (let i = 0; i < view.length; i++) {
@@ -53,6 +59,7 @@ export const generateQueryColumn = (
   } else {
     columns = withOutRecordType(view as Array<Array<string>>);
   }
+
   const query = `SELECT ${columns.join(',')} FROM ${tableName} WHERE ${columns.join(' IS NOT NULL OR ')} IS NOT NULL`;
   let pageQuery = '';
   if (!noPaging && typeof recordType !== 'boolean' && recordType?.pageSize) {
@@ -61,8 +68,9 @@ export const generateQueryColumn = (
         ? `SELECT COUNT(${columns[0]}) as CNT FROM ${tableName} WHERE ${columns.join(' IS NOT NULL OR ')} IS NOT NULL`
         : '';
   }
-
+  const checkColumnsExistsQuery = checkColumnExistsQuery(columns, tableName);
   return {
+    checkColumnsExistsQuery,
     columns,
     query,
     pageQuery,

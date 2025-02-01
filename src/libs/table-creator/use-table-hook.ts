@@ -7,11 +7,13 @@ interface IDataResult {
   loadTemplateView: (startIndex: number, stopIndex: number) => Promise<void>;
   loading: boolean;
   setLoading: (previous: boolean) => void;
+
 }
 interface ITableFetch extends ITranslate, ITableCreator {
   dbName: string;
   tableName: string;
   rawData?: boolean;
+  setHeaderClass?: (x: "show" | "hide") => void
 }
 
 export const useTableFetch = ({
@@ -24,6 +26,7 @@ export const useTableFetch = ({
   prefix,
   type,
   rawData = false,
+  setHeaderClass
 }: ITableFetch): IDataResult => {
   const [templateView, setTemplateView] = useState<Array<Array<string>> | Array<any>>([]);
   const [totalRecords, setTotalRecords] = useState<number>(0);
@@ -49,7 +52,6 @@ export const useTableFetch = ({
   const executeColumnGenerator = async (query: string): Promise<string[]> => {
     const db = new Database(dbName);
     const result = await db.selectQuery(query);
-
     const viewGen: Array<string> = [];
     for (let i = 0; i < result.length; i++) {
       Object.values(result[i]).forEach((value: any) => {
@@ -72,20 +74,25 @@ export const useTableFetch = ({
     }
   };
   const loadTemplateView = async (startIndex: number, stopIndex: number) => {
-    const { query, viewNew } = await statements;
+    const { query, viewNew, checkColumnsExistsQuery } = await statements;
     if (query !== '') {
       const db = new Database(dbName);
-
-      const result = await db.selectQuery(
-        `${query} ${totalRecords > 0 ? `LIMIT ${startIndex},${stopIndex}` : ''}`,
-      );
-      if (!rawData) {
-        const templateView = await tableWorker.mergingData(viewNew ?? view, result, recordType);
-        setTemplateView(templateView);
-      } else {
-        setTemplateView(result);
+      const existedColumns = checkColumnsExistsQuery ? await db.selectQuery(checkColumnsExistsQuery) : [];
+      if (existedColumns.length > 0) {
+        const result = await db.selectQuery(
+          `${query} ${totalRecords > 0 ? `LIMIT ${startIndex},${stopIndex}` : ''}`,
+        );
+        if (!rawData) {
+          const templateView = await tableWorker.mergingData(viewNew ?? view, result, recordType);
+          setTemplateView(templateView);
+        } else {
+          setTemplateView(result);
+        }
       }
-
+      else {
+        setTemplateView([]);
+      }
+      setHeaderClass && setHeaderClass(existedColumns.length > 0 ? "show" : "hide")
       setLoading(false);
     }
   };

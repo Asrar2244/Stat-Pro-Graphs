@@ -28,6 +28,12 @@ const EstimationOfModule = lazy(() =>
   })),
 );
 
+const PairwiseComparisonOfModules = lazy(() =>
+  import('./analyze/analysis-of-variance/pairwise-comparison').then((modules) => ({
+    default: modules.PairwiseComparisonOfModules,
+  })),
+);
+
 interface IOutputSelection extends IToolBar {
   id: number;
   showHistory: boolean;
@@ -36,7 +42,8 @@ const load: any = {
   regLinearLeastSquare: <LinearLeastSquareRegression />,
   regLinearRidge: <LinearRidgeRegression />,
   basicStatistics: <BasicStatistics />,
-  estimationOfModules: <EstimationOfModule />
+  estimationOfModules: <EstimationOfModule />,
+  pairwiseComparisonModules: <PairwiseComparisonOfModules />
 };
 export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...props }) => {
   const { config } = useActiveNode([]);
@@ -44,6 +51,7 @@ export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...prop
   const { t } = useTranslation('common');
   const run = useSelectedRun(config.tabName, id);
   const forceStyle = !showHistory ? { width: '100%' } : {};
+  console.log(config, run, "[run?.selectedRun===================")
   return (
     <div className={classes.selectionLayout} style={forceStyle}>
       <OutputRenderContext.Provider
