@@ -53,7 +53,6 @@ const LeastSquareComponent: FC<IModal> = ({ ...props }) => {
     columns,
     queueFor: t('title', { ns: 'regLinearLeastSquare' }),
     queueType: 'regLinearLeastSquare',
-
   });
 
   const onTabSelectHandler = (_event: SelectTabEvent, { value }: SelectTabData): void => {

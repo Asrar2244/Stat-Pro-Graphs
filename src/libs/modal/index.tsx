@@ -56,7 +56,7 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
   if (!open) return null;
   return (
     <Dialog open={open} onOpenChange={closeModal} {...others}>
-      <DialogSurface style={{ maxWidth: sizeConversion(size) }}>
+      <DialogSurface style={{ maxWidth: sizeConversion(size), width: "fit-content" }}>
         <DialogBody>
           <DialogTitle className={classes.header}>{title}</DialogTitle>
           <DialogContent className={classes.body}>{children}</DialogContent>

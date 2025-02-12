@@ -19,14 +19,14 @@ export const ListCheckboxWithSelectAll: FC<ListCheckboxWithSelectAllProps> = mem
       list.set(e.target.name, e.target.checked);
       const allChecked = Array.from(list.values()).every((val) => val);
       const someChecked = Array.from(list.values()).some((val) => val);
-      setModelBulk(list, listName);
+      setModelBulk?.(list, listName);
       onSelectAllChanged?.(allChecked ? true : someChecked ? "mixed" : false);
     };
 
     const handleSelectAllChange = (e: ChangeEvent<HTMLInputElement>) => {
       const { checked } = e.target;
       list.forEach((_, key) => list.set(key, checked));
-
+      setModelBulk?.(list, listName);
       onSelectAllChanged?.(checked);
     };
 

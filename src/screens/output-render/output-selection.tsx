@@ -16,9 +16,9 @@ const LinearRidgeRegression = lazy(() =>
     default: modules.LinearRidgeRegression,
   })),
 );
-const BasicStatistics = lazy(() =>
-  import('./analyze/basic-statistics').then((modules) => ({
-    default: modules.BasicStatisticsRegression,
+const DescriptiveStatistics = lazy(() =>
+  import('./analyze/descriptive-stats').then((modules) => ({
+    default: modules.DescriptiveStatisticsRegression,
   })),
 );
 
@@ -41,9 +41,9 @@ interface IOutputSelection extends IToolBar {
 const load: any = {
   regLinearLeastSquare: <LinearLeastSquareRegression />,
   regLinearRidge: <LinearRidgeRegression />,
-  basicStatistics: <BasicStatistics />,
   estimationOfModules: <EstimationOfModule />,
-  pairwiseComparisonModules: <PairwiseComparisonOfModules />
+  pairwiseComparisonModules: <PairwiseComparisonOfModules />,
+  descriptiveStatistics: <DescriptiveStatistics />
 };
 export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...props }) => {
   const { config } = useActiveNode([]);
@@ -51,7 +51,6 @@ export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...prop
   const { t } = useTranslation('common');
   const run = useSelectedRun(config.tabName, id);
   const forceStyle = !showHistory ? { width: '100%' } : {};
-  console.log(config, run, "[run?.selectedRun===================")
   return (
     <div className={classes.selectionLayout} style={forceStyle}>
       <OutputRenderContext.Provider

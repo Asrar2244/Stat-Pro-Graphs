@@ -2,12 +2,12 @@ import { FC, useContext } from 'react';
 import { OutputRenderContext } from '../../context';
 import { useRegressions } from '../../styles-hook/use-regressions-style';
 import { CardColumnRender } from '@libs';
-import configurations from './configuration/basic-stat-config.json';
+import configurations from './configuration/descriptive-stat-config.json';
 import { useTranslation } from 'react-i18next';
 import { ICardInterface } from '@utils';
-export const BasicStatisticsRegression: FC = () => {
+export const DescriptiveStatisticsRegression: FC = () => {
   const context = useContext(OutputRenderContext);
-  const { t } = useTranslation('basicStatisticsOutput');
+  const { t } = useTranslation('descriptiveStatisticsOutput');
   const classes = useRegressions();
   return (
     <div className={classes.regressionsLayout}>

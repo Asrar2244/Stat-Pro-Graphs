@@ -5,18 +5,18 @@
       "showCaption": false,
       "showHeaders": false,
       "view": [
-        ["t-dependent_var_names", "dependent_var_names"],
-        ["t-independent_var_names", "independent_var_names"],
-        ["t-dependent_variables_len", "dependent_variables_len"],
-        ["t-MultipleR", "MultipleR"],
-        ["t-SquaredMultipleR", "SquaredMultipleR"],
-        ["t-AdjustedSquaredMultiple_R", "AdjustedSquaredMultiple_R"],
-        ["t-Standard_Error_of_Estimate", "Standard_Error_of_Estimate"],
-        ["t-dw_statistic", "dw_statistic"],
-        ["t-autocorrelation", "autocorrelation"],
-        ["t-AIC", "AIC"],
-        ["t-corrected_AIC", "corrected_AIC"],
-        ["t-Schwarzs_BIC", "Schwarzs_BIC"]
+        [ "t-dependent_var_names", "dependent_var_names" ],
+        [ "t-independent_var_names", "independent_var_names" ],
+        [ "t-dependent_variables_len", "dependent_variables_len" ],
+        [ "t-MultipleR", "MultipleR" ],
+        [ "t-SquaredMultipleR", "SquaredMultipleR" ],
+        [ "t-AdjustedSquaredMultiple_R", "AdjustedSquaredMultiple_R" ],
+        [ "t-Standard_Error_of_Estimate", "Standard_Error_of_Estimate" ],
+        [ "t-dw_statistic", "dw_statistic" ],
+        [ "t-autocorrelation", "autocorrelation" ],
+        [ "t-AIC", "AIC" ],
+        [ "t-corrected_AIC", "corrected_AIC" ],
+        [ "t-Schwarzs_BIC", "Schwarzs_BIC" ]
       ]
     },
     {
@@ -24,9 +24,9 @@
       "showCaption": false,
       "showHeaders": true,
       "view": [
-        ["", "t-test_stat", "t-p_value"],
-        ["t-ks_stat", "ks_stat", "ks_p_value"],
-        ["t-shapiro_stat", "shapiro_stat", "shapiro_p_value"]
+        [ "", "t-test_stat", "t-p_value" ],
+        [ "t-ks_stat", "ks_stat", "ks_p_value" ],
+        [ "t-shaprio_stat", "shaprio_stat", "shaprio_p_value" ]
       ]
     },
     {
@@ -34,9 +34,9 @@
       "showCaption": true,
       "showHeaders": false,
       "view": [
-        ["t-anderson_stat", "anderson_stat"],
-        ["t-anderson_critical_values", "anderson_critical_values"],
-        ["t-anderson_significance_level", "anderson_significance_level"]
+        [ "t-anderson_stat", "anderson_stat" ],
+        [ "t-anderson_critical_values", "anderson_critical_values" ],
+        [ "t-anderson_significance_level", "anderson_significance_level" ]
       ]
     },
     {
@@ -56,7 +56,7 @@
       "name": "lcl-lpl-ucl-upl",
       "showHeaders": true,
       "showCaption": true,
-      "view": ["t-lcl", "t-lpl", "t-ucl", "t-upl"],
+      "view": [ "t-lcl", "t-lpl", "t-ucl", "t-upl" ],
       "recordType": {
         "pageSize": 500
       }
@@ -66,11 +66,11 @@
       "showHeaders": false,
       "showCaption": false,
       "view": [
-        ["t-dw_statistic", "dw_statistic"],
-        ["t-fvalue", "fvalue"],
-        ["t-AIC", "AIC"],
-        ["t-corrected_AIC", "corrected_AIC"],
-        ["t-Schwarzs_BIC", "Schwarzs_BIC"]
+        [ "t-dw_statistic", "dw_statistic" ],
+        [ "t-fvalue", "fvalue" ],
+        [ "t-AIC", "AIC" ],
+        [ "t-corrected_AIC", "corrected_AIC" ],
+        [ "t-Schwarzs_BIC", "Schwarzs_BIC" ]
       ]
     },
     {
@@ -78,9 +78,9 @@
       "showHeaders": true,
       "showCaption": true,
       "type": "columns",
-      "appendColumn": ["outlier_const"],
+      "appendColumn": [ "outlier_const" ],
       "prefix": "outlier_",
-      "view": ["independent_var_names", "dependent_var_names"],
+      "view": [ "independent_var_names", "dependent_var_names" ],
       "recordType": {
         "pageSize": 500
       }
@@ -149,35 +149,35 @@
         "traces1": {
           "x": "dependent_var_names",
           "y": "lcl",
-          "dynamicTableColumns": ["lcl"],
+          "dynamicTableColumns": [ "lcl" ],
           "type": "scatter",
           "mode": "markers"
         },
         "traces2": {
           "x": "dependent_var_names",
           "y": "upl",
-          "dynamicTableColumns": ["upl"],
+          "dynamicTableColumns": [ "upl" ],
           "type": "scatter",
           "mode": "lines+markers"
         },
         "traces3": {
           "x": "dependent_var_names",
           "y": "Estimate",
-          "dynamicTableColumns": ["Estimate"],
+          "dynamicTableColumns": [ "Estimate" ],
           "type": "scatter",
           "mode": "lines+markers"
         },
         "traces4": {
           "x": "dependent_var_names",
           "y": "ucl",
-          "dynamicTableColumns": ["ucl"],
+          "dynamicTableColumns": [ "ucl" ],
           "type": "scatter",
           "mode": "lines+markers"
         },
         "traces5": {
           "x": "dependent_var_names",
           "y": "lpl",
-          "dynamicTableColumns": ["lpl"],
+          "dynamicTableColumns": [ "lpl" ],
           "type": "scatter",
           "mode": "lines+markers"
         }

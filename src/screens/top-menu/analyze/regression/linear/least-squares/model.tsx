@@ -11,6 +11,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLinearLeastSquares } from './use-squares-hook';
 import { useModelStyle } from './styles-hook/use-model-style';
 import { ListCheckboxWithSelectAll } from '@libs';
+import { generateKey } from '@utils/helper';
 export const Model: FC = () => {
   const classes = useModelStyle();
   const { t } = useTranslation('regLinearLeastSquare');
@@ -166,14 +167,6 @@ const DependentListRender: FC = () => {
     </div>
   );
 };
-
-const generateKey = (list: Map<string, boolean>) => {
-  let key = "";
-  Array.from(list.entries()).forEach(([k, v]) => {
-    key += `${k}-${v}`
-  })
-  return key
-}
 
 const AvailableListRender: FC = () => {
   const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);

@@ -9,7 +9,7 @@ export const exporters = {
   importBusinessObject: 'project-details',
   regressionLeastSquare: 'least-square',
   regressionRidge: 'ridge',
-  basicStatisticsColumnWise: 'basic-statistics-column-wise',
+  descriptiveStat: 'basic-statistics-column-wise',
   openDevTools: 'open-dev-tools',
   estimationOfModule: 'estimation-of-module',
   pairwiseComparisonOfModule: 'pairwise-comparison'
@@ -111,21 +111,6 @@ export const topMenuConfig = {
           ],
         },
         {
-          id: 'basicStatistics',
-          label: 'basicStatistics',
-          submenu: [
-            {
-              id: 'rowWise',
-              label: 'rowWise',
-            },
-            {
-              id: 'columnWise',
-              label: 'columnWise',
-              execute: exporters.basicStatisticsColumnWise,
-            },
-          ],
-        },
-        {
           id: 'analysisOfVariance',
           label: 'analysisOfVariance',
           submenu: [
@@ -146,6 +131,13 @@ export const topMenuConfig = {
     {
       id: 'advanced',
       label: 'advanced',
+      submenu: [
+        {
+          id: 'descriptiveStat',
+          label: 'descriptiveStat',
+          execute: exporters.descriptiveStat,
+        },
+      ],
     },
     {
       id: 'quick_access',

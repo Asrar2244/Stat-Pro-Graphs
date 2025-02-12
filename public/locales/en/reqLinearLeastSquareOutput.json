@@ -5,7 +5,7 @@
   "t-test_stat": "Test Statistic",
   "t-p_value": "p-Value",
   "t-ks_stat": "K-S Test (Lilliefors)",
-  "t-shapiro_stat": "Shapiro-Wilk Test",
+  "t-shaprio_stat": "Shaprio-Wilk Test",
   "t-dependent_var_names": "Dependent Variable",
   "t-independent_var_names": "Independent Variable",
   "t-dependent_variables_len": "N",

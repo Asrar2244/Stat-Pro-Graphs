@@ -30,7 +30,7 @@ interface IEstimate {
 }
 interface IOptions {
   kolmogorovSmirnov: boolean;
-  shapiroWilk: boolean;
+  shaprioWilk: boolean;
   andersonDArling: boolean;
 }
 interface IPredict {
@@ -90,7 +90,7 @@ const initValues = {
   options: {
     andersonDArling: false,
     kolmogorovSmirnov: false,
-    shapiroWilk: false,
+    shaprioWilk: false,
   },
   predict: {
     predictForNewObservation: false,

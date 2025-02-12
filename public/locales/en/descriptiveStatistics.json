@@ -40,13 +40,12 @@
   "ok": "Ok",
   "row": "Row",
   "column": "Column",
-  "title": "Analyze: {{type}} Statistics: Basic Statistics",
+  "title": "Analyze: Descriptive Statistics",
   "add": "Add to Selected",
   "remove": "Remove from Selected",
   "shaprioWilk": "Shaprio Wilk",
   "andersonDarling": "Anderson-Darling",
   "mardiaSkewness": "Mardia Skewness",
   "mardiaKurtosis": "Mardia Kurtosis",
-  "henzeZirkler": "Henze-Zirkler",
-  "variance": "Variance"
+  "henzeZirkler": "Henze-Zirkler"
 }

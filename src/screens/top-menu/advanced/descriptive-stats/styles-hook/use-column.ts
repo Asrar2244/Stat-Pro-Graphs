@@ -3,14 +3,20 @@ import { makeStyles, tokens, shorthands } from '@fluentui/react-components';
 export const useMainStyles = makeStyles({
   mainLayout: {
     display: 'flex',
-    flexDirection: 'column',
-    ...shorthands.padding(tokens.spacingHorizontalM),
-    gap: tokens.spacingHorizontalM,
-    // gap: tokens.spacingHorizontalM,
-  },
-  availability: {
-    display: 'flex',
     flexDirection: 'row',
+    // width: "100%",
+    flex: 1,
+    height: "95%",
+    gap: tokens.spacingHorizontalM,
+    ...shorthands.padding(tokens.spacingHorizontalM),
+    "& .section-available": {
+      height: "100%",
+      width: "80%",
+      marginLeft: "12px",
+      "> div:first-child": {
+        height: "43vh"
+      }
+    }
   },
   list: {
     height: '90%',
@@ -64,6 +70,7 @@ export const useMainStyles = makeStyles({
       ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke1),
     },
   },
+  fieldSet: { marginLeft: "16px" },
   item: {
     display: 'flex',
     flexDirection: 'row',
@@ -80,37 +87,12 @@ export const useMainStyles = makeStyles({
     justifyContent: 'center',
     gap: tokens.spacingHorizontalM,
   },
-  optionsGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-  },
   options: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     paddingTop: tokens.spacingVerticalM,
   },
-  meanGroup: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-  },
-  meanItem: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: tokens.spacingHorizontalM,
-  },
-  meanTypes: {
-    display: 'flex',
-    flexDirection: 'column',
-    ...shorthands.padding(tokens.spacingHorizontalL, 0, 0, 0),
-  },
-  ciOfAm: {
-    display: 'flex',
-    flexDirection: 'row',
-    '& input[type="text"]': {
-      width: '80px',
-    },
-  },
+
   frame: {
     width: '100%',
     ...shorthands.padding(0),

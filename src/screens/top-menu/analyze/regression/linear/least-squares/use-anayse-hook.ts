@@ -52,7 +52,7 @@ export const usePrepareAnalysis = ({
         tolerance: parseFloat(estimate.tolerance),
         estimation: estimate.estimation,
         kolmogrov_smirnov: options.kolmogorovSmirnov,
-        shaprio_wilk: options.shapiroWilk,
+        shaprio_wilk: options.shaprioWilk,
         anderson_darling: options.andersonDArling,
       },
       sub_type: 'none',

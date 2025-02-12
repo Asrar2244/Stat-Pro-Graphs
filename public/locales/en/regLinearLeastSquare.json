@@ -38,7 +38,7 @@
   "force": "Force",
   "normalityTest": "Normality Test",
   "kolmogorovSmirnov": "kolmogorov-S mirnov",
-  "shapiroWilk": "Shapiro-Wilk",
+  "shaprioWilk": "Shaprio-Wilk",
   "andersonDArling": "Anderson-D arling",
   "predictForNewObservation": "Predict for new observation(s)",
   "prediction": "Prediction",

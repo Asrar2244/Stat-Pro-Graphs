@@ -11,8 +11,8 @@ const LeastSquare = lazy(() =>
 );
 const Ridge = lazy(() => import('./analyze').then((module) => ({ default: module.RidgeModule })));
 
-const ColumnWise = lazy(() =>
-  import('./analyze').then((module) => ({ default: module.ColumnWise })),
+const DescriptiveStatistics = lazy(() =>
+  import('./advanced').then((module) => ({ default: module.DescriptiveStatistics })),
 );
 const OpenDevTools = lazy(() =>
   import('./open-dev-tools').then((module) => ({ default: module.OpenDevTools })),
@@ -55,23 +55,26 @@ const MenuSelector: FC<{
   translationNs: string;
 }> = ({ selector, modal }) => {
   const { t } = useTranslation(['common', 'errors', 'success']);
-  switch (selector) {
-    case exporters.importBusinessObject:
-      return <BrowseFile {...modal} t={t} />;
-    case exporters.regressionLeastSquare:
-      return modal.open ? <LeastSquare {...modal} /> : <></>;
-    case exporters.regressionRidge:
-      return <Ridge {...modal} />;
-    case exporters.basicStatisticsColumnWise:
-      return <ColumnWise {...modal} />;
-    case exporters.estimationOfModule:
-      return <EstimationOfModule {...modal} />;
-    case exporters.openDevTools:
-      return <OpenDevTools />;
-    case exporters.pairwiseComparisonOfModule:
-      return <PairwiseComparisonOfModule  {...modal} />
-    default:
-      return null;
+  const d = () => {
+    switch (selector) {
+      case exporters.importBusinessObject:
+        return <BrowseFile {...modal} t={t} />;
+      case exporters.regressionLeastSquare:
+        return <LeastSquare {...modal} />;
+      case exporters.regressionRidge:
+        return <Ridge {...modal} />;
+      case exporters.descriptiveStat:
+        return <DescriptiveStatistics {...modal} />;
+      case exporters.estimationOfModule:
+        return <EstimationOfModule {...modal} />;
+      case exporters.openDevTools:
+        return <OpenDevTools />;
+      case exporters.pairwiseComparisonOfModule:
+        return <PairwiseComparisonOfModule  {...modal} />
+      default:
+        return null;
+    }
   }
+  return modal.open ? <>{d()}</> : <></>
 };
 

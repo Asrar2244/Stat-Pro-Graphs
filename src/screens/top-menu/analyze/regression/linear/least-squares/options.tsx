@@ -26,11 +26,11 @@ const OptionsComponent: FC<ITranslate> = ({ t }) => {
               label={t('kolmogorovSmirnov', { ns: 'regLinearLeastSquare' })}
             />
             <Checkbox
-              name="shapiroWilk"
-              value="shapiroWilk"
+              name="shaprioWilk"
+              value="shaprioWilk"
               onChange={onChangeHandler}
-              defaultChecked={options.shapiroWilk}
-              label={t('shapiroWilk', { ns: 'regLinearLeastSquare' })}
+              defaultChecked={options.shaprioWilk}
+              label={t('shaprioWilk', { ns: 'regLinearLeastSquare' })}
             />
             <Checkbox
               name="andersonDArling"
