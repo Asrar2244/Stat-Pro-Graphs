@@ -37,7 +37,7 @@ export const usePrepareAnalysis = ({
             data_name: tableName,
             input_data_type: 'file',
             db_name: tableName,
-            selected_vars: mainSelectedList,
+            selected_vars: [...mainSelectedList.keys()],
             operation: 'descriptive_statistics',
         };
         execute(config.tabName, parameters, {
