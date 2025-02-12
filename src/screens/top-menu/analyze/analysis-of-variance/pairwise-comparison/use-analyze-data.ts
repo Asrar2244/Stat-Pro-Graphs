@@ -3,7 +3,7 @@ import { useEstimateModel } from './use-pairwise-comparison-store';
 import { API } from '@constants';
 import { useAnalyzeSave } from '@hooks';
 interface IOutputAnalyzeData {
-  pairwiseComparisonModuleAnalyzeData: (tableName: string, queueFor: string, queueType: string) => void;
+  pairwiseComparisonModuleAnalyzeData: (tableName: string, queueFor: string, queueType: string, id: string) => void;
 }
 export const usePairwiseComparisonModuleAnalyzeData = (): IOutputAnalyzeData => {
   const { model } = useEstimateModel(useShallow((state) => ({ model: state.model })));
@@ -12,6 +12,7 @@ export const usePairwiseComparisonModuleAnalyzeData = (): IOutputAnalyzeData => 
     tableName: string,
     queueFor: string,
     queueType: string,
+    id: string
   ): Promise<void> => {
     const db_path = tableName; //await collectionsLocation(tableName);
     const parameters = {
@@ -29,7 +30,7 @@ export const usePairwiseComparisonModuleAnalyzeData = (): IOutputAnalyzeData => 
       url: `/api/${API.analysis}`,
       method: 'POST',
       queueType,
-    });
+    }, id);
   };
 
   return { pairwiseComparisonModuleAnalyzeData };

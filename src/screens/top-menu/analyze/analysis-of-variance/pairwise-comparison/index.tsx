@@ -8,10 +8,12 @@ import { useShallow } from 'zustand/react/shallow';
 import { useEstimateModel } from './use-pairwise-comparison-store';
 import { usePairwiseComparisonModuleAnalyzeData } from './use-analyze-data';
 import { PairwiseComparisonModuleModel } from './model';
+import { useStartProStore } from '@store/main-store';
 
 interface IEstimationOfModules extends IModal { }
 export const PairwiseComparisonModule: FC<IEstimationOfModules> = ({ ...props }) => {
     const [selectedTab, setSelectedTab] = useState<string>('model');
+    const { setBlockUI } = useStartProStore()
     const { pairwiseComparisonModuleAnalyzeData } = usePairwiseComparisonModuleAnalyzeData();
     const { t } = useTranslation(['pairwiseComparisonOfModules']);
     const { id, config } = useActiveNode([props.open]);
@@ -27,7 +29,8 @@ export const PairwiseComparisonModule: FC<IEstimationOfModules> = ({ ...props })
     };
     const onOkModal = async (): Promise<void> => {
         const tableName = config.tabName;
-        pairwiseComparisonModuleAnalyzeData(tableName, t('title'), 'pairwiseComparisonModules');
+        setBlockUI({ value: true, msg: "processRequest" })
+        pairwiseComparisonModuleAnalyzeData(tableName, t('title'), 'pairwiseComparisonModules', id as string);
         onCloseModal();
     };
     const onTabSelectHandler = (_event: SelectTabEvent, { value }: SelectTabData): void => {
