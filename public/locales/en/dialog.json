@@ -1,3 +1,4 @@
 {
-    "processRequest": "Request is in progress, please wait"
+    "processRequest": "Request is in progress, please wait",
+    "somethingWentWrong": "Something went wrong, please try again"
 }

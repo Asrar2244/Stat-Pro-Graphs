@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useToaster, useWindowFocus } from '@hooks';
+import { useWindowFocus } from '@hooks';
 import { fetchRunListOutput } from '@backend';
+import { useStartProStore } from '@store/main-store';
 interface IFetch {
   isLoading: boolean;
   data: Array<any>;
@@ -9,7 +10,7 @@ interface IFetch {
 export const useFetchOutput = (tabName: string): IFetch => {
   const [isLoading, setLoading] = useState(false);
   const [data, setData] = useState<Array<any>>([]);
-  const toast = useToaster();
+  const { setBlockUI } = useStartProStore()
   const focus = useWindowFocus();
   const loadRunHistory = useCallback(async () => {
     const newData = await fetchData();
@@ -24,7 +25,7 @@ export const useFetchOutput = (tabName: string): IFetch => {
       const result = await fetchRunListOutput(tabName);
       return result;
     } catch (e: any) {
-      toast.error({ body: e.message });
+      setBlockUI({ value: true, msg: e.message });
     } finally {
       setLoading(false);
     }

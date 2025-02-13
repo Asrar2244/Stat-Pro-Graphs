@@ -6,18 +6,19 @@ import {
   MdOutlineRemove,
 } from 'react-icons/md';
 import { Fieldset, CheckListRender } from '@libs';
-import { useActiveNode, useToaster, useColumnsRowsCount } from '@hooks';
+import { useActiveNode, useColumnsRowsCount } from '@hooks';
 import { useShallow } from 'zustand/react/shallow';
 import { useRidgeStyles } from './styles-hook/use-ridge-hook';
 import { useTranslation } from 'react-i18next';
 import { useRidge } from './use-ridge-store-hook';
 import { useRidgePrepare } from './use-ridge-analyze';
+import { useStartProStore } from '@store/main-store';
 export const Ridge: FC = () => {
   const [avaSelectAll, setAvaSelectAll] = useState<boolean | 'mixed' | undefined>(false);
   const [depSelectAll, setDepSelectAll] = useState<boolean | 'mixed' | undefined>(false);
   const [indSelectAll, setIndSelectAll] = useState<boolean | 'mixed' | undefined>(false);
   const classes = useRidgeStyles();
-  const toast = useToaster();
+  const { setBlockUI } = useStartProStore()
   const { config } = useActiveNode([]);
   const { t } = useTranslation(['regLinearRidge', 'errors']);
   const { columns } = useColumnsRowsCount({
@@ -50,9 +51,7 @@ export const Ridge: FC = () => {
       if (Object.keys(ridge.dependentList).length === 0 && Object.keys(insertList).length === 1) {
         list['dependentList'] = insertList;
       } else {
-        toast.info({
-          body: t('allowOnlyOneRecord', { ns: 'errors' }),
-        });
+        setBlockUI({ value: true, msg: t('allowOnlyOneRecord', { ns: 'errors' }) })
         return;
       }
     } else {

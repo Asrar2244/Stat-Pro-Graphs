@@ -15,7 +15,7 @@ import {
  */
 import { Database } from '@utils';
 import { CONFIGURATION_DB } from '@constants';
-import { useNodeActions, useToaster } from '@hooks';
+import { useNodeActions } from '@hooks';
 import { mainWorker } from '@workers/worker';
 import { API } from '@constants';
 import { useStartProStore } from '@store/main-store';
@@ -34,8 +34,7 @@ interface IOthersParameters {
 }
 export const useAnalyzeSave = () => {
   const { t } = useTranslation(['common', 'errors']);
-  const { setBlockUI } = useStartProStore()
-  const { error } = useToaster();
+  const { setBlockUI } = useStartProStore();
   const { projects } = useStartProStore(
     useShallow((state) => ({ projects: state.projects, model: state.model })),
   );
@@ -104,12 +103,12 @@ export const useAnalyzeSave = () => {
           }
         })
           .catch((error) => {
-            error({ body: error.message });
+            setBlockUI({ value: true, msg: error.message })
           });
       })
       .catch((errorMsg: any) => {
         console.log('errorMsg===>', errorMsg);
-        error({ title: 'Error', body: errorMsg.message });
+        setBlockUI({ value: true, msg: errorMsg.message });
       }).finally(() => {
         setBlockUI({ value: false, msg: "" })
       });

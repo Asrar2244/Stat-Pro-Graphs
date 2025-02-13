@@ -12,7 +12,7 @@ export const Dialog = () => {
         <FDialog open={blockUI.value} onOpenChange={onChange} >
             <DialogSurface>
                 <DialogBody>
-                    <DialogContent>{t(blockUI.msg)}</DialogContent>
+                    <DialogContent>{blockUI.msg ? t(blockUI.msg) : t("somethingWentWrong")}</DialogContent>
                     <DialogActions>
                         <Button appearance="primary" onClick={onChange}>{t("ok")}</Button>
                     </DialogActions>

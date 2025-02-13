@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useToaster } from '@hooks';
 import { EXCEL } from '@constants';
 import { Database } from '@utils';
+import { useStartProStore } from '@store/main-store';
 interface IFetch {
   isLoading: boolean;
   loadMoreFun: (startIndex: number, stopIndex: number) => Promise<void>;
@@ -11,7 +11,7 @@ interface IFetch {
 export const useFetchRecords = (tabName: string, pageSize?: number): IFetch => {
   const [isLoading, setLoading] = useState(false);
   const [data, setData] = useState<Array<any>>([]);
-  const toast = useToaster();
+  const { setBlockUI } = useStartProStore()
   const loadMoreFun = useCallback(async (startIndex: number, stopIndex: number) => {
     const newData = await fetchData(startIndex, stopIndex);
     setData(newData);
@@ -32,7 +32,7 @@ export const useFetchRecords = (tabName: string, pageSize?: number): IFetch => {
       result.unshift({});
       return result;
     } catch (e: any) {
-      toast.error({ body: e.message });
+      setBlockUI({ value: true, msg: e.message });
     } finally {
       setLoading(false);
     }

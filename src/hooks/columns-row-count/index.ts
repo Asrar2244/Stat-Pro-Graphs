@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useToaster } from '@hooks';
 import { EXCEL } from '@constants';
 import { Database } from '@utils';
+import { useStartProStore } from '@store/main-store';
 interface ITableProps {
   id: number;
   isActive: number;
@@ -26,7 +26,7 @@ interface IColumnsRowsCount extends ITableProps {
 export const useColumnsRowsCount = ({ id, tabName, noRowCount }: IColumnsRowsCount): IOutput => {
   const [columns, setColumns] = useState<IColumn[]>([]);
   const [count, setCount] = useState<number>(0);
-  const toast = useToaster();
+  const { setBlockUI } = useStartProStore()
 
   useEffect(() => {
     if (id) {
@@ -58,7 +58,7 @@ export const useColumnsRowsCount = ({ id, tabName, noRowCount }: IColumnsRowsCou
         })
         .catch((error) => {
           console.error('error', error);
-          toast.error({ body: error.message });
+          setBlockUI({ value: true, msg: error.message })
         });
     }
   }, [id]);

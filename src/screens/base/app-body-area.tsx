@@ -4,7 +4,6 @@ import { IoTerminal, IoFolderSharp } from 'react-icons/io5';
 import { AiFillFileExcel } from 'react-icons/ai';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
-import { useToaster } from '@hooks';
 import { useStartProStore } from '@store';
 import { useLayout } from './styles-hook/use-layout-style';
 import { Explorer } from '../workspace/explorer';
@@ -18,8 +17,7 @@ import 'flexlayout-react/style/light.css';
 
 const AppBody: FC = () => {
   const { t } = useTranslation('dockLayout');
-  const { model } = useStartProStore(useShallow((state) => ({ model: state.model })));
-  const toast = useToaster();
+  const { model, setBlockUI } = useStartProStore(useShallow((state) => ({ model: state.model, setBlockUI: state.setBlockUI })));
   const classes = useLayout();
   const factory = (node: TabNode): ReactNode => {
     switch (node.getComponent()) {
@@ -91,16 +89,14 @@ const AppBody: FC = () => {
             query = updateOutputProjectClose;
             break;
           default:
-            toast.error({
-              body: t('noSuchRecord', { ns: 'errors' }),
-            });
+            setBlockUI({ value: true, msg: t('noSuchRecord', { ns: 'errors' }) });
             return;
         }
 
         if (query === '') return;
         const db = new Database(CONFIGURATION_DB);
         db.executeQuery(query, [id]).catch((error) => {
-          toast.error({ body: error.message });
+          setBlockUI({ value: true, msg: error.message });
         });
       }
     }

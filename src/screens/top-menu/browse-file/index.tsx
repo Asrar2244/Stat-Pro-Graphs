@@ -4,7 +4,7 @@ import { BiDotsHorizontalRounded, BiPlayCircle } from 'react-icons/bi';
 import { Modal, ITranslate } from '@libs';
 import { open } from '@tauri-apps/plugin-dialog';
 import { getFileSize, getFileNameFromPath, getDirPath, joinPaths } from '@utils';
-import { IModal, useFileSize, useGetInitialConfig, useAxios, useToaster } from '@hooks';
+import { IModal, useFileSize, useGetInitialConfig, useAxios } from '@hooks';
 import { useStartProStore } from '@store';
 import { browseFile } from './configurations';
 import { useShallow } from 'zustand/react/shallow';
@@ -33,13 +33,13 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   const axios = useAxios();
   const { getConfigurations } = useGetInitialConfig();
   const { mb } = useFileSize();
-  const toast = useToaster();
-  const { projects, newProject, setNewProject } = useStartProStore(
+  const { projects, newProject, setNewProject, setBlockUI } = useStartProStore(
     useShallow((state) => ({
       projects: state.projects,
       setNewProject: state.setNewProject,
       newProjectName: state.newProject?.name,
       newProject: state.newProject,
+      setBlockUI: state.setBlockUI
     })),
   );
 
@@ -96,7 +96,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               })
               .catch((error) => {
                 console.error('Error===>', error);
-                toast.error({ body: ` ${error?.message}` });
+                setBlockUI({ value: true, msg: error.message });
               })
               .finally(() => {
                 setLoading(false);
@@ -109,7 +109,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             setNewProject('fileSize', '');
             setNewProject('workspacePath', '');
             console.error('Error===>', error);
-            toast.error({ body: ` ${error?.message}` });
+            setBlockUI({ value: true, msg: error.message });
           });
       }
     } catch (e) {
@@ -188,25 +188,19 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               setFileSize(0);
               setSheets([]);
               getConfigurations();
-              toast.success({
-                body: data.error,
-              });
+              setBlockUI({ value: true, msg: data.error, });
               props.closeModal();
             })
             .catch((error) => {
               console.error('error==>', error);
-              toast.error({
-                body: t('fileAndProjectNameError', { ns: 'errors' }),
-              });
+              setBlockUI({ value: true, msg: t('fileAndProjectNameError', { ns: 'errors' }) });
             })
             .finally(() => {
               removeExcelFileFromVolume(actualPath);
             });
         } else {
           removeExcelFileFromVolume(actualPath);
-          toast.error({
-            body: data.error,
-          });
+          setBlockUI({ value: true, msg: data.error });
           console.error('error==>', data.error);
           props.closeModal();
         }
@@ -214,7 +208,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
         throw new Error(t('fileAndProjectNameError', { ns: 'errors' }));
       }
     } catch (error: any) {
-      toast.error({ body: error.message });
+      setBlockUI({ value: true, msg: error.message });
     }
   };
 

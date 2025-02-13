@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { IFetchSingleOutput, fetchSingleOutput } from '@backend';
-import { useToaster } from '@hooks';
+import { useStartProStore } from '@store/main-store';
 interface ISelectedRun {
   loading: boolean;
   selectedRun: IFetchSingleOutput | undefined;
@@ -9,7 +9,8 @@ interface ISelectedRun {
 export const useSelectedRun = (dbName: string, id: number): ISelectedRun | undefined => {
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedRun, setSelectedRun] = useState<IFetchSingleOutput | undefined>(undefined);
-  const toast = useToaster();
+  const { setBlockUI } = useStartProStore()
+
   useEffect(() => {
     if (id > 0) {
       setLoading(true);
@@ -18,7 +19,7 @@ export const useSelectedRun = (dbName: string, id: number): ISelectedRun | undef
           setSelectedRun(result);
         })
         .catch((e) => {
-          toast.error({ body: e.message });
+          setBlockUI({ value: true, msg: e.message });
         })
         .finally(() => {
           setLoading(false);

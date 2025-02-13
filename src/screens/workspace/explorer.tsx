@@ -13,7 +13,7 @@ import { CONFIGURATION_DB, DATA, OUTPUT } from '@constants';
 import { useTranslation } from 'react-i18next';
 import { updateOutputFromProject, updateDataFromProject } from '@backend';
 import { RecordNotFound } from '@libs';
-import { useGetInitialConfig, useFileSize, useFormatter, useToaster, useNodeActions } from '@hooks';
+import { useGetInitialConfig, useFileSize, useFormatter, useNodeActions } from '@hooks';
 import { useStartProStore, IProjectDetails } from '@store';
 import { useExplorerLayout } from './styles-hook/use-explorer-style';
 import { Database } from '@utils';
@@ -26,10 +26,9 @@ const ExplorerComp: FC = () => {
   const classes = useExplorerLayout();
   const { mb } = useFileSize();
   const { dateFormat } = useFormatter();
-  const toast = useToaster();
   const { getConfigurations } = useGetInitialConfig();
-  const { projects } = useStartProStore(
-    useShallow((state) => ({ projects: state.projects, model: state.model })),
+  const { projects, setBlockUI } = useStartProStore(
+    useShallow((state) => ({ projects: state.projects, model: state.model, setBlockUI: state.setBlockUI })),
   );
 
   const { selectTab, openNewTab, getOpenRecords } = useNodeActions();
@@ -49,7 +48,7 @@ const ExplorerComp: FC = () => {
         query = updateOutputFromProject;
         break;
       default:
-        toast.error({ body: t('noSuchRecord') });
+        setBlockUI({ value: true, msg: t('noSuchRecord') });
         return;
     }
     const db = new Database(CONFIGURATION_DB);
@@ -60,7 +59,7 @@ const ExplorerComp: FC = () => {
         });
       })
       .catch((error) => {
-        toast.error({ body: error.message });
+        setBlockUI({ value: true, msg: error.message });
       });
   };
   const onDeleteHandler = (e: any) => {
