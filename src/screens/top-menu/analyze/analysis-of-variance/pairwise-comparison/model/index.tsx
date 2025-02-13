@@ -4,7 +4,7 @@ import { Button, Checkbox, Field, Input, Tooltip } from '@fluentui/react-compone
 import { Fieldset, CheckListRender } from '@libs';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
-import { useEstimateModel } from '../use-pairwise-comparison-store';
+import { IList, useEstimateModel } from '../use-pairwise-comparison-store';
 import { useColumnsRowsCount, useActiveNode } from '@hooks';
 import { MdDeleteOutline } from 'react-icons/md';
 
@@ -32,64 +32,74 @@ export const PairwiseComparisonModuleModel: FC = () => {
   const { additionalParameters } = model;
   const onClickAddToDependencies = (): void => {
     if (setModel) {
+      let depList: IList = {};
       Object.keys(model.availableList).forEach((key: string) => {
         if (model.availableList[key]) {
           delete model.availableList[key];
-          setModel({
-            dependentList: { ...model.dependentList, [key]: true },
-            availableList: { ...model.availableList },
-          });
+          depList[key] = false
         }
+      });
+      setModel({
+        dependentList: { ...model.dependentList, ...depList },
+        availableList: { ...model.availableList },
       });
     }
   };
 
   const onClickRemoveFromDependencies = (): void => {
     if (setModel) {
+      let avaList: IList = {};
       Object.keys(model.dependentList).forEach((key: string) => {
         if (model.dependentList[key]) {
           delete model.dependentList[key];
-          setModel({
-            dependentList: { ...model.dependentList },
-            availableList: { ...model.availableList, [key]: false },
-          });
+          avaList[key] = false
         }
+      });
+      setModel({
+        dependentList: { ...model.dependentList },
+        availableList: { ...model.availableList, ...avaList },
       });
     }
   };
   const onClickRemoveFromFactor = (): void => {
     if (setModel) {
+      let factList: IList = {}
       Object.keys(model.factorList).forEach((key: string) => {
         if (model.factorList[key]) {
           delete model.factorList[key];
-          setModel({
-            factorList: { ...model.factorList },
-            availableList: { ...model.availableList, [key]: false },
-          });
+          factList[key] = false;
         }
+      });
+      setModel({
+        factorList: { ...model.factorList },
+        availableList: { ...model.availableList, ...factList },
       });
     }
   };
 
   const onClickRemoveFromCovariate = (): void => {
     if (setModel) {
+      let avaList: IList = {}
       Object.keys(model.covariateList).forEach((key: string) => {
         if (model.covariateList[key]) {
           delete model.covariateList[key];
-          setModel({
-            covariateList: { ...model.covariateList },
-            availableList: { ...model.availableList, [key]: false },
-          });
+          avaList[key] = false;
         }
+      });
+      setModel({
+        covariateList: { ...model.covariateList },
+        availableList: { ...model.availableList, ...avaList },
       });
     }
   };
   const onClickAddToFactor = (): void => {
     if (setModel) {
+      let factList: IList = {}
       Object.keys(model.availableList).forEach((key: string) => {
         if (model.availableList[key]) {
+          factList[key] = false;
           setModel({
-            factorList: { ...model.factorList, [key]: false },
+            factorList: { ...model.factorList, ...factList },
             availableList: { ...model.availableList },
           });
         }
@@ -98,10 +108,12 @@ export const PairwiseComparisonModuleModel: FC = () => {
   };
   const onClickAddToCovariate = (): void => {
     if (setModel) {
+      let covList: IList = {}
       Object.keys(model.availableList).forEach((key: string) => {
         if (model.availableList[key]) {
+          covList[key] = false
           setModel({
-            covariateList: { ...model.covariateList, [key]: false },
+            covariateList: { ...model.covariateList, ...covList },
             availableList: { ...model.availableList },
           });
         }
