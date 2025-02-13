@@ -18,9 +18,10 @@ const numberFormat = (value: string | number): string => {
 };
 
 const checkColumnExistsQuery = (columns: Array<string>, tableName: string) => {
+  const col = columns.some(c => c.includes('"')) ? columns.join(",") : `'${columns.join("','")}'`;
   return tableName ? `SELECT name
 FROM pragma_table_info('${tableName}')
-WHERE name IN('${columns.join("','")}')` : ""
+WHERE name IN(${col})` : ""
 }
 const withOutRecordType = (view: Array<Array<string>>): Array<string> => {
   const columns: Array<string> = [];
