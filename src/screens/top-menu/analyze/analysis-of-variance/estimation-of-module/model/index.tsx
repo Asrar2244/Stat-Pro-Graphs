@@ -61,16 +61,16 @@ export const EstimationOfModuleModel: FC = () => {
   };
   const onClickRemoveFromFactor = (): void => {
     if (setModel) {
-      let factList: IList = {}
+      let avaList: IList = {}
       Object.keys(model.factorList).forEach((key: string) => {
         if (model.factorList[key]) {
           delete model.factorList[key];
-          factList[key] = false;
+          avaList[key] = false;
         }
       });
       setModel({
         factorList: { ...model.factorList },
-        availableList: { ...model.availableList, ...factList },
+        availableList: { ...model.availableList, ...avaList },
       });
     }
   };
@@ -93,28 +93,32 @@ export const EstimationOfModuleModel: FC = () => {
   const onClickAddToFactor = (): void => {
     if (setModel) {
       let factList: IList = {}
+      let avaList: IList = {}
       Object.keys(model.availableList).forEach((key: string) => {
         if (model.availableList[key]) {
           factList[key] = false;
-          setModel({
-            factorList: { ...model.factorList, ...factList },
-            availableList: { ...model.availableList },
-          });
+          avaList[key] = false
         }
+      });
+      setModel({
+        factorList: { ...model.factorList, ...factList },
+        availableList: { ...model.availableList, ...avaList },
       });
     }
   };
   const onClickAddToCovariate = (): void => {
     if (setModel) {
       let covList: IList = {}
+      let avaList: IList = {}
       Object.keys(model.availableList).forEach((key: string) => {
         if (model.availableList[key]) {
           covList[key] = false
-          setModel({
-            covariateList: { ...model.covariateList, ...covList },
-            availableList: { ...model.availableList },
-          });
+          avaList[key] = false
         }
+      });
+      setModel({
+        covariateList: { ...model.covariateList, ...covList },
+        availableList: { ...model.availableList, ...avaList },
       });
     }
   };
@@ -147,7 +151,6 @@ export const EstimationOfModuleModel: FC = () => {
                 <Button
                   icon={<FaRegCopyright />}
                   name="covariate"
-                  disabled
                   onClick={onClickAddToCovariate}
                 />
               </Tooltip>
