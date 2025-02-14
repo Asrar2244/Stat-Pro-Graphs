@@ -14,7 +14,7 @@ export const Dialog = () => {
                 <DialogBody>
                     <DialogContent>{blockUI.msg ? t(blockUI.msg) : t("somethingWentWrong")}</DialogContent>
                     <DialogActions>
-                        <Button appearance="primary" onClick={onChange}>{t("ok")}</Button>
+                        {!blockUI.hideOk && <Button appearance="primary" onClick={onChange}>{t("ok")}</Button>}
                     </DialogActions>
                 </DialogBody>
             </DialogSurface>

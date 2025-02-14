@@ -8,10 +8,12 @@ import { NoIdSelected } from '@libs/no-id-selected-msg';
 import { useDescriptiveStatistics } from './use-descriptive-statistics';
 import { useShallow } from 'zustand/react/shallow';
 import { usePrepareAnalysis } from './use-prep-analysis';
+import { useStartProStore } from '@store/main-store';
 
 const CommonStatisticsComponent: FC<IModal> = ({ ...props }) => {
   const classes = useCommonStyles();
   const { t } = useTranslation(['descriptiveStatistics', 'common']);
+  const { setBlockUI } = useStartProStore()
 
   const { id, config } = useActiveNode([props.open]);
   const { columns } = useColumnsRowsCount({
@@ -31,10 +33,13 @@ const CommonStatisticsComponent: FC<IModal> = ({ ...props }) => {
   })));
   const onCloseModal = (): void => {
     setReset();
+
     props.closeModal();
   };
   const onOkModal = async (): Promise<void> => {
+    setBlockUI({ value: true, msg: "processRequest", hideOk: true })
     executeAnalysis(id as string)
+
     onCloseModal();
   };
   return (

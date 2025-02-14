@@ -14,7 +14,7 @@ export interface IProjectDetails {
   sheetId: string
 }
 
-interface IBlockUIProps { value: boolean; msg: string }
+interface IBlockUIProps { value: boolean; msg: string; hideOk?: boolean }
 
 interface IStartProStore {
   projects: {

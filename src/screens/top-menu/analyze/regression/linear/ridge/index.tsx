@@ -21,7 +21,7 @@ const RidgeModuleComponent: FC<IModal> = ({ ...props }) => {
     if (!id && id !== '') { props.closeModal(); return; }
     ridgeAnalyzeData(config.tabName, t('title'), 'regLinearRidge', id);
     props.closeModal();
-    setBlockUI({ value: true, msg: "processRequest" });;
+    setBlockUI({ value: true, msg: "processRequest", hideOk: true });;
   };
   return (
     <Modal

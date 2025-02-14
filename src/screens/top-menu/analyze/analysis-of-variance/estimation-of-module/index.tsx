@@ -31,7 +31,7 @@ export const estimationOfModule: FC<IEstimationOfModules> = ({ ...props }) => {
     const tableName = config.tabName;
     estimationOfModuleAnalyzeData(tableName, t('title'), 'estimationOfModules', id as string);
     onCloseModal();
-    setBlockUI({ value: true, msg: "processRequest" });
+    setBlockUI({ value: true, msg: "processRequest", hideOk: true });
   };
   const onTabSelectHandler = (_event: SelectTabEvent, { value }: SelectTabData): void => {
     setSelectedTab(value as string);
