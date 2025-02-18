@@ -89,18 +89,19 @@ export const topMenuConfig = {
                   label: 'leastSquares',
                   execute: exporters.regressionLeastSquare,
                 },
-                {
-                  id: 'bestSubsets',
-                  label: 'bestSubsets',
-                },
-                {
-                  id: 'polynomial',
-                  label: 'polynomial',
-                },
-                {
-                  id: 'bayesian',
-                  label: 'bayesian',
-                },
+                // ToDO: Uncomment them when these are needed
+                // {
+                //   id: 'bestSubsets',
+                //   label: 'bestSubsets',
+                // },
+                // {
+                //   id: 'polynomial',
+                //   label: 'polynomial',
+                // },
+                // {
+                //   id: 'bayesian',
+                //   label: 'bayesian',
+                // },
                 {
                   id: 'ridge',
                   label: 'ridge',

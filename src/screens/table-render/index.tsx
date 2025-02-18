@@ -90,6 +90,7 @@ const TableDataRender: FC<ITableProps> = (props) => {
     defaultWidth: 120,
     minWidth: 60,
     fixedHeight: true,
+    fixedWidth: false,
   });
   return (
     <div className={classes.completeLayout}>
@@ -125,7 +126,7 @@ const TableDataRender: FC<ITableProps> = (props) => {
       <div className={classes.footerLayout}>
         <Pagination {...pageContext} />
       </div>
-    </div>
+    </div >
   );
 };
 

@@ -24,6 +24,8 @@ interface IStartProStore {
   newProject?: {
     [key: string]: any;
   };
+  renderLatestRun: boolean;
+  setRenderLatestRun: (x: boolean) => void;
   model: Model;
   setBulkProjects: (projects: { [projectName: string]: IProjectDetails }) => void;
   setNewProject: (key: string, value: string) => void;
@@ -32,7 +34,13 @@ interface IStartProStore {
 
 export const useStartProStore = create<IStartProStore>((set) => ({
   projects: {},
+  renderLatestRun: false,
   blockUI: { value: false, msg: "" },
+  setRenderLatestRun(x) {
+    set(() => {
+      return { renderLatestRun: x }
+    })
+  },
   setBlockUI(value: IBlockUIProps): void {
     set(() => {
       return { blockUI: value }

@@ -38,7 +38,7 @@ export const useAnalyzeSave = () => {
   const { projects } = useStartProStore(
     useShallow((state) => ({ projects: state.projects, model: state.model })),
   );
-  const { selectTab, openNewTab, getOpenRecords } = useNodeActions();
+  const { openNewTab } = useNodeActions();
 
   const insertInNotifications = async (
     isDeleteID: number = 0,
@@ -95,12 +95,8 @@ export const useAnalyzeSave = () => {
           const projectId = Number(id?.split("-")[1])
           const data = Object.values(projects).find(item => Number(item.id) === projectId) as ISelector;
           const type = 'OUTPUT';
-          const { record } = getOpenRecords(data, type);
-          if (record) {
-            selectTab(`${type}-${data.id}`)
-          } else {
-            openNewTab(data, projectId, type, t)
-          }
+          openNewTab(data, projectId, type, t)
+
         })
           .catch((error) => {
             setBlockUI({ value: true, msg: error.message })

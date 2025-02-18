@@ -20,6 +20,7 @@ import { useFetchOutput } from '../hooks/use-fetch-output';
 import { HistoryListRender } from './list-item';
 import { IoCloseOutline } from 'react-icons/io5';
 import { CiSearch } from 'react-icons/ci';
+import { useStartProStore } from '@store/main-store';
 interface IHistory {
   showHistory: boolean;
   toggleShowHistory: () => void;
@@ -34,11 +35,13 @@ const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
   const { config } = useActiveNode([]);
   const { t } = useTranslation('outputToolBar');
   const { data, isLoading } = useFetchOutput(config.tabName);
+  const { setRenderLatestRun, renderLatestRun } = useStartProStore();
   useEffect(() => {
     if (Array.isArray(data)) {
       history.setTotalRuns(data.length);
-      if ((!selectedID || selectedID === 0) && data.length > 0) {
+      if (renderLatestRun || ((!selectedID || selectedID === 0) && data.length > 0)) {
         history.selectedRun(data[0].id, data[0].outputFor);
+        setRenderLatestRun(false);
       }
     }
   }, [data]);
