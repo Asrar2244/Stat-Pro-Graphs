@@ -28,6 +28,7 @@ export const PairwiseComparisonModule: FC<IEstimationOfModules> = ({ ...props })
         props.closeModal();
     };
     const onOkModal = async (): Promise<void> => {
+        if (!id && id !== '') { onCloseModal(); return; }
         const tableName = config.tabName;
         setBlockUI({ value: true, msg: "processRequest", hideOk: true })
         pairwiseComparisonModuleAnalyzeData(tableName, t('title'), 'pairwiseComparisonModules', id as string);

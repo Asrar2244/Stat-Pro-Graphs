@@ -40,7 +40,7 @@ const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
     if (Array.isArray(data)) {
       history.setTotalRuns(data.length);
       if (renderLatestRun || ((!selectedID || selectedID === 0) && data.length > 0)) {
-        history.selectedRun(data[0].id, data[0].outputFor);
+        history.selectedRun(data[0]?.id, data[0]?.outputFor);
         setRenderLatestRun(false);
       }
     }

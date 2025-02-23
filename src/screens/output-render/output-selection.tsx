@@ -65,11 +65,9 @@ export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...prop
               <p>{t('loadingConfigurations')}</p>
             ) : (
               <SuspenseLoad>
-                {run?.selectedRun?.outputType && load[run?.selectedRun?.outputType] ? (
+                {run?.selectedRun?.outputType && load[run?.selectedRun?.outputType] &&
                   load[run?.selectedRun?.outputType]
-                ) : (
-                  <center>{t('typeNotFound')}</center>
-                )}
+                }
               </SuspenseLoad>
             )}
           </div>

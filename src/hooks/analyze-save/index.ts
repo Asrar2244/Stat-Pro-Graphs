@@ -34,9 +34,8 @@ interface IOthersParameters {
 }
 export const useAnalyzeSave = () => {
   const { t } = useTranslation(['common', 'errors']);
-  const { setBlockUI } = useStartProStore();
-  const { projects } = useStartProStore(
-    useShallow((state) => ({ projects: state.projects, model: state.model })),
+  const { projects, setBlockUI } = useStartProStore(
+    useShallow((state) => ({ projects: state.projects, model: state.model, setBlockUI: state.setBlockUI })),
   );
   const { openNewTab } = useNodeActions();
 
@@ -96,7 +95,6 @@ export const useAnalyzeSave = () => {
           const data = Object.values(projects).find(item => Number(item.id) === projectId) as ISelector;
           const type = 'OUTPUT';
           openNewTab(data, projectId, type, t)
-
         })
           .catch((error) => {
             setBlockUI({ value: true, msg: error.message })

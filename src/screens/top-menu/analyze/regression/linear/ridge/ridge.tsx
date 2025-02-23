@@ -35,8 +35,7 @@ export const Ridge: FC = () => {
   );
 
   const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
-    const { name } = e.target as any;
-
+    const name = (e.currentTarget as HTMLButtonElement).dataset.name;
     const availList: any = {};
     const insertList: any = {};
     Object.keys(ridge.availableList).forEach((key: string) => {
@@ -138,6 +137,8 @@ export const Ridge: FC = () => {
               className="dependent-list"
               list={ridge.dependentList}
               selected={depSelectAll}
+              setSelectAll={setDepSelectAll}
+              key={Object.values(ridge.dependentList).length > 0 ? Object.values(ridge.dependentList).join("-") : ""}
             />
             <Button
               icon={<MdOutlineRemove />}
@@ -161,16 +162,18 @@ export const Ridge: FC = () => {
               className="dependent-list"
               list={ridge.availableList}
               selected={avaSelectAll}
+              setSelectAll={setAvaSelectAll}
+              key={Object.values(ridge.availableList).length > 0 ? Object.values(ridge.availableList).join("-") : ""}
             />
             <div className="send-buttons">
-              <Button icon={<MdKeyboardDoubleArrowLeft />} name="dependent" onClick={onSendHandler}>
+              <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler}>
                 {t('sendToDependent', { ns: 'regLinearRidge' })}
               </Button>
 
               <Button
                 icon={<MdKeyboardDoubleArrowRight />}
                 iconPosition="after"
-                name="independent"
+                data-name="independent"
                 onClick={onSendHandler}
               >
                 {t('sendToIndependent', { ns: 'regLinearRidge' })}
@@ -190,8 +193,9 @@ export const Ridge: FC = () => {
               className="dependent-list"
               list={ridge.independentList}
               selected={indSelectAll}
+              setSelectAll={setIndSelectAll}
+              key={Object.values(ridge.independentList).length > 0 ? Object.values(ridge.independentList).join("-") : ""}
             />
-
             <Button
               icon={<MdOutlineRemove />}
               className={classes.removeButtons}

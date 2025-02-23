@@ -125,7 +125,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
     e.preventDefault();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
-    const value = e.target.elements.projectName.value;
+    const value = e.target.elements.projectName.value.toLowerCase();
     setNewProject('name', '');
     setNewProject('fileSize', '');
     setNewProject('impBusinessObjFile', '');
@@ -135,10 +135,10 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
       setProjectExists(undefined);
       return;
     }
-    const isProjectExists = projects[value];
+    const isProjectExists = projects[value.toLowerCase()];
     const isExists = !!isProjectExists;
     if (!isExists) {
-      setNewProject('name', value);
+      setNewProject('name', value.toLowerCase());
     }
     setProjectExists(isExists);
   };
@@ -224,7 +224,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   };
   const onProjectNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setProjectName(e?.target.value)
+    setProjectName(e?.target.value.toLowerCase())
   }
   const okDisabled = !!file && newProject?.name && newProject?.name !== '';
   return (

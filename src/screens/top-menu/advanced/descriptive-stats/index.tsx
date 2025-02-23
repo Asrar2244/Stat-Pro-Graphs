@@ -37,6 +37,8 @@ const CommonStatisticsComponent: FC<IModal> = ({ ...props }) => {
     props.closeModal();
   };
   const onOkModal = async (): Promise<void> => {
+    if (!id && id !== '') { onCloseModal(); return; }
+
     setBlockUI({ value: true, msg: "processRequest", hideOk: true })
     executeAnalysis(id as string)
 

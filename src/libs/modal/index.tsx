@@ -15,6 +15,7 @@ import {
   shorthands,
 } from '@fluentui/react-components';
 import { IModal } from '@hooks';
+import { RiCloseLine } from "react-icons/ri";
 
 export interface IDialogProps extends IModal, PropsWithChildren {
   title?: ReactElement | string;
@@ -28,6 +29,10 @@ export interface IDialogProps extends IModal, PropsWithChildren {
 
 const useModalLayout = makeStyles({
   header: {
+    flex: 1,
+    display: "flex",
+    gap: "16px",
+    justifyContent: "space-between",
     ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralForegroundDisabled),
   },
   body: {
@@ -57,8 +62,13 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={closeModal} {...others}>
       <DialogSurface style={{ maxWidth: sizeConversion(size), width: "fit-content" }}>
+        <div className={classes.header}>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogTrigger disableButtonEnhancement>
+            <Button appearance="subtle" icon={<RiCloseLine />} />
+          </DialogTrigger>
+        </div>
         <DialogBody>
-          <DialogTitle className={classes.header}>{title}</DialogTitle>
           <DialogContent className={classes.body}>{children}</DialogContent>
           <DialogActions>
             {showCancel && (
@@ -73,6 +83,6 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
           </DialogActions>
         </DialogBody>
       </DialogSurface>
-    </Dialog>
+    </Dialog >
   );
 };
