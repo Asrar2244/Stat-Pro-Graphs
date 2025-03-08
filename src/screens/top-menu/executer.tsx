@@ -25,7 +25,6 @@ const PairwiseComparisonOfModule = lazy(() =>
   import('./analyze').then((module) => ({ default: module.PairwiseComparisonModule })),
 );
 
-
 export const withMenuEvents = <P extends object>(
   translationNs: string,
   WrappedComponent: React.ComponentType<P>,
@@ -68,13 +67,12 @@ const MenuSelector: FC<{
       case exporters.estimationOfModule:
         return <EstimationOfModule {...modal} />;
       case exporters.openDevTools:
-        return <OpenDevTools />;
+        return <OpenDevTools {...modal} t={t} />;
       case exporters.pairwiseComparisonOfModule:
-        return <PairwiseComparisonOfModule  {...modal} />
+        return <PairwiseComparisonOfModule {...modal} />;
       default:
         return null;
     }
-  }
-  return modal.open ? <>{d()}</> : <></>
+  };
+  return modal.open ? <>{d()}</> : <></>;
 };
-

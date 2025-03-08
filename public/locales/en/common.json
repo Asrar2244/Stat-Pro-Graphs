@@ -58,5 +58,18 @@
   "showAll": "Show All",
   "addingTaskToQueue": "Adding Task to Queue",
   "workspacePath": "Workspace Path",
-  "selectWorkspacePath": "Select Workspace Path"
+  "selectWorkspacePath": "Select Workspace Path",
+  "about": "About",
+  "aboutDesc": "Statistics and marketing analytics",
+  "version": "Version",
+  "buildNumber": "Build number",
+  "releaseDate": "Release Date",
+  "copyright": "Copyright",
+  "license": "License",
+  "licenseTo": "License To",
+  "registeredMachine": "Registered Machine",
+  "reportIssueUrl": "Report Issue",
+  "yes": "Ok",
+  "no": "No",
+  "productLicense": "Product License"
 }

@@ -15,24 +15,26 @@ import {
   shorthands,
 } from '@fluentui/react-components';
 import { IModal } from '@hooks';
-import { RiCloseLine } from "react-icons/ri";
+import { RiCloseLine } from 'react-icons/ri';
 
 export interface IDialogProps extends IModal, PropsWithChildren {
   title?: ReactElement | string;
+  showTitle?: boolean;
   okLabel?: ReactElement | string;
   cancelLabel?: ReactElement | string;
   ok?: ButtonProps;
   cancel?: ButtonProps;
   size?: 'small' | 'medium' | 'large';
   showCancel?: boolean;
+  showOk?: boolean;
 }
 
 const useModalLayout = makeStyles({
   header: {
     flex: 1,
-    display: "flex",
-    gap: "16px",
-    justifyContent: "space-between",
+    display: 'flex',
+    gap: '16px',
+    justifyContent: 'space-between',
     ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralForegroundDisabled),
   },
   body: {
@@ -55,19 +57,23 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
   size,
   closeModal,
   showCancel,
+  showTitle = true,
+  showOk = true,
   ...others
 }) => {
   const classes = useModalLayout();
   if (!open) return null;
   return (
     <Dialog open={open} onOpenChange={closeModal} {...others}>
-      <DialogSurface style={{ maxWidth: sizeConversion(size), width: "fit-content" }}>
-        <div className={classes.header}>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogTrigger disableButtonEnhancement>
-            <Button appearance="subtle" icon={<RiCloseLine />} />
-          </DialogTrigger>
-        </div>
+      <DialogSurface style={{ maxWidth: sizeConversion(size), width: 'fit-content' }}>
+        {showTitle && (
+          <div className={classes.header}>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogTrigger disableButtonEnhancement>
+              <Button appearance="subtle" icon={<RiCloseLine />} />
+            </DialogTrigger>
+          </div>
+        )}
         <DialogBody>
           <DialogContent className={classes.body}>{children}</DialogContent>
           <DialogActions>
@@ -76,13 +82,16 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
                 <Button appearance="secondary" {...cancel}>
                   {cancelLabel}
                 </Button>
-              </DialogTrigger>)}
-            <Button appearance="primary" {...ok}>
-              {okLabel}
-            </Button>
+              </DialogTrigger>
+            )}
+            {showOk && (
+              <Button appearance="primary" {...ok}>
+                {okLabel}
+              </Button>
+            )}
           </DialogActions>
         </DialogBody>
       </DialogSurface>
-    </Dialog >
+    </Dialog>
   );
 };

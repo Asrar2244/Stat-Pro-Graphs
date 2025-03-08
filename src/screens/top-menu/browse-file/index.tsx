@@ -39,7 +39,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
       setNewProject: state.setNewProject,
       newProjectName: state.newProject?.name,
       newProject: state.newProject,
-      setBlockUI: state.setBlockUI
+      setBlockUI: state.setBlockUI,
     })),
   );
 
@@ -188,7 +188,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               setFileSize(0);
               setSheets([]);
               getConfigurations();
-              setBlockUI({ value: true, msg: data.error, });
+              setBlockUI({ value: true, msg: data.error });
               props.closeModal();
             })
             .catch((error) => {
@@ -224,13 +224,14 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   };
   const onProjectNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setProjectName(e?.target.value.toLowerCase())
-  }
+    setProjectName(e?.target.value.toLowerCase());
+  };
   const okDisabled = !!file && newProject?.name && newProject?.name !== '';
   return (
     <Modal
       modalType="alert"
       {...props}
+      showCancel
       cancelLabel={t('close', { ns: 'common' })}
       okLabel={t('createProject', { ns: 'common' })}
       title={t('workspace', { ns: 'common' })}

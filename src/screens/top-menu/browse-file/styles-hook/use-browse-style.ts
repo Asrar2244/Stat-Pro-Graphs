@@ -6,6 +6,7 @@ export const useBrowseLayout = makeStyles({
     flexDirection: 'column',
     gap: tokens.spacingHorizontalXXS,
     overflow: 'hidden',
+    width: '400px',
   },
   fieldset: {
     ...shorthands.border('none'),
