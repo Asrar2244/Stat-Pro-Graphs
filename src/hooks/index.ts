@@ -17,3 +17,5 @@ export * from './execute-common-task/execute-task';
 export * from './analyze-save';
 export * from './plotly/use-graph-config';
 export * from './columns-row-count';
+export * from './license/use-license';
+export * from './menu-code-execute';

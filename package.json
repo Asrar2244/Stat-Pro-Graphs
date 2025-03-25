@@ -13,7 +13,6 @@
     "create:release": "release-it --no-npm.publish",
     "test": "jest --coverage"
   },
-
   "dependencies": {
     "@fluentui/react-components": "9.54.13",
     "@hookform/resolvers": "^3.9.0",
@@ -23,7 +22,7 @@
     "@tauri-apps/plugin-log": "~2.0.0-rc",
     "@tauri-apps/plugin-shell": ">=2.0.0-beta.0",
     "@tauri-apps/plugin-sql": "2.0.0-beta.5",
-    "axios": "1.7.8",
+    "axios": "1.8.2",
     "comlink": "4.4.1",
     "dayjs": "1.11.11",
     "flexlayout-react": "0.7.15",
@@ -38,7 +37,8 @@
     "react-full-screen": "1.1.1",
     "react-hook-form": "7.53.0",
     "react-i18next": "14.1.2",
-    "react-icons": "5.2.1",
+    "react-icons": "5.5.0",
+    "react-text-mask": "5.5.0",
     "react-virtualized": "9.22.5",
     "uuid": "10.0.0",
     "zod": "^3.23.8",
@@ -62,6 +62,7 @@
     "@types/react": "18.2.25",
     "@types/react-dom": "18.2.7",
     "@types/react-i18next": "8.1.0",
+    "@types/react-text-mask": "^5.4.14",
     "@types/react-virtualized": "^9.21.29",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "4.2.1",

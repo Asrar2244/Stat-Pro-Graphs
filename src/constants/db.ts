@@ -12,6 +12,7 @@ export const EXECUTE_TASK_TABLE = 'EXECUTE_TASK';
 export const EXCEL = 'input';
 //Table name for output
 export const OUTPUT = 'OUTPUT';
+export const GRAPH = 'GRAPH';
 //Layout render
 export const DATA = 'DATA';
 //Notification table status

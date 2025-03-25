@@ -1,1 +1,1 @@
-export const WELCOME_URL = 'https://pages.github.com';
+export const WELCOME_URL = '/welcome-fallback.html';

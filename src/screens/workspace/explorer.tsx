@@ -28,7 +28,11 @@ const ExplorerComp: FC = () => {
   const { dateFormat } = useFormatter();
   const { getConfigurations } = useGetInitialConfig();
   const { projects, setBlockUI } = useStartProStore(
-    useShallow((state) => ({ projects: state.projects, model: state.model, setBlockUI: state.setBlockUI })),
+    useShallow((state) => ({
+      projects: state.projects,
+      model: state.model,
+      setBlockUI: state.setBlockUI,
+    })),
   );
 
   const { selectTab, openNewTab, getOpenRecords } = useNodeActions();
@@ -37,7 +41,7 @@ const ExplorerComp: FC = () => {
   const onSelectedUpdate = (data: ISelector, type: string) => (): void => {
     const { record } = getOpenRecords(data, type);
     if (record) {
-      selectTab(`${type}-${data.id}`)
+      selectTab(`${type}-${data.id}`);
     }
     let query = '';
     switch (type) {
@@ -63,9 +67,9 @@ const ExplorerComp: FC = () => {
       });
   };
   const onDeleteHandler = (e: any) => {
-    console.log("deleting the work space");
-    e.preventDefault()
-  }
+    console.log('deleting the work space');
+    e.preventDefault();
+  };
   return (
     <div className={classes.explorerLayout}>
       <div className={classes.workspace}>
@@ -83,9 +87,9 @@ const ExplorerComp: FC = () => {
                     project.isOpenedData === 1 || project.isOpenedOutput === 1 ? 'selected' : ''
                   }
                 >
-                  <div className={classes.treeItemLayout}  >
-                    <div className={classes.treeItem} >
-                      <div className="project-name" >{projectName}</div>
+                  <div className={classes.treeItemLayout}>
+                    <div className={classes.treeItem}>
+                      <div className="project-name">{projectName}</div>
                       <MdDeleteOutline onClick={onDeleteHandler} />
                     </div>
                     <div className="date-file">

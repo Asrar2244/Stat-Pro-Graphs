@@ -1,0 +1,22 @@
+{
+  "scatter": "Scatter",
+  "line": "Line",
+  "lineAndScatter": "Line and Scatter",
+  "areaPlot": "Area Plot",
+  "polar": "Polar",
+  "radar": "Radar",
+  "ternary": "Ternary",
+  "verticalBar": "Vertical Bar",
+  "horizontalBar": "Horizontal Bar",
+  "box": "Box",
+  "pie": "Pie",
+  "vector": "Vector",
+  "bubble": "Bubble",
+  "forest": "Forest",
+  "contour": "Contour",
+  "scatter3d": "3D Scatter",
+  "line3d": "3D Line",
+  "waterfall3d": "3D Waterfall",
+  "mesh3d": "3D Mesh",
+  "bar3d": "3D Bar"
+}

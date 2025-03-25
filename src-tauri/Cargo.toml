@@ -1,6 +1,6 @@
 [package]
 name = "start-pro"
-version = "0.0.0"
+version = "1.0.0"
 description = "Start Pro App"
 authors = ["start-pro"]
 edition = "2021"

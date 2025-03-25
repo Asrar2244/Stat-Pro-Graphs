@@ -9,7 +9,8 @@ import { useLayout } from './styles-hook/use-layout-style';
 import { Explorer } from '../workspace/explorer';
 import { TableRender } from '../table-render';
 import { OutputRender } from '../output-render';
-import { DATA, OUTPUT, CONFIGURATION_DB } from '@constants';
+import { GraphViewRender } from '../graph-view-render';
+import { DATA, OUTPUT, CONFIGURATION_DB, GRAPH } from '@constants';
 import { updateDataProjectClose, updateOutputProjectClose } from '@backend';
 import { Database } from '@utils/db';
 import { WelcomePage } from '../welcome';
@@ -17,7 +18,9 @@ import 'flexlayout-react/style/light.css';
 
 const AppBody: FC = () => {
   const { t } = useTranslation('dockLayout');
-  const { model, setBlockUI } = useStartProStore(useShallow((state) => ({ model: state.model, setBlockUI: state.setBlockUI })));
+  const { model, setBlockUI } = useStartProStore(
+    useShallow((state) => ({ model: state.model, setBlockUI: state.setBlockUI })),
+  );
   const classes = useLayout();
   const factory = (node: TabNode): ReactNode => {
     switch (node.getComponent()) {
@@ -33,6 +36,12 @@ const AppBody: FC = () => {
         return (
           <div className={classes.suppressOverFlow}>
             <OutputRender {...node.getConfig()} />
+          </div>
+        );
+      case `${GRAPH}-render`:
+        return (
+          <div className={classes.suppressOverFlow}>
+            <GraphViewRender {...node.getConfig()} />
           </div>
         );
       case 'welcome':

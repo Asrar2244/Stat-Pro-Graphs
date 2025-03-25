@@ -12,7 +12,9 @@ import initialTables from './query';
 export const useInitialConfig = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { setCommonMsg } = useTasks(useShallow((state) => ({ setCommonMsg: state.setCommonMsg })));
+
   const { t } = useTranslation('dockLayout', { useSuspense: true });
+
   useEffect(() => {
     seedInitialConfig();
     //To Print App Version

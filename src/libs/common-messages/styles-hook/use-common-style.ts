@@ -94,4 +94,8 @@ export const useCommonLayout = makeStyles({
   trash: {
     borderLeft: '1px solid gray',
   },
+  licenseStatus: {
+    paddingRight: tokens.spacingVerticalS,
+    paddingLeft: tokens.spacingVerticalS,
+  },
 });

@@ -3,6 +3,8 @@ export interface IMenuItem {
   id: string;
   execute?: string;
   submenu?: IMenuItem[];
+  icon?: string;
+  codeExecute?: string;
 }
 
 export const exporters = {
@@ -12,7 +14,8 @@ export const exporters = {
   descriptiveStat: 'basic-statistics-column-wise',
   openDevTools: 'open-dev-tools',
   estimationOfModule: 'estimation-of-module',
-  pairwiseComparisonOfModule: 'pairwise-comparison'
+  pairwiseComparisonOfModule: 'pairwise-comparison',
+  openNewTabForGraph: 'openNewTabForGraph',
 };
 
 export const topMenuConfig = {
@@ -49,7 +52,6 @@ export const topMenuConfig = {
           id: 'data_capture',
           label: 'dataCapture',
         },
-
       ],
     },
     {
@@ -71,6 +73,13 @@ export const topMenuConfig = {
     {
       id: 'graph',
       label: 'graph',
+      submenu: [
+        {
+          id: 'graphView',
+          label: 'graphView',
+          codeExecute: exporters.openNewTabForGraph,
+        },
+      ],
     },
     {
       id: 'analyze',

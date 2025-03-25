@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stat Pro</title>
+    <style>
+      body {
+        background-color: #ffffff;
+        color: black;
+      }
+      .center-div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body[data-theme='auto'] {
+          background-color: #292929;
+          color: white;
+        }
+      }
+      body[data-theme='dark'] {
+        background-color: #292929;
+        color: white;
+      }
+
+      body[data-theme='light'] {
+        background-color: #ffffff;
+        color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="center-div">
+      <img
+        id="img-logo"
+        src="../splash-screen/images/white.svg"
+        alt="StatPro Logo"
+        width="400"
+        height="200"
+      />
+    </div>
+  </body>
+  <script>
+    function applyTheme() {
+      const params = new URLSearchParams(window.location.search);
+      const theme = params.get('theme');
+      const imgLogo = document.getElementById('img-logo');
+      if (theme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        imgLogo.src = '../splash-screen/images/black.svg';
+      } else if (theme === 'light') {
+        document.body.setAttribute('data-theme', 'light');
+        imgLogo.src = '../splash-screen/images/white.svg';
+      } else {
+        document.body.setAttribute('data-theme', 'auto');
+      }
+    }
+
+    // Run when the page loads
+    applyTheme();
+
+    // Listen for query parameter changes (popstate + pushState override)
+    (function (history) {
+      const pushState = history.pushState;
+      const replaceState = history.replaceState;
+
+      function handleUrlChange() {
+        applyTheme();
+      }
+
+      history.pushState = function (state, title, url) {
+        pushState.apply(this, arguments);
+        handleUrlChange();
+      };
+
+      history.replaceState = function (state, title, url) {
+        replaceState.apply(this, arguments);
+        handleUrlChange();
+      };
+
+      window.addEventListener('popstate', handleUrlChange);
+    })(window.history);
+  </script>
+</html>

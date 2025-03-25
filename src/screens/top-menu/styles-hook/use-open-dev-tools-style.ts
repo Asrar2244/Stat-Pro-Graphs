@@ -1,4 +1,4 @@
-import { makeStyles } from '@fluentui/react-components';
+import { makeStyles, tokens } from '@fluentui/react-components';
 export const useOpenDevToolsLayout = makeStyles({
   card: {
     margin: 'auto',
@@ -8,12 +8,10 @@ export const useOpenDevToolsLayout = makeStyles({
   details: {
     display: 'flex!important',
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
     textTransform: 'uppercase',
-    gap: '2px',
-    '& > div': {
-      width: '50%',
-    },
+    gap: tokens.spacingHorizontalL,
   },
   description: {
     width: '100%',
@@ -21,7 +19,8 @@ export const useOpenDevToolsLayout = makeStyles({
   license: {
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'end',
+    width: '40%',
   },
   footerButton: {
     display: 'flex',
@@ -29,5 +28,22 @@ export const useOpenDevToolsLayout = makeStyles({
   },
   small: {
     fontWeight: 'lighter',
+  },
+  activateLicense: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '60%',
+    gap: tokens.spacingVerticalXS,
+  },
+
+  activeButton: {
+    fontFamily: 'monospace',
+    textTransform: 'uppercase',
+    width: '98%',
+  },
+  maskInputButton: {
+    display: 'flex',
+    flexDirection: 'row',
+    width: '100%',
   },
 });

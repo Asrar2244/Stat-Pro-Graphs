@@ -4,5 +4,7 @@
   "output": "Output.syo",
   "workspace": "Workspace",
   "fileAllReadyOpened": "File already Opened",
-  "noSuchRecord": "No Such records exists"
+  "noSuchRecord": "No Such records exists",
+  "graph": "Graph View",
+  "custom": "Custom View"
 }

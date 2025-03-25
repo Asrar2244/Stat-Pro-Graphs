@@ -11,6 +11,8 @@ import { FC, Fragment, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { topMenuConfig, IMenuItem } from './configuration';
 import { withMenuEvents } from './executer';
+import { useMenuCodeExecutor } from '@hooks';
+import * as VscIcons from 'react-icons/vsc';
 const CommonMessages = lazy(() =>
   import('@libs').then(({ CommonMessages }) => ({ default: CommonMessages })),
 );
@@ -18,6 +20,25 @@ const MinMaxClose = lazy(() =>
   import('@libs').then(({ MinMaxClose }) => ({ default: MinMaxClose })),
 );
 import { useMenuLayout } from './styles-hook/use-status-list-style';
+interface DynamicIconProps {
+  iconName?: string;
+  size?: number;
+  color?: string;
+}
+const GetDynamicIcon: FC<DynamicIconProps> = ({ iconName, size, color }) => {
+  if (!iconName) {
+    return null;
+  }
+  const IconComponent = (VscIcons as Record<string, FC<{ size?: number; color?: string }>>)[
+    iconName
+  ];
+
+  if (!IconComponent) {
+    return null;
+  }
+
+  return <IconComponent size={size} color={color} />;
+};
 
 const CreateSubMenu: FC<{ menu: IMenuItem; translateNs: string }> = ({
   menu,
@@ -26,13 +47,25 @@ const CreateSubMenu: FC<{ menu: IMenuItem; translateNs: string }> = ({
 }) => {
   const classes = useMenuLayout();
   const { t } = useTranslation(['menus']);
+  const codeExecuter = useMenuCodeExecutor();
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   // eslint-disable-next-line react/prop-types
   const { setMenuItem } = props;
 
   const onSelectMenu = (item: IMenuItem) => () => {
-    if (item.execute) setMenuItem(item.execute);
+    if (item.execute) {
+      setMenuItem(item.execute);
+    } else if (item.codeExecute) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      if (codeExecuter[item.codeExecute]) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        codeExecuter[item.codeExecute]({ id: menu.id });
+      }
+      // openNewTabForGraph({ id: menu.id });
+    }
   };
   return (
     <Menu>
@@ -52,7 +85,6 @@ const CreateSubMenu: FC<{ menu: IMenuItem; translateNs: string }> = ({
                 <Fragment key={item.id}>
                   <MenuItem key={item.id} onClick={onSelectMenu(item)}>
                     <Text font="numeric" className={classes.menuText}>
-                      {' '}
                       {t(item.label, { ns: translateNs })}
                     </Text>
                   </MenuItem>
@@ -80,9 +112,20 @@ const TopMenus: FC = (props) => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   const { setMenuItem } = props;
-
+  const codeExecuter = useMenuCodeExecutor();
   const onSelectMenu = (item: IMenuItem) => () => {
-    if (item.execute) setMenuItem(item.execute);
+    if (item.execute) {
+      setMenuItem(item.execute);
+    } else if (item.codeExecute) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      if (codeExecuter[item.codeExecute]) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        codeExecuter[item.codeExecute]({ id: item.id });
+      }
+      // openNewTabForGraph({ id: item.id });
+    }
   };
   return (
     <div data-tauri-drag-region className={classes.wrapper}>
@@ -106,6 +149,7 @@ const TopMenus: FC = (props) => {
                             key={item.id}
                             className={classes.menuItems}
                             onClick={onSelectMenu(item)}
+                            icon={<GetDynamicIcon iconName={item.icon} />}
                           >
                             <Text className={classes.menuText}>
                               {t(item.label, { ns: translateNs })}

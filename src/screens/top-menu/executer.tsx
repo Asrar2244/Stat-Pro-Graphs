@@ -1,8 +1,10 @@
 import { SuspenseLoad } from '@libs';
 import { useModal, IModal } from '@hooks';
-import { FC, lazy, useState } from 'react';
+import { FC, lazy, useEffect, useState } from 'react';
 import { exporters } from './configuration';
 import { useTranslation } from 'react-i18next';
+import { useLicenseStore } from '@store';
+import { useShallow } from 'zustand/react/shallow';
 const BrowseFile = lazy(() =>
   import('./browse-file').then((module) => ({ default: module.BrowseFile })),
 );
@@ -54,6 +56,25 @@ const MenuSelector: FC<{
   translationNs: string;
 }> = ({ selector, modal }) => {
   const { t } = useTranslation(['common', 'errors', 'success']);
+  const { licenseStatus } = useLicenseStore(
+    useShallow((state) => ({ licenseStatus: state.licenseStatus })),
+  );
+  const [isLicensed, setIsLicensed] = useState(false);
+  useEffect(() => {
+    if (!selector || selector === exporters.openDevTools) {
+      setIsLicensed(true);
+      return;
+    }
+    if (licenseStatus.state === 'expired') {
+      setIsLicensed(true);
+    } else {
+      setIsLicensed(false);
+    }
+  }, [selector]);
+
+  if (isLicensed) {
+    return <OpenDevTools {...modal} showCloseButton={true} />;
+  }
   const d = () => {
     switch (selector) {
       case exporters.importBusinessObject:
@@ -67,7 +88,7 @@ const MenuSelector: FC<{
       case exporters.estimationOfModule:
         return <EstimationOfModule {...modal} />;
       case exporters.openDevTools:
-        return <OpenDevTools {...modal} t={t} />;
+        return <OpenDevTools {...modal} />;
       case exporters.pairwiseComparisonOfModule:
         return <PairwiseComparisonOfModule {...modal} />;
       default:

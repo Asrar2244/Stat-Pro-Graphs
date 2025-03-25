@@ -29,5 +29,6 @@
   "analysisOfVariance": "Analysis of Variance",
   "estimationOfModule": "Estimation of Module",
   "pairwiseComparison": "Pairwise Comparison",
-  "descriptiveStat": "Descriptive Stats"
+  "descriptiveStat": "Descriptive Stats",
+  "graphView": "Graph View"
 }
