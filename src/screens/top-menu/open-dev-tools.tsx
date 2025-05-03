@@ -35,7 +35,8 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
   const classes = useOpenDevToolsLayout();
   const { t } = useTranslation('common');
   const { applyLicense, checkLicense, getSystemData } = useLicense();
-  const { licenseStatus, setLicenseState } = useLicenseStore(
+  //setLicenseState
+  const { licenseStatus } = useLicenseStore(
     useShallow((state) => ({
       licenseStatus: state.licenseStatus,
       setLicenseState: state.setLicenseState,

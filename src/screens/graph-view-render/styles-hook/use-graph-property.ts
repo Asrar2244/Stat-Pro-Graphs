@@ -1,4 +1,4 @@
-import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { makeStyles, tokens } from '@fluentui/react-components';
 
 export const useGraphPropertyLayout = makeStyles({
   propsLayout: {
@@ -18,7 +18,6 @@ export const useGraphPropertyLayout = makeStyles({
     '& div': {
       width: '99%',
       paddingLeft: '2px',
-      // paddingRight: '4px',
     },
   },
   propertySelector: {

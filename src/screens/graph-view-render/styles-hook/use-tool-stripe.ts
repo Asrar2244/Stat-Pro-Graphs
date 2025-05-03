@@ -1,4 +1,4 @@
-import { makeStyles, shorthands, tokens, Dropdown } from '@fluentui/react-components';
+import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 
 export const useToolStripLayout = makeStyles({
   layoutToolStrip: {
@@ -70,7 +70,6 @@ export const useToolStripLayout = makeStyles({
           flexDirection: 'column',
           alignItems: 'center',
           alignContent: 'center',
-          // padding: 0,
           padding: tokens.spacingVerticalM,
           margin: 0,
           '& span': {
