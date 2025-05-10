@@ -1,4 +1,3 @@
 #!/usr/bin/env.sh
 . "$(dirname "$0")/_/common.sh"
-
 npx commitlint --edit "$1"

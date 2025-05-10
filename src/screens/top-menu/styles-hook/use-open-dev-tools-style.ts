@@ -7,11 +7,11 @@ export const useOpenDevToolsLayout = makeStyles({
   },
   details: {
     display: 'flex!important',
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     textTransform: 'uppercase',
-    gap: tokens.spacingHorizontalL,
+    gap: tokens.spacingVerticalXS,
   },
   description: {
     width: '100%',
@@ -39,11 +39,32 @@ export const useOpenDevToolsLayout = makeStyles({
   activeButton: {
     fontFamily: 'monospace',
     textTransform: 'uppercase',
-    width: '98%',
   },
   maskInputButton: {
     display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'end',
+    width: '100%',
+    gap: tokens.spacingVerticalXS,
+  },
+  textArea: {
+    width: '100%',
+  },
+  informationList: {
+    display: 'flex',
     flexDirection: 'row',
     width: '100%',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  activeBtn: {
+    width: '20%',
+  },
+  ulInfo: {
+    display: 'flex',
+    flexDirection: 'row',
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
   },
 });

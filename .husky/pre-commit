@@ -1,2 +1,21 @@
-#!/usr/bin/env.sh
-. "$(dirname "$0")/_/common.sh"
+#!/bin/bash
+
+# Get current branch name
+branch_name=$(git rev-parse --abbrev-ref HEAD)
+
+# Define the allowed branch name pattern (e.g., 'feature/*', 'bugfix/*')
+allowed_pattern="^(feature|bugfix|hotfix|release|config|chore)\/[a-zA-Z0-9_\-]+$"
+
+# Disallow committing on the 'develop' branch
+if [[ "$branch_name" == "develop" ]]; then
+  echo "❌ Error: Commits are not allowed directly on the 'develop' branch."
+  exit 1
+fi
+
+# Check if the branch name matches the allowed pattern
+if [[ ! $branch_name =~ $allowed_pattern ]]; then
+  echo "❌ Error: Branch name '$branch_name' is invalid. Please follow the naming convention. eg, feature/my-feature, bugfix/fix-bug, etc."
+  exit 1
+else
+  echo "✅ Branch name '$branch_name' is valid."
+fi

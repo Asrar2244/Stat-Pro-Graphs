@@ -11,19 +11,20 @@ import {
   Button,
   Text,
   Tooltip,
+  Textarea,
 } from '@fluentui/react-components';
-import MaskedInput from 'react-text-mask';
 import { Modal } from '@libs';
 import { IModal, useLicense } from '@hooks';
 import { app } from '@tauri-apps/api';
 import { useOpenDevToolsLayout } from './styles-hook/use-open-dev-tools-style';
 import logo from '../../assets/Square44x44Logo.png';
-import { VscArrowRight } from 'react-icons/vsc';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { mask } from '@constants';
 import { useLicenseStore } from '@store';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
+import { VscCopy, VscMailRead } from 'react-icons/vsc';
+import { IoLogoGoogle } from 'react-icons/io5';
+
 export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
   showCloseButton = true,
   ...modal
@@ -32,10 +33,11 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
   const [status, setStatus] = useState<
     'fetch' | 'verifying' | 'activating' | 'notValid' | undefined
   >(undefined);
+  const [licenseMessage, setLicenseMessage] = useState<string>('');
   const classes = useOpenDevToolsLayout();
   const { t } = useTranslation('common');
   const { applyLicense, checkLicense, getSystemData } = useLicense();
-  //setLicenseState
+
   const { licenseStatus } = useLicenseStore(
     useShallow((state) => ({
       licenseStatus: state.licenseStatus,
@@ -52,7 +54,7 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
   const onHandleExitApp = () => {
     getCurrentWindow().close();
   };
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const upperCasedValue = e.target.value.toUpperCase();
     setLicenseKey(upperCasedValue);
   };
@@ -77,14 +79,26 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
     setStatus('fetch');
     getSystemData()
       .then((res) => {
-        const a = document.createElement('a');
-        a.href = `mailto:support@statpro.org?subject=System Token Request&body=${res.msg}`;
-        a.click();
+        setLicenseMessage(res.msg);
       })
       .finally(() => {
         setStatus(undefined);
       });
   };
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(`
+      mail id: support@statpro.org \n
+      token: ${licenseKey}`);
+  };
+  const sendViaConfiguredMail = () => {
+    window.open(`mailto:support@statpro.org?subject=System Token Request&body=${licenseKey}`);
+  };
+  const sendViaGoogleMail = () => {
+    window.open(
+      `https://mail.google.com/mail/?view=cm&fs=1&to=support@statpro.org&su=System Token Request&body=${licenseKey}`,
+    );
+  };
+
   return (
     <Modal
       modalType="alert"
@@ -100,6 +114,9 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
           header={
             <Body1>
               <b>{t('appName', { ns: 'common' })}</b>
+              <Text font="monospace" size={100}>
+                &nbsp;(V{version})
+              </Text>
             </Body1>
           }
           description={<Caption1>{t('aboutDesc', { ns: 'common' })}</Caption1>}
@@ -112,9 +129,8 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
             </Body1Stronger>
           </div>
           <div className={classes.details}>
-            <div className={classes.activateLicense}>
+            <div className={classes.informationList}>
               <Button
-                size="small"
                 shape="square"
                 className={classes.activeButton}
                 disabled={status === 'fetch'}
@@ -122,55 +138,76 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
               >
                 {t('systemToken', { ns: 'common' })}
               </Button>
-              <div className={classes.maskInputButton}>
-                <MaskedInput
-                  mask={mask}
-                  value={licenseKey}
-                  onChange={handleChange}
-                  placeholder="XXXX-XXXX-XXXX"
-                  style={{
-                    textTransform: 'uppercase',
-                    height: '32px',
-                    outline: 'none',
-                    borderRadius: 0,
-                    width: '80%',
-                  }}
-                />
-                <Tooltip content={t('activate', { ns: 'common' })} relationship="label">
-                  <Button
-                    icon={<VscArrowRight />}
-                    shape="square"
-                    appearance="outline"
-                    className={classes.activeButton}
-                    onClick={onClickActivate}
-                  />
-                </Tooltip>
-              </div>
-
-              <Text font="monospace" align="start" weight="regular">
-                {t(licenseStatus.state as string, { ns: 'common' })}
-              </Text>
-
-              <Caption1 align="start">
-                <Text font="monospace">{t('reportIssueUrl', { ns: 'common' })}: </Text>
-                <Link
-                  style={{ fontSize: '10px' }}
-                  href="mailto:support@statpro.org"
-                  target="_blank"
+              <ul className={classes.ulInfo}>
+                <li>
+                  <Tooltip content={t('copy', { ns: 'common' })} relationship="label">
+                    <Button
+                      disabled={!!!licenseMessage}
+                      icon={<VscCopy />}
+                      shape="square"
+                      onClick={copyToClipboard}
+                    />
+                  </Tooltip>
+                </li>
+                <li>
+                  <Tooltip content={t('defaultMail', { ns: 'common' })} relationship="label">
+                    <Button
+                      disabled={!!!licenseMessage}
+                      icon={<VscMailRead />}
+                      shape="square"
+                      onClick={sendViaConfiguredMail}
+                    />
+                  </Tooltip>
+                </li>
+                <li>
+                  <Tooltip content={t('googleMail', { ns: 'common' })} relationship="label">
+                    <Button
+                      onClick={sendViaGoogleMail}
+                      disabled={!!!licenseMessage}
+                      icon={<IoLogoGoogle />}
+                      shape="square"
+                    />
+                  </Tooltip>
+                </li>
+              </ul>
+            </div>
+            <div className={classes.maskInputButton}>
+              <Textarea
+                size="small"
+                className={classes.textArea}
+                rows={10}
+                value={licenseKey}
+                onChange={handleChange}
+              />
+              <div className={classes.informationList}>
+                <Text font="monospace" align="start" size={200} weight="regular">
+                  {t(licenseStatus.state as string, { ns: 'common' })}
+                </Text>
+                <Button
+                  shape="square"
+                  appearance="primary"
+                  className={classes.activeBtn}
+                  onClick={onClickActivate}
+                  disabled={licenseKey === ''}
                 >
-                  support@statpro.org
-                </Link>
-              </Caption1>
+                  {t('activate', { ns: 'common' })}
+                </Button>
+              </div>
             </div>
-            <div className={classes.license}>
-              <Text font="monospace">
-                {t('version', { ns: 'common' })}: {version}
+
+            <Caption1 align="start">
+              <Text font="monospace" size={100}>
+                {t('reportIssueUrl', { ns: 'common' })}:{' '}
               </Text>
-              <Text font="monospace">
-                {t('releaseDate', { ns: 'common' })}: {new Date().toLocaleDateString()}
-              </Text>
-              <Text font="monospace">{t('copyright', { ns: 'common' })}:&copy;statPro</Text>
-            </div>
+              <Link
+                appearance="subtle"
+                style={{ fontSize: '10px' }}
+                href="mailto:support@statpro.org"
+                target="_blank"
+              >
+                support@statpro.org
+              </Link>
+            </Caption1>
           </div>
         </CardPreview>
         <CardFooter className={classes.footerButton}>

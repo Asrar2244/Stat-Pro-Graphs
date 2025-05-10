@@ -82,9 +82,12 @@
   "lifetime": "Lifetime License",
   "expired": "License Expired",
   "lookingProductLicense": "Looking for product license...",
-  "systemToken": "Get System Token for License",
+  "systemToken": "System token for license",
   "notValid": "License not valid",
   "fetch": "Fetching...",
   "verifying": "Verifying...",
-  "activating": "Activating..."
+  "activating": "Activating...",
+  "copy": "Copy to clipboard",
+  "defaultMail": "Send via configured mail",
+  "googleMail": "Send via google mail"
 }
