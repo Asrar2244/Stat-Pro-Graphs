@@ -29,7 +29,7 @@ export default defineConfig(async () => ({
     strictPort: true,
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
-      ignored: ['**/src-tauri/**'],
+      ignored: ['**/src-tauri/**', '**/start-pro-logs/**'],
     },
   },
 }));
