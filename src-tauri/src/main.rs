@@ -6,6 +6,7 @@ use std::env;
 use std::process::{Child, Command};
 use std::sync::{Arc, Mutex};
 use tauri::{Manager, RunEvent, Window};
+mod excel_csv_file;
 mod tauri_json_file;
 #[tauri::command]
 async fn close_splashscreen(window: Window) {
@@ -50,6 +51,8 @@ fn main() {
             close_splashscreen,
             tauri_json_file::save_json_to_file,
             tauri_json_file::get_file_size,
+            excel_csv_file::save_excel_to_file,
+            excel_csv_file::save_csv_to_file
         ])
         .setup({
             // Clone reference for the setup closure

@@ -30,7 +30,6 @@ const TableDataRender: FC<ITableProps> = (props) => {
   useEffect(() => {
     pageContext.dataLoader(loadMoreFun);
   }, [pageContext.startIndex, pageContext.stopIndex]);
-
   const CellHelper: FC<{
     columnIndex: number;
     rowIndex: number;
@@ -126,7 +125,7 @@ const TableDataRender: FC<ITableProps> = (props) => {
       <div className={classes.footerLayout}>
         <Pagination {...pageContext} />
       </div>
-    </div >
+    </div>
   );
 };
 

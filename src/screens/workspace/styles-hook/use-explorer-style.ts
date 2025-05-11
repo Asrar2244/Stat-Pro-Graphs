@@ -2,7 +2,7 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 
 export const useExplorerLayout = makeStyles({
   explorerLayout: {
-    '& .fui-TreeItemLayout__main': { width: "100%" },
+    '& .fui-TreeItemLayout__main': { width: '100%' },
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
@@ -13,7 +13,12 @@ export const useExplorerLayout = makeStyles({
       backgroundColor: tokens.colorNeutralBackground3,
     },
   },
-  treeItem: { display: "flex", width: "100%", justifyContent: "space-between" },
+  treeItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    justifyContent: 'space-between',
+  },
   workspace: {
     display: 'flex',
     justifyContent: 'center',
@@ -38,7 +43,7 @@ export const useExplorerLayout = makeStyles({
     '& .date-file': {
       display: 'flex',
       flexDirection: 'row',
-      justifyContent: 'end',
+      // justifyContent: 'end',
       gap: tokens.spacingHorizontalS,
     },
   },
@@ -47,5 +52,14 @@ export const useExplorerLayout = makeStyles({
     '& .leaf': {
       ...shorthands.border(tokens.strokeWidthThick),
     },
+  },
+  kabobMenu: {
+    display: 'grid',
+    gridTemplateColumns: '85% 15%',
+    fontSize: 'large',
+  },
+  kabobItem: {
+    borderLeft: '1px solid #fff',
+    padding: '8px',
   },
 });

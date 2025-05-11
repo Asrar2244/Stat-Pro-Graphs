@@ -62,7 +62,7 @@ const CreateSubMenu: FC<{ menu: IMenuItem; translateNs: string }> = ({
       if (codeExecuter[item.codeExecute]) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
-        codeExecuter[item.codeExecute]({ id: menu.id });
+        codeExecuter[item.codeExecute]({ id: item.id, isEmptyDataView: item.isEmptyDataView });
       }
       // openNewTabForGraph({ id: menu.id });
     }
@@ -70,7 +70,10 @@ const CreateSubMenu: FC<{ menu: IMenuItem; translateNs: string }> = ({
   return (
     <Menu>
       <MenuTrigger disableButtonEnhancement>
-        <MenuItem onClick={onSelectMenu(menu)}>
+        <MenuItem
+          onClick={onSelectMenu(menu)}
+          {...(menu.icon ? { icon: <GetDynamicIcon iconName={menu.icon} /> } : {})}
+        >
           <Text font="numeric" className={classes.menuText}>
             {t(menu.label, { ns: translateNs })}
           </Text>
@@ -80,10 +83,11 @@ const CreateSubMenu: FC<{ menu: IMenuItem; translateNs: string }> = ({
         <MenuList className={classes.menuItems}>
           {menu.submenu?.map((item: IMenuItem) => {
             const hasSubMenu = item.submenu;
+            const icon = item.icon ? { icon: <GetDynamicIcon iconName={item.icon} /> } : {};
             if (!hasSubMenu) {
               return (
                 <Fragment key={item.id}>
-                  <MenuItem key={item.id} onClick={onSelectMenu(item)}>
+                  <MenuItem key={item.id} onClick={onSelectMenu(item)} {...icon}>
                     <Text font="numeric" className={classes.menuText}>
                       {t(item.label, { ns: translateNs })}
                     </Text>
@@ -142,6 +146,7 @@ const TopMenus: FC = (props) => {
                 <MenuList>
                   {menu.submenu.map((item: IMenuItem) => {
                     const hasSubMenu = item.submenu;
+                    const icon = item.icon ? { icon: <GetDynamicIcon iconName={item.icon} /> } : {};
                     if (!hasSubMenu) {
                       return (
                         <Fragment key={item.id}>
@@ -149,7 +154,7 @@ const TopMenus: FC = (props) => {
                             key={item.id}
                             className={classes.menuItems}
                             onClick={onSelectMenu(item)}
-                            icon={<GetDynamicIcon iconName={item.icon} />}
+                            {...icon}
                           >
                             <Text className={classes.menuText}>
                               {t(item.label, { ns: translateNs })}

@@ -47,7 +47,8 @@ export const useColumnsRowsCount = ({ id, tabName, noRowCount }: IColumnsRowsCou
             setCount(cnt);
             createColumns.unshift({ columnId: '' });
           }
-          setColumns(createColumns);
+          const cols = createColumns.filter((f) => f.columnId !== 'xxx_start_pro_id');
+          setColumns(cols);
         })
         .catch((error) => {
           console.error('error', error);

@@ -21,6 +21,7 @@ import { MdDeleteOutline } from 'react-icons/md';
 
 export interface ISelector extends IProjectDetails {
   projectName: string;
+  isEmptyDataView?: boolean;
 }
 const ExplorerComp: FC = () => {
   const classes = useExplorerLayout();
@@ -88,16 +89,22 @@ const ExplorerComp: FC = () => {
                   }
                 >
                   <div className={classes.treeItemLayout}>
-                    <div className={classes.treeItem}>
-                      <div className="project-name">{projectName}</div>
-                      <MdDeleteOutline onClick={onDeleteHandler} />
-                    </div>
-                    <div className="date-file">
-                      <Caption2 align="end">
-                        {t('modified', { ns: 'workspace' })}:{dateFormat(project.modifiedDateTime)}
-                        &nbsp; | &nbsp; {t('size', { ns: 'workspace' })}:
-                        {mb(Number(project.fileSize))}
-                      </Caption2>
+                    <div className={classes.kabobMenu}>
+                      <div className={classes.treeItem}>
+                        <div className="project-name">{projectName}</div>
+                        {/**/}
+                        <div className="date-file">
+                          <Caption2 align="end">
+                            {t('modified', { ns: 'workspace' })}:
+                            {dateFormat(project.modifiedDateTime)}
+                            &nbsp; | &nbsp; {t('size', { ns: 'workspace' })}:
+                            {mb(Number(project.fileSize))}
+                          </Caption2>
+                        </div>
+                      </div>
+                      <div className={classes.kabobItem}>
+                        <MdDeleteOutline onClick={onDeleteHandler} />
+                      </div>
                     </div>
                   </div>
                 </TreeItemLayout>

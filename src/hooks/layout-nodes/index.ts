@@ -58,13 +58,20 @@ export const useActiveNode = (dependency: any[]): IActiveNode => {
 };
 
 interface INodeActions {
+  updateNodeAttributes: (nodeId: string, config: any) => void;
   selectTab: (tabToSelect: string) => void;
   openNewTab: (data: ISelector, projectId: number, type: string, t: any) => void;
-  getOpenRecords: (data: ISelector, type: string,) => any | undefined;
-  closeActiveTab: () => void
+  getOpenRecords: (data: ISelector, type: string) => any | undefined;
+  closeActiveTab: () => void;
 }
 export const useNodeActions = (): INodeActions => {
-  const { model, setBlockUI, setRenderLatestRun } = useStartProStore(useShallow((state) => ({ model: state.model, setBlockUI: state.setBlockUI, setRenderLatestRun: state.setRenderLatestRun })));
+  const { model, setBlockUI, setRenderLatestRun } = useStartProStore(
+    useShallow((state) => ({
+      model: state.model,
+      setBlockUI: state.setBlockUI,
+      setRenderLatestRun: state.setRenderLatestRun,
+    })),
+  );
   const selectTab = (tabToSelect: string): void => {
     model.doAction(Actions.selectTab(`${tabToSelect}`));
   };
@@ -73,14 +80,14 @@ export const useNodeActions = (): INodeActions => {
     const tabChildren = model.getNodeById('layout-tabs')?.getChildren();
     const record = tabChildren?.find((f) => f.getId() === `${type}-${data?.id}`);
     const nextIndex = tabChildren?.length ?? 1;
-    return { record, nextIndex }
-  }
+    return { record, nextIndex };
+  };
 
   const closeActiveTab = () => {
     const activeTabId = model.getActiveTabset()?.getSelectedNode()?.getId();
 
     if (activeTabId) {
-      const [type, id] = activeTabId.split("-");
+      const [type, id] = activeTabId.split('-');
       let query = '';
       switch (type) {
         case DATA:
@@ -92,25 +99,26 @@ export const useNodeActions = (): INodeActions => {
       }
       if (query === '') return;
       const db = new Database(CONFIGURATION_DB);
-      db.executeQuery(query, [id]).then(() => {
-        model.doAction(Actions.deleteTab(activeTabId));
-      }).catch((error) => {
-        setBlockUI({ value: true, msg: error.message });
-      });
+      db.executeQuery(query, [id])
+        .then(() => {
+          model.doAction(Actions.deleteTab(activeTabId));
+        })
+        .catch((error) => {
+          setBlockUI({ value: true, msg: error.message });
+        });
     }
-  }
+  };
 
   const openNewTab = (data: ISelector, tabId: number, type: string, t: any) => {
-
-    const { record, nextIndex: index } = getOpenRecords(data, type)
+    const { record, nextIndex: index } = getOpenRecords(data, type);
 
     if (record) {
       selectTab(record.getId());
-      window.dispatchEvent(new Event("blur"));
+      window.dispatchEvent(new Event('blur'));
       setTimeout(() => {
         setRenderLatestRun(true);
-        window.dispatchEvent(new Event("focus"));
-      }, 100)
+        window.dispatchEvent(new Event('focus'));
+      }, 100);
       return;
     }
     model.doAction(
@@ -130,6 +138,7 @@ export const useNodeActions = (): INodeActions => {
             lastModified: data.modifiedDateTime,
             isActive: data.isActive,
             workspacePath: data.workspacePath,
+            isEmptyDataView: data.isEmptyDataView,
           },
         },
         'layout-tabs',
@@ -138,11 +147,17 @@ export const useNodeActions = (): INodeActions => {
         true,
       ),
     );
-  }
+  };
+
+  const updateNodeAttributes = (nodeId: string, config: any) => {
+    model.doAction(Actions.updateNodeAttributes(nodeId, config));
+  };
+
   return {
     selectTab,
     openNewTab,
     getOpenRecords,
-    closeActiveTab
+    updateNodeAttributes,
+    closeActiveTab,
   };
 };

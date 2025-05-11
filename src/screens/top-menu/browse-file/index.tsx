@@ -22,6 +22,7 @@ import { API } from '@constants';
 import { CONFIGURATION_DB } from '@constants';
 import { insertIntoProject } from '@backend';
 import { useBrowseLayout } from './styles-hook/use-browse-style';
+
 export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   const [file, setFile] = useState<string | undefined>(undefined);
   const [projectName, setProjectName] = useState<string | undefined>(undefined);

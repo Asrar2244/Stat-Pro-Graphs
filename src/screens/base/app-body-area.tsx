@@ -10,7 +10,8 @@ import { Explorer } from '../workspace/explorer';
 import { TableRender } from '../table-render';
 import { OutputRender } from '../output-render';
 import { GraphViewRender } from '../graph-view-render';
-import { DATA, OUTPUT, CONFIGURATION_DB, GRAPH } from '@constants';
+import { EmptyDataView } from '../empty-data-view';
+import { DATA, OUTPUT, CONFIGURATION_DB, GRAPH, EMPTY_GRAPH_VIEW } from '@constants';
 import { updateDataProjectClose, updateOutputProjectClose } from '@backend';
 import { Database } from '@utils/db';
 import { WelcomePage } from '../welcome';
@@ -42,6 +43,12 @@ const AppBody: FC = () => {
         return (
           <div className={classes.suppressOverFlow}>
             <GraphViewRender {...node.getConfig()} />
+          </div>
+        );
+      case `${EMPTY_GRAPH_VIEW}-render`:
+        return (
+          <div className={classes.suppressOverFlow}>
+            <EmptyDataView {...node.getConfig()} />
           </div>
         );
       case 'welcome':

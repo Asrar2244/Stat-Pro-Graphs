@@ -5,6 +5,8 @@
   "workspace": "Workspace",
   "fileAllReadyOpened": "File already Opened",
   "noSuchRecord": "No Such records exists",
-  "graph": "Graph View",
-  "custom": "Custom View"
+  "graphview": "Graph View",
+  "custom": "Custom View",
+  "emptydataview": "Empty Data View",
+  "data": "Data"
 }

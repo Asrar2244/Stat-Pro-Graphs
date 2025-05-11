@@ -1,0 +1,19 @@
+{
+  "insertRowAndColumns": "Insert Rows and Columns",
+  "noOfRowsColumns": "No Of Rows and Columns",
+  "noOfRows": "No Of Rows",
+  "noOfColumns": "No Of Cols",
+  "deleteRow": "Delete Selected Row(s) or Last Row",
+  "deleteColumn": "Delete Selected Column(s) or Last Column",
+  "exportCSV": "Export to CSV",
+  "exportExcel": "Export to Excel",
+  "runProcess": "Run Process",
+  "apply": "Apply",
+  "locationNotSelected": "Location to save the file not selected",
+  "excelExportedSuccess": "Excel file exported successfully",
+  "excelExportFailed": "Excel file export failed",
+  "csvExportedSuccess": "CSV file exported successfully",
+  "csvExportFailed": "CSV file export failed",
+  "draft": "Draft",
+  "published": "Published"
+}

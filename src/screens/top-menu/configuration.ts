@@ -15,7 +15,8 @@ export const exporters = {
   openDevTools: 'open-dev-tools',
   estimationOfModule: 'estimation-of-module',
   pairwiseComparisonOfModule: 'pairwise-comparison',
-  openNewTabForGraph: 'openNewTabForGraph',
+  openNewTabForGraph: 'openNewTabAction',
+  emptyDataView: 'openNewTabAction',
 };
 
 export const topMenuConfig = {
@@ -33,6 +34,12 @@ export const topMenuConfig = {
               id: 'new_data',
               label: 'data',
               execute: exporters.importBusinessObject,
+            },
+            {
+              id: 'emptyDataView',
+              label: 'emptyDataView',
+              codeExecute: exporters.emptyDataView,
+              isEmptyDataView: true,
             },
             {
               id: 'new_command',
