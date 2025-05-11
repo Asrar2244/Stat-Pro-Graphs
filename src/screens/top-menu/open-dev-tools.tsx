@@ -85,8 +85,8 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
         setStatus(undefined);
       });
   };
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(`
+  const copyToClipboard = async() => {
+    await navigator.clipboard.writeText(`
       mail id: support@statpro.org \n
       token: ${licenseKey}`);
   };
