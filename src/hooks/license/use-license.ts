@@ -9,8 +9,9 @@ export const useLicense = () => {
     });
     return res.data;
   };
-  const applyLicense = async () => {
+  const applyLicense = async ({ license_key }: { license_key: string }) => {
     const res = await axios.post(`api/${API.analysis}`, {
+      license_key,
       operation: 'apply_license',
     });
     return res.data;

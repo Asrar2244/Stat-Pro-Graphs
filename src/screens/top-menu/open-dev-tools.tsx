@@ -36,7 +36,7 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
   const [licenseMessage, setLicenseMessage] = useState<string>('');
   const classes = useOpenDevToolsLayout();
   const { t } = useTranslation('common');
-  const { applyLicense, checkLicense, getSystemData } = useLicense();
+  const { applyLicense, getSystemData } = useLicense();
 
   const { licenseStatus } = useLicenseStore(
     useShallow((state) => ({
@@ -59,20 +59,13 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
     setLicenseKey(upperCasedValue);
   };
   const onClickActivate = () => {
-    setStatus('verifying');
-    checkLicense().then((resCheckLicense) => {
-      if (!resCheckLicense.license_valid) {
+    setStatus('activating');
+    applyLicense({ license_key: licenseKey }).then((res) => {
+      if (!res.license_applied) {
         setStatus('notValid');
         return;
       }
-      setStatus('activating');
-      applyLicense().then((res) => {
-        if (!res.license_applied) {
-          setStatus('notValid');
-          return;
-        }
-        setStatus(undefined);
-      });
+      setStatus(undefined);
     });
   };
   const onClickGetToken = () => {
@@ -85,7 +78,7 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
         setStatus(undefined);
       });
   };
-  const copyToClipboard = async() => {
+  const copyToClipboard = async () => {
     await navigator.clipboard.writeText(`
       mail id: support@statpro.org \n
       token: ${licenseKey}`);
