@@ -11,7 +11,6 @@ import {
   Button,
   Text,
   Tooltip,
-  Textarea,
 } from '@fluentui/react-components';
 import { Modal } from '@libs';
 import { IModal, useLicense } from '@hooks';
@@ -165,13 +164,9 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
               </ul>
             </div>
             <div className={classes.maskInputButton}>
-              <Textarea
-                size="small"
-                className={classes.textArea}
-                rows={10}
-                value={licenseKey}
-                onChange={handleChange}
-              />
+              <textarea className={classes.textArea} rows={10} onChange={handleChange}>
+                {licenseKey}
+              </textarea>
               <div className={classes.informationList}>
                 <Text font="monospace" align="start" size={200} weight="regular">
                   {t(licenseStatus.state as string, { ns: 'common' })}

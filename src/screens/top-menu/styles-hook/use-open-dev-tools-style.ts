@@ -10,7 +10,7 @@ export const useOpenDevToolsLayout = makeStyles({
     flexDirection: 'column',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    textTransform: 'uppercase',
+
     gap: tokens.spacingVerticalXS,
   },
   description: {
@@ -48,7 +48,16 @@ export const useOpenDevToolsLayout = makeStyles({
     gap: tokens.spacingVerticalXS,
   },
   textArea: {
-    width: '100%',
+    width: '98%',
+    textTransform: 'unset',
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralBackgroundInverted,
+    outline: 'none',
+    border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
+    borderBottom: `${tokens.strokeWidthThick} solid ${tokens.colorNeutralStroke1}`,
+    ':focus': {
+      borderBottom: `${tokens.strokeWidthThick} solid ${tokens.colorBrandBackground}`,
+    },
   },
   informationList: {
     display: 'flex',
