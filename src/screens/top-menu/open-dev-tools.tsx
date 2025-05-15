@@ -54,7 +54,7 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
     getCurrentWindow().close();
   };
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const upperCasedValue = e.target.value.toUpperCase();
+    const upperCasedValue = e.target.value;
     setLicenseKey(upperCasedValue);
   };
   const onClickActivate = () => {
