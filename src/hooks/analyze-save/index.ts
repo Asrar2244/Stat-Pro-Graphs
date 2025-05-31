@@ -15,7 +15,7 @@ import {
  */
 import { Database } from '@utils';
 import { CONFIGURATION_DB } from '@constants';
-import { useNodeActions } from '@hooks';
+import { useNodeActions, useActiveNode } from '@hooks';
 import { mainWorker } from '@workers/worker';
 import { API } from '@constants';
 import { useStartProStore } from '@store/main-store';
@@ -35,9 +35,14 @@ interface IOthersParameters {
 export const useAnalyzeSave = () => {
   const { t } = useTranslation(['common', 'errors']);
   const { projects, setBlockUI } = useStartProStore(
-    useShallow((state) => ({ projects: state.projects, model: state.model, setBlockUI: state.setBlockUI })),
+    useShallow((state) => ({
+      projects: state.projects,
+      model: state.model,
+      setBlockUI: state.setBlockUI,
+    })),
   );
   const { openNewTab } = useNodeActions();
+  const { config } = useActiveNode([]);
 
   const insertInNotifications = async (
     isDeleteID: number = 0,
@@ -63,7 +68,7 @@ export const useAnalyzeSave = () => {
     dbName: string,
     parameters: Record<string, any>,
     otherParameters: IOthersParameters,
-    id?: string
+    id?: string,
   ) => {
     const outputId = await outputGenerateIDTable(dbName, [
       '',
@@ -76,7 +81,7 @@ export const useAnalyzeSave = () => {
       description: otherParameters.queueFor,
       tab: dbName,
       ns: 'common',
-    })
+    });
     const notificationID = await insertInNotifications(0, message, dbName, outputId);
     parameters['notificationId'] = notificationID;
     otherParameters['message'] = message;
@@ -90,21 +95,32 @@ export const useAnalyzeSave = () => {
         if (response.error) {
           throw new Error(response.error);
         }
-        outputUpdateResult(dbName, [JSON.stringify(response), outputId]).then(() => {
-          const projectId = Number(id?.split("-")[1])
-          const data = Object.values(projects).find(item => Number(item.id) === projectId) as ISelector;
-          const type = 'OUTPUT';
-          openNewTab(data, projectId, type, t)
-        })
+
+        outputUpdateResult(dbName, [JSON.stringify(response), outputId])
+          .then(() => {
+            const { isEmptyDataView } = config;
+            if (!isEmptyDataView) {
+              const projectId = Number(id?.split('-')[1]);
+              const data = Object.values(projects).find(
+                (item) => Number(item.id) === projectId,
+              ) as ISelector;
+              const type = 'OUTPUT';
+              openNewTab(data, projectId, type, t);
+            } else {
+              const type = 'OUTPUT';
+              openNewTab(config as any, config.id, type, t);
+            }
+          })
           .catch((error) => {
-            setBlockUI({ value: true, msg: error.message })
+            setBlockUI({ value: true, msg: error.message });
           });
       })
       .catch((errorMsg: any) => {
         console.log('errorMsg===>', errorMsg);
         setBlockUI({ value: true, msg: errorMsg.message });
-      }).finally(() => {
-        setBlockUI({ value: false, msg: "" })
+      })
+      .finally(() => {
+        setBlockUI({ value: false, msg: '' });
       });
   };
   return { execute };

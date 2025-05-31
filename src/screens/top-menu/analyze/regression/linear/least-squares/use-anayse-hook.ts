@@ -24,13 +24,17 @@ export const usePrepareAnalysis = ({
     })),
   );
   const { execute } = useAnalyzeSave();
+
   useEffect(() => {
     const columnMap = new Map<string, boolean>();
     columns.forEach((column) => {
-      if (!model.availableList.has(column.columnId))
-        columnMap.set(column.columnId, false);
+      if (!model.availableList.has(column.columnId)) columnMap.set(column.columnId, false);
     });
-    setModel({ 'availableList': columnMap, 'independentList': new Map<string, boolean>(), 'dependentList': new Map<string, boolean>() });
+    setModel({
+      availableList: columnMap,
+      independentList: new Map<string, boolean>(),
+      dependentList: new Map<string, boolean>(),
+    });
   }, [columns.length]);
 
   const executeAnalysis = async (id: string): Promise<void> => {
@@ -61,12 +65,17 @@ export const usePrepareAnalysis = ({
         ...resampling,
       },
     };
-    execute(config.tabName, parameters, {
-      queueFor,
-      url: `/api/${API.analysis}`,
-      method: 'POST',
-      queueType,
-    }, id);
+    await execute(
+      config.tabName,
+      parameters,
+      {
+        queueFor,
+        url: `/api/${API.analysis}`,
+        method: 'POST',
+        queueType,
+      },
+      id,
+    );
   };
 
   return { executeAnalysis };

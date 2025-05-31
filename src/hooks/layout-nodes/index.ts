@@ -17,6 +17,9 @@ export interface IActiveNode {
     lastModified: string;
     tabName: string;
     type: string;
+    isEmptyDataView?: boolean;
+    dataState?: 'draft' | 'published';
+    dataName?: string;
   };
 }
 export const useActiveNode = (dependency: any[]): IActiveNode => {

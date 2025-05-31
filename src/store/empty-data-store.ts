@@ -1,23 +1,37 @@
 import { create } from 'zustand';
-import { CellBase, Matrix, Selection } from 'react-spreadsheet';
+type IDetailEmptyData = {
+  dataState?: 'draft' | 'published';
+  processData?: boolean;
+  nodeId: string;
+  canDelete?: boolean;
+};
 interface IEmptyDataStore {
-  data: Matrix<CellBase>;
-  selectedCell: Selection | undefined;
-  setData: (data: Matrix<CellBase>) => void;
-  setSelectedCell: (selectedCell: Selection | undefined) => void;
+  nodes: IDetailEmptyData;
+  setCreateState: (value: IDetailEmptyData) => void;
+  setDeleteNode: () => void;
 }
 
 export const useEmptyDataStore = create<IEmptyDataStore>((set) => ({
-  data: [],
-  selectedCell: undefined,
-  setData(data): void {
-    set(() => {
-      return { data };
+  nodes: {
+    nodeId: '',
+    dataState: 'draft',
+    processData: false,
+    canDelete: false,
+  },
+  setCreateState(value: IDetailEmptyData) {
+    set((state) => {
+      return { ...state, ...value };
     });
   },
-  setSelectedCell(selectedCell): void {
-    set(() => {
-      return { selectedCell };
+  setDeleteNode() {
+    set((state) => {
+      return {
+        ...state,
+        nodeId: '',
+        dataState: 'draft',
+        processData: false,
+        canDelete: false,
+      };
     });
   },
 }));

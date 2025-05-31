@@ -64,11 +64,13 @@ const LeastSquareComponent: FC<IModal> = ({ ...props }) => {
   };
 
   const onOkModal = (): void => {
-
-    if (!id && id !== '') { props.closeModal(); return; }
+    if (!id && id !== '') {
+      props.closeModal();
+      return;
+    }
     executeAnalysis(id);
     props.closeModal();
-    setBlockUI({ value: true, msg: "processRequest", hideOk: true });
+    setBlockUI({ value: true, msg: 'processRequest', hideOk: true });
   };
   return (
     <Modal

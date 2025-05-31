@@ -15,5 +15,6 @@
   "csvExportedSuccess": "CSV file exported successfully",
   "csvExportFailed": "CSV file export failed",
   "draft": "Draft",
-  "published": "Published"
+  "published": "Published",
+  "dataNotDraft": "Data not in draft"
 }

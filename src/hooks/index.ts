@@ -19,3 +19,4 @@ export * from './plotly/use-graph-config';
 export * from './columns-row-count';
 export * from './license/use-license';
 export * from './menu-code-execute';
+export * from './empty-excel-view';

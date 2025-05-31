@@ -80,12 +80,12 @@ const ExplorerComp: FC = () => {
       {Object.keys(projects).length > 0 ? (
         <Tree size="small" aria-label={'explorer-workspace'} className="tree-comp">
           {Object.keys(projects).map((projectName) => {
-            const project = projects[projectName];
+            const project = projects?.[projectName];
             return (
               <TreeItem key={projectName} itemType="branch">
                 <TreeItemLayout
                   className={
-                    project.isOpenedData === 1 || project.isOpenedOutput === 1 ? 'selected' : ''
+                    project?.isOpenedData === 1 || project?.isOpenedOutput === 1 ? 'selected' : ''
                   }
                 >
                   <div className={classes.treeItemLayout}>
@@ -96,9 +96,9 @@ const ExplorerComp: FC = () => {
                         <div className="date-file">
                           <Caption2 align="end">
                             {t('modified', { ns: 'workspace' })}:
-                            {dateFormat(project.modifiedDateTime)}
+                            {dateFormat(project?.modifiedDateTime)}
                             &nbsp; | &nbsp; {t('size', { ns: 'workspace' })}:
-                            {mb(Number(project.fileSize))}
+                            {mb(Number(project?.fileSize))}
                           </Caption2>
                         </div>
                       </div>
@@ -111,18 +111,18 @@ const ExplorerComp: FC = () => {
                 <Tree className={classes.leafLayout} aria-label={`leaf-${projectName}`}>
                   <TreeItem
                     itemType="leaf"
-                    className={`leaf ${project.isOpenedData === 1 && 'selected'}`}
+                    className={`leaf ${project?.isOpenedData === 1 && 'selected'}`}
                     onClick={onSelectedUpdate({ ...project, projectName }, DATA)}
                   >
                     <TreeItemLayout>
                       <Caption1>
-                        <AiFillFileExcel /> {project.inputFileName}
+                        <AiFillFileExcel /> {project?.inputFileName}
                       </Caption1>
                     </TreeItemLayout>
                   </TreeItem>
                   <TreeItem
                     itemType="leaf"
-                    className={`leaf ${project.isOpenedOutput === 1 && 'selected'}`}
+                    className={`leaf ${project?.isOpenedOutput === 1 && 'selected'}`}
                     onClick={onSelectedUpdate({ ...project, projectName }, OUTPUT)}
                   >
                     <TreeItemLayout>

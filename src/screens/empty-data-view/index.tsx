@@ -4,8 +4,8 @@ import { ToolStrip } from './tool-strip';
 import { ViewRender } from './view-render';
 import { EmptyDataContext } from './context';
 import { Matrix, CellBase } from 'react-spreadsheet';
+
 export const EmptyDataView: FC = () => {
-  // const [state, dispatch] = useReducer(emptyReducer, initialEmptyDataStore);
   const [data, setData] = useState<Matrix<CellBase>>([]);
   const [selectedCell, setSelectedCell] = useState<Selection | undefined>();
   const [columns, setColumnsState] = useState<Record<string, string>>({});
@@ -17,6 +17,7 @@ export const EmptyDataView: FC = () => {
       return { ...cols, ...column };
     });
   }, []);
+
   return (
     <div className={classes.layoutContainer}>
       <EmptyDataContext.Provider

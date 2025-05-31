@@ -30,7 +30,7 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
 }) => {
   const [version, setVersion] = useState('');
   const [status, setStatus] = useState<
-    'fetch' | 'verifying' | 'activating' | 'notValid' | undefined
+    'fetch' | 'verifying' | 'activating' | 'notValid' | 'activated' | undefined
   >(undefined);
   const [licenseMessage, setLicenseMessage] = useState<string>('');
   const classes = useOpenDevToolsLayout();
@@ -64,7 +64,7 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
         setStatus('notValid');
         return;
       }
-      setStatus(undefined);
+      setStatus('activated');
     });
   };
   const onClickGetToken = () => {
@@ -199,7 +199,7 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
           </div>
         </CardPreview>
         <CardFooter className={classes.footerButton}>
-          <Text font="monospace" align="end" weight="regular">
+          <Text font="monospace" align="end" weight="regular" className={status}>
             {t(status as string, { ns: 'common' })}
           </Text>
           {showCloseButton ? (

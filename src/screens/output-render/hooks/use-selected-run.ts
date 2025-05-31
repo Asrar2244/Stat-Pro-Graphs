@@ -9,7 +9,7 @@ interface ISelectedRun {
 export const useSelectedRun = (dbName: string, id: number): ISelectedRun | undefined => {
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedRun, setSelectedRun] = useState<IFetchSingleOutput | undefined>(undefined);
-  const { setBlockUI } = useStartProStore()
+  const { setBlockUI } = useStartProStore();
 
   useEffect(() => {
     if (id > 0) {

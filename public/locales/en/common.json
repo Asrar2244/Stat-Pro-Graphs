@@ -89,5 +89,6 @@
   "activating": "Activating...",
   "copy": "Copy to clipboard",
   "defaultMail": "Send via configured mail",
-  "googleMail": "Send via google mail"
+  "googleMail": "Send via google mail",
+  "verifyingAndProcessing": "Verifying and processing..."
 }

@@ -25,6 +25,11 @@ export const useOpenDevToolsLayout = makeStyles({
   footerButton: {
     display: 'flex',
     justifyContent: 'flex-end',
+    alignContent: 'center',
+    alignItems: 'center',
+    '& .activated': {
+      color: '#54b054',
+    },
   },
   small: {
     fontWeight: 'lighter',

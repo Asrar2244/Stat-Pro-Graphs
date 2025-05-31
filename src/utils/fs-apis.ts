@@ -1,4 +1,4 @@
-import { exists, remove, copyFile } from '@tauri-apps/plugin-fs';
+import { exists, remove, copyFile, mkdir } from '@tauri-apps/plugin-fs';
 import { join, extname, basename, dirname } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/core';
 
@@ -45,10 +45,12 @@ export const saveLargeJsonToFile = async (filePath: string, jsonData: any): Prom
   return await invoke('save_json_to_file', { filePath, jsonData });
 };
 
-export const removeFileFromGivenPath = async (filePath: string): Promise<void> => {
+export const removeFileFromGivenPath = async (filePath: string): Promise<boolean> => {
   if (await exists(filePath)) {
     await remove(filePath);
+    return true;
   }
+  return false;
 };
 
 export const chunkArray = (arr: Array<any>, chunkSize: number): Array<any> => {
@@ -69,4 +71,12 @@ export const getFileNameFromPath = (filePath: string): Promise<string> => {
 
 export const getDirPath = async (filePath: string): Promise<string> => {
   return dirname(filePath);
+};
+
+export const createTempFolder = async (): Promise<string> => {
+  const tempDir = await join(await homeDirectory(), 'temp');
+  if (!(await exists(tempDir))) {
+    await mkdir(tempDir, { recursive: true });
+  }
+  return tempDir;
 };

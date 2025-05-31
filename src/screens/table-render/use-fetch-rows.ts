@@ -11,7 +11,7 @@ interface IFetch {
 export const useFetchRecords = (tabName: string, pageSize?: number): IFetch => {
   const [isLoading, setLoading] = useState(false);
   const [data, setData] = useState<Array<any>>([]);
-  const { setBlockUI } = useStartProStore()
+  const { setBlockUI } = useStartProStore();
   const loadMoreFun = useCallback(async (startIndex: number, stopIndex: number) => {
     const newData = await fetchData(startIndex, stopIndex);
     setData(newData);

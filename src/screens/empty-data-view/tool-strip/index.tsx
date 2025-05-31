@@ -17,15 +17,18 @@ import { EmptyDataContext } from '../context';
 import { save } from '@tauri-apps/plugin-dialog';
 import { open } from '@tauri-apps/plugin-shell';
 import { saveExcelToFile, saveCsvToFile } from '@utils';
-import { useToaster } from '@hooks';
+import { useToaster, useDraftData } from '@hooks';
+import { MdOutlinePublish } from 'react-icons/md';
+
 import { RowsColumns } from './rows-columns';
 const ToolStripComp = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const { data, dataState } = useContext(EmptyDataContext);
+  const { data, dataState, columns } = useContext(EmptyDataContext);
   const classes = useToolStripLayout();
   const toaster = useToaster();
-
+  const { generateCSVDataAndSaveCSV } = useDraftData();
   const { t } = useTranslation('emptyDataView');
+
   const onOpenHandler = async (pathToOpen: string) => {
     await open(pathToOpen);
   };
@@ -85,7 +88,23 @@ const ToolStripComp = () => {
       setLoading(false);
     }
   };
-
+  const onHandlePublish = async () => {
+    if (dataState === 'draft') {
+      setLoading(true);
+      generateCSVDataAndSaveCSV(data, columns)
+        .then(() => {})
+        .catch((error) => {
+          console.error('error==>', error);
+          toaster.error({ body: t('csvExportFailed') });
+          setLoading(false);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      toaster.info({ body: t('dataNotDraft') });
+    }
+  };
   // const addColumn = () => {
   //   if (setData) {
   //   }
@@ -146,6 +165,19 @@ const ToolStripComp = () => {
                   shape="square"
                   size="medium"
                   onClick={onHandleGenerateCSV}
+                ></Button>
+              </div>
+            </Tooltip>
+          </li>
+          <li>
+            <Tooltip content={t('published')} relationship="description" withArrow>
+              <div className={classes.itemWrapper}>
+                <Button
+                  icon={loading ? <Spinner size="small" /> : <MdOutlinePublish />}
+                  appearance="transparent"
+                  shape="square"
+                  size="medium"
+                  onClick={onHandlePublish}
                 ></Button>
               </div>
             </Tooltip>

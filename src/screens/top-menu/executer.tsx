@@ -5,6 +5,7 @@ import { exporters } from './configuration';
 import { useTranslation } from 'react-i18next';
 import { useLicenseStore } from '@store';
 import { useShallow } from 'zustand/react/shallow';
+// import { ExecuteProvider } from './execute-provider';
 const BrowseFile = lazy(() =>
   import('./browse-file').then((module) => ({ default: module.BrowseFile })),
 );

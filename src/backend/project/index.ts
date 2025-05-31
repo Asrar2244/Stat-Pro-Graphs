@@ -5,7 +5,7 @@ export const insertIntoProject = `INSERT INTO ${PROJECTS_TABLE}(projectName,inpu
    VALUES(?,?,?,?,?,?,?,?,?)`;
 
 export const selectFromProject = `SELECT id, projectName,fileSize,isOpenedData,
-isOpenedOutput,isActive,modifiedDateTime,createdDateTime,workspacePath,sheetId,inputFileName FROM ${PROJECTS_TABLE}`;
+isOpenedOutput,isActive,modifiedDateTime,createdDateTime,workspacePath,sheetId,inputFileName FROM ${PROJECTS_TABLE} WHERE isActive=1`;
 
 export const updateDataFromProject = `UPDATE ${PROJECTS_TABLE} SET isOpenedData=1 WHERE id=?`;
 
