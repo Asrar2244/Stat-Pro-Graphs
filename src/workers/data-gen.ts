@@ -16,7 +16,7 @@ export const arrayArrayString = (data: Matrix<CellBase>) => {
   }
   return newData;
 };
-export const getFormattedData = (data: Matrix<CellBase>, columns: Record<string, string>) => {
+export const getFormattedData = (data: Matrix<CellBase>, _columns: Record<string, string>) => {
   const rows = data.map((row) => row.filter((f) => f?.value).map((cell) => cell?.value ?? ''));
   return rows;
 };

@@ -11,7 +11,8 @@ import { useNodeActions, useActiveNode } from '@hooks';
 import { useEmptyDataStore } from '@store';
 
 export const ViewRender = () => {
-  const { data, columns, setData, setSelectedCell, setDataState } = useContext(EmptyDataContext);
+  const { data, /*columns,*/ setData, setSelectedCell, setDataState } =
+    useContext(EmptyDataContext);
   const contextMenu = useContextMenu();
   const classes = useViewRenderLayout();
   const { config } = useActiveNode([]);
