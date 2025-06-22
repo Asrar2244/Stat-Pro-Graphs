@@ -1,4 +1,4 @@
-import { useEffect, useContext, useMemo } from 'react';
+import { useEffect, useContext } from 'react';
 import Spreadsheet, { CellBase, Matrix, Selection } from 'react-spreadsheet';
 import { DivShowScrollOnHover } from '@libs';
 import { useViewRenderLayout } from '../styles-hook/use-view-render';
@@ -7,28 +7,16 @@ import { ColumnCreate } from './columns';
 import { RowHeaderCreate } from './rows';
 import { useContextMenu } from './hooks/use-context-menu';
 import { ContextMenuComponent } from './context-menu';
-import { useNodeActions, useActiveNode } from '@hooks';
-import { useEmptyDataStore } from '@store';
 
 export const ViewRender = () => {
   const { data, /*columns,*/ setData, setSelectedCell, setDataState } =
     useContext(EmptyDataContext);
   const contextMenu = useContextMenu();
   const classes = useViewRenderLayout();
-  const { config } = useActiveNode([]);
-  const { updateNodeAttributes } = useNodeActions();
-  const id: string = useMemo(() => {
-    return `${config?.bareType}-${config?.id}`;
-  }, [config?.id]);
-  const { nodes } = useEmptyDataStore();
 
   useEffect(() => {
     updateData();
   }, [setData]);
-
-  useEffect(() => {
-    if (nodes?.nodeId === id) console.log('Here details==>', nodes);
-  }, [nodes?.nodeId]);
 
   const updateData = (noOfRows: number = 50, noOfColumns: number = 36) => {
     if (setData) {
@@ -59,12 +47,6 @@ export const ViewRender = () => {
 
   const handleOnChange = (state: Matrix<CellBase<any>>) => {
     setDataState?.('draft');
-    updateNodeAttributes(id as string, {
-      config: {
-        ...config,
-        dataState: 'draft',
-      },
-    });
     setData?.(state);
   };
 

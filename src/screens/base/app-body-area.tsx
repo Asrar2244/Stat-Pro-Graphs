@@ -104,6 +104,9 @@ const AppBody: FC = () => {
           case OUTPUT:
             query = updateOutputProjectClose;
             break;
+          case EMPTY_GRAPH_VIEW:
+            query = '';
+            break;
           default:
             setBlockUI({ value: true, msg: t('noSuchRecord', { ns: 'errors' }) });
             return;

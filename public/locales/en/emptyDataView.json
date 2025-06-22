@@ -16,5 +16,7 @@
   "csvExportFailed": "CSV file export failed",
   "draft": "Draft",
   "published": "Published",
-  "dataNotDraft": "Data not in draft"
+  "dataNotDraft": "Data not in draft",
+  "draftHover": "Click on the publish button to submit data which can be available to work with this data",
+  "publishedHover": "Data is now available for processing"
 }

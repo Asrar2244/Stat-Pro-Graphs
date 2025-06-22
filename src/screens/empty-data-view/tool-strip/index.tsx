@@ -18,12 +18,13 @@ import { save } from '@tauri-apps/plugin-dialog';
 import { open } from '@tauri-apps/plugin-shell';
 import { saveExcelToFile, saveCsvToFile } from '@utils';
 import { useToaster, useDraftData } from '@hooks';
-import { MdOutlinePublish } from 'react-icons/md';
+import { MdOutlinePublish, MdHelp } from 'react-icons/md';
 
 import { RowsColumns } from './rows-columns';
 const ToolStripComp = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const { data, dataState, columns } = useContext(EmptyDataContext);
+
+  const { data, dataState, columns, setDataState } = useContext(EmptyDataContext);
   const classes = useToolStripLayout();
   const toaster = useToaster();
   const { generateCSVDataAndSaveCSV } = useDraftData();
@@ -92,7 +93,9 @@ const ToolStripComp = () => {
     if (dataState === 'draft') {
       setLoading(true);
       generateCSVDataAndSaveCSV(data, columns)
-        .then(() => {})
+        .then(() => {
+          setDataState?.('published');
+        })
         .catch((error) => {
           console.error('error==>', error);
           toaster.error({ body: t('csvExportFailed') });
@@ -105,6 +108,7 @@ const ToolStripComp = () => {
       toaster.info({ body: t('dataNotDraft') });
     }
   };
+  //ToDo: need to enable for column addition
   // const addColumn = () => {
   //   if (setData) {
   //   }
@@ -185,7 +189,19 @@ const ToolStripComp = () => {
         </ul>
       </div>
       <div className={classes.dataStatus}>
-        <Text font="monospace">{t(dataState as string)}</Text>
+        {dataState && (
+          <Text font="monospace" className={dataState === 'draft' ? 'draft' : 'publish'}>
+            {t(dataState as string)}
+            <Tooltip
+              content={t(dataState === 'draft' ? 'draftHover' : 'publishedHover')}
+              relationship="description"
+              positioning="below"
+              withArrow
+            >
+              <Button icon={<MdHelp />} appearance="transparent" shape="square" size="small" />
+            </Tooltip>
+          </Text>
+        )}
       </div>
     </div>
   );

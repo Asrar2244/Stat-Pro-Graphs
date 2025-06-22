@@ -62,7 +62,19 @@ export const useToolStripLayout = makeStyles({
     },
   },
   dataStatus: {
-    paddingLeft: tokens.spacingHorizontalS,
-    color: tokens.colorPaletteDarkOrangeBackground3,
+    '& span': {
+      paddingLeft: tokens.spacingVerticalS,
+      borderRadius: '4px',
+      display: 'flex',
+      flexDirection: 'row',
+      gap: tokens.spacingHorizontalXS,
+      alignItems: 'center',
+    },
+    '& .draft': {
+      backgroundColor: tokens.colorPaletteDarkOrangeBackground3,
+    },
+    '& .publish': {
+      backgroundColor: tokens.colorPaletteGreenBackground3,
+    },
   },
 });

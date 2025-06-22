@@ -59,6 +59,7 @@ export const useDraftData = () => {
       if (data.error) {
         throw new Error(data.error);
       }
+
       if (data?.return_value === 'success') {
         const dbName = await fileNameWithExtension(data?.db_name);
         const workspacePath = await joinPaths([db_location, dbName]);
@@ -77,34 +78,26 @@ export const useDraftData = () => {
             2,
             workspacePath,
           ]);
-        }
 
-        const { lastInsertId } = result;
-        updateNodeAttributes(id as string, {
-          config: {
-            ...config,
-            tabName: workspacePath,
-            name: dbName,
-            id: lastInsertId,
-            dataName,
-            isActive: 2,
-            workspacePath,
-            dataState: 'published',
-            isEmptyDataView: true,
-          },
-        });
+          const { lastInsertId } = result;
+          updateNodeAttributes(id as string, {
+            config: {
+              ...config,
+              tabName: workspacePath,
+              name: dbName,
+              id: lastInsertId,
+              dataName,
+              isActive: 2,
+              workspacePath,
+              dataState: 'published',
+              isEmptyDataView: true,
+            },
+          });
+        }
         toaster.success({
           body: 'Data Published Successfully',
           title: 'Success',
         });
-
-        // catch((error) => {
-        //   console.error('error==>', error);
-        //   toaster.error({
-        //     body: error.message,
-        //     title: 'error',
-        //   });
-        // });
       } else {
         throw new Error('Something went wrong save location file');
       }
@@ -128,7 +121,6 @@ export const useDraftData = () => {
     const fullPath = await joinPaths([folderPath, `${config?.id}.csv`]);
     const fileExists = await deleteFileIfExists(fullPath);
     const formattedData = await dataGenWorker.getFormattedData(data, columns);
-
     saveCsvToFile(fullPath, formattedData)
       .then(() => {
         saveDataFromFile(fullPath, folderPath, fileExists);
