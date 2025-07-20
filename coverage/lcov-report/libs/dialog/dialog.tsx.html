@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for libs/checkbox-list/index.tsx</title>
+    <title>Code coverage report for libs/dialog/dialog.tsx</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">libs/checkbox-list</a> index.tsx</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">libs/dialog</a> dialog.tsx</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">8.33% </span>
+                <span class="strong">16.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/12</span>
+                <span class='fraction'>1/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">9.09% </span>
+                <span class="strong">16.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/11</span>
+                <span class='fraction'>1/6</span>
             </div>
         
             
@@ -86,23 +86,7 @@
 <a name='L21'></a><a href='#L21'>21</a>
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a>
-<a name='L25'></a><a href='#L25'>25</a>
-<a name='L26'></a><a href='#L26'>26</a>
-<a name='L27'></a><a href='#L27'>27</a>
-<a name='L28'></a><a href='#L28'>28</a>
-<a name='L29'></a><a href='#L29'>29</a>
-<a name='L30'></a><a href='#L30'>30</a>
-<a name='L31'></a><a href='#L31'>31</a>
-<a name='L32'></a><a href='#L32'>32</a>
-<a name='L33'></a><a href='#L33'>33</a>
-<a name='L34'></a><a href='#L34'>34</a>
-<a name='L35'></a><a href='#L35'>35</a>
-<a name='L36'></a><a href='#L36'>36</a>
-<a name='L37'></a><a href='#L37'>37</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -111,17 +95,11 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -131,45 +109,28 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { FC, ChangeEvent, useEffect, useState } from 'react';
-import { Checkbox, Divider } from '@fluentui/react-components';
-interface IProps {
-  list: { [key: string]: boolean };
-  selected: boolean | 'mixed' | undefined;
-  className?: string;
-  setSelectAll?: (x: boolean | 'mixed' | undefined) =&gt; void
-}
-export const CheckListRender: FC&lt;IProps&gt; = <span class="fstat-no" title="function not covered" >({</span> list, selected, className, setSelectAll }) =&gt; {
-  const [localList, setLocalList] = <span class="cstat-no" title="statement not covered" >useState&lt;{ [key: string]: boolean }&gt;({});</span>
-<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    setLocalList(list);</span>
-  }, [selected, list]);
-  const onChangeHandler = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>: ChangeEvent&lt;HTMLInputElement&gt;): void =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    list[e.target.name] = e.target.checked;</span>
-    let count = <span class="cstat-no" title="statement not covered" >0;</span>
-<span class="cstat-no" title="statement not covered" >    Object.entries(list).forEach(<span class="fstat-no" title="function not covered" >([</span>_key, value]) =&gt; <span class="cstat-no" title="statement not covered" >value === true &amp;&amp; count++)</span>;</span>
-<span class="cstat-no" title="statement not covered" >    setSelectAll?.(count === Object.entries(list).length ? true : count === 0 ? false : "mixed")</span>
-  };
-<span class="cstat-no" title="statement not covered" >  return (</span>
-    &lt;div className={className ?? ''}&gt;
-      {Object.keys(localList).map(<span class="fstat-no" title="function not covered" >(k</span>ey: string) =&gt; (
-<span class="cstat-no" title="statement not covered" >        &lt;div key={key}&gt;</span>
-          &lt;Checkbox
-            label={key}
-            name={key}
-            defaultChecked={localList[key]}
-            onChange={onChangeHandler}
-          /&gt;
-          &lt;Divider /&gt;
-        &lt;/div&gt;
-      ))
-      }
-    &lt;/div&gt;
-  );
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Dialog as FDialog, DialogSurface, DialogBody, DialogContent, DialogActions } from "@fluentui/react-components";
+import { Button } from "@fluentui/react-components";
+import { useStartProStore } from "@store/main-store";
+import { useTranslation } from "react-i18next";
+&nbsp;
+export const Dialog = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+    const { blockUI, setBlockUI } = <span class="cstat-no" title="statement not covered" >useStartProStore();</span>
+    const { t } = <span class="cstat-no" title="statement not covered" >useTranslation('dialog')</span>
+    const onChange = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        setBlockUI({ value: false, msg: "" })</span>
+    }
+<span class="cstat-no" title="statement not covered" >    return (blockUI.value ? (&lt;FDialog open={blockUI.value} onOpenChange={onChange} &gt;</span>
+        &lt;DialogSurface&gt;
+            &lt;DialogBody&gt;
+                &lt;DialogContent&gt;{blockUI.msg ? t(blockUI.msg) : t("somethingWentWrong")}&lt;/DialogContent&gt;
+                &lt;DialogActions&gt;
+                    {!blockUI.hideOk &amp;&amp; &lt;Button appearance="primary" onClick={onChange}&gt;{t("ok")}&lt;/Button&gt;}
+                &lt;/DialogActions&gt;
+            &lt;/DialogBody&gt;
+        &lt;/DialogSurface&gt;
+    &lt;/FDialog&gt;) : (&lt;&gt;&lt;/&gt;)
+    );
 };
 &nbsp;</pre></td></tr></table></pre>
 

@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for libs/checkbox-list/index.tsx</title>
+    <title>Code coverage report for libs/calender-tablet/index.tsx</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">libs/checkbox-list</a> index.tsx</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">libs/calender-tablet</a> index.tsx</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">8.33% </span>
+                <span class="strong">20% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/12</span>
+                <span class='fraction'>2/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">9.09% </span>
+                <span class="strong">22.22% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/11</span>
+                <span class='fraction'>2/9</span>
             </div>
         
             
@@ -96,10 +96,8 @@
 <a name='L31'></a><a href='#L31'>31</a>
 <a name='L32'></a><a href='#L32'>32</a>
 <a name='L33'></a><a href='#L33'>33</a>
-<a name='L34'></a><a href='#L34'>34</a>
-<a name='L35'></a><a href='#L35'>35</a>
-<a name='L36'></a><a href='#L36'>36</a>
-<a name='L37'></a><a href='#L37'>37</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L34'></a><a href='#L34'>34</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -111,14 +109,12 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -132,45 +128,40 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { FC, ChangeEvent, useEffect, useState } from 'react';
-import { Checkbox, Divider } from '@fluentui/react-components';
-interface IProps {
-  list: { [key: string]: boolean };
-  selected: boolean | 'mixed' | undefined;
-  className?: string;
-  setSelectAll?: (x: boolean | 'mixed' | undefined) =&gt; void
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Body1Stronger, Caption2 } from '@fluentui/react-components';
+import dayjs from 'dayjs';
+import { FC, memo, useMemo } from 'react';
+import AdvanceFormat from 'dayjs/plugin/advancedFormat';
+import { useClassCalender } from './styles-hook/use-calender-style';
+export interface ICalenderTab {
+  date?: string;
 }
-export const CheckListRender: FC&lt;IProps&gt; = <span class="fstat-no" title="function not covered" >({</span> list, selected, className, setSelectAll }) =&gt; {
-  const [localList, setLocalList] = <span class="cstat-no" title="statement not covered" >useState&lt;{ [key: string]: boolean }&gt;({});</span>
-<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    setLocalList(list);</span>
-  }, [selected, list]);
-  const onChangeHandler = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>: ChangeEvent&lt;HTMLInputElement&gt;): void =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    list[e.target.name] = e.target.checked;</span>
-    let count = <span class="cstat-no" title="statement not covered" >0;</span>
-<span class="cstat-no" title="statement not covered" >    Object.entries(list).forEach(<span class="fstat-no" title="function not covered" >([</span>_key, value]) =&gt; <span class="cstat-no" title="statement not covered" >value === true &amp;&amp; count++)</span>;</span>
-<span class="cstat-no" title="statement not covered" >    setSelectAll?.(count === Object.entries(list).length ? true : count === 0 ? false : "mixed")</span>
-  };
+&nbsp;
+const CalenderTabComponent: FC&lt;ICalenderTab&gt; = <span class="fstat-no" title="function not covered" >({</span> date }) =&gt; {
+  const classes = <span class="cstat-no" title="statement not covered" >useClassCalender();</span>
+<span class="cstat-no" title="statement not covered" >  dayjs.extend(AdvanceFormat);</span>
+  const dateObj = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    if (!date) <span class="cstat-no" title="statement not covered" >return undefined;</span></span>
+    const dayJsObj = <span class="cstat-no" title="statement not covered" >dayjs(date);</span>
+<span class="cstat-no" title="statement not covered" >    return {</span>
+      month: dayJsObj.format('MMM'),
+      year: dayJsObj.year(),
+      date: dayJsObj.date(),
+    };
+  }, [date]);
 <span class="cstat-no" title="statement not covered" >  return (</span>
-    &lt;div className={className ?? ''}&gt;
-      {Object.keys(localList).map(<span class="fstat-no" title="function not covered" >(k</span>ey: string) =&gt; (
-<span class="cstat-no" title="statement not covered" >        &lt;div key={key}&gt;</span>
-          &lt;Checkbox
-            label={key}
-            name={key}
-            defaultChecked={localList[key]}
-            onChange={onChangeHandler}
-          /&gt;
-          &lt;Divider /&gt;
-        &lt;/div&gt;
-      ))
-      }
+    &lt;div className={classes.calender}&gt;
+      &lt;div className="inner-calender"&gt;
+        &lt;Caption2&gt;{dateObj?.month}&lt;/Caption2&gt;
+        &lt;Body1Stronger&gt;{dateObj?.date}&lt;/Body1Stronger&gt;
+        &lt;Caption2&gt;{dateObj?.year}&lt;/Caption2&gt;
+      &lt;/div&gt;
     &lt;/div&gt;
   );
 };
+&nbsp;
+export const CalenderTablet = memo(CalenderTabComponent);
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [ "ES2020", "DOM", "DOM.Iterable" ],
     "module": "ESNext",
     "skipLibCheck": true,
 
@@ -24,22 +24,22 @@
     /* Alias Path */
     "baseUrl": ".",
     "paths": {
-      "@libs/*": ["src/libs/*"],
-      "@libs": ["src/libs"],
-      "@constants/*": ["src/constants/*"],
-      "@constants": ["src/constants"],
-      "@backend/*": ["src/backend/*"],
-      "@backend": ["src/backend"],
-      "@utils/*": ["src/utils/*"],
-      "@utils": ["src/utils"],
-      "@store/*": ["src/store/*"],
-      "@store": ["src/store"],
-      "@hooks/*": ["src/hooks/*"],
-      "@hooks": ["src/hooks"],
-      "@workers/*": ["src/workers/*"],
-      "@workers": ["src/workers"]
+      "@libs/*": [ "src/libs/*" ],
+      "@libs": [ "src/libs" ],
+      "@constants/*": [ "src/constants/*" ],
+      "@constants": [ "src/constants" ],
+      "@backend/*": [ "src/backend/*" ],
+      "@backend": [ "src/backend" ],
+      "@utils/*": [ "src/utils/*" ],
+      "@utils": [ "src/utils" ],
+      "@store/*": [ "src/store/*" ],
+      "@store": [ "src/store" ],
+      "@hooks/*": [ "src/hooks/*" ],
+      "@hooks": [ "src/hooks" ],
+      "@workers/*": [ "src/workers/*" ],
+      "@workers": [ "src/workers" ]
     }
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [ "src" ],
+  "references": [ { "path": "./tsconfig.node.json" } ]
 }
