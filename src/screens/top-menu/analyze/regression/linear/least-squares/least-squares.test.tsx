@@ -1,6 +1,5 @@
 import { render, fireEvent } from '@utils/test-utils';
 import { LeastSquare } from './least-squares';
-import { Modal } from '@libs';
 import { useActiveNode, useModal } from '@hooks';
 import { usePrepareAnalysis } from './use-anayse-hook';
 import { useStartProStore } from '@store/main-store';

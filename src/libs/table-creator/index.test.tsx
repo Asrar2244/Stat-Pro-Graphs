@@ -11,7 +11,7 @@ const renderSetUp = (props = {}) => {
             appendColumn: [],
             postfix: '',
             prefix: '',
-            type: 'columns', // Ensure correct type
+            type: 'columns' as 'columns', // Ensure correct type
             translationColumns: [],
         },
         dbFileName: 'testFile',
