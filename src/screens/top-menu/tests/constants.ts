@@ -1,0 +1,34 @@
+import type { TestOption } from './types';
+
+// Helper: Flatten analyze menu structure for dropdown with execute functions
+export const analysisOptions: TestOption[] = [
+  {
+    label: 'Regression',
+    value: 'regression',
+    children: [
+      { label: 'Linear', value: 'linear', children: [
+        { label: 'Least Squares', value: 'leastSquares', execute: 'least-square' },
+        { label: 'Ridge', value: 'ridge', execute: 'ridge' },
+        { label: 'Forward Stepwise', value: 'forwardStepwise', execute: 'forward-stepwise' },
+      ] },
+    ],
+  },
+  {
+    label: 'Analysis of Variance',
+    value: 'analysisOfVariance',
+    children: [
+      { label: 'Estimation of Module', value: 'estimationOfModule', execute: 'estimation-of-module' },
+      { label: 'Pairwise Comparison', value: 'pairwiseComparison', execute: 'pairwise-comparison' },
+    ],
+  },
+];
+
+// Helper: Advanced analysis options
+export const advancedOptions: TestOption[] = [
+  {
+    label: 'Descriptive Statistics',
+    value: 'descriptiveStat',
+    execute: 'basic-statistics-column-wise',
+  },
+  // Add more advanced options here as needed
+]; 

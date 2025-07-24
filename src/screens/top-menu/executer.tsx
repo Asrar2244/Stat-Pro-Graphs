@@ -27,6 +27,10 @@ const PairwiseComparisonOfModule = lazy(() =>
   import('./analyze').then((module) => ({ default: module.PairwiseComparisonModule })),
 );
 
+const ForwardStepwise = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.ForwardStepwiseModule }))
+);
+
 export const withMenuEvents = <P extends object>(
   translationNs: string,
   WrappedComponent: React.ComponentType<P>,
@@ -83,6 +87,8 @@ const MenuSelector: FC<{
         return <LeastSquare {...modal} />;
       case exporters.regressionRidge:
         return <Ridge {...modal} />;
+      case exporters.regressionForwardStepwise:
+        return <ForwardStepwise {...modal} />;
       case exporters.descriptiveStat:
         return <DescriptiveStatistics {...modal} />;
       case exporters.estimationOfModule:

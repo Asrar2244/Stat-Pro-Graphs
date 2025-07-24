@@ -15,10 +15,9 @@ import { generateKey } from '@utils/helper';
 export const Model: FC = () => {
   const classes = useModelStyle();
   const { t } = useTranslation('regLinearLeastSquare');
-  const { includeConst, save, setModel } = useLinearLeastSquares(
+  const { includeConst, setModel } = useLinearLeastSquares(
     useShallow((state) => ({
       includeConst: state.model.includeConst,
-      save: state.model.save,
       setModel: state.setModel,
     })),
   );
@@ -45,14 +44,6 @@ export const Model: FC = () => {
             name="includeConst"
             label={t('includeConst', { ns: 'regLinearLeastSquare' })}
             checked={includeConst}
-            onChange={onChangeHandler}
-          />
-        </div>
-        <div>
-          <Checkbox
-            name="save"
-            label={t('save', { ns: 'regLinearLeastSquare' })}
-            checked={save}
             onChange={onChangeHandler}
           />
         </div>

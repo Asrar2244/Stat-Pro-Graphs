@@ -2,10 +2,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use tauri_plugin_log;
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-use std::env;
-use std::process::{Child, Command};
-use std::sync::{Arc, Mutex};
-use tauri::{Manager, RunEvent, Window};
+use tauri::{Manager, Window};
+use std::time::Duration;
+use std::thread;
 mod excel_csv_file;
 mod tauri_json_file;
 #[tauri::command]
@@ -23,14 +22,13 @@ async fn close_splashscreen(window: Window) {
         .unwrap();
 }
 fn main() {
-    let child_process: Arc<Mutex<Option<Child>>> = Arc::new(Mutex::new(None));
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            let _ = app
-                .get_webview_window("main")
-                .expect("no main window")
-                .set_focus();
-        }))
+        // .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        //     let _ = app
+        //         .get_webview_window("main")
+        //         .expect("no main window")
+        //         .set_focus();
+        // }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
@@ -54,78 +52,35 @@ fn main() {
             excel_csv_file::save_excel_to_file,
             excel_csv_file::save_csv_to_file
         ])
-        .setup({
-            // Clone reference for the setup closure
-            let child_process = Arc::clone(&child_process);
-            move |_app| {
-                // Set the path to the backend executable based on OS
-                let exe_path = {
-                    let mut path = env::current_exe()
-                        .expect("Failed to get current executable path")
-                        .parent()
-                        .expect("Failed to get parent directory")
-                        .to_path_buf();
+        .setup(move |_app| {
+            // Window settings
+            let window = _app.get_webview_window("main").unwrap();
+            #[cfg(not(target_os = "macos"))]
+            window.set_decorations(false).unwrap();
+            window.maximize().unwrap();
+            #[cfg(target_os = "macos")]
+            window.set_fullscreen(true).unwrap();
 
-                    #[cfg(target_os = "windows")]
-                    path.push("backend/windows/main.exe");
-
-                    #[cfg(target_os = "macos")]
-                    path.push("backend/macos/main");
-
-                    #[cfg(target_os = "linux")]
-                    path.push("backend/linux/main");
-
-                    path
-                };
-                println!("Attempting to launch backend at: {:?}", exe_path);
-
-                // Check if the file exists
-                if !exe_path.exists() {
-                    panic!("Backend executable not found at {:?}", exe_path);
+            // Auto-close splash screen after 3 seconds as failsafe
+            let app_handle = _app.handle().clone();
+            thread::spawn(move || {
+                thread::sleep(Duration::from_secs(3));
+                if let Some(splashscreen) = app_handle.get_webview_window("splashscreen") {
+                    let _ = splashscreen.close();
                 }
+                if let Some(main_window) = app_handle.get_webview_window("main") {
+                    let _ = main_window.show();
+                }
+            });
 
-                // Start the backend executable without canonicalizing the path
-                let child = Command::new(exe_path)
-                    .spawn()
-                    .expect("Failed to start backend executable");
-
-                // Store the child process in the shared state
-                *child_process.lock().unwrap() = Some(child);
-
-                // Window settings (same as before)
-                let window = _app.get_webview_window("main").unwrap();
-                #[cfg(not(target_os = "macos"))]
-                window.set_decorations(false).unwrap();
-                window.maximize().unwrap();
-                #[cfg(target_os = "macos")]
-                window.set_fullscreen(true).unwrap();
-
-                Ok(())
-            }
+            Ok(())
         })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run({
-            // Clone reference for the run closure
-            let child_process = Arc::clone(&child_process);
-            move |_app_handle, e| match e {
-                RunEvent::ExitRequested { .. } => {
-                    if let Some(mut child) = child_process.lock().unwrap().take() {
-                        let _ = child.kill();
-                    }
-
-                    #[cfg(target_os = "windows")]
-                    let _ = Command::new("taskkill")
-                        .args(&["/IM", "main.exe", "/F"])
-                        .spawn();
-
-                    #[cfg(target_os = "macos")]
-                    let _ = Command::new("pkill").arg("-f").arg("main").spawn();
-
-                    #[cfg(target_os = "linux")]
-                    let _ = Command::new("pkill").arg("-f").arg("main").spawn();
-                }
-                _ => {}
+        .run(|_app_handle, e| match e {
+            tauri::RunEvent::ExitRequested { .. } => {
+                // No backend process to kill since we're using remote backend
             }
+            _ => {}
         });
 }

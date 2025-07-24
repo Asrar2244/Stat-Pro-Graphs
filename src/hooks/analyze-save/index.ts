@@ -96,6 +96,14 @@ export const useAnalyzeSave = () => {
           throw new Error(response.error);
         }
 
+        // Inject outputType for forward stepwise regression
+        if (
+          parameters?.regressionType === 'linear' &&
+          parameters?.estimationparameters?.estimation_type === 'stepwise'
+        ) {
+          response.outputType = 'regLinearForwardStepwise';
+        }
+
         outputUpdateResult(dbName, [JSON.stringify(response), outputId])
           .then(() => {
             const { isEmptyDataView } = config;
@@ -105,7 +113,15 @@ export const useAnalyzeSave = () => {
                 (item) => Number(item.id) === projectId,
               ) as ISelector;
               const type = 'OUTPUT';
-              openNewTab(data, projectId, type, t);
+              // Professional debug log for output tab opening
+              console.log('[Statpro] Attempting to open output tab:', { data, projectId, type, t, config });
+              if (data) {
+                openNewTab(data, projectId, type, t);
+              } else {
+                // Fallback: open with config if project lookup fails
+                console.warn('[Statpro] Project lookup failed, falling back to config for output tab.', { config });
+                openNewTab(config as any, config.id, type, t);
+              }
             } else {
               const type = 'OUTPUT';
               openNewTab(config as any, config.id, type, t);

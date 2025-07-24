@@ -56,6 +56,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             extensions: browseFile.acceptFiles,
           },
         ],
+        defaultPath: 'Z:\\',
       });
 
       if (openedFile) {
@@ -146,17 +147,54 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
 
   const onClickCreateProject = async (): Promise<void> => {
     try {
-      if (newProject?.name && newProject?.impBusinessObjFile) {
-        const volumeFilePath = await volumeExcelFilePath(file as string);
-        const collectionsDir = newProject?.workspacePath ?? (await collectionsLocation());
-        const dbLocation = convertToLinuxPath(collectionsDir);
-        const { data } = await axios.post(`api/${API.analysis}`, {
-          data_name: convertToLinuxPath(volumeFilePath),
-          input_data_type: 'file',
-          operation: 'store_data_in_db',
-          sheet_name: selectedSheet,
-          db_location: dbLocation,
-        });
+      console.log('Validation check - newProject:', newProject);
+      console.log('Validation check - file:', file);
+      console.log('Validation check - selectedSheet:', selectedSheet);
+      console.log('Validation check - projectName:', projectName);
+      
+      // More robust validation
+      const hasProjectName = newProject?.name && newProject.name.trim() !== '';
+      const hasFile = file && file.trim() !== '';
+      const hasBusinessObj = newProject?.impBusinessObjFile && newProject.impBusinessObjFile.trim() !== '';
+      const hasSelectedSheet = selectedSheet && selectedSheet.trim() !== '';
+      
+      console.log('Validation results:', {
+        hasProjectName,
+        hasFile,
+        hasBusinessObj,
+        hasSelectedSheet
+      });
+      
+      if (!hasProjectName || !hasFile || !hasBusinessObj || !hasSelectedSheet) {
+        const missingFields = [];
+        if (!hasProjectName) missingFields.push('Project Name');
+        if (!hasFile) missingFields.push('File');
+        if (!hasBusinessObj) missingFields.push('Business Object');
+        if (!hasSelectedSheet) missingFields.push('Selected Sheet');
+        
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      }
+      
+      const volumeFilePath = await volumeExcelFilePath(file as string);
+      const collectionsDir = newProject?.workspacePath ?? (await collectionsLocation());
+      const dbLocation = convertToLinuxPath(collectionsDir);
+      
+      console.log('Sending store_data_in_db request with:', {
+        data_name: convertToLinuxPath(volumeFilePath),
+        input_data_type: 'file',
+        operation: 'store_data_in_db',
+        sheet_name: selectedSheet,
+        db_location: dbLocation,
+      });
+      
+      const { data } = await axios.post(`api/${API.analysis}`, {
+        data_name: convertToLinuxPath(volumeFilePath),
+        input_data_type: 'file',
+        operation: 'store_data_in_db',
+        sheet_name: selectedSheet,
+        db_location: dbLocation,
+      });
+        
         if (data.error) {
           throw new Error(data.error);
         }
@@ -164,8 +202,10 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
         if (data?.return_value === 'success') {
           const dbName = await fileNameWithExtension(data?.db_name);
           const workspacePath = await joinPaths([dbLocation, dbName]);
-          const db = new Database(CONFIGURATION_DB);
-          db.executeQuery(insertIntoProject, [
+          
+          try {
+            const db = new Database(CONFIGURATION_DB);
+            db.executeQuery(insertIntoProject, [
             projectName,
             dbName,
             data?.data_name,
@@ -193,23 +233,36 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               props.closeModal();
             })
             .catch((error) => {
-              console.error('error==>', error);
+              console.error('Database error:', error);
               setBlockUI({ value: true, msg: t('fileAndProjectNameError', { ns: 'errors' }) });
             })
             .finally(() => {
               removeExcelFileFromVolume(actualPath);
             });
+          } catch (dbError) {
+            console.error('Database creation error:', dbError);
+            setBlockUI({ value: true, msg: 'Database initialization failed. Please try again.' });
+            removeExcelFileFromVolume(actualPath);
+            props.closeModal();
+          }
         } else {
           removeExcelFileFromVolume(actualPath);
-          setBlockUI({ value: true, msg: data.error });
-          console.error('error==>', data.error);
+          setBlockUI({ value: true, msg: data.error || 'Unknown error from backend' });
+          console.error('Backend returned error:', data);
           props.closeModal();
         }
-      } else {
-        throw new Error(t('fileAndProjectNameError', { ns: 'errors' }));
-      }
     } catch (error: any) {
-      setBlockUI({ value: true, msg: error.message });
+      console.error('Complete error details:', error);
+      console.error('Error response data:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      console.error('Error headers:', error.response?.headers);
+      
+      let errorMessage = error.message;
+      if (error.response?.data) {
+        errorMessage = `Backend Error (${error.response.status}): ${JSON.stringify(error.response.data)}`;
+      }
+      
+      setBlockUI({ value: true, msg: errorMessage });
     }
   };
 

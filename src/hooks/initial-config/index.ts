@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { exists, mkdir, create } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
 import { Database, homeDirectory } from '@utils';
+import { safeTauriCall, isTauriEnvironment } from '@utils/tauri-utils';
 import { useTasks } from '@store';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
@@ -13,9 +14,16 @@ export const useInitialConfig = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { setCommonMsg } = useTasks(useShallow((state) => ({ setCommonMsg: state.setCommonMsg })));
 
-  const { t } = useTranslation('dockLayout', { useSuspense: true });
+  const { t } = useTranslation('dockLayout', { useSuspense: false }); // Change to false
 
   useEffect(() => {
+    // Close splash screen immediately, don't wait for config
+    safeTauriCall(
+      () => invoke('close_splashscreen'),
+      Promise.resolve()
+    );
+    
+    // Run config setup in background
     seedInitialConfig();
     //To Print App Version
     setCommonMsg({ message: '' }, t('currentVersion'));
@@ -23,24 +31,53 @@ export const useInitialConfig = () => {
 
   //Creating Folders
   const createInitialFolders = async (): Promise<void> => {
-    const homeDir = await homeDirectory();
-    if (!(await exists(homeDir))) {
-      await mkdir(homeDir);
-    }
-    [COLLECTION_DIR].forEach(async (folder) => {
-      const fullPath = await join(homeDir, folder);
-      if (!(await exists(fullPath))) {
-        await mkdir(fullPath);
+    try {
+      const homeDir = await homeDirectory();
+      
+      // In development mode, skip folder creation
+      if (!isTauriEnvironment()) {
+        console.log('Development mode: Skipping folder creation for:', homeDir);
+        return;
       }
-    });
+
+      if (!(await safeTauriCall(() => exists(homeDir), false))) {
+        await safeTauriCall(() => mkdir(homeDir), undefined);
+      }
+      
+      for (const folder of [COLLECTION_DIR]) {
+        const fullPath = await safeTauriCall(
+          () => join(homeDir, folder),
+          homeDir + '/' + folder
+        );
+        if (!(await safeTauriCall(() => exists(fullPath), false))) {
+          await safeTauriCall(() => mkdir(fullPath), undefined);
+        }
+      }
+    } catch (error) {
+      console.warn('Error creating folders:', error);
+    }
   };
+
   //Creating Folders
   const createInitialFile = async (): Promise<void> => {
-    const homeDir = await homeDirectory();
-    const fullCollectionDBPath = await join(homeDir, COLLECTION_DIR, CONFIGURATION_DB);
+    try {
+      const homeDir = await homeDirectory();
+      const fullCollectionDBPath = await safeTauriCall(
+        () => join(homeDir, COLLECTION_DIR, CONFIGURATION_DB),
+        homeDir + '/' + COLLECTION_DIR + '/' + CONFIGURATION_DB
+      );
 
-    if (!(await exists(fullCollectionDBPath))) {
-      await create(fullCollectionDBPath);
+      // In development mode, skip file creation
+      if (!isTauriEnvironment()) {
+        console.log('Development mode: Skipping file creation for:', fullCollectionDBPath);
+        return;
+      }
+
+      if (!(await safeTauriCall(() => exists(fullCollectionDBPath), false))) {
+        await safeTauriCall(() => create(fullCollectionDBPath), undefined);
+      }
+    } catch (error) {
+      console.warn('Error creating initial file:', error);
     }
   };
 
@@ -49,15 +86,19 @@ export const useInitialConfig = () => {
       setIsLoading(true);
       await createInitialFolders();
       await createInitialFile();
-      const db = new Database(CONFIGURATION_DB);
-
-      await db.executeQuery(`${Object.values(initialTables).join(';')}`).catch((error) => {
-        throw error;
-      });
+      
+      // Skip database operations in development mode
+      if (isTauriEnvironment()) {
+        const db = new Database(CONFIGURATION_DB);
+        await db.executeQuery(`${Object.values(initialTables).join(';')}`).catch((error) => {
+          console.warn('Database initialization error:', error);
+        });
+      } else {
+        console.log('Development mode: Skipping database initialization');
+      }
     } catch (e) {
       console.error('Error in Seeding Initial Configurations=>', e);
     } finally {
-      await invoke('close_splashscreen');
       setIsLoading(false);
     }
   };

@@ -11,6 +11,7 @@ export const exporters = {
   importBusinessObject: 'project-details',
   regressionLeastSquare: 'least-square',
   regressionRidge: 'ridge',
+  regressionForwardStepwise: 'forward-stepwise',
   descriptiveStat: 'basic-statistics-column-wise',
   openDevTools: 'open-dev-tools',
   estimationOfModule: 'estimation-of-module',
@@ -78,6 +79,10 @@ export const topMenuConfig = {
       label: 'utilities',
     },
     {
+      id: 'tests',
+      label: 'tests',
+    },
+    {
       id: 'graph',
       label: 'graph',
       submenu: [
@@ -85,63 +90,6 @@ export const topMenuConfig = {
           id: 'graphView',
           label: 'graphView',
           codeExecute: exporters.openNewTabForGraph,
-        },
-      ],
-    },
-    {
-      id: 'analyze',
-      label: 'analyze',
-      submenu: [
-        {
-          id: 'regression',
-          label: 'regression',
-          submenu: [
-            {
-              id: 'linear',
-              label: 'linear',
-              submenu: [
-                {
-                  id: 'leastSquares',
-                  label: 'leastSquares',
-                  execute: exporters.regressionLeastSquare,
-                },
-                // ToDO: Uncomment them when these are needed
-                // {
-                //   id: 'bestSubsets',
-                //   label: 'bestSubsets',
-                // },
-                // {
-                //   id: 'polynomial',
-                //   label: 'polynomial',
-                // },
-                // {
-                //   id: 'bayesian',
-                //   label: 'bayesian',
-                // },
-                {
-                  id: 'ridge',
-                  label: 'ridge',
-                  execute: exporters.regressionRidge,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: 'analysisOfVariance',
-          label: 'analysisOfVariance',
-          submenu: [
-            {
-              id: 'estimationOfModule',
-              label: 'estimationOfModule',
-              execute: exporters.estimationOfModule,
-            },
-            {
-              id: 'pairwiseComparison',
-              label: 'pairwiseComparison',
-              execute: exporters.pairwiseComparisonOfModule,
-            },
-          ],
         },
       ],
     },

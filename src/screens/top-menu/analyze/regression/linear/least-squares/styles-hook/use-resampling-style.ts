@@ -10,8 +10,11 @@ export const useResamplingStyle = makeStyles({
   resamplingWrapper: {
     '& fieldset': {
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(40%, 1fr))',
+      gridTemplateColumns: '1fr',
       gap: tokens.spacingHorizontalM,
+      '@media (min-width: 700px)': {
+        gridTemplateColumns: 'repeat(2, 1fr)',
+      },
     },
   },
 });

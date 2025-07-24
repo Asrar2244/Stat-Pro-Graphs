@@ -33,22 +33,36 @@ export const BaseComponent: FC = () => {
     };
     const body: any = bodyRef?.current;
     body?.addEventListener('keydown', handleKeyDown);
-    setLicenseState({ state: 'lookingProductLicense' });
-    //TODO: This has to change when backend starts.
-    const intervalCounter = setInterval(() => {
-      getSystemData()
-        .then((res) => {
-          clearInterval(intervalCounter);
-          console.log('res 30Days hardcoded===', res);
-          //TODO: Hardcoded remove it
+    
+    // Set a default license state immediately so the app can function
+    setLicenseState({ state: '30Days', type: 'unknown' });
+    
+    // Make this non-blocking - don't wait for backend response to show the app
+    const attemptLicenseCheck = () => {
+      // Add a race condition with timeout
+      const licensePromise = getSystemData();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('License check timeout')), 5000)
+      );
+
+      Promise.race([licensePromise, timeoutPromise])
+        .then((res: any) => {
+          console.log('License check successful:', res);
           setLicenseState({ state: '30Days', type: res.msg });
-          //TODO: popup license based on license status
           if (res.msg === 'expired') modal.openModal();
         })
         .catch((err) => {
-          console.log('err===', err);
+          console.log('License check failed or timed out, continuing with default state:', err);
+          // Keep the default state we already set
         });
-    }, 10000);
+    };
+
+    // Try once immediately, then set up interval for retries
+    attemptLicenseCheck();
+    
+    const intervalCounter = setInterval(() => {
+      attemptLicenseCheck();
+    }, 60000); // Check every 60 seconds instead of 30
 
     return () => {
       body?.removeEventListener('keydown', handleKeyDown);

@@ -34,12 +34,19 @@ const PairwiseComparisonOfModules = lazy(() =>
   })),
 );
 
+const ForwardStepwiseRegression = lazy(() =>
+  import('./analyze/regression/linear/forward-stepwise').then((modules) => ({
+    default: modules.ForwardStepwiseRegression,
+  }))
+);
+
 interface IOutputSelection extends IToolBar {
   id: number;
   showHistory: boolean;
 }
 const load: any = {
   regLinearLeastSquare: <LinearLeastSquareRegression />,
+  regLinearForwardStepwise: <ForwardStepwiseRegression />,
   regLinearRidge: <LinearRidgeRegression />,
   estimationOfModules: <EstimationOfModule />,
   pairwiseComparisonModules: <PairwiseComparisonOfModules />,

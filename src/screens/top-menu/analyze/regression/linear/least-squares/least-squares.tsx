@@ -1,25 +1,17 @@
-import { FC, useState } from 'react';
-import {
-  makeStyles,
-  tokens,
-  Tab,
-  TabList,
-  SelectTabData,
-  SelectTabEvent,
-} from '@fluentui/react-components';
-import { Modal, ITranslate, NoIdSelected } from '@libs';
+import { FC } from 'react';
+import { makeStyles, tokens } from '@fluentui/react-components';
+import { Modal, NoIdSelected } from '@libs';
 import { IModal, useActiveNode } from '@hooks';
 import { Model } from './model';
-import { Estimation } from './estimation';
-import { Options } from './options';
-import { Predict } from './predict';
-import { Resampling } from './resampling';
 import { useShallow } from 'zustand/react/shallow';
-import { useColumnsRowsCount, IColumn } from '../../../../../table-render/use-column-count';
+import { useColumnsRowsCount } from '../../../../../table-render/use-column-count';
 import { useLinearLeastSquares } from './use-squares-hook';
 import { usePrepareAnalysis } from './use-anayse-hook';
 import { useTranslation } from 'react-i18next';
 import { useStartProStore } from '@store/main-store';
+import { Field, Input, Checkbox } from '@fluentui/react-components';
+import { Fieldset } from '@libs';
+import { useModelStyle } from './styles-hook/use-model-style';
 // import { OUTPUT } from '@libs/constants/query-const';
 
 const useClasses = makeStyles({
@@ -33,7 +25,6 @@ const useClasses = makeStyles({
   },
 });
 const LeastSquareComponent: FC<IModal> = ({ ...props }) => {
-  const [selectedTab, setSelectedTab] = useState<string>('model');
   const { t } = useTranslation('regLinearLeastSquare');
   const classes = useClasses();
   const { setReset } = useLinearLeastSquares(
@@ -55,9 +46,6 @@ const LeastSquareComponent: FC<IModal> = ({ ...props }) => {
     queueType: 'regLinearLeastSquare',
   });
 
-  const onTabSelectHandler = (_event: SelectTabEvent, { value }: SelectTabData): void => {
-    setSelectedTab(value as string);
-  };
   const onCloseModal = (): void => {
     setReset();
     props.closeModal();
@@ -89,44 +77,58 @@ const LeastSquareComponent: FC<IModal> = ({ ...props }) => {
         {!id || id === '' ? (
           <NoIdSelected />
         ) : (
-          <>
-            <TabList
-              selectedValue={selectedTab}
-              appearance="subtle"
-              onTabSelect={onTabSelectHandler}
-            >
-              <Tab value="model">{t('model', { ns: 'regLinearLeastSquare' })}</Tab>
-              <Tab value="estimation">{t('estimation', { ns: 'regLinearLeastSquare' })}</Tab>
-              <Tab value="options">{t('options', { ns: 'regLinearLeastSquare' })}</Tab>
-              <Tab value="predict">{t('predict', { ns: 'regLinearLeastSquare' })}</Tab>
-              <Tab value="resampling">{t('resampling', { ns: 'regLinearLeastSquare' })}</Tab>
-            </TabList>
-            <div className="details">
-              <LoadTabDetails t={t} selectedTab={selectedTab} columns={[...columns]} />
-            </div>
-          </>
+          <div>
+            <ModelWithConfidence />
+          </div>
         )}
       </div>
     </Modal>
   );
 };
-const LoadTabDetails: FC<ITranslate & { selectedTab: string; columns: IColumn[] }> = ({
-  selectedTab,
-  ...props
-}) => {
-  switch (selectedTab) {
-    case 'model':
-      return <Model />;
-    case 'estimation':
-      return <Estimation {...props} />;
-    case 'options':
-      return <Options {...props} />;
-    case 'predict':
-      return <Predict {...props} />;
-    case 'resampling':
-      return <Resampling {...props} />;
-    default:
-      return <p>{selectedTab}</p>;
-  }
+
+const ModelWithConfidence: FC = () => {
+  const classes = useModelStyle();
+  const { t } = useTranslation('regLinearLeastSquare');
+  const { includeConst, setModel } = useLinearLeastSquares(
+    useShallow((state) => ({
+      includeConst: state.model.includeConst,
+      setModel: state.setModel,
+    }))
+  );
+  const { confidence, setEstimate } = useLinearLeastSquares(
+    useShallow((state) => ({
+      confidence: state.estimate.confidence,
+      setEstimate: state.setEstimate,
+    }))
+  );
+  return (
+    <div className={classes.modelLayout}>
+      <div className={classes.modelWrapper}>
+        <Model />
+      </div>
+      <Fieldset>
+        <Checkbox
+          name="includeConst"
+          label={t('includeConst', { ns: 'regLinearLeastSquare' })}
+          checked={includeConst}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ [e.target.name]: e.target.checked })}
+        />
+        <Field label={t('confidence', { ns: 'regLinearLeastSquare' })}>
+          <Input
+            id="confidence-input"
+            name="confidence"
+            type="number"
+            min="0"
+            max="1"
+            step="0.01"
+            value={confidence}
+            onChange={e => setEstimate({ confidence: e.target.value })}
+            style={{ width: '100%' }}
+            aria-label={t('confidence', { ns: 'regLinearLeastSquare' })}
+          />
+        </Field>
+      </Fieldset>
+    </div>
+  );
 };
 export const LeastSquare = LeastSquareComponent;

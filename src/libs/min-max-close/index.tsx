@@ -8,23 +8,36 @@ import { Minimize } from './minimize';
 import { Maximize } from './maximize';
 import { Close } from './close';
 import { platformInfo } from '@utils';
+import { safeTauriCall, isTauriEnvironment } from '@utils/tauri-utils';
+
 const MinMaxCloseComponent: FC = () => {
   const classes = useMinMaxCloseStyles();
   const classMerge = mergeClasses(classes.ul, classes.liCloseMaxMin);
   const platformIsMac = useMemo(() => {
     return platformInfo() === 'mac';
   }, []);
+  
   const onHandleMaximize = () => {
-    getCurrentWindow().toggleMaximize();
+    safeTauriCall(
+      () => getCurrentWindow().toggleMaximize(),
+      async () => { console.log('Development mode: Maximize not available'); }
+    );
   };
 
   const onHandleMinimize = () => {
-    getCurrentWindow().minimize();
+    safeTauriCall(
+      () => getCurrentWindow().minimize(),
+      async () => { console.log('Development mode: Minimize not available'); }
+    );
   };
 
   const onHandleClose = () => {
-    getCurrentWindow().close();
+    safeTauriCall(
+      () => getCurrentWindow().close(),
+      async () => { console.log('Development mode: Close not available'); }
+    );
   };
+  
   return (
     <div className={classes.minMaxClose}>
       <ul className={classes.ul}>
@@ -35,7 +48,7 @@ const MinMaxCloseComponent: FC = () => {
           <ThemeSwitch />
         </li>
       </ul>
-      {!platformIsMac && (
+      {!platformIsMac && isTauriEnvironment() && (
         <>
           <Divider vertical />
           <ul className={classMerge}>
