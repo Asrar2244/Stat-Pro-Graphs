@@ -2,15 +2,15 @@ export const getSampleSizeEndpoint = (testType: string): string => {
   // Map test types to endpoints
   switch (testType) {
     case 'ttest-sample-size':
-      return 'http://100.111.65.109:5000/sample_size/api/ttest-sample-size';
+      return 'http://localhost:5000/sample_size/api/ttest-sample-size';
     case 'proportion-sample-size':
-      return 'http://100.111.65.109:5000/sample_size/api/proportion-sample-size';
+      return 'http://localhost:5000/sample_size/api/proportion-sample-size';
     case 'paired-ttest-sample-size':
-      return 'http://100.111.65.109:5000/sample_size/api/paired-ttest-sample-size';
+      return 'http://localhost:5000/sample_size/api/paired-ttest-sample-size';
     case 'anova-sample-size':
-      return 'http://100.111.65.109:5000/sample_size/api/anova-sample-size';
+      return 'http://localhost:5000/sample_size/api/anova-sample-size';
     case 'chi-square-sample-size':
-      return 'http://100.111.65.109:5000/sample_size/api/chi-square-sample-size';
+      return 'http://localhost:5000/sample_size/api/chi-square-sample-size';
     default:
       return '';
   }

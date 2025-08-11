@@ -12,6 +12,7 @@ export const exporters = {
   regressionLeastSquare: 'least-square',
   regressionRidge: 'ridge',
   regressionForwardStepwise: 'forward-stepwise',
+  regressionBackwardStepwise: 'backward-stepwise',
   descriptiveStat: 'basic-statistics-column-wise',
   openDevTools: 'open-dev-tools',
   estimationOfModule: 'estimation-of-module',

@@ -17,6 +17,7 @@ import { useActiveNode } from '@hooks';
 import { useTranslation } from 'react-i18next';
 import { useRunHistoryClasses } from '../styles-hook/use-run-history-style';
 import { useFetchOutput } from '../hooks/use-fetch-output';
+import { friendlyTitleForOutput } from '../utils/title';
 import { HistoryListRender } from './list-item';
 import { IoCloseOutline } from 'react-icons/io5';
 import { CiSearch } from 'react-icons/ci';
@@ -38,9 +39,10 @@ const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
   const { setRenderLatestRun, renderLatestRun } = useStartProStore();
   useEffect(() => {
     if (Array.isArray(data)) {
-      history.setTotalRuns(data.length);
-      if (renderLatestRun || ((!selectedID || selectedID === 0) && data.length > 0)) {
-        history.selectedRun(data[0]?.id, data[0]?.outputFor);
+        history.setTotalRuns(data.length);
+        if (renderLatestRun || ((!selectedID || selectedID === 0) && data.length > 0)) {
+          const nice = friendlyTitleForOutput(data[0]?.outputType, data[0]?.outputFor);
+          history.selectedRun(data[0]?.id, nice);
         setRenderLatestRun(false);
       }
     }

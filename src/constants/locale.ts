@@ -5,7 +5,7 @@ export const DEFAULT_PAGES = [50, 100, 200, 500, 1000];
 export const DEFAULT_OUTPUT_TABLE_PAGE_SIZE = 500;
 export const SLEEP_TIMEOUT = 60000; // 10000 ms = 10 seconds
 export const API = {
-  backendURL: VITE_API,
+  backendURL: VITE_API || 'http://localhost:5000',
   analysis: 'receive-json',
 };
 export const DECIMAL_PLACES = 7;

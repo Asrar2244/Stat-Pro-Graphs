@@ -39,6 +39,11 @@ const ForwardStepwiseRegression = lazy(() =>
     default: modules.ForwardStepwiseRegression,
   }))
 );
+const BackwardStepwiseRegression = lazy(() =>
+  import('./analyze/regression/linear/backward-stepwise').then((modules) => ({
+    default: modules.BackwardStepwiseRegression,
+  }))
+);
 
 interface IOutputSelection extends IToolBar {
   id: number;
@@ -47,6 +52,7 @@ interface IOutputSelection extends IToolBar {
 const load: any = {
   regLinearLeastSquare: <LinearLeastSquareRegression />,
   regLinearForwardStepwise: <ForwardStepwiseRegression />,
+  regLinearBackwardStepwise: <BackwardStepwiseRegression />,
   regLinearRidge: <LinearRidgeRegression />,
   estimationOfModules: <EstimationOfModule />,
   pairwiseComparisonModules: <PairwiseComparisonOfModules />,

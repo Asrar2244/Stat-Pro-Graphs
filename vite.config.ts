@@ -34,7 +34,7 @@ export default defineConfig(async () => ({
     // 4. Add proxy to handle CORS issues
     proxy: {
       '/api': {
-        target: 'http://100.111.65.109:5000',
+        target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {
@@ -50,19 +50,19 @@ export default defineConfig(async () => ({
         },
       },
       '/sample_size': {
-        target: 'http://100.111.65.109:5000',
+        target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
       },
       // Add proxy for 127.0.0.1 as well
       '/api-127': {
-        target: 'http://100.111.65.109:5000',
+        target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api-127/, '/api'),
       },
       '/sample_size-127': {
-        target: 'http://100.111.65.109:5000',
+        target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/sample_size-127/, '/sample_size'),

@@ -10,6 +10,7 @@ export const analysisOptions: TestOption[] = [
         { label: 'Least Squares', value: 'leastSquares', execute: 'least-square' },
         { label: 'Ridge', value: 'ridge', execute: 'ridge' },
         { label: 'Forward Stepwise', value: 'forwardStepwise', execute: 'forward-stepwise' },
+        { label: 'Backward Stepwise', value: 'backwardStepwise', execute: 'backward-stepwise' },
       ] },
     ],
   },
