@@ -8,6 +8,7 @@ export const friendlyTitleForOutput = (
     regLinearRidge: 'Regression: Linear: Ridge',
     regLinearForwardStepwise: 'Regression: Linear: Forward Stepwise',
     regLinearBackwardStepwise: 'Regression: Linear: Backward Stepwise',
+    regLinearStepwise: 'Regression: Linear: Stepwise',
     descriptiveStatistics: 'Descriptive Statistics',
     estimationOfModules: 'Analysis of Variance: Estimation of Module',
     pairwiseComparisonModules: 'Analysis of Variance: Pairwise Comparison',

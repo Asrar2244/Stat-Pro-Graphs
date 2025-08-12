@@ -13,6 +13,7 @@ export const exporters = {
   regressionRidge: 'ridge',
   regressionForwardStepwise: 'forward-stepwise',
   regressionBackwardStepwise: 'backward-stepwise',
+  regressionStepwise: 'stepwise',
   descriptiveStat: 'basic-statistics-column-wise',
   openDevTools: 'open-dev-tools',
   estimationOfModule: 'estimation-of-module',

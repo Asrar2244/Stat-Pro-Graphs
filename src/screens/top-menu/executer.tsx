@@ -33,6 +33,9 @@ const ForwardStepwise = lazy(() =>
 const BackwardStepwise = lazy(() =>
   import('./analyze').then((module) => ({ default: module.BackwardStepwiseModule }))
 );
+const Stepwise = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.StepwiseModule }))
+);
 
 export const withMenuEvents = <P extends object>(
   translationNs: string,
@@ -94,6 +97,8 @@ const MenuSelector: FC<{
         return <ForwardStepwise {...modal} />;
       case exporters.regressionBackwardStepwise:
         return <BackwardStepwise {...modal} />;
+      case exporters.regressionStepwise:
+        return <Stepwise {...modal} />;
       case exporters.descriptiveStat:
         return <DescriptiveStatistics {...modal} />;
       case exporters.estimationOfModule:

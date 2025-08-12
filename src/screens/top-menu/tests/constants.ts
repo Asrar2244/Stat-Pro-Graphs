@@ -11,6 +11,7 @@ export const analysisOptions: TestOption[] = [
         { label: 'Ridge', value: 'ridge', execute: 'ridge' },
         { label: 'Forward Stepwise', value: 'forwardStepwise', execute: 'forward-stepwise' },
         { label: 'Backward Stepwise', value: 'backwardStepwise', execute: 'backward-stepwise' },
+        { label: 'Stepwise', value: 'stepwise', execute: 'stepwise' },
       ] },
     ],
   },

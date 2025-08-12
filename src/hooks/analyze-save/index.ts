@@ -96,13 +96,17 @@ export const useAnalyzeSave = () => {
           throw new Error(response.error);
         }
 
-        // Inject outputType for stepwise regression (forward/backward)
+        // Inject outputType for stepwise regression (forward/backward/stepwise)
         if (
           (parameters?.regressionType === 'linear' || parameters?.regressionType === 'linear_db') &&
           (parameters?.linearparameters?.estimation === 'stepwise' || parameters?.estimationparameters?.estimation_type === 'stepwise')
         ) {
           const direction = parameters?.linearparameters?.direction || 'forward';
-          response.outputType = direction === 'backward' ? 'regLinearBackwardStepwise' : 'regLinearForwardStepwise';
+          if (otherParameters.queueType === 'regLinearStepwise') {
+            response.outputType = 'regLinearStepwise';
+          } else {
+            response.outputType = direction === 'backward' ? 'regLinearBackwardStepwise' : 'regLinearForwardStepwise';
+          }
         }
 
         outputUpdateResult(dbName, [JSON.stringify(response), outputId])
