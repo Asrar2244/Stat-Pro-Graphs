@@ -12,6 +12,8 @@ export const analysisOptions: TestOption[] = [
         { label: 'Forward Stepwise', value: 'forwardStepwise', execute: 'forward-stepwise' },
         { label: 'Backward Stepwise', value: 'backwardStepwise', execute: 'backward-stepwise' },
         { label: 'Stepwise', value: 'stepwise', execute: 'stepwise' },
+        { label: 'Best Subset', value: 'bestSubset', execute: 'best-subset' },
+        { label: 'Multiple Linear', value: 'multipleLinear', execute: 'multiple-linear' },
       ] },
     ],
   },

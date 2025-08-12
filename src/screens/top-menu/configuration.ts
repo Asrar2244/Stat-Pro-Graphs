@@ -14,6 +14,8 @@ export const exporters = {
   regressionForwardStepwise: 'forward-stepwise',
   regressionBackwardStepwise: 'backward-stepwise',
   regressionStepwise: 'stepwise',
+  regressionBestSubset: 'best-subset',
+  regressionMultipleLinear: 'multiple-linear',
   descriptiveStat: 'basic-statistics-column-wise',
   openDevTools: 'open-dev-tools',
   estimationOfModule: 'estimation-of-module',

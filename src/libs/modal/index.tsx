@@ -64,7 +64,7 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
   const classes = useModalLayout();
   if (!open) return null;
   return (
-    <Dialog open={open} onOpenChange={closeModal} {...others}>
+    <Dialog open={open} onOpenChange={(event, data) => data.open === false && closeModal()} {...others}>
       <DialogSurface style={{ maxWidth: sizeConversion(size), width: 'fit-content' }}>
         {showTitle && (
           <div className={classes.header}>

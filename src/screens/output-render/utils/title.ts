@@ -9,6 +9,8 @@ export const friendlyTitleForOutput = (
     regLinearForwardStepwise: 'Regression: Linear: Forward Stepwise',
     regLinearBackwardStepwise: 'Regression: Linear: Backward Stepwise',
     regLinearStepwise: 'Regression: Linear: Stepwise',
+    regLinearBestSubset: 'Regression: Linear: Best Subset',
+    regLinearMultipleLinear: 'Regression: Linear: Multiple Linear',
     descriptiveStatistics: 'Descriptive Statistics',
     estimationOfModules: 'Analysis of Variance: Estimation of Module',
     pairwiseComparisonModules: 'Analysis of Variance: Pairwise Comparison',

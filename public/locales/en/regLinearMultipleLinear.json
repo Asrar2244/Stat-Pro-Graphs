@@ -1,0 +1,22 @@
+{
+  "title": "Regression: Linear: Multiple Linear Regression",
+  "ok": "Ok",
+  "selectAll": "Select all",
+  "close": "Cancel",
+  "model": "Model",
+  "estimation": "Estimation",
+  "options": "Options",
+  "output": "Output",
+  "availableVar": "Available Variable(s)",
+  "dependent": "Dependent Variable(s)",
+  "includeConst": "Include Constant",
+  "independent": "Independent Variable(s)",
+  "sendToDependent": "Dependent's",
+  "sendToIndependent": "Independent's",
+  "save": "Save",
+  "cases": "Cases",
+  "removeFromDependent": "Remove from dependent",
+  "removeFromIndependent": "Remove from independent",
+  "confidence_level": "Confidence Level",
+  "vif_threshold": "VIF Threshold"
+}

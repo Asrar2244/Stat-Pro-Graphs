@@ -109,6 +109,22 @@ export const useAnalyzeSave = () => {
           }
         }
 
+        // Inject outputType for best subset regression
+        if (
+          parameters?.regressionType === 'linear' &&
+          parameters?.estimationparameters?.estimation_type === 'bestsubset'
+        ) {
+          response.outputType = 'regLinearBestSubset';
+        }
+
+        // Inject outputType for multiple linear regression
+        if (
+          parameters?.regressionType === 'linear' &&
+          parameters?.sub_type === 'multiple_linear_regression'
+        ) {
+          response.outputType = 'regLinearMultipleLinear';
+        }
+
         outputUpdateResult(dbName, [JSON.stringify(response), outputId])
           .then(() => {
             const { isEmptyDataView } = config;

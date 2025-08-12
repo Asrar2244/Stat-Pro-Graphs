@@ -49,6 +49,16 @@ const StepwiseRegression = lazy(() =>
     default: modules.StepwiseRegression,
   }))
 );
+const BestSubsetRegression = lazy(() =>
+  import('./analyze/regression/linear/best-subset').then((modules) => ({
+    default: modules.BestSubsetRegression,
+  }))
+);
+const MultipleLinearRegression = lazy(() =>
+  import('./analyze/regression/linear/multiple-linear').then((modules) => ({
+    default: modules.MultipleLinearRegression,
+  }))
+);
 
 interface IOutputSelection extends IToolBar {
   id: number;
@@ -59,6 +69,8 @@ const load: any = {
   regLinearForwardStepwise: <ForwardStepwiseRegression />,
   regLinearBackwardStepwise: <BackwardStepwiseRegression />,
   regLinearStepwise: <StepwiseRegression />,
+  regLinearBestSubset: <BestSubsetRegression />,
+  regLinearMultipleLinear: <MultipleLinearRegression />,
   regLinearRidge: <LinearRidgeRegression />,
   estimationOfModules: <EstimationOfModule />,
   pairwiseComparisonModules: <PairwiseComparisonOfModules />,

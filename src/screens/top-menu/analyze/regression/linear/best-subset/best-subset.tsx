@@ -5,7 +5,7 @@ import { IModal, useActiveNode } from '@hooks';
 import { Model } from './model';
 import { useShallow } from 'zustand/react/shallow';
 import { useColumnsRowsCount } from '../../../../../table-render/use-column-count';
-import { useLinearLeastSquares } from './use-squares-hook';
+import { useBestSubset } from './use-best-subset-hook';
 import { usePrepareAnalysis } from './use-anayse-hook';
 import { useTranslation } from 'react-i18next';
 import { useStartProStore } from '@store/main-store';
@@ -13,7 +13,7 @@ import { Estimation } from './estimation';
 import { useModelStyle } from '../forward-stepwise/styles-hook/use-model-style';
 
 const useClasses = makeStyles({
-  leastSqrWrapper: {
+  bestSubsetWrapper: {
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
@@ -23,11 +23,11 @@ const useClasses = makeStyles({
   },
 });
 
-const StepwiseComponent: FC<IModal> = ({ ...props }) => {
-  const { t } = useTranslation('regLinearStepwise');
+const BestSubsetComponent: FC<IModal> = ({ ...props }) => {
+  const { t } = useTranslation('regLinearBestSubset');
   const classes = useClasses();
   const modelClasses = useModelStyle();
-  const { setReset } = useLinearLeastSquares(
+  const { setReset } = useBestSubset(
     useShallow((state) => ({
       setReset: state.setReset,
     })),
@@ -42,8 +42,8 @@ const StepwiseComponent: FC<IModal> = ({ ...props }) => {
   const { executeAnalysis } = usePrepareAnalysis({
     config,
     columns,
-    queueFor: t('title', { ns: 'regLinearStepwise' }),
-    queueType: 'regLinearStepwise',
+    queueFor: t('title', { ns: 'regLinearBestSubset' }),
+    queueType: 'regLinearBestSubset',
   });
 
   const onCloseModal = (): void => {
@@ -65,16 +65,16 @@ const StepwiseComponent: FC<IModal> = ({ ...props }) => {
       key={id}
       modalType="alert"
       {...props}
-      cancelLabel={t('close', { ns: 'regLinearStepwise' })}
-      okLabel={t('ok', { ns: 'regLinearStepwise' })}
-      title={t('title', { ns: 'regLinearStepwise' })}
+      cancelLabel={t('close', { ns: 'regLinearBestSubset' })}
+      okLabel={t('ok', { ns: 'regLinearBestSubset' })}
+      title={t('title', { ns: 'regLinearBestSubset' })}
       size="medium"
       showCancel={!id || id === '' ? false : true}
       closeModal={onCloseModal}
       ok={{ onClick: onOkModal }}
     >
       <div
-        className={classes.leastSqrWrapper}
+        className={classes.bestSubsetWrapper}
         style={{
           overflowY: 'auto',
           maxHeight: '60vh',
@@ -83,8 +83,8 @@ const StepwiseComponent: FC<IModal> = ({ ...props }) => {
         }}
       >
         <style>{`
-          .${classes.leastSqrWrapper}::-webkit-scrollbar { width: 8px; background: #fff; }
-          .${classes.leastSqrWrapper}::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 4px; }
+          .${classes.bestSubsetWrapper}::-webkit-scrollbar { width: 8px; background: #fff; }
+          .${classes.bestSubsetWrapper}::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 4px; }
         `}</style>
         {!id || id === '' ? (
           <NoIdSelected />
@@ -105,4 +105,4 @@ const StepwiseComponent: FC<IModal> = ({ ...props }) => {
   );
 };
 
-export { StepwiseComponent };
+export { BestSubsetComponent };

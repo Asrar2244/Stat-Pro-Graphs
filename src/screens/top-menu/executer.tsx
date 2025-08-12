@@ -36,6 +36,12 @@ const BackwardStepwise = lazy(() =>
 const Stepwise = lazy(() =>
   import('./analyze').then((module) => ({ default: module.StepwiseModule }))
 );
+const BestSubset = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.BestSubsetModule }))
+);
+const MultipleLinear = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.MultipleLinearModule }))
+);
 
 export const withMenuEvents = <P extends object>(
   translationNs: string,
@@ -99,6 +105,10 @@ const MenuSelector: FC<{
         return <BackwardStepwise {...modal} />;
       case exporters.regressionStepwise:
         return <Stepwise {...modal} />;
+      case exporters.regressionBestSubset:
+        return <BestSubset {...modal} />;
+      case exporters.regressionMultipleLinear:
+        return <MultipleLinear {...modal} />;
       case exporters.descriptiveStat:
         return <DescriptiveStatistics {...modal} />;
       case exporters.estimationOfModule:
