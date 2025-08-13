@@ -1,0 +1,242 @@
+{
+  "tables": [
+    {
+      "name": "multiple-linear-inputs",
+      "showCaption": false,
+      "showHeaders": false,
+      "view": [
+        [ "t-dependent_var_names", "dependent_var_names" ],
+        [ "t-independent_var_names", "independent_var_names" ],
+        [ "t-dependent_variables_len", "dependent_variables_len" ],
+        [ "t-MultipleR", "MultipleR" ],
+        [ "t-SquaredMultipleR", "SquaredMultipleR" ],
+        [ "t-AdjustedSquaredMultiple_R", "AdjustedSquaredMultiple_R" ],
+        [ "t-Standard_Error_of_Estimate", "Standard_Error_of_Estimate" ],
+        [ "t-dw_statistic", "dw_statistic" ],
+        [ "t-autocorrelation", "autocorrelation" ],
+        [ "t-AIC", "AIC" ],
+        [ "t-corrected_AIC", "corrected_AIC" ],
+        [ "t-Schwarzs_BIC", "Schwarzs_BIC" ]
+      ]
+    },
+    {
+      "name": "multiple-linear-statics",
+      "showCaption": false,
+      "showHeaders": true,
+      "view": [
+        [ "", "t-test_stat", "t-p_value" ],
+        [ "t-ks_stat", "ks_stat", "ks_p_value" ],
+        [ "t-shapiro_stat", "shapiro_stat", "shapiro_p_value" ]
+      ]
+    },
+    {
+      "name": "andersonDarlingStatistics",
+      "showCaption": true,
+      "showHeaders": false,
+      "view": [
+        [ "t-anderson_stat", "anderson_stat" ],
+        [ "t-anderson_critical_values", "anderson_critical_values" ],
+        [ "t-anderson_significance_level", "anderson_significance_level" ]
+      ]
+    },
+    {
+      "name": "Regression Coefficients B = (X'X)-1X'Y",
+      "showHeaders": true,
+      "showCaption": false,
+      "view": [
+        "t-results.effect",
+        "t-results.coefficeint",
+        "t-results.bse",
+        "t-results.tvalues",
+        "t-results.pvalues"
+      ],
+      "recordType": true
+    },
+    {
+      "name": "VIF (Variance Inflation Factor)",
+      "showHeaders": true,
+      "showCaption": true,
+      "view": [
+        "t-results.vif"
+      ],
+      "recordType": true
+    },
+    {
+      "name": "lcl-lpl-ucl-upl",
+      "showHeaders": true,
+      "showCaption": true,
+      "view": [ "t-lcl", "t-lpl", "t-ucl", "t-upl" ],
+      "recordType": {
+        "pageSize": 500
+      }
+    },
+    {
+      "name": "other-data",
+      "showHeaders": false,
+      "showCaption": false,
+      "view": [
+        [ "t-dw_statistic", "dw_statistic" ],
+        [ "t-fvalue", "fvalue" ],
+        [ "t-AIC", "AIC" ],
+        [ "t-corrected_AIC", "corrected_AIC" ],
+        [ "t-Schwarzs_BIC", "Schwarzs_BIC" ]
+      ]
+    },
+    {
+      "name": "outlierData",
+      "showHeaders": true,
+      "showCaption": true,
+      "type": "columns",
+      "appendColumn": [ "outlier_const" ],
+      "prefix": "outlier_",
+      "view": [ "independent_var_names", "dependent_var_names" ],
+      "recordType": {
+        "pageSize": 500
+      }
+    }
+  ],
+  "graph": [
+    {
+      "traces": {
+        "traces1": {
+          "x": "dependent_var_names",
+          "y": "independent_var_names",
+          "type": "scatter",
+          "mode": "lines+markers"
+        }
+      },
+      "layout": {
+        "xaxis": {
+          "tickformat": ".4s"
+        },
+        "yaxis": {
+          "tickformat": ".4s"
+        }
+      },
+      "multipleTraces": {
+        "commonAxis": "x"
+      },
+      "supportedGraph": [
+        "lines",
+        "markers",
+        "text",
+        "lines+markers",
+        "text+markers",
+        "text+lines",
+        "text+lines+markers",
+        "none",
+        "gauge",
+        "number",
+        "delta",
+        "number+delta",
+        "gauge+number",
+        "gauge+number+delta",
+        "gauge+delta"
+      ],
+      "download": [
+        {
+          "format": "png",
+          "description": "pngFormat"
+        },
+        {
+          "format": "jpeg",
+          "description": "jpegFormat"
+        },
+        {
+          "format": "svg",
+          "description": "svgFormat"
+        },
+        {
+          "format": "webp",
+          "description": "webpFormat"
+        }
+      ]
+    },
+    {
+      "name": "linear-lms",
+      "traces": {
+        "traces1": {
+          "x": "dependent_var_names",
+          "y": "lcl",
+          "dynamicTableColumns": [ "lcl" ],
+          "type": "scatter",
+          "mode": "markers"
+        },
+        "traces2": {
+          "x": "dependent_var_names",
+          "y": "upl",
+          "dynamicTableColumns": [ "upl" ],
+          "type": "scatter",
+          "mode": "lines+markers"
+        },
+        "traces3": {
+          "x": "dependent_var_names",
+          "y": "Estimate",
+          "dynamicTableColumns": [ "Estimate" ],
+          "type": "scatter",
+          "mode": "lines+markers"
+        },
+        "traces4": {
+          "x": "dependent_var_names",
+          "y": "ucl",
+          "dynamicTableColumns": [ "ucl" ],
+          "type": "scatter",
+          "mode": "lines+markers"
+        },
+        "traces5": {
+          "x": "dependent_var_names",
+          "y": "lpl",
+          "dynamicTableColumns": [ "lpl" ],
+          "type": "scatter",
+          "mode": "lines+markers"
+        }
+      },
+      "multipleTraces": {
+        "commonAxis": "x"
+      },
+      "layout": {
+        "xaxis": {
+          "tickformat": ".4s"
+        },
+        "yaxis": {
+          "tickformat": ".4s"
+        }
+      },
+      "supportedGraph": [
+        "lines",
+        "markers",
+        "text",
+        "lines+markers",
+        "text+markers",
+        "text+lines",
+        "text+lines+markers",
+        "none",
+        "gauge",
+        "number",
+        "delta",
+        "number+delta",
+        "gauge+number",
+        "gauge+number+delta",
+        "gauge+delta"
+      ],
+      "download": [
+        {
+          "format": "png",
+          "description": "pngFormat"
+        },
+        {
+          "format": "jpeg",
+          "description": "jpegFormat"
+        },
+        {
+          "format": "svg",
+          "description": "svgFormat"
+        },
+        {
+          "format": "webp",
+          "description": "webpFormat"
+        }
+      ]
+    }
+  ]
+}

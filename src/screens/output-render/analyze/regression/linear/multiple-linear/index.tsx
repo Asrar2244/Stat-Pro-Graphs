@@ -2,7 +2,7 @@ import { FC, useContext } from 'react';
 import { OutputRenderContext } from '../../../../context';
 import { useRegressions } from '../../../../styles-hook/use-regressions-style';
 import { CardTableRender, GraphPlot } from '@libs';
-import configurations from '../least-square/configuration/least-square-config.json';
+import configurations from './configuration/multiple-linear-config.json';
 import { useTranslation } from 'react-i18next';
 import { ITableCreator, IGraph } from '@utils';
 import { useGraphConfig } from '@hooks';
@@ -50,10 +50,7 @@ export const MultipleLinearRegression: FC = () => {
           dbTableName={result?.output_table_name as string}
         />
       ))}
-      <div>
-        <h4>Raw Output</h4>
-        <pre>{JSON.stringify(result, null, 2)}</pre>
-      </div>
+
     </div>
   );
 };
