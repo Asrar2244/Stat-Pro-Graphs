@@ -46,6 +46,24 @@ export const usePrintReport = () => {
         return;
       }
 
+      // Read toolbar title exactly as shown (left side of toolbar)
+      const computeToolbarTitle = (): string | null => {
+        try {
+          const toolsEl = document.querySelector('.output-tools');
+          const titleContainer = toolsEl?.previousElementSibling as HTMLElement | null;
+          if (!titleContainer) return null;
+          const mainTitle = (titleContainer.childNodes[0]?.textContent || '').trim();
+          const small = titleContainer.querySelector('small');
+          const sub = (small?.textContent || '').trim();
+          if (mainTitle && sub) return `${mainTitle} ${sub}`; // matches "X @: Y"
+          if (mainTitle) return mainTitle;
+          return null;
+        } catch {
+          return null;
+        }
+      };
+      const toolbarTitle = computeToolbarTitle();
+
       // 🚀 Get all existing stylesheets
       const allStyles = getAllStylesheets();
 
@@ -87,6 +105,13 @@ export const usePrintReport = () => {
                 font-size: 12pt;
                 color: #666;
                 margin-bottom: 20px;
+              }
+              .print-subtitle {
+                font-size: 13pt;
+                color: #333;
+                margin-top: -6px;
+                margin-bottom: 4px;
+                font-weight: 500;
               }
               
                              .print-section {
@@ -387,6 +412,7 @@ export const usePrintReport = () => {
           <body>
             <div class="print-header">
               <div class="print-title">${context?.selectedRun?.outputFor || 'Statistical Analysis'} - Report</div>
+              ${toolbarTitle ? `<div class=\"print-subtitle\">${toolbarTitle}</div>` : (context?.selectedRun?.tabName ? `<div class=\"print-subtitle\">${context?.selectedRun?.outputFor || ''}: ${context?.selectedRun?.tabName}</div>` : '')}
               <div class="print-date">Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</div>
             </div>
       `;
