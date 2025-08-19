@@ -7,7 +7,9 @@ import {
   Slider,
   CounterBadge,
 } from '@fluentui/react-components';
-import { FC, memo } from 'react';
+import { FC, memo, useState } from 'react';
+import { PrintButton } from './print-report/components/print-button';
+import { PrintReportModal } from './print-report/components/print-report-modal';
 import { MdOutlineFormatBold } from 'react-icons/md';
 import { CgFormatColor } from 'react-icons/cg';
 import { RxFontSize, RxFontItalic } from 'react-icons/rx';
@@ -23,6 +25,7 @@ const ToolBarComponent: FC<{ tools: ITools; title?: string; subTitle?: string }>
   subTitle,
 }) => {
   const { t } = useTranslation('outputToolBar');
+  const [showPrintModal, setShowPrintModal] = useState(false);
   const classes = useToolsStyle();
   return (
     <div className={classes['output-band']}>
@@ -38,6 +41,9 @@ const ToolBarComponent: FC<{ tools: ITools; title?: string; subTitle?: string }>
       </div>
       <div className="output-tools">
         <ul>
+          <li>
+            <PrintButton onClick={() => setShowPrintModal(true)} />
+          </li>
           <li className={tools.fontBold ? 'selected' : ''}>
             <Tooltip content={t('bold')} relationship="label" withArrow>
               <Button
@@ -103,6 +109,7 @@ const ToolBarComponent: FC<{ tools: ITools; title?: string; subTitle?: string }>
           </li>
         </ul>
       </div>
+      <PrintReportModal open={showPrintModal} closeModal={() => setShowPrintModal(false)} />
     </div>
   );
 };

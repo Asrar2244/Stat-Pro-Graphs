@@ -7,5 +7,12 @@
   "fontSize": "Font Size",
   "fontColor": "Font Color",
   "executedOn": "Executed on",
-  "searchQuery": "Search your query"
+  "searchQuery": "Search your query",
+  "printReport": "Print Report",
+  "generateReport": "Generate Report",
+  "cancel": "Cancel",
+  "selectAll": "Select All",
+  "deselectAll": "Deselect All",
+  "noSectionsSelected": "Please select at least one section to print.",
+  "noSectionsFound": "No printable sections found in the current output."
 }
