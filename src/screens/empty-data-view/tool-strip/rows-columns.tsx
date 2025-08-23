@@ -18,7 +18,6 @@ const RowsColumnsComponent = () => {
     setNoColumns(e.target.value);
   };
   const updateData = (noOfRows: number = 0, noOfColumns: number = 0) => {
-    console.log('data==>', noOfRows, noOfColumns);
     if (setData) {
       if (noOfRows === 0 && noOfColumns > 0) {
         setData(
@@ -38,7 +37,6 @@ const RowsColumnsComponent = () => {
         }
       }
 
-      console.log('data==>', JSON.stringify(data));
       setData([...data]);
     }
   };
@@ -55,13 +53,21 @@ const RowsColumnsComponent = () => {
         </div>
         <div className={classes.noOfRowsColumns}>
           <Field label={t('noOfRows')} size="small">
-            <Input type="number" step={1} min={0} value={noRows} onChange={onHandlerRowChange} />
+            <Input
+              type="number"
+              step={1}
+              min={0}
+              value={noRows}
+              max={1000}
+              onChange={onHandlerRowChange}
+            />
           </Field>
           <Field label={t('noOfColumns')} size="small">
             <Input
               type="number"
               step={1}
               min={0}
+              max={1000}
               value={noColumns}
               onChange={onHandlerColumnChange}
             />
