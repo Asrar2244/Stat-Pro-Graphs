@@ -22,10 +22,28 @@ import { API } from '@constants';
 import { CONFIGURATION_DB } from '@constants';
 import { insertIntoProject } from '@backend';
 import { useBrowseLayout } from './styles-hook/use-browse-style';
+import { faker } from '@faker-js/faker';
+const createRandomUser = (): string => {
+  const animalGenerators = [
+    faker.animal.bird,
+    faker.animal.cat,
+    faker.animal.dog,
+    faker.animal.snake,
+    faker.animal.bear,
+    faker.animal.lion,
+    faker.animal.cow,
+    faker.animal.horse,
+    faker.animal.fish,
+    faker.animal.insect,
+    faker.animal.rabbit,
+  ];
+  const randomFn = faker.helpers.arrayElement(animalGenerators);
+  return randomFn();
+};
 
 export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   const [file, setFile] = useState<string | undefined>(undefined);
-  const [projectName, setProjectName] = useState<string | undefined>(undefined);
+  const [projectName, setProjectName] = useState<string | undefined>(createRandomUser);
   const [selectedSheet, setSelectedSheet] = useState<string>('');
   const [projectExists, setProjectExists] = useState<boolean | undefined>(undefined);
   const [fileSize, setFileSize] = useState<number>(0);
