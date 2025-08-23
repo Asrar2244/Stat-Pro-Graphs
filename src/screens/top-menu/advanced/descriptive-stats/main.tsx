@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from 'react';
-import { ListCheckboxWithSelectAll } from '@libs';
+import { ListCheckboxWithSelectAll, Fieldset } from '@libs';
 import { useTranslation } from 'react-i18next';
 import { useMainStyles } from './styles-hook/use-column';
 import { Button, Tooltip } from '@fluentui/react-components';
@@ -11,22 +11,17 @@ import { useShallow } from 'zustand/react/shallow';
 export const Main: React.FC = () => {
   const classes = useMainStyles();
   const { t } = useTranslation(['descriptiveStatistics']);
-  const [isSelected, setIsSelected] = useState<boolean>(false);
-  const onClickSelected = (): void => {
-    setIsSelected(!isSelected);
-  };
+
   return (
     <div className={classes.mainLayout} data-testid="mainLayout">
-      <div className={classes.selector} data-testid="selector">
-        <div className={!isSelected ? 'selected' : ''} onClick={onClickSelected}>
-          <span>{t("Available")}</span>
-        </div>
-        <div className={isSelected ? 'selected' : ''} onClick={onClickSelected}>
-          <span>{t("Selected")}</span>
-        </div>
-      </div>
-      {!isSelected ? <AvailableListRender /> : <MainListRender />}
+      <Fieldset title={t('available')} className='title'>
+        <AvailableListRender />
+      </Fieldset>
+      <Fieldset title={t('dependent')} className='title'>
+        <MainListRender />
+      </Fieldset>
     </div>
+
   );
 };
 
