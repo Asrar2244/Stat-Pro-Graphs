@@ -6,19 +6,19 @@ export const useCommonStyles = makeStyles({
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
     '& .details': {
-      height: '58vh',
+      height: '40vh',
     },
     '& .select-size': {
-      width: "max-content"
+      width: 'max-content',
     },
     '& .section-available': {
-      paddingTop: "12px",
+      paddingTop: '12px',
       marginLeft: 0,
-      flex: 1
+      flex: 1,
     },
     '& .title': {
       display: 'flex',
-      flex: 1
-    }
+      flex: 1,
+    },
   },
 });

@@ -2,21 +2,17 @@ import { makeStyles, tokens, shorthands } from '@fluentui/react-components';
 
 export const useMainStyles = makeStyles({
   mainLayout: {
+    gap: tokens.spacingHorizontalM,
     display: 'flex',
     flexDirection: 'row',
-    // width: "100%",
-    flex: 1,
-    height: "95%",
-    gap: tokens.spacingHorizontalM,
-    ...shorthands.padding(tokens.spacingHorizontalM),
-    "& .section-available": {
-      height: "100%",
-      width: "80%",
-      marginLeft: "12px",
-      "> div:first-child": {
-        height: "43vh"
-      }
-    }
+    justifyContent: 'space-between',
+    alignContent: 'center',
+    justifyItems: 'center',
+    marginTop: '1em',
+    '& fieldset': {
+      minWidth: '30em',
+    },
+    // ...shorthands.padding(tokens.spacingHorizontalM),
   },
   list: {
     height: '90%',
@@ -25,6 +21,7 @@ export const useMainStyles = makeStyles({
     display: 'flex',
     justifyContent: 'flex-end',
     width: '100%',
+    marginTop: '1em',
     '& button': {
       backgroundColor: tokens.colorPaletteGreenBackground3,
       color: tokens.colorNeutralStrokeInvertedDisabled,
@@ -34,6 +31,7 @@ export const useMainStyles = makeStyles({
     display: 'flex',
     justifyContent: 'flex-end',
     width: '100%',
+    marginTop: '1em',
     '& button': {
       backgroundColor: tokens.colorPaletteRedBackground3,
       color: tokens.colorNeutralStrokeInvertedDisabled,
@@ -70,7 +68,7 @@ export const useMainStyles = makeStyles({
       ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke1),
     },
   },
-  fieldSet: { marginLeft: "16px" },
+  fieldSet: { marginLeft: '16px' },
   item: {
     display: 'flex',
     flexDirection: 'row',
@@ -98,5 +96,15 @@ export const useMainStyles = makeStyles({
     ...shorthands.padding(0),
     ...shorthands.margin(0),
     ...shorthands.border(0),
+  },
+  selectorWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignContent: 'center',
+    justifyItems: 'center',
+  },
+  availableList: {
+    height: '32vh',
   },
 });

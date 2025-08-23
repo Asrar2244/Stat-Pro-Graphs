@@ -27,8 +27,9 @@ const useClasses = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
+    width: '65em',
     '& .details': {
-      height: '53vh',
+      height: '42vh',
     },
   },
 });
