@@ -2,18 +2,28 @@ import { FC, useContext } from 'react';
 import { OutputRenderContext } from '../../../../context';
 import { useRegressions } from '../../../../styles-hook/use-regressions-style';
 import { CardTableRender, GraphPlot } from '@libs';
-import configurations from './configuration/best-subset-config.json';
+import configurations from './configuration/polynomial-config.json';
 import { useTranslation } from 'react-i18next';
 import { ITableCreator, IGraph } from '@utils';
 import { useGraphConfig } from '@hooks';
 
-export const BestSubsetRegression: FC = () => {
+export const PolynomialRegression: FC = () => {
   const context = useContext(OutputRenderContext);
   const { t } = useTranslation('reqLinearLeastSquareOutput');
   const classes = useRegressions();
   const graphConfig = useGraphConfig(configurations.graph as any);
   const result = context?.selectedRun?.result;
 
+  // Debug: Log the result data
+  console.log('Polynomial Regression Output Debug:');
+  console.log('Context:', context);
+  console.log('Selected Run:', context?.selectedRun);
+  console.log('Result:', result);
+  console.log('Result type:', typeof result);
+  console.log('Graph config:', graphConfig);
+  console.log('Table config:', configurations.tables);
+
+  // Fallback: if result is a string, display it more prominently
   if (typeof result === 'string') {
     return (
       <div className={classes.regressionsLayout} style={{ padding: 24, color: '#b71c1c', background: '#fff3e0', borderRadius: 8 }}>
@@ -29,20 +39,21 @@ export const BestSubsetRegression: FC = () => {
     );
   }
 
+  // Normal rendering if result is an object
   return (
     <div className={classes.regressionsLayout}>
-      {configurations.tables.map((table) => (
+      {configurations.tables.map((table, index) => (
         <CardTableRender
-          key={table.name}
+          key={`${table.name}-${index}`}
           t={t}
           table={table as ITableCreator}
           dbFileName={context?.selectedRun?.tabName as string}
           dbTableName={result?.output_table_name as string}
         />
       ))}
-      {graphConfig.map((graph: IGraph) => (
+      {graphConfig.map((graph: IGraph, index: number) => (
         <GraphPlot
-          key={graph.name}
+          key={`${graph.name}-${index}`}
           graph={graph as any}
           dbFileName={context?.selectedRun?.tabName as string}
           dbTableName={result?.output_table_name as string}

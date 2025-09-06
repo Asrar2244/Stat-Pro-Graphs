@@ -59,6 +59,11 @@ const MultipleLinearRegression = lazy(() =>
     default: modules.MultipleLinearRegression,
   }))
 );
+const PolynomialRegression = lazy(() =>
+  import('./analyze/regression/linear/polynomial').then((modules) => ({
+    default: modules.PolynomialRegression,
+  }))
+);
 
 interface IOutputSelection extends IToolBar {
   id: number;
@@ -71,6 +76,7 @@ const load: any = {
   regLinearStepwise: <StepwiseRegression />,
   regLinearBestSubset: <BestSubsetRegression />,
   regLinearMultipleLinear: <MultipleLinearRegression />,
+  regLinearPolynomial: <PolynomialRegression />,
   regLinearRidge: <LinearRidgeRegression />,
   estimationOfModules: <EstimationOfModule />,
   pairwiseComparisonModules: <PairwiseComparisonOfModules />,

@@ -5,3 +5,4 @@ export * from './backward-stepwise';
 export * from './stepwise';
 export * from './best-subset';
 export * from './multiple-linear';
+export * from './polynomial';

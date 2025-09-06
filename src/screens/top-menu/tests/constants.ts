@@ -14,6 +14,7 @@ export const analysisOptions: TestOption[] = [
         { label: 'Stepwise', value: 'stepwise', execute: 'stepwise' },
         { label: 'Best Subset', value: 'bestSubset', execute: 'best-subset' },
         { label: 'Multiple Linear', value: 'multipleLinear', execute: 'multiple-linear' },
+        { label: 'Polynomial', value: 'polynomial', execute: 'polynomial' },
       ] },
     ],
   },

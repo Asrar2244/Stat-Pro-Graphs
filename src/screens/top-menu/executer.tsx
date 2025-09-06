@@ -42,6 +42,9 @@ const BestSubset = lazy(() =>
 const MultipleLinear = lazy(() =>
   import('./analyze').then((module) => ({ default: module.MultipleLinearModule }))
 );
+const Polynomial = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.PolynomialModule }))
+);
 
 export const withMenuEvents = <P extends object>(
   translationNs: string,
@@ -109,6 +112,8 @@ const MenuSelector: FC<{
         return <BestSubset {...modal} />;
       case exporters.regressionMultipleLinear:
         return <MultipleLinear {...modal} />;
+      case exporters.regressionPolynomial:
+        return <Polynomial {...modal} />;
       case exporters.descriptiveStat:
         return <DescriptiveStatistics {...modal} />;
       case exporters.estimationOfModule:

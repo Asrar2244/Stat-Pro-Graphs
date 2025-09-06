@@ -57,10 +57,10 @@ export const detectPrintableSections = (root?: HTMLElement): IPrintSection[] => 
     for (const selector of alternativeSelectors) {
       try {
         regressionsContainer = root.querySelector(selector);
-        if (regressionsContainer) {
-          console.log(`📍 Found alternative container using: ${selector}`);
-          console.log(`📍 Container classes: ${(regressionsContainer as HTMLElement).className}`);
-          break;
+      if (regressionsContainer) {
+        console.log(`📍 Found alternative container using: ${selector}`);
+        console.log(`📍 Container classes: ${(regressionsContainer as HTMLElement).className}`);
+        break;
         }
       } catch (error) {
         // Some selectors like :has() might not be supported in all browsers
