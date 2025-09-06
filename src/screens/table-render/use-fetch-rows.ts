@@ -27,7 +27,7 @@ export const useFetchRecords = (tabName: string, pageSize?: number): IFetch => {
       const db = new Database(tabName);
       const result = await db.selectQuery(
         `SELECT * FROM ${EXCEL}
-            LIMIT ${startIndex},${stopIndex}`,
+            LIMIT ${startIndex},${stopIndex - startIndex}`,
       );
       result.unshift({});
       return result;

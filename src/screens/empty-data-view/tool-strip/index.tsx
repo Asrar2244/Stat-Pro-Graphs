@@ -1,7 +1,5 @@
 import {
   Button,
-  Popover,
-  PopoverTrigger,
   Tooltip,
   Spinner,
   Link,
