@@ -31,18 +31,18 @@ export const BestSubsetRegression: FC = () => {
 
   return (
     <div className={classes.regressionsLayout}>
-      {configurations.tables.map((table) => (
+      {configurations.tables.map((table, index) => (
         <CardTableRender
-          key={table.name}
+          key={`${table.name}-${index}`}
           t={t}
           table={table as ITableCreator}
           dbFileName={context?.selectedRun?.tabName as string}
           dbTableName={result?.output_table_name as string}
         />
       ))}
-      {graphConfig.map((graph: IGraph) => (
+      {graphConfig.map((graph: IGraph, index: number) => (
         <GraphPlot
-          key={graph.name}
+          key={`${graph.name}-${index}`}
           graph={graph as any}
           dbFileName={context?.selectedRun?.tabName as string}
           dbTableName={result?.output_table_name as string}

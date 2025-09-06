@@ -1,5 +1,5 @@
 import { DEFAULT_PAGE_SIZE } from '@constants';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type ICallback = (startIndex: number, stopIndex: number) => Promise<void>;
 export interface IPagination {
@@ -26,7 +26,7 @@ export const usePagination = (totalRecords: number, PageDefaultSize?: number): I
   const [pageCount, setPageCount] = useState<number>(0);
   const [startIndex, setStartIndex] = useState<number>(0);
   const [stopIndex, setStopIndex] = useState<number>(0);
-  // const dataLoaderRef = useRef<ICallback>();
+  const dataLoaderRef = useRef<ICallback>();
 
   useEffect(() => {
     let _page = pageSize;
@@ -51,10 +51,18 @@ export const usePagination = (totalRecords: number, PageDefaultSize?: number): I
   }, [currentPage, pageSize]);
 
   const triggerData = (callback: ICallback) => {
+    // store latest callback
+    dataLoaderRef.current = callback;
     if (startIndex !== stopIndex) {
       callback(startIndex, stopIndex);
     }
   };
+  useEffect(() => {
+    if (dataLoaderRef.current && startIndex !== stopIndex) {
+      dataLoaderRef.current(startIndex, stopIndex);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startIndex, stopIndex]);
   const firstPage = (): void => {
     setCurrentPage(1);
   };

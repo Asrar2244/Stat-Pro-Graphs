@@ -1,66 +1,115 @@
 import type { IPrintSection } from '../types';
+import {
+  PRINT_DEBUG,
+  DATA_OUTPUT_ID_ATTR,
+  PRIMARY_LAYOUT_SELECTOR,
+} from './constants';
 
 /**
  * Detect printable sections from the DOM
  */
-export const detectPrintableSections = (): IPrintSection[] => {
-  console.log('🔍 Starting section detection...');
+export const detectPrintableSections = (root?: HTMLElement): IPrintSection[] => {
+  if (PRINT_DEBUG) console.log('🔍 Starting section detection...');
   
   const sections: IPrintSection[] = [];
   
+  if (!root) {
+    console.warn('⚠️ No root element provided for section detection');
+    return sections;
+  }
+  
+  // Verify this is actually an output container
+  const outputId = root.getAttribute(DATA_OUTPUT_ID_ATTR);
+  if (!outputId) {
+    console.warn('⚠️ Root element does not have data-output-id attribute');
+    return sections;
+  }
+  
+  if (PRINT_DEBUG) {
+    console.log(`📍 Searching within output container ID: ${outputId}`);
+    console.log(`📍 Root element classes: ${root.className}`);
+    console.log(`📍 Root element children: ${root.children.length}`);
+    console.log(`📍 Root element HTML preview: ${root.outerHTML.substring(0, 300)}...`);
+  }
+  
   // Strategy 1: Look for the main regressions layout container first
   // This contains all the CardTableRender and GraphPlot components
-  let regressionsContainer = document.querySelector('[class*="regressionsLayout"]');
+  let regressionsContainer: Element | null = null;
+  
+  // Only search within the provided root element
+  regressionsContainer = root.querySelector(PRIMARY_LAYOUT_SELECTOR);
   
   if (!regressionsContainer) {
-    // Try alternative container patterns
+    // Try alternative container patterns within the root
     const alternativeSelectors = [
       'div[class*="regression"]',
       'div[class*="Regression"]',
       'div[class*="layout"]',
-      'div[class*="Layout"]'
+      'div[class*="Layout"]',
+      // Look for any div that might contain cards
+      'div:has(.fui-Card)',
+      // Look for any div with significant content
+      'div:has(table)',
+      'div:has(svg)',
+      'div:has(canvas)'
     ];
     
     for (const selector of alternativeSelectors) {
-      regressionsContainer = document.querySelector(selector);
-      if (regressionsContainer) {
-        console.log(`📍 Found alternative container using: ${selector}`);
-        console.log(`📍 Container classes: ${(regressionsContainer as HTMLElement).className}`);
-        break;
+      try {
+        regressionsContainer = root.querySelector(selector);
+        if (regressionsContainer) {
+          console.log(`📍 Found alternative container using: ${selector}`);
+          console.log(`📍 Container classes: ${(regressionsContainer as HTMLElement).className}`);
+          break;
+        }
+      } catch (error) {
+        // Some selectors like :has() might not be supported in all browsers
+        console.log(`⚠️ Selector not supported: ${selector}`);
+        continue;
       }
     }
   } else {
-    console.log('📍 Found regressions layout container');
+    console.log('📍 Found regressions layout container within root');
     console.log(`📍 Container classes: ${(regressionsContainer as HTMLElement).className}`);
+  }
+  
+  // If still no container found, try a broader search
+  if (!regressionsContainer) {
+    console.log('⚠️ No specific container found, searching for cards directly in root');
+    const cardsInRoot = root.querySelectorAll('.fui-Card');
+    if (cardsInRoot.length > 0) {
+      console.log(`📍 Found ${cardsInRoot.length} cards directly in root`);
+      // Use the root as the container
+      regressionsContainer = root;
+    }
   }
   
   if (regressionsContainer) {
     // Strategy 2: Find FluentUI Card components within the regressions layout
     const cardElements = regressionsContainer.querySelectorAll('.fui-Card');
     
-    console.log(`🔍 Looking for cards in container with ${regressionsContainer.children.length} children`);
-    console.log(`🔍 Container HTML preview: ${regressionsContainer.innerHTML.substring(0, 200)}...`);
+    console.log(`🔍 Looking for cards in container with ${cardElements.length} children`);
+    console.log(`🔍 Container HTML preview: ${regressionsContainer.outerHTML.substring(0, 200)}...`);
     
     if (cardElements.length > 0) {
       console.log(`📋 Found ${cardElements.length} FluentUI Card sections`);
       
       cardElements.forEach((cardElement, index) => {
         // Skip nested cards (child cards within parent cards)
-        const isNestedCard = cardElement.closest('.fui-Card') !== cardElement;
-        if (isNestedCard) {
-          console.log(`⏭️ Skipping nested card at index ${index}`);
+        const parentCard = (cardElement as HTMLElement).closest('.fui-Card');
+        if (parentCard && parentCard !== cardElement) {
           return;
         }
         
-        // Extract title from CardHeader
+        // Extract title from card header or infer from content
         let title = `Section ${index + 1}`;
         
-        const cardHeader = cardElement.querySelector('.fui-CardHeader');
-        if (cardHeader) {
-          // Look for Body1Stronger element which contains the title
-          const titleElement = cardHeader.querySelector('.fui-Body1Stronger');
-          if (titleElement?.textContent?.trim()) {
-            title = titleElement.textContent.trim();
+        // Try to find a title in the card header
+        const headerElement = cardElement.querySelector('[class*="CardHeader"], [class*="header"], h1, h2, h3, h4, h5, h6');
+        if (headerElement) {
+          const headerText = headerElement.textContent?.trim();
+          if (headerText && headerText.length > 0) {
+            title = headerText;
             console.log(`📝 Found title for card ${index}: "${title}"`);
           }
         }
@@ -109,176 +158,13 @@ export const detectPrintableSections = (): IPrintSection[] => {
         });
       });
       
-      console.log(`✅ Successfully detected ${sections.length} card sections`);
-      return sections;
+      console.log(`✅ Successfully detected ${cardElements.length} card sections`);
+    } else {
+      console.log('⚠️ No card elements found in regressions container');
     }
+  } else {
+    console.log('⚠️ No regressions container found within root element');
   }
-  
-  // Fallback Strategy: Search the entire document for any output containers
-  console.log('⚠️ No regressions layout found, trying fallback detection...');
-  
-  const fallbackContainers = [
-    '[class*="outputContainer"]', 
-    '[class*="content"]',
-    '[class*="selectionLayout"]',
-    '[data-testid*="output"]'
-  ];
-  
-  let mainContainer: Element | null = null;
-  
-  for (const selector of fallbackContainers) {
-    const container = document.querySelector(selector);
-    if (container) {
-      console.log(`📍 Found fallback container using selector: ${selector}`);
-      mainContainer = container;
-      break;
-    }
-  }
-  
-  if (!mainContainer) {
-    console.log('⚠️ No container found, searching entire document');
-    mainContainer = document.body;
-  }
-  
-  // Look for any FluentUI Cards in the fallback container
-  const allCards = mainContainer.querySelectorAll('.fui-Card');
-  
-  if (allCards.length > 0) {
-    console.log(`📋 Found ${allCards.length} cards in fallback search`);
-    
-    allCards.forEach((cardElement, index) => {
-      // Skip nested cards
-      const parentCard = cardElement.parentElement?.closest('.fui-Card');
-      if (parentCard && parentCard !== cardElement) {
-        console.log(`⏭️ Skipping nested card at index ${index}`);
-        return;
-      }
-      
-      // Extract title
-      let title = `Section ${index + 1}`;
-      const cardHeader = cardElement.querySelector('.fui-CardHeader .fui-Body1Stronger');
-      if (cardHeader?.textContent?.trim()) {
-        title = cardHeader.textContent.trim();
-      }
-      
-      sections.push({
-        id: `fallback-card-${index}`,
-        title,
-        element: cardElement as HTMLElement,
-        selected: true
-      });
-    });
-  }
-  
-  // Final fallback: Look for standalone tables and charts if no cards found
-  if (sections.length === 0) {
-    console.log('⚠️ No card sections found, looking for standalone elements');
-    
-    // Search in the best available container
-    const searchContainer = mainContainer || document.body;
-    console.log(`🔍 Searching in container: ${searchContainer.tagName} with ${searchContainer.children.length} children`);
-    
-    const tables = searchContainer.querySelectorAll('table');
-    const charts = searchContainer.querySelectorAll(
-      '[class*="plotly"], .js-plotly-plot, [data-unformatted-plot], svg, canvas, [class*="chart"]'
-    );
-    
-    console.log(`🔍 Found ${tables.length} tables and ${charts.length} charts in search container`);
-    
-    if (tables.length > 0) {
-      console.log(`📊 Processing ${tables.length} standalone tables`);
-      tables.forEach((table, index) => {
-        // Get the closest parent that might contain title information
-        const tableParent = table.closest('div, section, article') || table.parentElement;
-        let title = `Data Table ${index + 1}`;
-        
-        // Try to find a title in the parent elements
-        if (tableParent) {
-          const titleElement = tableParent.querySelector('h1, h2, h3, h4, h5, h6, [class*="title"], [class*="header"]');
-          if (titleElement?.textContent?.trim()) {
-            title = titleElement.textContent.trim();
-          }
-        }
-        
-        console.log(`📊 Adding table section: "${title}"`);
-        sections.push({
-          id: `table-${index}`,
-          title,
-          element: table as HTMLElement,
-          selected: true
-        });
-      });
-    }
-    
-    if (charts.length > 0) {
-      console.log(`📈 Processing ${charts.length} standalone charts`);
-      charts.forEach((chart, index) => {
-        // Get the closest parent that might contain title information
-        const chartParent = chart.closest('div, section, article') || chart.parentElement;
-        let title = `Chart ${index + 1}`;
-        
-        // Try to find a title in the parent elements
-        if (chartParent) {
-          const titleElement = chartParent.querySelector('h1, h2, h3, h4, h5, h6, [class*="title"], [class*="header"]');
-          if (titleElement?.textContent?.trim()) {
-            title = titleElement.textContent.trim();
-          }
-        }
-        
-        console.log(`📈 Adding chart section: "${title}"`);
-        sections.push({
-          id: `chart-${index}`,
-          title,
-          element: chart as HTMLElement,
-          selected: true
-        });
-      });
-    }
-    
-    // If still no sections, try a very broad search for any content containers
-    if (sections.length === 0) {
-      console.log('🚨 Still no sections found, trying broad content search...');
-      
-      const contentDivs = document.querySelectorAll('div');
-      console.log(`🔍 Found ${contentDivs.length} total divs in document`);
-      
-      // Look for divs that contain meaningful content (tables, significant text, etc.)
-      const meaningfulDivs: HTMLElement[] = [];
-      
-      contentDivs.forEach((div) => {
-        const htmlDiv = div as HTMLElement;
-        const hasTable = htmlDiv.querySelector('table');
-        const hasChart = htmlDiv.querySelector('svg, canvas');
-        const textLength = htmlDiv.textContent?.trim().length || 0;
-        
-        // Consider div meaningful if it has a table, chart, or substantial text content
-        if (hasTable || hasChart || textLength > 100) {
-          // But skip if it's too nested or likely a container
-          const depth = getElementDepth(htmlDiv);
-          if (depth < 10 && !isLikelyContainer(htmlDiv)) {
-            meaningfulDivs.push(htmlDiv);
-          }
-        }
-      });
-      
-      console.log(`🔍 Found ${meaningfulDivs.length} potentially meaningful content divs`);
-      
-      meaningfulDivs.slice(0, 10).forEach((div, index) => { // Limit to first 10 to avoid spam
-        console.log(`📄 Adding content section: "Content ${index + 1}"`);
-        sections.push({
-          id: `content-${index}`,
-          title: `Content ${index + 1}`,
-          element: div,
-          selected: true
-        });
-      });
-    }
-  }
-  
-  console.log(`✅ Final result: detected ${sections.length} printable sections`);
-  sections.forEach((section, index) => {
-    console.log(`  ${index + 1}. ${section.title} (${section.id})`);
-  });
   
   return sections;
 };

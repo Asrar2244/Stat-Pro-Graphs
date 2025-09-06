@@ -311,10 +311,67 @@ export const extractSectionContent = async (
     page-break-inside: avoid;
   `;
 
+  // If the section has no tables, try to transform label/value text into a simple table for professional look
+  const existingTables = clonedElement.querySelectorAll('table');
+  if (existingTables.length === 0) {
+    const text = clonedElement.innerText || '';
+    const lines = text
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(l => l.length > 0);
+    if (lines.length >= 2) {
+      const tableHTML = buildKeyValueTableFromLines(lines);
+      if (tableHTML) {
+        const container = document.createElement('div');
+        container.innerHTML = tableHTML;
+        // Replace content with table while preserving outer wrapper
+        clonedElement.innerHTML = container.innerHTML;
+      }
+    }
+  }
+
   const finalHTML = clonedElement.outerHTML;
   console.log('Final extracted HTML length:', finalHTML.length);
   
   return finalHTML;
+};
+
+/**
+ * Build a simple two-column table from plain text lines.
+ */
+const buildKeyValueTableFromLines = (lines: string[]): string | null => {
+  if (lines.length < 2) return null;
+  const rows: Array<{ key: string; value: string }> = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const delimIdx = line.indexOf(':');
+    if (delimIdx > 0 && delimIdx < line.length - 1) {
+      const key = line.substring(0, delimIdx).trim();
+      const value = line.substring(delimIdx + 1).trim();
+      if (key && value) { rows.push({ key, value }); continue; }
+    }
+    if (i + 1 < lines.length) {
+      const next = lines[i + 1];
+      if (next && next.length > 0) {
+        rows.push({ key: line, value: next });
+        i += 1;
+      }
+    }
+  }
+  if (rows.length === 0) return null;
+  const headers = ['Field', 'Value'];
+  const table = [`<table class=\"kv-table\">`];
+  table.push('<thead><tr>');
+  headers.forEach(h => table.push(`<th class=\"kv-th\">${h}</th>`));
+  table.push('</tr></thead><tbody>');
+  rows.forEach((r) => {
+    table.push('<tr>');
+    table.push(`<td class=\"kv-td\">${r.key}</td>`);
+    table.push(`<td class=\"kv-td\">${r.value}</td>`);
+    table.push('</tr>');
+  });
+  table.push('</tbody></table>');
+  return table.join('');
 };
 
 // snapshotChartsFromOriginal moved to './charts/snapshot'

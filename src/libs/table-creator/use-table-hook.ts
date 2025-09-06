@@ -32,6 +32,10 @@ export const useTableFetch = ({
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const statements = useMemo(async () => {
+    if (!dbName || !tableName) {
+      setLoading(false);
+      return { query: '', pageQuery: '', checkColumnsExistsQuery: '', viewNew: undefined } as any;
+    }
     switch (type) {
       case 'columns':
         const columnsQuery = await tableWorker.generateQueryColumn(view, tableName, recordType);
@@ -50,6 +54,7 @@ export const useTableFetch = ({
   }, [dbName, tableName]);
 
   const executeColumnGenerator = async (query: string): Promise<string[]> => {
+    if (!dbName || !tableName || !query) return [];
     const db = new Database(dbName);
     const result = await db.selectQuery(query);
     const viewGen: Array<string> = [];
@@ -66,6 +71,7 @@ export const useTableFetch = ({
     return viewGen;
   };
   const executeTableCount = async () => {
+    if (!dbName || !tableName) return;
     const { pageQuery } = await statements;
     if (pageQuery !== '') {
       const db = new Database(dbName);
@@ -74,6 +80,11 @@ export const useTableFetch = ({
     }
   };
   const loadTemplateView = async (startIndex: number, stopIndex: number) => {
+    if (!dbName || !tableName) {
+      setTemplateView([]);
+      setLoading(false);
+      return;
+    }
     const { query, viewNew, checkColumnsExistsQuery } = await statements;
     if (query !== '') {
       const db = new Database(dbName);

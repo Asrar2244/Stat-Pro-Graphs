@@ -91,7 +91,7 @@ export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...prop
         }}
       >
         <div className={classes.outputContainer}>
-          <div className={classes.content} key={id}>
+          <div className={classes.content} key={id} data-output-id={id}>
             {run?.loading ? (
               <p>{t('loadingConfigurations')}</p>
             ) : (

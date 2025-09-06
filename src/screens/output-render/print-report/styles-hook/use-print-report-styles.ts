@@ -48,7 +48,7 @@ export const usePrintReportStyles = makeStyles({
   
   sectionItemSelected: {
     backgroundColor: tokens.colorBrandBackground2,
-    borderColor: tokens.colorBrandStroke1 as unknown as undefined,
+    border: `1px solid ${tokens.colorBrandStroke1}`,
     '&:hover': {
       backgroundColor: tokens.colorBrandBackground2Hover,
     },
@@ -128,33 +128,54 @@ export const usePrintReportStyles = makeStyles({
   
   // Print window specific styles
   printWindowStyles: {
-    body: {
+    '& body': {
       backgroundColor: 'white !important',
       color: 'black !important',
       margin: '20px',
       fontFamily: 'inherit',
     },
+    // Key-Value auto table styling
+    '& .kvTable': {
+      '& .kv-table': {
+        width: '100%',
+        borderCollapse: 'collapse',
+        tableLayout: 'fixed',
+      },
+      '& .kv-th': {
+        border: `1px solid ${tokens.colorNeutralStroke1}`,
+        backgroundColor: tokens.colorNeutralBackground2,
+        padding: '6px',
+        textAlign: 'left',
+      },
+      '& .kv-td': {
+        border: `1px solid ${tokens.colorNeutralStroke1}`,
+        padding: '6px',
+        verticalAlign: 'top',
+        wordBreak: 'break-word',
+        whiteSpace: 'normal',
+      },
+    },
     
-    printHeader: {
+    '& .printHeader': {
       textAlign: 'center',
       marginBottom: '30px',
       pageBreakAfter: 'avoid',
     },
     
-    printTitle: {
+    '& .printTitle': {
       fontSize: '24pt',
       fontWeight: 'bold',
       color: 'black !important',
       marginBottom: '10px',
     },
     
-    printDate: {
+    '& .printDate': {
       fontSize: '12pt',
       color: '#666',
       marginBottom: '20px',
     },
     
-    printSection: {
+    '& .printSection': {
       marginBottom: '40px',
       padding: '20px',
       border: '2px solid #ddd',
@@ -165,7 +186,7 @@ export const usePrintReportStyles = makeStyles({
       clear: 'both',
     },
     
-    printSectionTitle: {
+    '& .printSectionTitle': {
       fontSize: '18pt',
       fontWeight: 'bold',
       color: 'black !important',
@@ -175,7 +196,7 @@ export const usePrintReportStyles = makeStyles({
       pageBreakAfter: 'avoid',
     },
     
-    printSectionContent: {
+    '& .printSectionContent': {
       position: 'relative',
       overflow: 'visible',
       backgroundColor: 'white',
@@ -185,3 +206,13 @@ export const usePrintReportStyles = makeStyles({
     },
   },
 });
+
+// Centralized CSS for the custom right-click context menu (class-based, tokenized)
+export const contextMenuCss = `
+.sp-context-menu { position: fixed; z-index: 99999; background: ${tokens.colorNeutralBackground1}; border: 1px solid ${tokens.colorNeutralStroke2}; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.16); min-width: 220px; font: 14px system-ui,-apple-system,Segoe UI,Roboto,Arial; color: ${tokens.colorNeutralForeground1}; overflow: hidden; }
+.sp-context-title { padding: 8px 12px; font-weight: 600; font-size: 12px; opacity: .7; }
+.sp-context-item { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; cursor:pointer; color: ${tokens.colorNeutralForeground1}; }
+.sp-context-item:hover { background: ${tokens.colorNeutralBackground1Hover}; }
+.sp-context-shortcut { font-size:12px; color: ${tokens.colorNeutralForeground3}; margin-left:16px; }
+.sp-context-divider { height:1px; background: ${tokens.colorNeutralStroke2}; margin:4px 0; }
+`;

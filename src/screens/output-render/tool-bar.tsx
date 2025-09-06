@@ -7,7 +7,7 @@ import {
   Slider,
   CounterBadge,
 } from '@fluentui/react-components';
-import { FC, memo, useState } from 'react';
+import { FC, memo, useState, useEffect } from 'react';
 import { PrintButton } from './print-report/components/print-button';
 import { PrintReportModal } from './print-report/components/print-report-modal';
 import { MdOutlineFormatBold } from 'react-icons/md';
@@ -27,6 +27,11 @@ const ToolBarComponent: FC<{ tools: ITools; title?: string; subTitle?: string }>
   const { t } = useTranslation('outputToolBar');
   const [showPrintModal, setShowPrintModal] = useState(false);
   const classes = useToolsStyle();
+  useEffect(() => {
+    const listener = () => setShowPrintModal(true);
+    document.addEventListener('open-print-modal', listener as EventListener);
+    return () => document.removeEventListener('open-print-modal', listener as EventListener);
+  }, []);
   return (
     <div className={classes['output-band']}>
       <div className={classes.title}>

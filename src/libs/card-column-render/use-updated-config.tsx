@@ -11,11 +11,12 @@ export const useUpdatedConfig = ({ dbName, tableName, config }: {
     const [updatedConfig, setUpdatedConfig] = useState<ICardInterface>(config);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const fetchTableColumns = async () => {
+        if (!dbName || !tableName) return [] as string[];
         const db = new Database(dbName);
         const query = `PRAGMA table_info(${tableName});`;
         try {
             const tableInfo = await db.selectQuery(query);
-            return config.showHeader ? tableInfo.map((row: any) => row.name) : tableInfo.map((row: any) => row.name).sliice(1);
+            return config.showHeader ? tableInfo.map((row: any) => row.name) : tableInfo.map((row: any) => row.name).slice(1);
         } catch (error) {
             console.error("Error fetching column names:", error);
             throw error;

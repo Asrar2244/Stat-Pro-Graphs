@@ -16,7 +16,7 @@ export const OutputRender: FC = () => {
   const selectedRun = useGetRunID();
   return (
     <SuspenseLoad>
-      <div className={classes.outputLayout}>
+      <div className={classes.outputLayout} data-output-root="true">
         <ToolBar tools={tools} title={selectedRun.title} subTitle={selectedRun.subTitle} />
         <div className={classes['output-area']}>
           <OutputSelection

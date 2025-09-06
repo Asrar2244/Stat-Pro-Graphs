@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext, useRef } from 'react';
 import type { IPrintSection } from '../types';
 import { detectPrintableSections, hasSignificantContent } from '../utils';
+import { PRINT_DEBUG, DATA_OUTPUT_ID_ATTR, OUTPUT_ROOT_SELECTOR } from '../utils/constants';
 import { OutputRenderContext } from '../../context';
 
 export const usePrintSections = () => {
@@ -30,27 +31,101 @@ export const usePrintSections = () => {
     setError(null);
     
     try {
-      // light scan
+      // Find the current output container by ID
+      const currentOutputId = context?.selectedRun?.id;
+      let rootElement: HTMLElement | undefined;
       
-      // More detailed DOM inspection
-      // const allDivs = document.querySelectorAll('div[class*="regressions"], div[class*="Layout"], div[class*="content"], div[class*="Container"]');
-      
-      
-      // const allCards = document.querySelectorAll('[class*="Card"], [class*="card"], .fui-Card');
+      if (currentOutputId) {
+        // Look for the specific output container with the data-output-id attribute
+        rootElement = document.querySelector(`[${DATA_OUTPUT_ID_ATTR}="${currentOutputId}"]`) as HTMLElement;
+        
+        if (!rootElement) {
+          console.warn(`⚠️ Could not find output container with data-output-id="${currentOutputId}"`);
+          setError(`Could not find the current output (ID: ${currentOutputId}). Please refresh the page.`);
+          setSections([]);
+          return;
+        }
+        
+        if (PRINT_DEBUG) console.log(`📍 Found output container for ID: ${currentOutputId}`);
+      } else {
+        // Enhanced fallback: try to find the currently active output container
+        if (PRINT_DEBUG) console.warn('⚠️ No current output ID available, trying enhanced fallback detection');
+        
+        // Strategy 1: Look for visible/active output containers
+        const allOutputContainers = document.querySelectorAll(`[${DATA_OUTPUT_ID_ATTR}]`);
+        let activeContainer: HTMLElement | null = null;
+        
+        // Find the container that is currently visible/active
+        for (const container of allOutputContainers) {
+          const containerEl = container as HTMLElement;
+          
+          // Check if this container is visible and has content
+          const isVisible = containerEl.offsetParent !== null || 
+                           containerEl.style.display !== 'none' ||
+                           containerEl.style.visibility !== 'hidden';
+          
+          const hasContent = containerEl.children.length > 0;
+          
+          // Check if this container is in the currently active tab
+          const isInActiveTab = containerEl.closest(OUTPUT_ROOT_SELECTOR) !== null;
+          
+          if (PRINT_DEBUG) console.log(`🔍 Checking container ${containerEl.getAttribute(DATA_OUTPUT_ID_ATTR)}: visible=${isVisible}, hasContent=${hasContent}, inActiveTab=${isInActiveTab}`);
+          
+          if (isVisible && hasContent && isInActiveTab) {
+            activeContainer = containerEl;
+            if (PRINT_DEBUG) console.log(`📍 Found active output container: ${containerEl.getAttribute(DATA_OUTPUT_ID_ATTR)}`);
+            break;
+          }
+        }
+        
+        if (activeContainer) {
+          rootElement = activeContainer;
+          const fallbackId = rootElement.getAttribute(DATA_OUTPUT_ID_ATTR);
+          if (PRINT_DEBUG) console.log(`📍 Using active output container ID: ${fallbackId}`);
+        } else {
+          // Strategy 2: If no active container found, try to find any container with content
+          if (PRINT_DEBUG) console.log('⚠️ No active container found, looking for any container with content');
+          for (const container of allOutputContainers) {
+            const containerEl = container as HTMLElement;
+            if (containerEl.children.length > 0) {
+              // Check if it has meaningful content (cards, tables, etc.)
+              const hasCards = containerEl.querySelectorAll('.fui-Card').length > 0;
+              const hasTables = containerEl.querySelectorAll('table').length > 0;
+              const hasCharts = containerEl.querySelectorAll('svg, canvas').length > 0;
+              
+              if (hasCards || hasTables || hasCharts) {
+                activeContainer = containerEl;
+                if (PRINT_DEBUG) console.log(`📍 Found container with content: ${containerEl.getAttribute(DATA_OUTPUT_ID_ATTR)} (cards: ${hasCards}, tables: ${hasTables}, charts: ${hasCharts})`);
+                break;
+              }
+            }
+          }
+          
+          if (activeContainer) {
+            rootElement = activeContainer;
+            const fallbackId = rootElement.getAttribute(DATA_OUTPUT_ID_ATTR);
+            if (PRINT_DEBUG) console.log(`📍 Using content-rich container ID: ${fallbackId}`);
+          } else {
+            setError('No active output containers found. Please open an output first.');
+            setSections([]);
+            return;
+          }
+        }
+      }
       
       // Wait a bit for DOM to be ready
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      let detectedSections = detectPrintableSections();
-      console.log(`🔍 Detected ${detectedSections.length} sections`);
+      let detectedSections = detectPrintableSections(rootElement);
+      if (PRINT_DEBUG) console.log(`🔍 Detected ${detectedSections.length} sections from current output`);
       
       // If no sections found, wait a bit longer and try again (content might still be loading)
       if (detectedSections.length === 0) {
         // retry once after short delay
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        
-        detectedSections = detectPrintableSections();
+        detectedSections = detectPrintableSections(rootElement);
+        if (PRINT_DEBUG) console.log(`🔍 Retry detected ${detectedSections.length} sections from current output`);
         
       }
       
@@ -66,7 +141,7 @@ export const usePrintSections = () => {
         return;
       }
       
-      console.log(`✅ ${validSections.length} sections ready`);
+      if (PRINT_DEBUG) console.log(`✅ ${validSections.length} sections ready for current output`);
       setSections(validSections);
       setAllSelected(true);
       
@@ -154,6 +229,10 @@ export const usePrintSections = () => {
     setIsModalOpen(open);
     if (open) {
       clearedOnceRef.current = false;
+      // Force refresh sections when modal opens to ensure we get the current active output
+      setTimeout(() => {
+        void loadSections();
+      }, 100);
     } else {
       // Clear only once per close transition
       if (!clearedOnceRef.current) {
@@ -178,7 +257,7 @@ export const usePrintSections = () => {
       // Context is undefined, clear sections
       clearSections();
     }
-  }, [context?.selectedRun?.id, context?.selectedRun?.outputFor]);
+  }, [context?.selectedRun?.id, context?.selectedRun?.outputFor, context?.selectedRun?.tabName]);
 
   // Watch for tab name changes (user switching between different outputs)
   useEffect(() => {
@@ -292,6 +371,27 @@ export const usePrintSections = () => {
       observer.disconnect();
     };
   }, [context?.selectedRun?.id, currentOutputId]);
+
+  // Additional effect to monitor for tab switches by watching for changes in the active output container
+  useEffect(() => {
+    if (!isModalOpen) return;
+
+    // Function to check if the active output has changed
+    const checkActiveOutputChange = () => {
+      const newOutputId = context?.selectedRun?.id?.toString();
+      if (newOutputId && newOutputId !== currentOutputId) {
+        console.log('🔄 Active output changed, refreshing sections...');
+        void forceRefreshSections();
+      }
+    };
+
+    // Check periodically for output changes
+    const interval = setInterval(checkActiveOutputChange, 2000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [isModalOpen, context?.selectedRun?.id, currentOutputId]);
 
   return {
     sections,
