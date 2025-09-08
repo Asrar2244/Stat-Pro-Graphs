@@ -14,7 +14,10 @@ const MinMaxCloseComponent: FC = () => {
   const classes = useMinMaxCloseStyles();
   const classMerge = mergeClasses(classes.ul, classes.liCloseMaxMin);
   const platformIsMac = useMemo(() => {
-    return platformInfo() === 'mac';
+    const platform = platformInfo();
+    const isMac = platform === 'mac';
+    console.log('Platform Info:', platform, 'Is Mac:', isMac);
+    return isMac;
   }, []);
   
   const onHandleMaximize = () => {
@@ -48,7 +51,13 @@ const MinMaxCloseComponent: FC = () => {
           <ThemeSwitch />
         </li>
       </ul>
-      {!platformIsMac && isTauriEnvironment() && (
+{(() => {
+        const isTauri = isTauriEnvironment();
+        const shouldShow = !platformIsMac && isTauri;
+        console.log('Tauri Environment:', isTauri, 'Platform is Mac:', platformIsMac, 'Should show buttons:', shouldShow);
+        // Temporarily show buttons always for debugging
+        return true; // Change this back to shouldShow after testing
+      })() && (
         <>
           <Divider vertical />
           <ul className={classMerge}>
