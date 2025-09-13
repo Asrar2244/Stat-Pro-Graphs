@@ -4,7 +4,7 @@ import { useSampleSizeStyles } from './styles-hook/use-sample-size-styles';
 import { useSampleSizeEnhanced } from './use-sample-size-enhanced';
 import { SampleSizeModalProps, SampleSizeTestType } from './types';
 
-export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest, onClose }) => {
+export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
   const classes = useSampleSizeStyles();
   
   const {
@@ -18,13 +18,11 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest, onClos
     error,
     handleInputChange,
     canUseBackend,
-    requiresDataFile,
     calculateSampleSize,
   } = useSampleSizeEnhanced();
 
   // Check if current test can be executed
   const currentTestCanRun = canUseBackend(selectedTest as SampleSizeTestType);
-  const currentTestRequiresData = requiresDataFile(selectedTest as SampleSizeTestType);
 
   const renderTTestForm = () => (
     <div className={classes.formContainer}>

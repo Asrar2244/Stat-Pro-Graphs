@@ -1,5 +1,5 @@
 import { FC, useState, useEffect } from 'react';
-import { Button, Input, Label, Spinner, Checkbox, Dropdown, Option } from '@fluentui/react-components';
+import { Input, Label, Spinner, Checkbox, Dropdown, Option } from '@fluentui/react-components';
 import { tokens } from '@fluentui/react-components';
 import { useActiveNode, useToaster } from '@hooks';
 import { Database } from '@utils/db';
@@ -22,7 +22,6 @@ const ChiSquareSampleSizeModal: FC<ChiSquareSampleSizeModalProps> = ({
   open, 
   onClose
 }) => {
-  const [selectedBlock, setSelectedBlock] = useState<DataBlock | null>(null);
   const [showCalculation, setShowCalculation] = useState(false);
   const [result, setResult] = useState<number>(0);
   const [loading, setLoading] = useState(false);
@@ -39,7 +38,7 @@ const ChiSquareSampleSizeModal: FC<ChiSquareSampleSizeModalProps> = ({
   const toaster = useToaster();
   
   // Access global empty data store
-  const { spreadsheetData, columns } = useEmptyDataStore();
+  const { spreadsheetData } = useEmptyDataStore();
 
   // Add state for selected columns
   const [selectedColumns, setSelectedColumns] = useState<DataBlock[]>([]);
@@ -60,7 +59,6 @@ const ChiSquareSampleSizeModal: FC<ChiSquareSampleSizeModalProps> = ({
 
   useEffect(() => {
     if (!open) {
-      setSelectedBlock(null);
       setShowCalculation(false);
       setResult(0);
       setError('');

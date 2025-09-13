@@ -19,7 +19,7 @@ const EstimationComponent: FC<ITranslate> = ({ t }) => {
     setEstimate(estimateDetails);
   };
   
-  const onDirectionChange = (ev: any, data: any) => {
+  const onDirectionChange = (_ev: any, data: any) => {
     setEstimate({ direction: data.value });
   };
 

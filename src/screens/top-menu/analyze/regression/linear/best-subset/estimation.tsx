@@ -20,7 +20,7 @@ const EstimationComponent: FC<ITranslate> = ({ t }) => {
     setEstimate(estimateDetails);
   };
   
-  const onMetricChange = (ev: any, data: any) => {
+  const onMetricChange = (_ev: any, data: any) => {
     setEstimate({ metric: data.optionValue });
   };
 

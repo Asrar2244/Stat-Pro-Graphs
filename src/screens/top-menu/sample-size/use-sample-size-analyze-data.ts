@@ -29,7 +29,7 @@ export const analyzeSampleSizeData = (
 };
 
 const analyzeTTest = (data: TTestSampleSizeRequest): SampleSizeResponse => {
-  const { expected_difference, expected_std_dev, desired_power, alpha } = data;
+  const { expected_difference, expected_std_dev } = data;
   // Placeholder calculation - replace with actual formula
   const numExpectedDiff = Number(expected_difference);
   const numExpectedStdDev = Number(expected_std_dev);
@@ -38,7 +38,7 @@ const analyzeTTest = (data: TTestSampleSizeRequest): SampleSizeResponse => {
 };
 
 const analyzeProportion = (data: ProportionSampleSizeRequest): SampleSizeResponse => {
-  const { group1_proportion, group2_proportion, desired_power, alpha, yates_correction } = data;
+  const { group1_proportion, group2_proportion } = data;
   // Placeholder calculation - replace with actual formula
   const numGroup1 = Number(group1_proportion);
   const numGroup2 = Number(group2_proportion);
@@ -47,7 +47,7 @@ const analyzeProportion = (data: ProportionSampleSizeRequest): SampleSizeRespons
 };
 
 const analyzePairedTTest = (data: PairedTTestSampleSizeRequest): SampleSizeResponse => {
-  const { change_to_be_detected, expected_std_dev_of_change, desired_power, alpha, correlation } = data;
+  const { change_to_be_detected, expected_std_dev_of_change } = data;
   // Placeholder calculation - replace with actual formula
   const numChange = Number(change_to_be_detected);
   const numStdDev = Number(expected_std_dev_of_change);
@@ -56,7 +56,7 @@ const analyzePairedTTest = (data: PairedTTestSampleSizeRequest): SampleSizeRespo
 };
 
 const analyzeAnova = (data: AnovaSampleSizeRequest): SampleSizeResponse => {
-  const { minimum_detectable_difference, expected_std_dev_residuals, num_groups, desired_power, alpha } = data;
+  const { minimum_detectable_difference, expected_std_dev_residuals, num_groups } = data;
   // Placeholder calculation - replace with actual formula
   const numDiff = Number(minimum_detectable_difference);
   const numStdDev = Number(expected_std_dev_residuals);
@@ -66,7 +66,7 @@ const analyzeAnova = (data: AnovaSampleSizeRequest): SampleSizeResponse => {
 };
 
 const analyzeChiSquare = (data: ChiSquareSampleSizeRequest): SampleSizeResponse => {
-  const { alpha, desired_power, yates_correction, data: contingencyTable } = data;
+  const { data: contingencyTable } = data;
   // Placeholder calculation - replace with actual formula
   const sampleSize = Math.ceil(100 * contingencyTable.length);
   return { sample_size: sampleSize };

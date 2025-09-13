@@ -25,13 +25,13 @@ export const useSampleSizeEnhanced = () => {
   } = useSampleSizeStore();
 
   // For most tests, no data file is required since they're mathematical calculations
-  const requiresDataFile = (selectedTest: SampleSizeTestType): boolean => {
+  const requiresDataFile = (_selectedTest: SampleSizeTestType): boolean => {
     // All sample size calculations are mathematical and don't require data files
     return false;
   };
 
   // All tests can be calculated directly
-  const canUseBackend = (selectedTest: SampleSizeTestType): boolean => {
+  const canUseBackend = (_selectedTest: SampleSizeTestType): boolean => {
     return true;
   };
 

@@ -294,36 +294,3 @@ export const cleanSectionTitle = (title: string): string => {
     .replace(/[^\w\s-()[\]]/g, '') // Remove special chars except common ones
     .trim();
 };
-
-/**
- * Calculate the depth of an element in the DOM tree
- */
-const getElementDepth = (element: HTMLElement): number => {
-  let depth = 0;
-  let parent = element.parentElement;
-  
-  while (parent) {
-    depth++;
-    parent = parent.parentElement;
-  }
-  
-  return depth;
-};
-
-/**
- * Check if an element is likely a generic container (vs content)
- */
-const isLikelyContainer = (element: HTMLElement): boolean => {
-  const className = element.className.toLowerCase();
-  const tagName = element.tagName.toLowerCase();
-  
-  // Skip common container patterns
-  const containerPatterns = [
-    'app', 'root', 'main', 'body', 'html', 'layout', 'container', 
-    'wrapper', 'page', 'content-wrapper', 'app-container'
-  ];
-  
-  return containerPatterns.some(pattern => 
-    className.includes(pattern) || tagName === pattern
-  ) || element === document.body || element === document.documentElement;
-};

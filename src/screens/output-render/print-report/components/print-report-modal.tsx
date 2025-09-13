@@ -36,7 +36,6 @@ export const PrintReportModal: React.FC<IPrintReportModalProps> = ({ open, close
     getSelectedSections,
     checkAndRefreshSections,
     forceRefreshSections,
-    clearSections,
     setModalOpen,
   } = usePrintSections();
 

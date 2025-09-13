@@ -1,4 +1,3 @@
-import { useShallow } from 'zustand/react/shallow';
 import { create } from 'zustand';
 
 interface IModel {

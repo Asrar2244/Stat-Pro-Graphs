@@ -128,7 +128,7 @@ export const useSampleSizeStore = create<ISampleSizeStore>((set, get) => ({
   calculateSampleSize: async (test: SampleSizeTestType) => {
     set((state) => ({ ...state, isLoading: true, error: '', sampleSize: null }));
     try {
-      let formData;
+      let formData: ITTestForm | IProportionForm | IPairedTTestForm | IAnovaForm | IChiSquareForm;
       switch (test) {
         case 'ttest-sample-size':
           formData = get().ttestForm;

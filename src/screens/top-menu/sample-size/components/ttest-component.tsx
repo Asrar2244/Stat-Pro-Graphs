@@ -1,6 +1,6 @@
 import { FC, memo, ChangeEvent } from 'react';
-import { Button, Input, Field, mergeClasses } from '@fluentui/react-components';
-import { Fieldset, ITranslate } from '@libs';
+import { Button, Input, Field } from '@fluentui/react-components';
+import { Fieldset } from '@libs';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
 import { useSampleSizeStore } from '../use-sample-size-store';
