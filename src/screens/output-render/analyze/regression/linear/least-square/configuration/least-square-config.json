@@ -7,7 +7,7 @@
       "view": [
         [ "t-dependent_var_names", "dependent_var_names" ],
         [ "t-independent_var_names", "independent_var_names" ],
-        [ "t-dependent_variables_len", "dependent_variables_len" ],
+        [ "t-col5", "dependent_variables_len" ],
         [ "t-MultipleR", "MultipleR" ],
         [ "t-SquaredMultipleR", "SquaredMultipleR" ],
         [ "t-AdjustedSquaredMultiple_R", "AdjustedSquaredMultiple_R" ],

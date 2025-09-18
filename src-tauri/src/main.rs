@@ -50,6 +50,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             close_splashscreen,
             tauri_json_file::save_json_to_file,
+            tauri_json_file::read_json_from_file,
             tauri_json_file::get_file_size,
             excel_csv_file::save_excel_to_file,
             excel_csv_file::save_csv_to_file

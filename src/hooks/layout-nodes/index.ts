@@ -17,6 +17,8 @@ export interface IActiveNode {
     lastModified: string;
     tabName: string;
     type: string;
+    workspacePath: string;
+    inputFileName: string;
     isEmptyDataView?: boolean;
     dataState?: 'draft' | 'published';
     dataName?: string;
@@ -31,6 +33,8 @@ export const useActiveNode = (dependency: any[]): IActiveNode => {
       lastModified: '',
       tabName: '',
       type: '',
+      workspacePath: '',
+      inputFileName: ''
     },
   });
   const { model } = useStartProStore(useShallow((state) => ({ model: state.model })));
@@ -47,6 +51,8 @@ export const useActiveNode = (dependency: any[]): IActiveNode => {
           lastModified: '',
           tabName: '',
           type: '',
+          workspacePath: '',
+          inputFileName: ''
         },
       });
     } else {
@@ -142,6 +148,7 @@ export const useNodeActions = (): INodeActions => {
             isActive: data.isActive,
             workspacePath: data.workspacePath,
             isEmptyDataView: data.isEmptyDataView,
+            inputFileName: data.inputFileName
           },
         },
         'layout-tabs',

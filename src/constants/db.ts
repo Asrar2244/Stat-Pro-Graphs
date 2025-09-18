@@ -22,3 +22,5 @@ export const NOTIFICATION_STATUS = {
   ERROR: 'ERROR',
   PROCESSING: 'PROCESSING',
 };
+
+export const CONFIG_FILE = "config.json"

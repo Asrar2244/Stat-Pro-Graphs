@@ -27,6 +27,13 @@ const PairwiseComparisonOfModule = lazy(() =>
   import('./analyze').then((module) => ({ default: module.PairwiseComparisonModule })),
 );
 
+const TestsAnalysis = lazy(() => import('./advanced').then((module) => ({ default: module.TestsAnalysis })));
+
+const Options = lazy(() => import('./advanced').then((module) => ({ default: module.Options })));
+
+const PairedTestsAnalysis = lazy(() => import('./advanced').then((module) => ({ default: module.PairedTestsAnalysis })));
+
+
 export const withMenuEvents = <P extends object>(
   translationNs: string,
   WrappedComponent: React.ComponentType<P>,
@@ -75,7 +82,7 @@ const MenuSelector: FC<{
   if (isLicensed) {
     return <OpenDevTools {...modal} showCloseButton={true} />;
   }
-  const d = () => {
+  const runSelector = () => {
     switch (selector) {
       case exporters.importBusinessObject:
         return <BrowseFile {...modal} t={t} />;
@@ -91,9 +98,15 @@ const MenuSelector: FC<{
         return <OpenDevTools {...modal} />;
       case exporters.pairwiseComparisonOfModule:
         return <PairwiseComparisonOfModule {...modal} />;
+      case exporters.tests:
+        return <TestsAnalysis {...modal} />
+      case exporters.options:
+        return <Options {...modal} />
+      case exporters.pairedTTest:
+        return <PairedTestsAnalysis {...modal} />
       default:
         return null;
     }
   };
-  return modal.open ? <>{d()}</> : <></>;
+  return modal.open ? <>{runSelector()}</> : <></>;
 };

@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { exists, mkdir, create } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
-import { Database, homeDirectory } from '@utils';
+import { Database, homeDirectory, saveLargeJsonToFile } from '@utils';
 import { useTasks } from '@store';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
-import { CONFIGURATION_DB, COLLECTION_DIR } from '@constants';
+import { CONFIGURATION_DB, COLLECTION_DIR, CONFIG_FILE } from '@constants';
 import initialTables from './query';
+import initialConfig from './initial-config.json';
 
 export const useInitialConfig = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -43,12 +44,20 @@ export const useInitialConfig = () => {
       await create(fullCollectionDBPath);
     }
   };
+  // Create config file for test hypothesis
+  const createInitialTestConfigFile = async (): Promise<void> => {
+    const homeDir = await homeDirectory();
+    const configFile = await join(homeDir, COLLECTION_DIR, CONFIG_FILE);
+    saveLargeJsonToFile(configFile, initialConfig)
+
+  };
 
   const seedInitialConfig = async () => {
     try {
       setIsLoading(true);
       await createInitialFolders();
       await createInitialFile();
+      await createInitialTestConfigFile();
       const db = new Database(CONFIGURATION_DB);
 
       await db.executeQuery(`${Object.values(initialTables).join(';')}`).catch((error) => {

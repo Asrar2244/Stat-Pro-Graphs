@@ -1,0 +1,21 @@
+{
+    "title": "One-Sample T-Test API",
+    "ok": "Ok",
+    "close": "Cancel",
+    "titleData": "One Sample T test - Data format",
+    "back": "Back",
+    "next": "Next",
+    "mean": "Mean",
+    "size": "Size",
+    "stdErr": "Standard Error",
+    "stdDev": "Standard Deviation",
+    "dataForData": "Data for Data",
+    "dataForMean": "Data for Mean",
+    "dataForSize": "Data for Size",
+    "dataForSD": "Data for Standard Deviation",
+    "dataForSE": "Data for Standard Error",
+    "selectedColumn": "Selected Column",
+    "dataFormat": "Data Format",
+    "data": "Data",
+    "populationMean": "Population Mean"
+}

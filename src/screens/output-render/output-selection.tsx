@@ -34,6 +34,12 @@ const PairwiseComparisonOfModules = lazy(() =>
   })),
 );
 
+const TTestComponent = lazy(() =>
+  import('./analyze/tests/t-test').then((modules) => ({
+    default: modules.TTestComponent,
+  })),
+);
+
 interface IOutputSelection extends IToolBar {
   id: number;
   showHistory: boolean;
@@ -43,7 +49,8 @@ const load: any = {
   regLinearRidge: <LinearRidgeRegression />,
   estimationOfModules: <EstimationOfModule />,
   pairwiseComparisonModules: <PairwiseComparisonOfModules />,
-  descriptiveStatistics: <DescriptiveStatistics />
+  descriptiveStatistics: <DescriptiveStatistics />,
+  tTestModule: <TTestComponent />
 };
 export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...props }) => {
   const { config } = useActiveNode([]);

@@ -1,0 +1,71 @@
+{
+    "tables": [
+        {
+            "name": "paired-t-test-inputs",
+            "showCaption": false,
+            "showHeaders": false,
+            "view": [
+                [ "paired_t_test", "paired_t_test" ]
+            ]
+        },
+        {
+            "name": "sample-statistics-table",
+            "showCaption": false,
+            "showHeaders": true,
+            "view": [
+                "sample_before_n",
+                "sample_before_missing",
+                "sample_before_mean",
+                "sample_before_std_dev",
+                "sample_before_sem",
+                "sample_after_n",
+                "sample_after_missing",
+                "sample_after_mean",
+                "sample_after_std_dev",
+                "sample_after_sem"
+            ],
+            "recordType": {
+                "pageSize": 1
+            }
+        },
+        {
+            "name": "sample-difference-table",
+            "showCaption": false,
+            "showHeaders": true,
+            "view": [
+                "sample_difference_n",
+                "sample_difference_missing",
+                "sample_difference_mean_difference",
+                "sample_difference_std_dev",
+                "sample_difference_sem"
+            ],
+            "recordType": {
+                "pageSize": 1
+            }
+        }
+    ],
+    "customScreen": [
+        {
+            "name": "paired-t-test-results",
+            "showCaption": false,
+            "showHeaders": false,
+            "customFields": [
+                { "name": "t_test_results_interpretation_two_tailed", "type": "interpretation_two_tailed" },
+                { "name": "t_test_results_interpretation_one_tailed", "type": "interpretation_one_tailed" }
+            ],
+            "view": [
+                [ "t_normality_test_shapiro_wilk_p_value", "normality_test_shapiro_wilk_p_value" ],
+                [ "t_normality_test_shapiro_wilk_result", "normality_test_shapiro_wilk_result" ],
+                [ "t_test_results_t_statistic", "t_test_results_t_statistic" ],
+                [ "t_test_results_degrees_of_freedom", "t_test_results_degrees_of_freedom" ],
+                [ "t_test_results_confidence_interval_for_difference_of_means", "t_test_results_confidence_interval_for_difference_of_means" ],
+                [ "t_test_results_two_tailed_p_value", "t_test_results_two_tailed_p_value" ],
+                [ "t_test_results_interpretation_two_tailed", "t_test_results_interpretation_two_tailed" ],
+                [ "t_test_results_one_tailed_p_value", "t_test_results_one_tailed_p_value" ],
+                [ "t_test_results_interpretation_one_tailed", "t_test_results_interpretation_one_tailed" ],
+                [ "t_power_analysis_power_of_performed_two_tailed_test_with_alpha_=_0_500", "power_analysis_power_of_performed_two_tailed_test_with_alpha_=_0_500" ],
+                [ "t_power_analysis_power_of_performed_one_tailed_test_with_alpha_=_0_500", "power_analysis_power_of_performed_one_tailed_test_with_alpha_=_0_500" ]
+            ]
+        }
+    ]
+}
