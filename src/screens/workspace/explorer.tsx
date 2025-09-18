@@ -1,4 +1,4 @@
-import { FC, memo } from 'react';
+import { FC, memo, useRef, useCallback } from 'react';
 import {
   Tree,
   TreeItem,
@@ -28,6 +28,7 @@ const ExplorerComp: FC = () => {
   const { mb } = useFileSize();
   const { dateFormat } = useFormatter();
   const { getConfigurations } = useGetInitialConfig();
+  const treeContainerRef = useRef<HTMLDivElement>(null);
   const { projects, setBlockUI } = useStartProStore(
     useShallow((state) => ({
       projects: state.projects,
@@ -71,6 +72,17 @@ const ExplorerComp: FC = () => {
     console.log('deleting the work space');
     e.preventDefault();
   };
+
+  const handleTreeItemExpand = useCallback((projectName: string) => {
+    setTimeout(() => {
+      if (treeContainerRef.current) {
+        const treeItem = treeContainerRef.current.querySelector(`[data-project="${projectName}"]`);
+        if (treeItem) {
+          treeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }, 100);
+  }, []);
   return (
     <div className={classes.explorerLayout}>
       <div className={classes.workspace}>
@@ -78,36 +90,46 @@ const ExplorerComp: FC = () => {
       </div>
 
       {Object.keys(projects).length > 0 ? (
-        <Tree size="small" aria-label={'explorer-workspace'} className="tree-comp">
-          {Object.keys(projects).map((projectName) => {
-            const project = projects?.[projectName];
-            return (
-              <TreeItem key={projectName} itemType="branch">
-                <TreeItemLayout
-                  className={
-                    project?.isOpenedData === 1 || project?.isOpenedOutput === 1 ? 'selected' : ''
-                  }
+        <div ref={treeContainerRef} className="tree-comp">
+          <Tree size="small" aria-label={'explorer-workspace'}>
+            {Object.keys(projects).map((projectName) => {
+              const project = projects?.[projectName];
+              return (
+                <TreeItem
+                  key={projectName}
+                  itemType="branch"
+                  data-project={projectName}
+                  onOpenChange={(event, data) => {
+                    if (data.open) {
+                      handleTreeItemExpand(projectName);
+                    }
+                  }}
                 >
-                  <div className={classes.treeItemLayout}>
-                    <div className={classes.kabobMenu}>
-                      <div className={classes.treeItem}>
-                        <div className="project-name">{projectName}</div>
-                        {/**/}
-                        <div className="date-file">
-                          <Caption2 align="end">
-                            {t('modified', { ns: 'workspace' })}:
-                            {dateFormat(project?.modifiedDateTime)}
-                            &nbsp; | &nbsp; {t('size', { ns: 'workspace' })}:
-                            {mb(Number(project?.fileSize))}
-                          </Caption2>
+                  <TreeItemLayout
+                    className={
+                      project?.isOpenedData === 1 || project?.isOpenedOutput === 1 ? 'selected' : ''
+                    }
+                  >
+                    <div className={classes.treeItemLayout}>
+                      <div className={classes.kabobMenu}>
+                        <div className={classes.treeItem}>
+                          <div className="project-name">{projectName}</div>
+                          {/**/}
+                          <div className="date-file">
+                            <Caption2 align="end">
+                              {t('modified', { ns: 'workspace' })}:
+                              {dateFormat(project?.modifiedDateTime)}
+                              &nbsp; | &nbsp; {t('size', { ns: 'workspace' })}:
+                              {mb(Number(project?.fileSize))}
+                            </Caption2>
+                          </div>
+                        </div>
+                        <div className={classes.kabobItem}>
+                          <MdDeleteOutline onClick={onDeleteHandler} />
                         </div>
                       </div>
-                      <div className={classes.kabobItem}>
-                        <MdDeleteOutline onClick={onDeleteHandler} />
-                      </div>
                     </div>
-                  </div>
-                </TreeItemLayout>
+                  </TreeItemLayout>
                 <Tree className={classes.leafLayout} aria-label={`leaf-${projectName}`}>
                   <TreeItem
                     itemType="leaf"
@@ -131,11 +153,12 @@ const ExplorerComp: FC = () => {
                       </Caption1>
                     </TreeItemLayout>
                   </TreeItem>
-                </Tree>
-              </TreeItem>
-            );
-          })}
-        </Tree>
+                  </Tree>
+                </TreeItem>
+              );
+            })}
+          </Tree>
+        </div>
       ) : (
         <RecordNotFound />
       )}

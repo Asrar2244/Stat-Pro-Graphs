@@ -6,11 +6,16 @@ export const useExplorerLayout = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
+    height: '100%',
+    overflow: 'hidden',
     '& .selected': {
       backgroundColor: tokens.colorNeutralStencil2Alpha, //colorBrandBackgroundInvertedSelected
     },
     '& .tree-comp': {
       backgroundColor: tokens.colorNeutralBackground3,
+      flex: '1',
+      overflowY: 'auto',
+      scrollBehavior: 'smooth',
     },
   },
   treeItem: {

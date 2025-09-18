@@ -9,8 +9,10 @@ export const useMainStyles = makeStyles({
     alignContent: 'center',
     justifyItems: 'center',
     marginTop: '1em',
+    width: '100%',
     '& fieldset': {
-      minWidth: '30em',
+      flex: '1',
+      minWidth: '20em',
     },
     // ...shorthands.padding(tokens.spacingHorizontalM),
   },

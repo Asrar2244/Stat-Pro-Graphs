@@ -6,7 +6,7 @@ export const useCommonStyles = makeStyles({
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
     '& .details': {
-      height: '40vh',
+      height: '45vh',
     },
     '& .select-size': {
       width: 'max-content',
