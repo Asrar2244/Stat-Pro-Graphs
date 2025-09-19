@@ -1,6 +1,7 @@
-import React, { FC } from 'react';
-import { TabList, Tab, tokens } from '@fluentui/react-components';
+import React, { FC, useEffect, useRef, useState } from 'react';
+import { tokens } from '@fluentui/react-components';
 import { MdArrowDropDown } from 'react-icons/md';
+import { MdOutlinePushPin, MdPushPin } from 'react-icons/md';
 import { SampleSizeModalWrapper, sampleSizeOptions } from '../sample-size';
 import { useTests } from './use-tests';
 import { useTestsStyles } from './styles-hook/use-tests-styles';
@@ -9,8 +10,10 @@ import type { TestsDropdownPanelProps } from './types';
 
 export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose, setMenuItem }) => {
   const styles = useTestsStyles();
+  const [pinned, setPinned] = useState(false);
+  const onCloseIfNotPinned = () => { if (!pinned) onClose(); };
+
   const {
-    tab,
     selectedAnalysis,
     selectedAdvanced,
     showAnalysisDropdown,
@@ -24,10 +27,7 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
     filteredAnalysisOptions,
     filteredSampleSizeOptions,
     filteredAdvancedOptions,
-    setTab,
-    setShowAnalysisDropdown,
-    setShowAdvancedDropdown,
-    setShowSampleSizeDropdown,
+    // setShowSampleSizeDropdown, // not used after layout merge
     setAnalysisSearchTerm,
     setSampleSizeSearchTerm,
     setAdvancedSearchTerm,
@@ -38,27 +38,66 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
     closeAllDropdowns,
     closeSampleSizeModal,
     openDropdown,
-  } = useTests(setMenuItem, onClose);
+  } = useTests(setMenuItem, onCloseIfNotPinned);
 
   if (!open) return null;
 
+  // Measure available space inside the panel and cap inner dropdowns to fit
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const analysisTriggerRef = useRef<HTMLDivElement | null>(null);
+  const sampleTriggerRef = useRef<HTMLDivElement | null>(null);
+  const advancedTriggerRef = useRef<HTMLDivElement | null>(null);
+
+  // Fixed-position dropdown coordinates
+  const [analysisMenuStyle, setAnalysisMenuStyle] = useState<React.CSSProperties>({});
+  const [sampleMenuStyle, setSampleMenuStyle] = useState<React.CSSProperties>({});
+  const [advancedMenuStyle, setAdvancedMenuStyle] = useState<React.CSSProperties>({});
+
+  const computeFixedMenu = (trigger: HTMLElement | null): React.CSSProperties => {
+    if (!trigger) return {};
+    const r = trigger.getBoundingClientRect();
+    return {
+      position: 'fixed',
+      top: `${r.bottom}px`,
+      left: `${r.left}px`,
+      width: `${r.width}px`,
+      minWidth: `${r.width}px`,
+      right: 'auto',
+      zIndex: 1000001,
+    };
+  };
+
+  useEffect(() => {
+    if (showAnalysisDropdown) {
+      setAnalysisMenuStyle(computeFixedMenu(analysisTriggerRef.current));
+    }
+  }, [showAnalysisDropdown]);
+
+  useEffect(() => {
+    if (showSampleSizeDropdown) {
+      setSampleMenuStyle(computeFixedMenu(sampleTriggerRef.current));
+    }
+  }, [showSampleSizeDropdown]);
+
+  useEffect(() => {
+    if (showAdvancedDropdown) {
+      setAdvancedMenuStyle(computeFixedMenu(advancedTriggerRef.current));
+    }
+  }, [showAdvancedDropdown]);
+
   const handleBackdropClick = () => {
+    if (pinned) return;
+    // If a modal inside the panel is open, do not close the panel/backdrop
+    if (showSampleSizeModal) return;
     onClose();
     closeAllDropdowns();
   };
 
   const handleContainerClick = (e: React.MouseEvent) => {
+    // Do not allow container clicks to collapse dropdowns; only backdrop or explicit selection should close
     e.stopPropagation();
-    // Only close dropdowns if clicking on the main container but not on dropdown triggers or content
-    const target = e.target as HTMLElement;
-    const isDropdownTrigger = target.closest('[data-dropdown-trigger]');
-    const isDropdownContent = target.closest('.dropdown-content');
-    
-    if (!isDropdownTrigger && !isDropdownContent) {
-      setShowAnalysisDropdown(false);
-      setShowAdvancedDropdown(false);
-      setShowSampleSizeDropdown(false);
-    }
+    if (pinned) return;
+    if (showSampleSizeModal) return;
   };
 
   const handleDropdownTriggerHover = (e: React.MouseEvent<HTMLDivElement>, isEnter: boolean) => {
@@ -81,52 +120,61 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
 
   return (
     <>
+      {/* Professional scrollbar for dropdown lists */}
+      <style>{`
+        .dropdown-content::-webkit-scrollbar { width: 8px; }
+        .dropdown-content::-webkit-scrollbar-track { background: ${tokens.colorNeutralStroke2}; border-radius: 4px; }
+        .dropdown-content::-webkit-scrollbar-thumb { background: ${tokens.colorNeutralStroke1}; border-radius: 4px; border: 1px solid ${tokens.colorNeutralStroke2}; }
+        .dropdown-content::-webkit-scrollbar-thumb:hover { background: ${tokens.colorNeutralForeground3}; }
+      `}</style>
       {/* Backdrop to close the slider when clicking outside */}
-      <div style={styles.backdrop} onClick={handleBackdropClick} />
+      <div style={{ ...styles.backdrop, pointerEvents: pinned ? 'none' : 'auto' }} onClick={handleBackdropClick} />
       
       <div
-        style={{
-          ...styles.container,
-          transform: open ? 'translateY(0)' : 'translateY(-100%)',
-        }}
+        style={styles.container}
         onClick={handleContainerClick}
+        ref={panelRef}
       >
-        <div style={styles.tabContainer}>
-          <TabList
-            selectedValue={tab}
-            appearance="subtle"
-            style={styles.tabList}
-            onTabSelect={(_, data) => setTab(data.value as 'analysis' | 'advance')}
-          >
-            <Tab value="analysis" style={styles.tab(tab === 'analysis')}>
-              Analysis
-            </Tab>
-            <Tab value="advance" style={styles.tab(tab === 'advance')}>
-              Advance
-            </Tab>
-          </TabList>
+        {/* Pin control */}
+        <div style={{ position: 'absolute', left: 12, top: 8, zIndex: 1002, cursor: 'pointer' }}
+             onClick={(e) => { e.stopPropagation(); setPinned((v) => !v); }}
+             title={pinned ? 'Unpin panel' : 'Pin panel'}>
+          {pinned ? <MdPushPin size={18} /> : <MdOutlinePushPin size={18} />}
         </div>
+        {/* Tabs removed - show all sections in one panel */}
         
         <div style={styles.content}>
           {/* Bottom line */}
           <div style={styles.bottomLine} />
           
-          {tab === 'analysis' ? (
-            <div style={styles.card}>
-              <div style={styles.cardInner}>
+          {/* Box 1: Analysis + Sample Size */}
+          <div style={styles.card}>
+            <div style={{ ...styles.cardInner, gridTemplateColumns: '1fr 1fr' }}>
                 {/* Analysis Dropdown */}
                 <div style={styles.fieldContainer}>
-                  <label style={styles.label}>Analysis</label>
+                  <label style={{
+                    ...styles.label,
+                    color: tokens.colorBrandForeground1,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.6px',
+                    paddingBottom: 4,
+                    borderBottom: `2px solid ${tokens.colorBrandForeground1}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}>Analysis</label>
                   <div style={{ position: 'relative', width: '100%' }}>
                     <div
                       data-dropdown-trigger
-                      style={styles.dropdownTrigger}
+                      style={{ ...styles.dropdownTrigger, width: 220 }}
+                      ref={analysisTriggerRef as any}
                       onMouseEnter={(e) => handleDropdownTriggerHover(e, true)}
                       onMouseLeave={(e) => handleDropdownTriggerHover(e, false)}
                       onClick={() => {
                         if (showAnalysisDropdown) {
                           setAnalysisSearchTerm('');
                         }
+                        setAnalysisMenuStyle(computeFixedMenu(analysisTriggerRef.current));
                         openDropdown('analysis');
                       }}
                     >
@@ -140,7 +188,7 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
                     
                     {/* Dropdown options */}
                     {showAnalysisDropdown && (
-                      <div className="dropdown-content" style={styles.dropdownContent}>
+                      <div className="dropdown-content" style={{ ...styles.dropdownContent, ...analysisMenuStyle, maxHeight: '240px', overflowY: 'auto' }}>
                         {/* Search input */}
                         <div style={styles.searchContainer}>
                           <input
@@ -160,7 +208,8 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
                             onMouseLeave={(e) => handleOptionHover(e, false)}
                             onClick={() => {
                               handleAnalysisChange(option.value);
-                              setShowAnalysisDropdown(false);
+                              // close explicitly
+                              closeAllDropdowns();
                               setAnalysisSearchTerm('');
                             }}
                           >
@@ -174,17 +223,29 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
                 
                 {/* Sample Size Dropdown */}
                 <div style={styles.fieldContainer}>
-                  <label style={styles.label}>Sample Size</label>
+                  <label style={{
+                    ...styles.label,
+                    color: tokens.colorPaletteBlueForeground2,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.6px',
+                    paddingBottom: 4,
+                    borderBottom: `2px solid ${tokens.colorPaletteBlueForeground2}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}>Sample Size</label>
                   <div style={{ position: 'relative', width: '100%' }}>
                     <div
                       data-dropdown-trigger
                       style={styles.dropdownTrigger}
+                      ref={sampleTriggerRef as any}
                       onMouseEnter={(e) => handleDropdownTriggerHover(e, true)}
                       onMouseLeave={(e) => handleDropdownTriggerHover(e, false)}
                       onClick={() => {
                         if (showSampleSizeDropdown) {
                           setSampleSizeSearchTerm('');
                         }
+                        setSampleMenuStyle(computeFixedMenu(sampleTriggerRef.current));
                         openDropdown('sampleSize');
                       }}
                     >
@@ -200,7 +261,10 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
                     {showSampleSizeDropdown && (
                       <div className="dropdown-content" style={{
                         ...styles.dropdownContent,
-                        zIndex: 1002,
+                        ...sampleMenuStyle,
+                        zIndex: 1000002,
+                        maxHeight: '240px',
+                        overflowY: 'auto',
                       }}>
                         {/* Search input */}
                         <div style={styles.searchContainer}>
@@ -221,6 +285,7 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
                             onMouseLeave={(e) => handleOptionHover(e, false)}
                             onClick={() => {
                               handleSampleSizeChange(option.value);
+                              closeAllDropdowns();
                               setSampleSizeSearchTerm('');
                             }}
                           >
@@ -231,24 +296,37 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
                     )}
                   </div>
                 </div>
-              </div>
             </div>
-          ) : (
-            <div style={styles.card}>
-              <div style={styles.cardInner}>
+          </div>
+
+          {/* Box 2: Advanced */}
+          <div style={styles.card}>
+            <div style={{ ...styles.cardInner, gridTemplateColumns: '1fr' }}>
                 {/* Advanced Analysis Dropdown */}
                 <div style={styles.fieldContainer}>
-                  <label style={styles.label}>Advanced Analysis</label>
+                  <label style={{
+                    ...styles.label,
+                    color: tokens.colorPalettePurpleForeground2,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.6px',
+                    paddingBottom: 4,
+                    borderBottom: `2px solid ${tokens.colorPalettePurpleForeground2}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}>Advanced Analysis</label>
                   <div style={{ position: 'relative', width: '100%' }}>
                     <div
                       data-dropdown-trigger
                       style={styles.dropdownTrigger}
+                      ref={advancedTriggerRef as any}
                       onMouseEnter={(e) => handleDropdownTriggerHover(e, true)}
                       onMouseLeave={(e) => handleDropdownTriggerHover(e, false)}
                       onClick={() => {
                         if (showAdvancedDropdown) {
                           setAdvancedSearchTerm('');
                         }
+                        setAdvancedMenuStyle(computeFixedMenu(advancedTriggerRef.current));
                         openDropdown('advanced');
                       }}
                     >
@@ -262,7 +340,7 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
                     
                     {/* Advanced Dropdown options */}
                     {showAdvancedDropdown && (
-                      <div className="dropdown-content" style={styles.dropdownContent}>
+                      <div className="dropdown-content" style={{ ...styles.dropdownContent, ...advancedMenuStyle, maxHeight: '240px', overflowY: 'auto' }}>
                         {/* Search input */}
                         <div style={styles.searchContainer}>
                           <input
@@ -282,7 +360,7 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
                             onMouseLeave={(e) => handleOptionHover(e, false)}
                             onClick={() => {
                               handleAdvancedChange(option.value);
-                              setShowAdvancedDropdown(false);
+                              closeAllDropdowns();
                               setAdvancedSearchTerm('');
                             }}
                           >
@@ -293,9 +371,8 @@ export const TestsDropdownPanel: FC<TestsDropdownPanelProps> = ({ open, onClose,
                     )}
                   </div>
                 </div>
-              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
       

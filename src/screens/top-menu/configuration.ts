@@ -88,8 +88,8 @@ export const topMenuConfig = {
       label: 'tests',
     },
     {
-      id: 'graph',
-      label: 'graph',
+      id: 'graphs',
+      label: 'graphs',
       submenu: [
         {
           id: 'graphView',

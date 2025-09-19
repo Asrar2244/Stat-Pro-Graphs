@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 type IMenuCodeExecutor = {
   id: string;
   isEmptyDataView?: boolean;
+  extraConfig?: Record<string, unknown>;
 };
 
 export const useMenuCodeExecutor = () => {
@@ -28,6 +29,7 @@ export const useMenuCodeExecutor = () => {
         inputFileName: input.id,
         projectName: dayjs().format('YYYY-MM-DD'),
         isEmptyDataView: input.isEmptyDataView,
+        ...(input.extraConfig || {}),
       },
       numb,
       input.id,

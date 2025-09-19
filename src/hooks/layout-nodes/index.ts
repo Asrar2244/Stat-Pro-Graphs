@@ -4,8 +4,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { Actions, DockLocation } from 'flexlayout-react';
 import { skipLayoutToGetActiveNode } from '@constants/dock-layout';
 import { ISelector } from 'src/screens/workspace/explorer';
-import { CONFIGURATION_DB, DATA, OUTPUT } from '@constants/db';
-import { updateDataProjectClose, updateOutputProjectClose } from '@backend/project';
+import { CONFIGURATION_DB, DATA, OUTPUT, GRAPHS } from '@constants/db';
+import { updateDataProjectClose, updateOutputProjectClose, updateGraphsProjectClose } from '@backend/project';
 import { Database } from '@utils/db';
 export interface IActiveNode {
   id?: string;
@@ -98,6 +98,9 @@ export const useNodeActions = (): INodeActions => {
           break;
         case OUTPUT:
           query = updateOutputProjectClose;
+          break;
+        case GRAPHS:
+          query = updateGraphsProjectClose;
           break;
       }
       if (query === '') return;

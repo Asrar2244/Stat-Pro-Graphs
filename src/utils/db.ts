@@ -155,4 +155,14 @@ export class Database {
 
     return (await this.db).select(query, parameters);
   }
+
+  public async executeQueryWithParams(query: string, parameters: Array<any>): Promise<any> {
+    if (query === '') {
+      return Promise.reject('Query can not be empty');
+    }
+    if (MODE === 'development') {
+      console.log(`Query: ${query} with parameters: ${parameters}`);
+    }
+    return (await this.db).execute(query, parameters);
+  }
 }

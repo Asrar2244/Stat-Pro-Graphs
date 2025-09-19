@@ -6,12 +6,28 @@ export const useExplorerLayout = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
+    maxHeight: 'calc(100vh - 90px)',
+    overflowY: 'auto',
+    paddingRight: tokens.spacingHorizontalS,
     '& .selected': {
       backgroundColor: tokens.colorNeutralStencil2Alpha, //colorBrandBackgroundInvertedSelected
     },
     '& .tree-comp': {
       backgroundColor: tokens.colorNeutralBackground3,
+      maxHeight: 'calc(100vh - 140px)',
+      overflowY: 'auto',
+      scrollBehavior: 'smooth',
+      WebkitOverflowScrolling: 'touch',
     },
+    // Thin scrollbar styling
+    '&::-webkit-scrollbar': { width: '8px' },
+    '&::-webkit-scrollbar-track': { background: tokens.colorNeutralStroke2, borderRadius: '4px' },
+    '&::-webkit-scrollbar-thumb': {
+      background: tokens.colorNeutralStroke1,
+      borderRadius: '4px',
+      border: `1px solid ${tokens.colorNeutralStroke2}`,
+    },
+    '&::-webkit-scrollbar-thumb:hover': { background: tokens.colorNeutralForeground3 },
   },
   treeItem: {
     display: 'flex',

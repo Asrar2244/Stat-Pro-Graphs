@@ -3,11 +3,11 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 export const useLayout = makeStyles({
   root: {
     display: 'flex',
-    flexDirection: 'row',
+    flexDirection: 'column',
     scrollbarWidth: 'thin',
     height: '100vh',
     '& .flexlayout__layout': {
-      top: '42px',
+      top: 'var(--ribbon-offset, 42px)',
       backgroundColor: tokens.colorNeutralForegroundInverted,
     },
     '& .flexlayout__tab_button--selected': {
@@ -103,6 +103,6 @@ export const useLayout = makeStyles({
   suppressOverFlow: {
     overflow: 'hidden',
     width: '100%',
-    height: 'calc(100vh - 118px)',
+    height: 'calc(100vh - var(--ribbon-offset, 42px))',
   },
 });

@@ -13,6 +13,7 @@ export const EXCEL = 'input';
 //Table name for output
 export const OUTPUT = 'OUTPUT';
 export const GRAPH = 'graphView';
+export const GRAPHS = 'GRAPHS';
 export const EMPTY_GRAPH_VIEW = 'emptyDataView';
 //Layout render
 export const DATA = 'DATA';

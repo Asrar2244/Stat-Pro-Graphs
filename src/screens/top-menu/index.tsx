@@ -7,13 +7,12 @@ import {
   Text,
   MenuDivider,
 } from '@fluentui/react-components';
-import { FC, Fragment, lazy, useState } from 'react';
+import { FC, Fragment, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { topMenuConfig, IMenuItem } from './configuration';
 import { withMenuEvents } from './executer';
 import { useMenuCodeExecutor } from '@hooks';
 import * as VscIcons from 'react-icons/vsc';
-import { TestsDropdownPanel } from './tests';
 import { useMenuLayout } from './styles-hook/use-status-list-style';
 
 const CommonMessages = lazy(() =>
@@ -43,18 +42,16 @@ const GetDynamicIcon: FC<DynamicIconProps> = ({ iconName, size, color }) => {
   return <IconComponent size={size} color={color} />;
 };
 
-const CreateSubMenu: FC<{ menu: IMenuItem; translateNs: string }> = ({
-  menu,
-  translateNs,
-  ...props
-}) => {
+interface CreateSubMenuProps {
+  menu: IMenuItem;
+  translateNs: string;
+  setMenuItem: (item: string) => void;
+}
+
+const CreateSubMenu: FC<CreateSubMenuProps> = ({ menu, translateNs, setMenuItem }) => {
   const classes = useMenuLayout();
   const { t } = useTranslation(['menus']);
   const codeExecuter = useMenuCodeExecutor();
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  // eslint-disable-next-line react/prop-types
-  const { setMenuItem } = props;
 
   const onSelectMenu = (item: IMenuItem) => () => {
     if (item.execute) {
@@ -100,10 +97,10 @@ const CreateSubMenu: FC<{ menu: IMenuItem; translateNs: string }> = ({
               );
             } else {
               return (
-                <Fragment key={item.id}>
-                  <CreateSubMenu key={item.id} menu={item} translateNs={translateNs} {...props} />
-                  <MenuDivider />
-                </Fragment>
+                 <Fragment key={item.id}>
+                   <CreateSubMenu key={item.id} menu={item} translateNs={translateNs} setMenuItem={setMenuItem} />
+                   <MenuDivider />
+                 </Fragment>
               );
             }
           })}
@@ -113,22 +110,29 @@ const CreateSubMenu: FC<{ menu: IMenuItem; translateNs: string }> = ({
   );
 };
 
-const TopMenus: FC = (props) => {
+interface TopMenusProps {
+  setMenuItem: (item: string) => void;
+  toggleTests: () => void;
+  toggleGraphs: () => void;
+  closeAllDropdowns: () => void;
+}
+
+const TopMenus: FC<TopMenusProps> = ({ setMenuItem, toggleTests, toggleGraphs, closeAllDropdowns }) => {
   const classes = useMenuLayout();
   const { t } = useTranslation(['menus']);
   const { menus, translateNs } = topMenuConfig;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  const { setMenuItem } = props;
   const codeExecuter = useMenuCodeExecutor();
-  const [testsOpen, setTestsOpen] = useState(false);
 
   const onSelectMenu = (item: IMenuItem) => () => {
     if (item.id === 'tests') {
-      setTestsOpen((open) => !open);
+      toggleTests();
       return;
     }
-    if (testsOpen) setTestsOpen(false);
+    if (item.id === 'graphs') {
+      toggleGraphs();
+      return;
+    }
+    closeAllDropdowns();
     if (item.execute) {
       setMenuItem(item.execute);
     } else if (item.codeExecute) {
@@ -153,7 +157,7 @@ const TopMenus: FC = (props) => {
               </Text>
             </MenuTrigger>
             <>
-              {menu.submenu && menu.id !== 'tests' && (
+               {menu.submenu && menu.id !== 'tests' && menu.id !== 'graphs' && (
                 <MenuPopover>
                   <MenuList>
                     {menu.submenu.map((item: IMenuItem) => {
@@ -178,12 +182,12 @@ const TopMenus: FC = (props) => {
                       } else {
                         return (
                           <Fragment key={item.id}>
-                            <CreateSubMenu
-                              key={item.id}
-                              menu={item}
-                              translateNs={translateNs}
-                              {...props}
-                            />
+                           <CreateSubMenu
+                               key={item.id}
+                               menu={item}
+                               translateNs={translateNs}
+                               setMenuItem={setMenuItem}
+                             />
                             <MenuDivider />
                           </Fragment>
                         );
@@ -196,10 +200,7 @@ const TopMenus: FC = (props) => {
           </Menu>
         ))}
       </div>
-      {/* Render TestsDropdownPanel outside of Menu components to prevent click bubbling */}
-      {testsOpen && (
-        <TestsDropdownPanel open={testsOpen} onClose={() => setTestsOpen(false)} setMenuItem={setMenuItem} />
-      )}
+       {/* Dropdown panels moved to BaseComponent to appear between ribbon and workspace */}
       <div className={classes.tools}>
         <CommonMessages />
         <MinMaxClose />
@@ -209,4 +210,8 @@ const TopMenus: FC = (props) => {
   );
 };
 
-export const TopMenu = withMenuEvents(topMenuConfig.translateNs, TopMenus);
+const TopMenuWithEvents = withMenuEvents(topMenuConfig.translateNs, TopMenus);
+
+export const TopMenu: FC<TopMenusProps> = (props) => {
+  return <TopMenuWithEvents {...props} />;
+};

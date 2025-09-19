@@ -11,6 +11,10 @@ export const updateDataFromProject = `UPDATE ${PROJECTS_TABLE} SET isOpenedData=
 
 export const updateOutputFromProject = `UPDATE ${PROJECTS_TABLE} SET isOpenedOutput=1 WHERE id=?`;
 
+export const updateGraphsFromProject = `UPDATE ${PROJECTS_TABLE} SET isOpenedGraphs=1 WHERE id=?`;
+
 export const updateDataProjectClose = `UPDATE ${PROJECTS_TABLE} SET isOpenedData=0 where id=?`;
 
 export const updateOutputProjectClose = `UPDATE ${PROJECTS_TABLE} SET isOpenedOutput=0 where id=?`;
+
+export const updateGraphsProjectClose = `UPDATE ${PROJECTS_TABLE} SET isOpenedGraphs=0 where id=?`;

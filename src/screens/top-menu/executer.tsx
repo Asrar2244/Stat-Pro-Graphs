@@ -3,8 +3,11 @@ import { useModal, IModal } from '@hooks';
 import { FC, lazy, useEffect, useState } from 'react';
 import { exporters } from './configuration';
 import { useTranslation } from 'react-i18next';
-import { useLicenseStore } from '@store';
+import { useLicenseStore, useStartProStore } from '@store';
 import { useShallow } from 'zustand/react/shallow';
+import { useMenuCodeExecutor } from '@hooks';
+import { useScatterPlotStore } from '@features/graphs/ScatterPlot/scatterPlotSlice';
+import { GRAPHS } from '@constants';
 const BrowseFile = lazy(() =>
   import('./browse-file').then((module) => ({ default: module.BrowseFile })),
 );
@@ -44,6 +47,11 @@ const MultipleLinear = lazy(() =>
 );
 const Polynomial = lazy(() =>
   import('./analyze').then((module) => ({ default: module.PolynomialModule }))
+);
+
+// Scatter Plot Modal
+const ScatterPlotModal = lazy(() =>
+  import('../../features/graphs/ScatterPlot').then((m) => ({ default: m.ScatterPlotModal })),
 );
 
 export const withMenuEvents = <P extends object>(
@@ -94,6 +102,61 @@ const MenuSelector: FC<{
   if (isLicensed) {
     return <OpenDevTools {...modal} showCloseButton={true} />;
   }
+
+  // Scatter Plot wrapper with real data integration
+  const ScatterWrapper: FC<IModal> = (m) => {
+    const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+    const projectNames = Object.keys(projects);
+    const { openNewTabAction } = useMenuCodeExecutor();
+    const { setRenderLatestRun } = useStartProStore();
+    
+    // For now, use empty datasets array - this would be populated based on selected project
+    const datasets: string[] = [];
+    
+    const onCreateGraph = async (config: any) => {
+      console.log('Creating Scatter Plot with config:', config);
+      try {
+        const workspacePath = projects[config.selectedProject]?.workspacePath;
+        // Persist a run immediately so history shows up
+        const { insertGraphRun } = await import('../graph-view-render/graph-body-render/graphs-store');
+        await insertGraphRun(workspacePath, {
+          name: config?.subType || 'Scatter Plot',
+          createdAt: new Date().toISOString(),
+          config: { graphConfig: config, workspacePath },
+          tabName: config?.selectedProject || '',
+          graphType: config?.graphType || 'Scatter Plot',
+        });
+        
+        // Set flag to auto-select the latest run when Graphs tab opens
+        setRenderLatestRun(true);
+      } catch (e) {
+        console.error('Failed to insert graph run:', e);
+      }
+
+      // Open the Graphs output screen under Explorer for the selected project
+      openNewTabAction({ 
+        id: GRAPHS, // Use GRAPHS constant
+        isEmptyDataView: false,
+        extraConfig: {
+          tabName: projects[config.selectedProject]?.workspacePath, // Pass workspacePath as tabName
+          name: config.selectedProject, // Pass project name
+          type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }), // Pass type
+          bareType: GRAPHS, // Pass bareType
+          id: projects[config.selectedProject]?.id, // Pass project ID
+          lastModified: new Date().toISOString(), // Current timestamp
+          isActive: 1, // Set as active
+          workspacePath: projects[config.selectedProject]?.workspacePath, // Pass workspacePath
+        }
+      });
+      
+      // TODO: Pass the scatter plot configuration to the graph tab
+      // This would typically involve storing the config in a store or passing it via tab config
+      console.log('Graph tab created. Config to be passed:', config);
+    };
+    
+    return <ScatterPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
+  };
+
   const d = () => {
     switch (selector) {
       case exporters.importBusinessObject:
@@ -122,9 +185,13 @@ const MenuSelector: FC<{
         return <OpenDevTools {...modal} />;
       case exporters.pairwiseComparisonOfModule:
         return <PairwiseComparisonOfModule {...modal} />;
+      case 'open-scatter-plot-modal':
+        return <ScatterWrapper {...modal} />;
       default:
         return null;
     }
   };
   return modal.open ? <>{d()}</> : <></>;
 };
+
+export { MenuSelector };

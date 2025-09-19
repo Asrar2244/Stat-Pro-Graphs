@@ -45,7 +45,7 @@ const SampleSizeModalWrapperComponent: FC<SampleSizeModalWrapperProps> = ({
       toggleModal={handleClose}
       openModal={() => {}}
       title="Sample Size Calculator"
-      size="medium"
+      size="small"
     >
       <SampleSizeModal selectedTest={selectedTest} onClose={handleClose} />
     </Modal>

@@ -9,10 +9,11 @@ import { useLayout } from './styles-hook/use-layout-style';
 import { Explorer } from '../workspace/explorer';
 import { TableRender } from '../table-render';
 import { OutputRender } from '../output-render';
+import { GraphsRender } from '../graphs-render';
 import { GraphViewRender } from '../graph-view-render';
 import { EmptyDataView } from '../empty-data-view';
-import { DATA, OUTPUT, CONFIGURATION_DB, GRAPH, EMPTY_GRAPH_VIEW } from '@constants';
-import { updateDataProjectClose, updateOutputProjectClose } from '@backend';
+import { DATA, OUTPUT, CONFIGURATION_DB, GRAPH, GRAPHS, EMPTY_GRAPH_VIEW } from '@constants';
+import { updateDataProjectClose, updateOutputProjectClose, updateGraphsProjectClose } from '@backend';
 import { Database } from '@utils/db';
 import { WelcomePage } from '../welcome';
 import 'flexlayout-react/style/light.css';
@@ -37,6 +38,12 @@ const AppBody: FC = () => {
         return (
           <div className={classes.suppressOverFlow}>
             <OutputRender {...node.getConfig()} />
+          </div>
+        );
+      case `${GRAPHS}-render`:
+        return (
+          <div className={classes.suppressOverFlow}>
+            <GraphsRender {...node.getConfig()} />
           </div>
         );
       case `${GRAPH}-render`:
@@ -103,6 +110,9 @@ const AppBody: FC = () => {
             break;
           case OUTPUT:
             query = updateOutputProjectClose;
+            break;
+          case GRAPHS:
+            query = updateGraphsProjectClose;
             break;
           case EMPTY_GRAPH_VIEW:
             query = '';
