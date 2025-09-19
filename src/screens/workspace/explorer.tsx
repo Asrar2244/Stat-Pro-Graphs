@@ -99,7 +99,7 @@ const ExplorerComp: FC = () => {
                   key={projectName}
                   itemType="branch"
                   data-project={projectName}
-                  onOpenChange={(event, data) => {
+                  onOpenChange={(_, data) => {
                     if (data.open) {
                       handleTreeItemExpand(projectName);
                     }
@@ -130,29 +130,29 @@ const ExplorerComp: FC = () => {
                       </div>
                     </div>
                   </TreeItemLayout>
-                <Tree className={classes.leafLayout} aria-label={`leaf-${projectName}`}>
-                  <TreeItem
-                    itemType="leaf"
-                    className={`leaf ${project?.isOpenedData === 1 && 'selected'}`}
-                    onClick={onSelectedUpdate({ ...project, projectName }, DATA)}
-                  >
-                    <TreeItemLayout>
-                      <Caption1>
-                        <AiFillFileExcel /> {project?.inputFileName}
-                      </Caption1>
-                    </TreeItemLayout>
-                  </TreeItem>
-                  <TreeItem
-                    itemType="leaf"
-                    className={`leaf ${project?.isOpenedOutput === 1 && 'selected'}`}
-                    onClick={onSelectedUpdate({ ...project, projectName }, OUTPUT)}
-                  >
-                    <TreeItemLayout>
-                      <Caption1>
-                        <AiFillControl /> {t('output', { ns: 'workspace' })}
-                      </Caption1>
-                    </TreeItemLayout>
-                  </TreeItem>
+                  <Tree className={classes.leafLayout} aria-label={`leaf-${projectName}`}>
+                    <TreeItem
+                      itemType="leaf"
+                      className={`leaf ${project?.isOpenedData === 1 && 'selected'}`}
+                      onClick={onSelectedUpdate({ ...project, projectName }, DATA)}
+                    >
+                      <TreeItemLayout>
+                        <Caption1>
+                          <AiFillFileExcel /> {project?.inputFileName}
+                        </Caption1>
+                      </TreeItemLayout>
+                    </TreeItem>
+                    <TreeItem
+                      itemType="leaf"
+                      className={`leaf ${project?.isOpenedOutput === 1 && 'selected'}`}
+                      onClick={onSelectedUpdate({ ...project, projectName }, OUTPUT)}
+                    >
+                      <TreeItemLayout>
+                        <Caption1>
+                          <AiFillControl /> {t('output', { ns: 'workspace' })}
+                        </Caption1>
+                      </TreeItemLayout>
+                    </TreeItem>
                   </Tree>
                 </TreeItem>
               );

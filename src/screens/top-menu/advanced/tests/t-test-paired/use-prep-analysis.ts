@@ -1,6 +1,6 @@
 import { IActiveNode, useAnalyzeSave } from '@hooks';
 import { API } from '@constants';
-import { usePairedTTestsStats } from './use-t-test-paired';
+// import { usePairedTTestsStats } from './use-t-test-paired';
 import { useTestsStats } from '../options/use-tests-config';
 
 interface IOutput {
@@ -15,7 +15,7 @@ export const usePrepareAnalysis = ({
     // const { model: { assumptionChecking, results, postHocTests } } = useTestsStats();
     const { model: { results } } = useTestsStats();
 
-    const { model: { dataFormat } } = usePairedTTestsStats();
+    // const { model: { dataFormat } } = usePairedTTestsStats();
     const executeAnalysis = async (id: string): Promise<void> => {
         const tableName = config.tabName;
         const parameters = {
