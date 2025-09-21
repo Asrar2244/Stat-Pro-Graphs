@@ -1,113 +1,64 @@
-import { FaChartArea, FaChartPie } from 'react-icons/fa6';
-import { VscGraphScatter } from 'react-icons/vsc';
-import { AiOutlineLineChart, AiOutlineRadarChart, AiFillPieChart } from 'react-icons/ai';
-import {
-  TbChartBubbleFilled,
-  TbChartCovariate,
-  TbChartScatter3D,
-  TbVectorTriangle,
-} from 'react-icons/tb';
-import {
-  PiChartBarFill,
-  PiChartBarHorizontalFill,
-  PiBoundingBox,
-  PiVectorThreeFill,
-} from 'react-icons/pi';
-import { LuMove3D } from 'react-icons/lu';
-import { GiForestEntrance, GiWaterfall, GiMeshBall } from 'react-icons/gi';
-import { HiMiniSquare3Stack3D } from 'react-icons/hi2';
-import { ImStatsBars2 } from 'react-icons/im';
 import type { GraphOption } from './types';
+import { MdScatterPlot, MdShowChart, MdBarChart, MdAreaChart, MdHistory, MdBolt, MdHeatPump, MdDashboard, MdMap, MdVolumeUp, MdRadar, MdAccountTree, MdBubbleChart } from 'react-icons/md';
 
-export const SCATTER_SUB_TYPES = [
-  'Simple Scatter',
-  'Simple Scatter Regression',
-  'Multi Scatter',
-  'Multi Scatter Regression',
-  'Simple Scatter Error Bar',
-  'Simple Scatter Error Bar and Regression',
-  'Multi Scatter Error Bar',
-  'Multi Scatter Error Bar and Regression',
-  'Simple Scatter Horizontal Error Bar',
-  'Simple Scatter Bidirectional Error Bars',
-  'Vertical Asymmetric Error Bars',
-  'Horizontal Asymmetric Error Bars',
-  'Vertical Point Plots',
-  'Horizontal Point Plots',
-  'Vertical Dot Plot',
-  'Horizontal Dot Plot',
-] as const;
-
-// 2D Graph Options
 export const graph2DOptions: GraphOption[] = [
   {
-    label: 'Basic Charts',
-    value: 'basic',
+    label: 'Basic',
     children: [
-      { label: 'Scatter Plot', value: 'scatter', icon: VscGraphScatter, execute: 'open-scatter-plot-modal' },
-      { label: 'Line Chart', value: 'line', icon: AiOutlineLineChart, execute: 'line-chart' },
-      { label: 'Line and Scatter', value: 'lineAndScatter', icon: TbChartCovariate, execute: 'line-scatter' },
-      { label: 'Area Plot', value: 'areaPlot', icon: FaChartArea, execute: 'area-plot' },
-    ],
-  },
-  {
-    label: 'Bar Charts',
-    value: 'bar',
-    children: [
-      { label: 'Vertical Bar', value: 'verticalBar', icon: PiChartBarFill, execute: 'vertical-bar' },
-      { label: 'Horizontal Bar', value: 'horizontalBar', icon: PiChartBarHorizontalFill, execute: 'horizontal-bar' },
-    ],
+      { label: 'Scatter Plot', value: 'scatter', execute: 'open-scatter-plot-modal', icon: MdScatterPlot },
+      { label: 'Line Chart', value: 'line', execute: 'line-chart', icon: MdShowChart },
+      { label: 'Bar Chart', value: 'bar', execute: 'bar-chart', icon: MdBarChart },
+      { label: 'Area Chart', value: 'area', execute: 'area-chart', icon: MdAreaChart },
+    ]
   },
   {
     label: 'Statistical',
-    value: 'statistical',
     children: [
-      { label: 'Box Plot', value: 'box', icon: PiBoundingBox, execute: 'box-plot' },
-      { label: 'Bubble Chart', value: 'bubble', icon: TbChartBubbleFilled, execute: 'bubble-chart' },
-    ],
-  },
-  {
-    label: 'Circular Charts',
-    value: 'circular',
-    children: [
-      { label: 'Pie Chart', value: 'pie', icon: AiFillPieChart, execute: 'pie-chart' },
-      { label: 'Polar Chart', value: 'polar', icon: FaChartPie, execute: 'polar-chart' },
-      { label: 'Radar Chart', value: 'radar', icon: AiOutlineRadarChart, execute: 'radar-chart' },
-    ],
-  },
+      { label: 'Histogram', value: 'histogram', execute: 'histogram', icon: MdHistory },
+      { label: 'Box Plot', value: 'box', execute: 'box-plot', icon: MdBolt },
+      { label: 'Violin Plot', value: 'violin', execute: 'violin-plot', icon: MdBolt },
+      { label: 'Heatmap', value: 'heatmap', execute: 'heatmap', icon: MdHeatPump },
+    ]
+  }
 ];
 
-// 3D Graph Options
 export const graph3DOptions: GraphOption[] = [
   {
-    label: 'Basic 3D',
-    value: 'basic3d',
+    label: 'Surface',
     children: [
-      { label: '3D Scatter', value: 'scatter3d', icon: TbChartScatter3D, execute: 'scatter-3d' },
-      { label: '3D Line', value: 'line3d', icon: LuMove3D, execute: 'line-3d' },
-      { label: '3D Bar', value: 'bar3d', icon: ImStatsBars2, execute: 'bar-3d' },
-    ],
+      { label: '3D Surface', value: 'surface', execute: '3d-surface', icon: MdDashboard },
+      { label: '3D Scatter', value: 'scatter3d', execute: '3d-scatter', icon: MdScatterPlot },
+      { label: '3D Bar', value: 'bar3d', execute: '3d-bar', icon: MdBarChart },
+      { label: '3D Line', value: 'line3d', execute: '3d-line', icon: MdShowChart },
+    ]
   },
   {
-    label: 'Surface & Volume',
-    value: 'surface',
+    label: 'Advanced 3D',
     children: [
-      { label: '3D Mesh', value: 'mesh3d', icon: GiMeshBall, execute: 'mesh-3d' },
-      { label: '3D Waterfall', value: 'waterfall3d', icon: GiWaterfall, execute: 'waterfall-3d' },
-    ],
-  },
+      { label: '3D Mesh', value: 'mesh', execute: '3d-mesh', icon: MdDashboard },
+      { label: '3D Contour', value: 'contour3d', execute: '3d-contour', icon: MdMap },
+      { label: '3D Volume', value: 'volume', execute: '3d-volume', icon: MdVolumeUp },
+    ]
+  }
 ];
 
-// Advanced Graph Options
 export const graphAdvancedOptions: GraphOption[] = [
   {
     label: 'Specialized',
-    value: 'specialized',
     children: [
-      { label: 'Ternary Plot', value: 'ternary', icon: TbVectorTriangle, execute: 'ternary-plot' },
-      { label: 'Vector Plot', value: 'vector', icon: PiVectorThreeFill, execute: 'vector-plot' },
-      { label: 'Forest Plot', value: 'forest', icon: GiForestEntrance, execute: 'forest-plot' },
-      { label: 'Contour Plot', value: 'contour', icon: HiMiniSquare3Stack3D, execute: 'contour-plot' },
-    ],
+      { label: 'Polar Plot', value: 'polar', execute: 'polar-plot', icon: MdRadar },
+      { label: 'Radar Chart', value: 'radar', execute: 'radar-chart', icon: MdRadar },
+      { label: 'Sankey Diagram', value: 'sankey', execute: 'sankey-diagram', icon: MdAccountTree },
+      { label: 'Treemap', value: 'treemap', execute: 'treemap', icon: MdDashboard },
+    ]
   },
+  {
+    label: 'Interactive',
+    children: [
+      { label: 'Network Graph', value: 'network', execute: 'network-graph', icon: MdAccountTree },
+      { label: 'Chord Diagram', value: 'chord', execute: 'chord-diagram', icon: MdBubbleChart },
+      { label: 'Sunburst', value: 'sunburst', execute: 'sunburst', icon: MdRadar },
+      { label: 'Parallel Coordinates', value: 'parallel', execute: 'parallel-coordinates', icon: MdShowChart },
+    ]
+  }
 ];

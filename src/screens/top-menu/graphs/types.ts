@@ -1,10 +1,4 @@
-export interface GraphOption {
-  label: string;
-  value: string;
-  icon?: any;
-  execute?: string;
-  children?: GraphOption[];
-}
+import React from 'react';
 
 export interface GraphsDropdownPanelProps {
   open: boolean;
@@ -14,5 +8,10 @@ export interface GraphsDropdownPanelProps {
 
 export type GraphsTab = '2d' | '3d' | 'advanced';
 
-
-
+export interface GraphOption {
+  label: string;
+  value?: string;
+  execute?: string;
+  icon?: React.ComponentType<{ size?: number }>;
+  children?: GraphOption[];
+}

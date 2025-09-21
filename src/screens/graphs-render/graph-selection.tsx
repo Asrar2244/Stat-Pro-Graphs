@@ -8,7 +8,7 @@ import { IToolBar } from '@utils';
 import { useTranslation } from 'react-i18next';
 
 const ScatterPlotGraph = lazy(() =>
-  import('./graphs/scatter-plot/index').then((module) => ({ default: module.ScatterPlotGraph })),
+  import('./graphs/scatter-plot/index'),
 );
 
 interface IGraphSelection extends IToolBar {

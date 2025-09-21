@@ -47,8 +47,8 @@ export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClos
       </div>
       
       <div>
-        <div 
-          className="graphsRibbon"
+    <div
+      className="graphsRibbon"
       style={{
         display: 'flex',
             gap: tokens.spacingHorizontalXS,

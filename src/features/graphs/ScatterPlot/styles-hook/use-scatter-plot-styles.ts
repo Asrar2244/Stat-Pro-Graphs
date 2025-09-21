@@ -4,12 +4,12 @@ export const useScatterPlotStyles = makeStyles({
   root: {
     display: 'flex',
     flexDirection: 'column',
-    gap: tokens.spacingVerticalL,
+    gap: tokens.spacingVerticalS,
     backgroundColor: tokens.colorNeutralBackground1,
     borderRadius: tokens.borderRadiusLarge,
     boxShadow: tokens.shadow8,
     ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke1),
-    ...shorthands.padding(tokens.spacingVerticalL),
+    ...shorthands.padding(tokens.spacingVerticalM),
   },
   header: {
     backgroundColor: tokens.colorBrandBackground,
@@ -32,12 +32,12 @@ export const useScatterPlotStyles = makeStyles({
   sectionCard: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: tokens.spacingHorizontalM,
+    gap: tokens.spacingHorizontalS,
     backgroundColor: tokens.colorNeutralBackground2,
     borderRadius: tokens.borderRadiusMedium,
     boxShadow: tokens.shadow2,
     ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
-    ...shorthands.padding(tokens.spacingVerticalM),
+    ...shorthands.padding(tokens.spacingVerticalS),
   },
   dropdown: {
     minHeight: '40px',
@@ -101,7 +101,7 @@ export const useScatterPlotStyles = makeStyles({
     display: 'grid',
     gridTemplateColumns: '1fr 1fr 1fr',
     gap: 0,
-    minHeight: '400px',
+    minHeight: '300px',
   },
   column: {
     backgroundColor: tokens.colorNeutralBackground3,
@@ -184,7 +184,7 @@ export const useScatterPlotStyles = makeStyles({
     ...shorthands.padding('2px', '8px'),
   },
   listContainer: {
-    maxHeight: '280px',
+    maxHeight: '200px',
     overflowY: 'auto',
     backgroundColor: tokens.colorNeutralBackground1,
     borderRadius: tokens.borderRadiusSmall,

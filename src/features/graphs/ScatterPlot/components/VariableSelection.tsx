@@ -6,6 +6,8 @@ interface VariableSelectionProps {
   classes: Record<string, string>;
   requireX: boolean;
   requireY: boolean;
+  requireErrorBar?: boolean;
+  requireCategory?: boolean;
   showVariableSelection: boolean;
   dataFormat: string;
   availableList: Map<string, boolean>;
@@ -21,12 +23,26 @@ interface VariableSelectionProps {
   selectAllX: boolean | string | undefined;
   setSelectAllX: (v: boolean | string | undefined) => void;
   setXVariableList: (v: Map<string, boolean>) => void;
+  errorBarVariableList?: Map<string, boolean>;
+  selectAllErrorBar?: boolean | string | undefined;
+  setSelectAllErrorBar?: (v: boolean | string | undefined) => void;
+  setErrorBarVariableList?: (v: Map<string, boolean>) => void;
+  categoryVariableList?: Map<string, boolean>;
+  selectAllCategory?: boolean | string | undefined;
+  setSelectAllCategory?: (v: boolean | string | undefined) => void;
+  setCategoryVariableList?: (v: Map<string, boolean>) => void;
   handleSendToX: () => void;
   handleSendToY: () => void;
+  handleSendToErrorBar?: () => void;
+  handleSendToCategory?: () => void;
   handleRemoveFromX: () => void;
   handleRemoveFromY: () => void;
+  handleRemoveFromErrorBar?: () => void;
+  handleRemoveFromCategory?: () => void;
   canSendToX: boolean;
   canSendToY: boolean;
+  canSendToErrorBar?: boolean;
+  canSendToCategory?: boolean;
 }
 
 export const VariableSelection: FC<VariableSelectionProps> = (props) => {
@@ -34,6 +50,8 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
     classes,
     requireX,
     requireY,
+    requireErrorBar,
+    requireCategory,
     showVariableSelection,
     dataFormat,
     availableList,
@@ -49,12 +67,26 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
     selectAllX,
     setSelectAllX,
     setXVariableList,
+    errorBarVariableList,
+    selectAllErrorBar,
+    setSelectAllErrorBar,
+    setErrorBarVariableList,
+    categoryVariableList,
+    selectAllCategory,
+    setSelectAllCategory,
+    setCategoryVariableList,
     handleSendToX,
     handleSendToY,
+    handleSendToErrorBar,
+    handleSendToCategory,
     handleRemoveFromX,
     handleRemoveFromY,
+    handleRemoveFromErrorBar,
+    handleRemoveFromCategory,
     canSendToX,
     canSendToY,
+    canSendToErrorBar,
+    canSendToCategory,
   } = props;
 
   return (
@@ -69,9 +101,14 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
         </Text>
       </div>
 
-      <div className={classes.columns}>
+      <div style={{ 
+        display: 'flex', 
+        gap: tokens.spacingHorizontalM,
+        flexWrap: 'wrap',
+        alignItems: 'flex-start'
+      }}>
         {requireY && (
-          <div className={classes.column}>
+          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
             <div className={classes.columnHeader}>
               <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
               <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>
@@ -98,7 +135,63 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
           </div>
         )}
 
-        <div className={classes.column}>
+        {requireErrorBar && (
+          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
+            <div className={classes.columnHeader}>
+              <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
+              <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>Error Bar Variables</Text>
+              <div className={classes.columnHeaderBadge}>{errorBarVariableList?.size || 0}</div>
+            </div>
+
+            {errorBarVariableList && VariableListRender && (
+              <VariableListRender
+                list={errorBarVariableList}
+                selectAll={selectAllErrorBar}
+                setSelectAll={setSelectAllErrorBar}
+                setList={setErrorBarVariableList}
+                listName="errorBarVariableList"
+                selectAllText="Select All"
+                maxSelected={1}
+              />
+            )}
+
+            {showVariableSelection && errorBarVariableList && errorBarVariableList.size > 0 && (
+              <Button icon={<MdOutlineRemove />} appearance="outline" onClick={handleRemoveFromErrorBar} className={classes.removeBtn}>
+                Remove from Error Bar
+              </Button>
+            )}
+          </div>
+        )}
+
+        {requireCategory && (
+          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
+            <div className={classes.columnHeader}>
+              <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
+              <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>Category Variables</Text>
+              <div className={classes.columnHeaderBadge}>{categoryVariableList?.size || 0}</div>
+            </div>
+
+            {categoryVariableList && VariableListRender && (
+              <VariableListRender
+                list={categoryVariableList}
+                selectAll={selectAllCategory}
+                setSelectAll={setSelectAllCategory}
+                setList={setCategoryVariableList}
+                listName="categoryVariableList"
+                selectAllText="Select All"
+                maxSelected={1}
+              />
+            )}
+
+            {showVariableSelection && categoryVariableList && categoryVariableList.size > 0 && (
+              <Button icon={<MdOutlineRemove />} appearance="outline" onClick={handleRemoveFromCategory} className={classes.removeBtn}>
+                Remove from Category
+              </Button>
+            )}
+          </div>
+        )}
+
+        <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
           <div className={classes.columnHeader}>
             <MdInfoOutline size={18} color={tokens.colorNeutralForeground2} />
             <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>Available Variables</Text>
@@ -125,6 +218,11 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                     <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={handleSendToX} className={classes.actionBtn} disabled={!canSendToX}>
                       Send to X
                     </Button>
+                    {requireErrorBar && (
+                      <Button icon={<MdTrendingUp />} onClick={handleSendToErrorBar} className={classes.actionBtn} disabled={!canSendToErrorBar}>
+                        Send to Error Bar
+                      </Button>
+                    )}
                   </>
                 )}
                 {(dataFormat === 'Single Y' || dataFormat === 'Many Y' || dataFormat === 'Y Category') && (
@@ -135,6 +233,11 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                 {(dataFormat === 'Single X' || dataFormat === 'Many X' || dataFormat === 'X Category') && (
                   <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={handleSendToX} className={classes.actionBtn} disabled={!canSendToX}>
                     Send to X
+                  </Button>
+                )}
+                {requireCategory && (dataFormat === 'XY Category' || dataFormat === 'X Category' || dataFormat === 'Y Category' || dataFormat === 'Category Many Y' || dataFormat === 'Category Many X') && (
+                  <Button icon={<MdTrendingUp />} onClick={handleSendToCategory} className={classes.actionBtn} disabled={!canSendToCategory}>
+                    Send to Category
                   </Button>
                 )}
               </>
@@ -177,5 +280,6 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
     </div>
   );
 };
+
 
 
