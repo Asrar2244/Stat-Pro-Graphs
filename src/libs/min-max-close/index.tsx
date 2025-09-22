@@ -8,7 +8,6 @@ import { Minimize } from './minimize';
 import { Maximize } from './maximize';
 import { Close } from './close';
 import { platformInfo } from '@utils';
-import { safeTauriCall, isTauriEnvironment } from '@utils/tauri-utils';
 
 const MinMaxCloseComponent: FC = () => {
   const classes = useMinMaxCloseStyles();
@@ -17,25 +16,28 @@ const MinMaxCloseComponent: FC = () => {
     return platformInfo() === 'mac';
   }, []);
   
-  const onHandleMaximize = () => {
-    safeTauriCall(
-      () => getCurrentWindow().toggleMaximize(),
-      async () => { console.log('Development mode: Maximize not available'); }
-    );
+  const onHandleMaximize = async () => {
+    try {
+      await getCurrentWindow().toggleMaximize();
+    } catch (e) {
+      console.warn('Maximize failed:', e);
+    }
   };
 
-  const onHandleMinimize = () => {
-    safeTauriCall(
-      () => getCurrentWindow().minimize(),
-      async () => { console.log('Development mode: Minimize not available'); }
-    );
+  const onHandleMinimize = async () => {
+    try {
+      await getCurrentWindow().minimize();
+    } catch (e) {
+      console.warn('Minimize failed:', e);
+    }
   };
 
-  const onHandleClose = () => {
-    safeTauriCall(
-      () => getCurrentWindow().close(),
-      async () => { console.log('Development mode: Close not available'); }
-    );
+  const onHandleClose = async () => {
+    try {
+      await getCurrentWindow().close();
+    } catch (e) {
+      console.warn('Close failed:', e);
+    }
   };
   
   return (
@@ -48,8 +50,8 @@ const MinMaxCloseComponent: FC = () => {
           <ThemeSwitch />
         </li>
       </ul>
-{/* Custom window controls disabled - using native Windows title bar instead */}
-      {false && (
+      {/* Custom window controls for non-macOS when native decorations are disabled */}
+      {!platformIsMac && (
         <>
           <Divider vertical />
           <ul className={classMerge}>
