@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { uniqueNumber } from '@utils';
 import { useNodeActions } from '../layout-nodes';
 import dayjs from 'dayjs';
+import { GRAPHS } from '@constants';
 
 type IMenuCodeExecutor = {
   id: string;
@@ -13,25 +14,32 @@ export const useMenuCodeExecutor = () => {
   const { openNewTab } = useNodeActions();
   const { t } = useTranslation('workspace');
   const openNewTabAction = (input: IMenuCodeExecutor) => {
-    const numb = uniqueNumber();
+    // Prefer project-specific id for GRAPHS to avoid duplicate tabs across actions
+    const providedProjectId =
+      input.id === GRAPHS && input.extraConfig && (input.extraConfig as any).id
+        ? Number((input.extraConfig as any).id)
+        : undefined;
+
+    const tabId = providedProjectId ?? uniqueNumber();
 
     openNewTab(
       {
         fileSize: '',
-        isOpenedData: numb,
-        isActive: numb,
+        isOpenedData: tabId,
+        isActive: tabId,
         modifiedDateTime: '',
         createdDateTime: '',
-        isOpenedOutput: numb,
-        workspacePath: dayjs().format('hh:mm:ss A'),
-        id: numb.toString(),
+        isOpenedOutput: tabId,
+        // If caller supplies workspace/name, use them so the tab matches project identity
+        workspacePath: ((input.extraConfig || {}) as any).tabName || dayjs().format('hh:mm:ss A'),
+        id: String(tabId),
         sheetId: input.id,
         inputFileName: input.id,
-        projectName: dayjs().format('YYYY-MM-DD'),
+        projectName: ((input.extraConfig || {}) as any).name || dayjs().format('YYYY-MM-DD'),
         isEmptyDataView: input.isEmptyDataView,
         ...(input.extraConfig || {}),
-      },
-      numb,
+      } as any,
+      tabId,
       input.id,
       t,
     );

@@ -1,0 +1,55 @@
+import { makeStyles, tokens } from '@fluentui/react-components';
+
+export const useGraphPropertiesClasses = makeStyles({
+  drawerContainer: {
+    width: '350px',
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderLeft: `1px solid ${tokens.colorNeutralStroke1}`,
+    boxShadow: `-2px 0 8px ${tokens.colorNeutralShadowAmbient}`,
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  drawerHeader: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    padding: tokens.spacingVerticalM,
+  },
+  graphPropertiesTitle: {
+    fontSize: tokens.fontSizeBase400,
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground1,
+    display: 'flex',
+    alignItems: 'center',
+  },
+  drawerBody: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    paddingTop: tokens.spacingVerticalM,
+    paddingRight: tokens.spacingVerticalM,
+    paddingBottom: tokens.spacingVerticalM,
+    paddingLeft: tokens.spacingVerticalM,
+    overflowY: 'auto',
+    flexGrow: 1,
+    minHeight: 0,
+  },
+  propertiesContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
+  },
+  accordionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    color: tokens.colorNeutralForeground1,
+  },
+  propertyContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
+    padding: tokens.spacingVerticalM,
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRadius: tokens.borderRadiusSmall,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+});

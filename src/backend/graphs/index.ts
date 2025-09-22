@@ -82,3 +82,14 @@ export const graphTable = async (dbName: string, parameters: any[]): Promise<num
   const record = await db.executeQuery(`${createGraphTable};${insertToGraphTable}`, parameters);
   return record.lastInsertId;
 };
+
+export const updateGraphRunConfig = async (
+  dbName: string,
+  runId: number,
+  nextConfig: any,
+): Promise<void> => {
+  const db = new Database(dbName);
+  await db.executeQuery(createGraphTable);
+  const sql = `UPDATE ${GRAPHS} SET config = ?, modifiedDateTime = CURRENT_TIMESTAMP WHERE id = ?;`;
+  await db.executeQueryWithParams(sql, [JSON.stringify(nextConfig), runId] as any);
+};

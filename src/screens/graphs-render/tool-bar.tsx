@@ -1,7 +1,8 @@
 import { FC } from 'react';
 import { Button, Text, Toolbar, ToolbarButton } from '@fluentui/react-components';
-import { MdHistory } from 'react-icons/md';
+import { MdHistory, MdSettings } from 'react-icons/md';
 import { tokens } from '@fluentui/react-components';
+import { GraphProperties, GlobalGraphProperties, PlotSpecificProperties } from './hooks/use-tools';
 
 interface IToolBar {
   fontBold: boolean;
@@ -9,12 +10,18 @@ interface IToolBar {
   fontSize: number;
   fontColor: string;
   showHistory: boolean;
+  showGraphProperties: boolean;
   totalRuns: number;
+  graphProperties: GraphProperties;
   setFontBold: (value: boolean) => void;
   setFontItalic: (value: boolean) => void;
   setFontSize: (value: number) => void;
   setFontColor: (value: string) => void;
   toggleShowHistory: () => void;
+  toggleGraphProperties: () => void;
+  updateGraphProperty: <K extends keyof GlobalGraphProperties>(key: K, value: GlobalGraphProperties[K]) => void;
+  updatePlotSpecificProperty: <T extends keyof PlotSpecificProperties>(plotType: T, key: keyof NonNullable<PlotSpecificProperties[T]>, value: any) => void;
+  getCurrentPlotType: (subType?: string) => keyof PlotSpecificProperties | null;
   setTotalRuns: (value: number) => void;
 }
 
@@ -53,10 +60,19 @@ export const ToolBar: FC<IToolBarProps> = ({ tools, title, subTitle }) => {
         </ToolbarButton>
         
         <ToolbarButton
+          icon={<MdSettings />}
+          onClick={tools.toggleGraphProperties}
+          appearance={tools.showGraphProperties ? 'primary' : 'subtle'}
+          style={{ marginLeft: 'auto' }}
+        >
+          Properties
+        </ToolbarButton>
+        
+        <ToolbarButton
           icon={<MdHistory />}
           onClick={tools.toggleShowHistory}
           appearance={tools.showHistory ? 'primary' : 'subtle'}
-          style={{ marginLeft: 'auto' }}
+          style={{ marginLeft: tokens.spacingHorizontalM }}
         >
           History ({tools.totalRuns})
         </ToolbarButton>

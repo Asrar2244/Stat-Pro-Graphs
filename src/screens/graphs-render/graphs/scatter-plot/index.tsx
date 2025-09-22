@@ -7,7 +7,7 @@ import { useFullScreenHandle } from 'react-full-screen';
 import { useGraphStyles } from '@libs/graphs/styles-hook/use-graph-style';
 
 export const ScatterPlotGraph: FC = () => {
-  const { selectedRun } = useContext(GraphsRenderContext);
+  const { selectedRun, graphProperties } = useContext(GraphsRenderContext);
   const handle = useFullScreenHandle();
   const plotlyRef = useRef<any>(null);
   const classes = useGraphStyles();
@@ -45,7 +45,8 @@ export const ScatterPlotGraph: FC = () => {
             <GraphCanvas 
               key={`graph-${selectedRun?.id || 'new'}`}
               graphConfig={graphConfig} 
-              workspacePath={workspacePath} 
+              workspacePath={workspacePath}
+              liveProps={graphProperties}
             />
           </div>
         </CardPreview>

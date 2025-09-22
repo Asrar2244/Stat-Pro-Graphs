@@ -14,6 +14,8 @@ const ScatterPlotGraph = lazy(() =>
 interface IGraphSelection extends IToolBar {
   id: number;
   showHistory: boolean;
+  graphProperties?: any;
+  onUpdateGraphProperty?: <K extends keyof any>(key: K, value: any) => void;
 }
 
 const loadByType = (graphType?: string) => {
@@ -35,6 +37,8 @@ export const GraphSelection: FC<IGraphSelection> = ({ id, showHistory, ...props 
         value={{
           toolBar: props,
           selectedRun: run?.selectedRun,
+          graphProperties: props.graphProperties as any,
+          onUpdateGraphProperty: props.onUpdateGraphProperty as any,
         }}
       >
         <div className={classes.graphContainer}>

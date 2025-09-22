@@ -23,8 +23,13 @@ const HistoryListRenderComponent: FC<IHistoryListRender> = ({
   const { dateFormat } = useFormatter();
   const isSelected = selectedID === id;
   
+  const displayTitle = config?.graphConfig?.global?.graphName
+    || config?.graphConfig?.subType
+    || graphType
+    || 'Graph';
+
   const handleClick = () => {
-    const title = `${graphType} - ${config?.graphConfig?.subType || 'Graph'}`;
+    const title = displayTitle;
     selectedRun(id, title);
   };
 
@@ -44,7 +49,7 @@ const HistoryListRenderComponent: FC<IHistoryListRender> = ({
         <MdBarChart size={16} color={tokens.colorNeutralForeground2} />
         <div style={{ flex: 1 }}>
           <Caption1 style={{ fontWeight: 600, color: tokens.colorNeutralForeground1 }}>
-            {graphType} - {config?.graphConfig?.subType || 'Graph'}
+            {displayTitle}
           </Caption1>
           <Caption2 style={{ color: tokens.colorNeutralForeground3 }}>
             {dateFormat(modifiedDateTime)}

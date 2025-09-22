@@ -14,7 +14,7 @@ import { processDataByFormat } from './utils/dataProcessing';
 import { assessDataQuality } from './utils/dataValidation';
 import { optimizeDataForPerformance, measurePerformance, optimizeTraceForLargeData, getPerformanceRecommendations } from './utils/performanceOptimization';
 
-export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath }) => {
+export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const plot = usePlotly({ data: [], layout: { title: graphConfig?.subType || 'Scatter Plot', autosize: true } as any, config: { responsive: true } } as any);
   // Keep last successful plot payload to restore on visibility/resize
@@ -158,7 +158,8 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath }) => {
           console.info(`💡 Performance Recommendations for "${label}":`, recommendations);
         }
         
-        const color = getSeriesColor(seriesIndex);
+        const colorOverride = (liveProps?.plotSpecific?.scatter?.pointColor) || (liveProps?.global?.seriesColor);
+        const color = colorOverride || getSeriesColor(seriesIndex);
         const symbol = getSeriesSymbol(seriesIndex);
         
         try {
@@ -206,7 +207,7 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath }) => {
             optimizedData.xv, 
             optimizedData.yv, 
             label, 
-            color, 
+            (liveProps?.plotSpecific?.regression?.lineColor) || color, 
             graphConfig?.subType || ''
           );
           traces.push(...regressionTraces);
@@ -245,17 +246,117 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath }) => {
 
       // Create layout based on sub-type
       const subType = graphConfig?.subType || '';
-      
+      // Live Properties mapping
+      const showTitle = liveProps?.global?.showTitle ?? true;
+      const liveTitle = (showTitle ? (liveProps?.global?.graphName || graphConfig?.graphName) : '') || undefined;
+      const legendTitle = liveProps?.global?.legendTitle || undefined;
+      const useDirectLabels = liveProps?.global?.legendDirectLabeling ?? false;
+      const showLegend = useDirectLabels ? false : (liveProps?.global?.showLegend ?? true);
+      // Legend options mapping
+      const framed = liveProps?.global?.legendFramedInBox ?? true;
+      const legendColumns = liveProps?.global?.legendColumns ?? 1;
+      const legendBoxSpacingInch = liveProps?.global?.legendBoxSpacingInch ?? 0.25;
+      const userLegendPosition = liveProps?.global?.legendPosition;
+      // convert inches to pixels (approximate 96 dpi)
+      const borderpad = Math.max(0, Math.min(48, Math.round(legendBoxSpacingInch * 96)));
+      const orientation = legendColumns > 1 ? 'h' : undefined;
+      // Only override legend position if the user explicitly chose one; otherwise keep defaults
+      const legendPos = userLegendPosition
+        ? (userLegendPosition === 'front'
+            ? { x: 0.02, y: 0.98, xanchor: 'left' as const, yanchor: 'top' as const }
+            : { x: 1.02, y: 1, xanchor: 'left' as const, yanchor: 'top' as const })
+        : {} as any;
+      const paperBg = liveProps?.global?.backgroundColor || undefined;
+      const plotBg = liveProps?.global?.plotColor || paperBg;
+      // Axis labels: keep defaults, but allow override when provided
+      const axisXTitle = liveProps?.global?.showAxisLabels && liveProps?.global?.axisXData
+        ? { text: liveProps.global.axisXData }
+        : undefined;
+      const axisYTitle = liveProps?.global?.showAxisLabels && liveProps?.global?.axisYData
+        ? { text: liveProps.global.axisYData }
+        : undefined;
+
       let layout: any = {
         title: {
-          text: getTitleText(subType),
-          font: { size: 16 }
+          text: liveTitle || getTitleText(subType),
+          font: { size: 18, family: 'Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: '#111' },
+          x: 0.5,
+          xanchor: 'center',
+          y: 0.98,
+          yanchor: 'top',
+          pad: { t: 8, b: 4, l: 0, r: 0 },
         },
         autosize: true,
-        showlegend: true,
-        legend: getLegendConfig(subType),
-        xaxis: getAxisConfig(subType, 'x'),
-        yaxis: getAxisConfig(subType, 'y')
+        showlegend: showLegend,
+        legend: {
+          ...getLegendConfig(subType),
+          title: legendTitle ? { text: legendTitle } : undefined,
+          traceorder: 'normal',
+          ...(orientation ? { orientation } : {}),
+          borderwidth: framed ? 1 : 0,
+          bordercolor: framed ? '#999' : undefined,
+          bgcolor: framed ? 'rgba(255,255,255,0.85)' : undefined,
+          borderpad,
+          ...legendPos,
+        },
+        xaxis: {
+          ...getAxisConfig(subType, 'x'),
+          title: axisXTitle ? { ...axisXTitle, standoff: 12 } : undefined,
+          showgrid: liveProps?.global?.showGridLines ?? true,
+          ticklen: 6,
+          ticks: 'outside',
+          automargin: true,
+        },
+        yaxis: {
+          ...getAxisConfig(subType, 'y'),
+          title: axisYTitle ? { ...axisYTitle, standoff: 12 } : undefined,
+          showgrid: liveProps?.global?.showGridLines ?? true,
+          ticklen: 6,
+          ticks: 'outside',
+          automargin: true,
+        },
+        margin: { l: liveProps?.global?.marginSize ?? 20, r: 16, t: 64, b: liveProps?.global?.padding ?? 16 },
+        automargin: true,
+        paper_bgcolor: paperBg,
+        plot_bgcolor: plotBg,
+      };
+
+      // Enable in-plot editing of title and axis titles
+      // Plotly supports editing when config.edits.* is enabled; but we also capture double-clicks
+      const applyInlineEditing = () => {
+        const root = containerRef.current as HTMLElement | null;
+        if (!root) return;
+        const dispatchUpdate = (key: 'graphName' | 'axisXData' | 'axisYData', value: string) => {
+          // Find React context updater if exposed via window or custom event
+          // As a minimal approach, modify liveProps directly is not possible; edits will re-render via parent state changes.
+          const event = new CustomEvent('statpro:updateGraphProperty', { detail: { key, value } });
+          window.dispatchEvent(event);
+        };
+        // Title double-click
+        const titleEl = root.querySelector('g.gtitle') as SVGGElement | null;
+        if (titleEl) {
+          titleEl.addEventListener('dblclick', () => {
+            const next = prompt('Edit graph title', liveTitle || getTitleText(subType) || '') || '';
+            if (next) dispatchUpdate('graphName', next);
+          });
+        }
+        // Axis titles
+        const xTitleEl = root.querySelector('g.xg .xtitle') as SVGGElement | null;
+        if (xTitleEl) {
+          xTitleEl.addEventListener('dblclick', () => {
+            const current = (liveProps?.global?.axisXData) || 'X axis';
+            const next = prompt('Edit X axis title', current) || '';
+            if (next) dispatchUpdate('axisXData', next);
+          });
+        }
+        const yTitleEl = root.querySelector('g.yg .ytitle') as SVGGElement | null;
+        if (yTitleEl) {
+          yTitleEl.addEventListener('dblclick', () => {
+            const current = (liveProps?.global?.axisYData) || 'Y axis';
+            const next = prompt('Edit Y axis title', current) || '';
+            if (next) dispatchUpdate('axisYData', next);
+          });
+        }
       };
 
       // Add annotations if needed
@@ -264,7 +365,8 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath }) => {
         layout.annotations = annotations;
       }
 
-      const config = { responsive: true } as any;
+      const allowDragResize = (liveProps?.global?.legendAllowDragResize ?? true) && !(liveProps?.global?.legendLock);
+      const config = { responsive: true, edits: { legendPosition: allowDragResize, titleText: true, axisTitleText: true } } as any;
       
       console.log('🎯 Final plotting data:');
       console.log('Traces count:', traces.length);
@@ -276,6 +378,8 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath }) => {
         const payload = { data: traces, layout, config } as any;
         lastPlotRef.current = payload;
         plot.redraw(payload);
+        // Attach inline editing listeners after initial draw
+        try { applyInlineEditing(); } catch {}
         console.log('✅ Plot redraw completed');
       } else {
         console.log('❌ Container ref not available');
@@ -296,7 +400,7 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath }) => {
       setRenderLatestRun(true);
     };
     run();
-  }, [graphConfig, workspacePath]);
+  }, [graphConfig, workspacePath, liveProps]);
 
   // When the container becomes visible again or resizes, redraw using cached payload
   useEffect(() => {
