@@ -172,11 +172,11 @@ export const topMenuConfig = {
               label: "t-test",
               execute: exporters.tests,
             },
-            {
-              id: "paired-t-test",
-              label: "paired-t-test",
-              execute: exporters.pairedTTest,
-            }
+            // {
+            //   id: "paired-t-test",
+            //   label: "paired-t-test",
+            //   execute: exporters.pairedTTest,
+            // }
           ]
         },
       ],
