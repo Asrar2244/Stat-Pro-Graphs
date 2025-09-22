@@ -48,12 +48,12 @@ export const usePrepareAnalysis = ({
       table_name: EXCEL,
       dependent_var_names: Array.from(model.dependentList.keys()),
       independent_var_names: Array.from(model.independentList.keys()),
-      regressionType: 'linear_db',
+      regressionType: 'linear',
       linearparameters: {
         inc_constant: model.includeConst,
         confidence: parseFloat(estimate.confidence),
         tolerance: parseFloat(estimate.tolerance),
-        estimation: 'stepwise',
+        estimation_type: 'stepwise',
         probability_threshold_enter: Number(estimate.propEnter),
         probability_threshold_remove: Number(estimate.propRemove),
         f_statistic_threshold_enter: Number(estimate.fStatisticEnter),
@@ -62,7 +62,7 @@ export const usePrepareAnalysis = ({
         force_features: estimate.force ? estimate.force.split(',').map((s) => s.trim()) : [],
         direction: 'backward',
       },
-      sub_type: 'none',
+      sub_type: 'estimation',
     };
     await execute(
       config.tabName,
