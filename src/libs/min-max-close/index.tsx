@@ -8,34 +8,39 @@ import { Minimize } from './minimize';
 import { Maximize } from './maximize';
 import { Close } from './close';
 import { platformInfo } from '@utils';
-import { safeTauriCall, isTauriEnvironment } from '@utils/tauri-utils';
+// import { isTauriEnvironment } from '@utils/tauri-utils';
 
 const MinMaxCloseComponent: FC = () => {
   const classes = useMinMaxCloseStyles();
   const classMerge = mergeClasses(classes.ul, classes.liCloseMaxMin);
   const platformIsMac = useMemo(() => {
-    return platformInfo() === 'mac';
+    const platform = platformInfo();
+    const isMac = platform === 'mac';
+    return isMac;
   }, []);
   
-  const onHandleMaximize = () => {
-    safeTauriCall(
-      () => getCurrentWindow().toggleMaximize(),
-      async () => { console.log('Development mode: Maximize not available'); }
-    );
+  const onHandleMaximize = async () => {
+    try {
+      await getCurrentWindow().toggleMaximize();
+    } catch (err) {
+      console.warn('Maximize not available in this environment', err);
+    }
   };
 
-  const onHandleMinimize = () => {
-    safeTauriCall(
-      () => getCurrentWindow().minimize(),
-      async () => { console.log('Development mode: Minimize not available'); }
-    );
+  const onHandleMinimize = async () => {
+    try {
+      await getCurrentWindow().minimize();
+    } catch (err) {
+      console.warn('Minimize not available in this environment', err);
+    }
   };
 
-  const onHandleClose = () => {
-    safeTauriCall(
-      () => getCurrentWindow().close(),
-      async () => { console.log('Development mode: Close not available'); }
-    );
+  const onHandleClose = async () => {
+    try {
+      await getCurrentWindow().close();
+    } catch (err) {
+      console.warn('Close not available in this environment', err);
+    }
   };
   
   return (
@@ -48,8 +53,7 @@ const MinMaxCloseComponent: FC = () => {
           <ThemeSwitch />
         </li>
       </ul>
-{/* Custom window controls disabled - using native Windows title bar instead */}
-      {false && (
+      {(!platformIsMac) && (
         <>
           <Divider vertical />
           <ul className={classMerge}>

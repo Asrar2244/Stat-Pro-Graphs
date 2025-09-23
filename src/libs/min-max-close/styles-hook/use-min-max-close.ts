@@ -14,8 +14,12 @@ export const useMinMaxCloseStyles = makeStyles({
     listStyle: 'none',
     '& li': {
       padding: tokens.spacingHorizontalS,
+      WebkitAppRegion: 'no-drag',
+      cursor: 'pointer',
+      pointerEvents: 'auto',
       '& svg': {
         fill: tokens.colorNeutralBackgroundInverted,
+        pointerEvents: 'none',
       },
       ':hover': {
         backgroundColor: tokens.colorNeutralBackground1Selected,

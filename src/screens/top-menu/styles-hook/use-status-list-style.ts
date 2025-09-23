@@ -9,6 +9,7 @@ export const useMenuLayout = makeStyles({
     height: '36px',
     width: '100%',
     alignItems: 'center',
+    WebkitAppRegion: 'drag',
   },
   layout: {
     // width: '65%',
@@ -31,5 +32,6 @@ export const useMenuLayout = makeStyles({
   tools: {
     display: 'flex',
     flexDirection: 'row',
+    WebkitAppRegion: 'no-drag',
   },
 });
