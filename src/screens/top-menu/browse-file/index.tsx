@@ -3,6 +3,7 @@ import { Field, Input, Button, Dropdown, Option, Spinner } from '@fluentui/react
 import { BiDotsHorizontalRounded, BiPlayCircle } from 'react-icons/bi';
 import { Modal, ITranslate } from '@libs';
 import { open } from '@tauri-apps/plugin-dialog';
+import { exists } from '@tauri-apps/plugin-fs';
 import { getFileSize, getFileNameFromPath, getDirPath, joinPaths } from '@utils';
 import { IModal, useFileSize, useGetInitialConfig, useAxios } from '@hooks';
 import { useStartProStore } from '@store';
@@ -47,6 +48,14 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   const classes = useBrowseLayout();
   const onBrowseFileHandler = async (): Promise<void> => {
     try {
+      // Prefer a default path only if the drive exists (prevents dialog failing silently)
+      let defaultPath: string | undefined = undefined;
+      try {
+        if (await exists('Z:\\')) {
+          defaultPath = 'Z:\\';
+        }
+      } catch {}
+
       const openedFile = await open({
         multiple: false,
         directory: false,
@@ -56,7 +65,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             extensions: browseFile.acceptFiles,
           },
         ],
-        defaultPath: 'Z:\\',
+        ...(defaultPath ? { defaultPath } : {}),
       });
 
       if (openedFile) {
