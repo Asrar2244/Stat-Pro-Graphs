@@ -26,8 +26,8 @@ export const ThemeSwitch: FC = memo(() => {
   const classes = useThemeSwitchStyles();
   const [isAuto, setIsAuto] = useState<boolean>(theme === 'auto');
 
-  const onClickHandler = (e: any): void => {
-    setTheme(e.target.name as 'light' | 'dark' | 'auto');
+  const onClickHandler = (e: React.MouseEvent<HTMLButtonElement>): void => {
+    setTheme(e.currentTarget.name as 'light' | 'dark' | 'auto');
   };
   const onClickAutoChange = (): void => {
     setIsAuto(!isAuto);
@@ -37,7 +37,11 @@ export const ThemeSwitch: FC = memo(() => {
   return (
     <Popover withArrow>
       <PopoverTrigger disableButtonEnhancement>
-        <Badge appearance="ghost" icon={icons[theme]} />
+        {/* <div className={classes.triggerButton}> */}
+        <Badge appearance="ghost" icon={icons[theme]} className={classes.triggerButton} />
+
+        {/* <Badge appearance="outline" icon={icons[theme]} /> */}
+        {/* </div> */}
       </PopoverTrigger>
       <PopoverSurface tabIndex={-1}>
         <div className={classes.wrapper}>
