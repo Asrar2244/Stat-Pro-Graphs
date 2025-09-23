@@ -1,6 +1,7 @@
 import React, { FC, ReactNode } from 'react';
 import { Button, Text, tokens } from '@fluentui/react-components';
 import { MdCheckCircle, MdInfoOutline, MdOutlineRemove, MdKeyboardDoubleArrowLeft, MdKeyboardDoubleArrowRight, MdTrendingDown, MdTrendingUp } from 'react-icons/md';
+import { useScatterPlotStore } from '../scatterPlotSlice';
 
 interface VariableSelectionProps {
   classes: Record<string, string>;
@@ -89,6 +90,41 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
     canSendToCategory,
   } = props;
 
+  // Wire variable assignment to the store so the modal always has X/Y at Create time
+  const { setXVariable, setYVariable } = useScatterPlotStore();
+
+  const pickFirst = (list: Map<string, boolean>): string | undefined => {
+    const selected = Array.from(list.entries()).find(([, v]) => v);
+    if (selected) return selected[0];
+    const it = list.keys();
+    const first = it.next();
+    return first.done ? undefined : first.value;
+  };
+
+  const onSendToX = (): void => {
+    handleSendToX();
+    const next = pickFirst(xVariableList);
+    setXVariable(next);
+  };
+
+  const onSendToY = (): void => {
+    handleSendToY();
+    const next = pickFirst(yVariableList);
+    setYVariable(next);
+  };
+
+  const onRemoveX = (): void => {
+    handleRemoveFromX();
+    const next = pickFirst(xVariableList);
+    setXVariable(next);
+  };
+
+  const onRemoveY = (): void => {
+    handleRemoveFromY();
+    const next = pickFirst(yVariableList);
+    setYVariable(next);
+  };
+
   return (
     <div className={classes.variableContainer}>
       <div className={classes.variableHeader}>
@@ -128,7 +164,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
             />
 
             {showVariableSelection && dataFormat !== 'Single X' && yVariableList.size > 0 && (
-              <Button icon={<MdOutlineRemove />} appearance="outline" onClick={handleRemoveFromY} className={classes.removeBtn}>
+              <Button icon={<MdOutlineRemove />} appearance="outline" onClick={onRemoveY} className={classes.removeBtn}>
                 Remove from Y
               </Button>
             )}
@@ -212,10 +248,10 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
               <>
                 {(dataFormat === 'XY Pair' || dataFormat === 'XY Pairs' || dataFormat === 'XY Category' || dataFormat === 'X Many Y' || dataFormat === 'Y Many X') && (
                   <>
-                    <Button icon={<MdKeyboardDoubleArrowLeft />} onClick={handleSendToY} className={classes.actionBtn} disabled={!canSendToY}>
+                    <Button icon={<MdKeyboardDoubleArrowLeft />} onClick={onSendToY} className={classes.actionBtn} disabled={!canSendToY}>
                       Send to Y
                     </Button>
-                    <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={handleSendToX} className={classes.actionBtn} disabled={!canSendToX}>
+                    <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToX} className={classes.actionBtn} disabled={!canSendToX}>
                       Send to X
                     </Button>
                     {requireErrorBar && (
@@ -226,12 +262,12 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                   </>
                 )}
                 {(dataFormat === 'Single Y' || dataFormat === 'Many Y' || dataFormat === 'Y Category') && (
-                  <Button icon={<MdKeyboardDoubleArrowLeft />} onClick={handleSendToY} className={classes.actionBtn} disabled={!canSendToY}>
+                  <Button icon={<MdKeyboardDoubleArrowLeft />} onClick={onSendToY} className={classes.actionBtn} disabled={!canSendToY}>
                     Send to Y
                   </Button>
                 )}
                 {(dataFormat === 'Single X' || dataFormat === 'Many X' || dataFormat === 'X Category') && (
-                  <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={handleSendToX} className={classes.actionBtn} disabled={!canSendToX}>
+                  <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToX} className={classes.actionBtn} disabled={!canSendToX}>
                     Send to X
                   </Button>
                 )}
@@ -270,7 +306,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
             />
 
             {showVariableSelection && dataFormat !== 'Single Y' && xVariableList.size > 0 && (
-              <Button icon={<MdOutlineRemove />} appearance="outline" onClick={handleRemoveFromX} className={classes.removeBtn}>
+              <Button icon={<MdOutlineRemove />} appearance="outline" onClick={onRemoveX} className={classes.removeBtn}>
                 Remove from X
               </Button>
             )}

@@ -60,11 +60,11 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
       series.push({ xv, yv, label: `${yCol} vs ${x}` });
     });
   } else if (graphConfig.dataFormat === 'Many X' && xNames?.length) {
-    // Many X vs index
+    // Many X only: keep X on horizontal axis, index on vertical axis
     xNames.forEach((x) => {
-      const xv = rows.map((_: any, i: number) => i + 1);
-      const yv = rows.map((r: any) => Number(r[x]));
-      series.push({ xv, yv, label: x });
+      const xv = rows.map((r: any) => Number(r[x]));
+      const yv = rows.map((_: any, i: number) => i + 1);
+      series.push({ xv, yv, label: `${x} vs index` });
     });
   } else if (graphConfig.dataFormat === 'Many Y' && yNames?.length) {
     // Many Y vs index
@@ -109,7 +109,7 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
       });
     }
   } else if (graphConfig.dataFormat === 'X Category' && xNames?.length) {
-    // X Category: plot X values with category grouping
+    // X Category: plot X values with category grouping; X on horizontal axis
     if (categoryNames?.length > 0) {
       // Group by category
       const categoryCol = categoryNames[0];
@@ -126,17 +126,17 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
       // Create series for each category
       categoryGroups.forEach((groupRows, category) => {
         xNames.forEach((x) => {
-          const xv = groupRows.map((_: any, i: number) => i + 1);
-          const yv = groupRows.map((r: any) => Number(r[x]));
-          series.push({ xv, yv, label: `${x} (${category})` });
+          const xv = groupRows.map((r: any) => Number(r[x]));
+          const yv = groupRows.map((_: any, i: number) => i + 1);
+          series.push({ xv, yv, label: `${x} (${category}) vs index` });
         });
       });
     } else {
       // No category grouping
       xNames.forEach((x) => {
-        const xv = rows.map((_: any, i: number) => i + 1);
-        const yv = rows.map((r: any) => Number(r[x]));
-        series.push({ xv, yv, label: x });
+        const xv = rows.map((r: any) => Number(r[x]));
+        const yv = rows.map((_: any, i: number) => i + 1);
+        series.push({ xv, yv, label: `${x} vs index` });
       });
     }
   } else if (graphConfig.dataFormat === 'Y Category' && yNames?.length) {
@@ -171,12 +171,20 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
       });
     }
   } else if (graphConfig.dataFormat === 'Single X' && xNames?.length) {
-    // Single X: plot X values against row indices
-    xNames.forEach((x) => {
-      const xv = rows.map((_: any, i: number) => i + 1);
-      const yv = rows.map((r: any) => Number(r[x]));
-      series.push({ xv, yv, label: x });
-    });
+    // Single X: require at least one Y for proper X-axis anchoring;
+    // if no Y provided, plot X on the X-axis vs index on the Y-axis so X remains the horizontal axis.
+    const xCol = xNames[0];
+    if (yNames?.length) {
+      const xv = rows.map((r: any) => Number(r[xCol]));
+      yNames.forEach((y) => {
+        const yv = rows.map((r: any) => Number(r[y]));
+        series.push({ xv, yv, label: `${y} vs ${xCol}` });
+      });
+    } else {
+      const xv = rows.map((r: any) => Number(r[xCol]));
+      const yv = rows.map((_: any, i: number) => i + 1);
+      series.push({ xv, yv, label: `${xCol} vs index` });
+    }
   } else if (graphConfig.dataFormat === 'Single Y' && yNames?.length) {
     // Single Y: plot Y values against row indices
     yNames.forEach((y) => {
@@ -193,11 +201,11 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
       series.push({ xv, yv, label: `${y} vs ${xCol}` });
     });
   } else if (graphConfig.dataFormat === 'X Size' && xNames?.length) {
-    // X Size: plot X vs index with size encoding (requires size column - not implemented yet)
+    // X Size: plot X on horizontal axis vs index on vertical (size encoding TBD)
     xNames.forEach((x) => {
-      const xv = rows.map((_: any, i: number) => i + 1);
-      const yv = rows.map((r: any) => Number(r[x]));
-      series.push({ xv, yv, label: x });
+      const xv = rows.map((r: any) => Number(r[x]));
+      const yv = rows.map((_: any, i: number) => i + 1);
+      series.push({ xv, yv, label: `${x} vs index` });
     });
   } else if (graphConfig.dataFormat === 'Y Size' && yNames?.length) {
     // Y Size: plot Y vs index with size encoding (requires size column - not implemented yet)

@@ -78,9 +78,25 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
 
       let seriesIndex = 0;
       
-      // Process data based on format
+      // Process data based on format (normalize Single X/Y to axis-anchored formats when both sides are provided)
+      let normalizedFormat = graphConfig?.dataFormat;
+      // If Single X with both X and Y present → behave as X Many Y
+      if (normalizedFormat === 'Single X' && xNames?.length > 0 && yNames?.length > 0) {
+        normalizedFormat = 'X Many Y';
+      } else if (normalizedFormat === 'Single Y' && xNames?.length > 0 && yNames?.length > 0) {
+        normalizedFormat = 'Y Many X';
+      }
+      // Respect whichever variables the user passed:
+      // - If Single X but only Y provided → treat as Single Y (plot Y vs index)
+      // - If Single Y but only X provided → treat as Single X (plot X vs index)
+      if (normalizedFormat === 'Single X' && (!xNames || xNames.length === 0) && (yNames && yNames.length > 0)) {
+        normalizedFormat = 'Single Y';
+      } else if (normalizedFormat === 'Single Y' && (!yNames || yNames.length === 0) && (xNames && xNames.length > 0)) {
+        normalizedFormat = 'Single X';
+      }
+
       const processedSeries = processDataByFormat({
-        graphConfig,
+        graphConfig: { ...graphConfig, dataFormat: normalizedFormat },
         rows,
         xNames,
         yNames,
@@ -275,7 +291,7 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
       const axisYTitle = liveProps?.global?.showAxisLabels && liveProps?.global?.axisYData
         ? { text: liveProps.global.axisYData }
         : undefined;
-
+      
       let layout: any = {
         title: {
           text: liveTitle || getTitleText(subType),
@@ -383,6 +399,14 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
         console.log('✅ Plot redraw completed');
       } else {
         console.log('❌ Container ref not available');
+        // Retry shortly if ref isn't attached yet (e.g., first paint race)
+        setTimeout(() => {
+          const div = containerRef.current;
+          if (div && lastPlotRef.current) {
+            (plot as any).graph.current = div;
+            plot.redraw(lastPlotRef.current as any);
+          }
+        }, 50);
       }
 
       // Save config into project Graphs folder

@@ -18,7 +18,9 @@ export const ScatterPlotModal: FC<IModal & { projects: string[]; datasets: strin
     graphType, 
     graphConfig, 
     setGraphConfig, 
-    reset 
+    reset,
+    selectedXVariable,
+    selectedYVariable,
   } = useScatterPlotStore();
 
   // Determine if error bar variables are required (for variable selection column)
@@ -43,13 +45,54 @@ export const ScatterPlotModal: FC<IModal & { projects: string[]; datasets: strin
 
   const onCreate = () => {
     if (!selectedProject || !subType) return;
-    
+    // Build variables explicitly so downstream always receives clear mapping
+    // Prefer explicit selections; fall back to graphConfig.variables if provided by the form
+    const gx = (graphConfig as any)?.variables?.x as string[] | undefined;
+    const gy = (graphConfig as any)?.variables?.y as string[] | undefined;
+    const xVars: string[] = selectedXVariable ? [selectedXVariable] : (Array.isArray(gx) ? gx : []);
+    const yVars: string[] = selectedYVariable ? [selectedYVariable] : (Array.isArray(gy) ? gy : []);
+
+    // Basic validation to avoid surprises
+    if (dataFormat === 'Single X' && xVars.length === 0 && yVars.length === 0) {
+      console.warn('[Scatter] Single X requires at least X or Y. No variables selected.');
+      return;
+    }
+    if (dataFormat === 'Single Y' && xVars.length === 0 && yVars.length === 0) {
+      console.warn('[Scatter] Single Y requires at least X or Y. No variables selected.');
+      return;
+    }
+
+    // Normalize intent so renderer doesn’t guess
+    let normalizedFormat = dataFormat;
+    // If user picked a single variable but placed it on the wrong side, coerce to the intended axis
+    if (normalizedFormat === 'Single X' && xVars.length === 0 && yVars.length === 1) {
+      // Treat the single provided Y as X
+      xVars.push(yVars[0]);
+      yVars.length = 0;
+    } else if (normalizedFormat === 'Single Y' && yVars.length === 0 && xVars.length === 1) {
+      // Treat the single provided X as Y
+      yVars.push(xVars[0]);
+      xVars.length = 0;
+    }
+    if (normalizedFormat === 'Single X' && xVars.length > 0 && yVars.length > 0) {
+      normalizedFormat = 'X Many Y';
+    } else if (normalizedFormat === 'Single Y' && xVars.length > 0 && yVars.length > 0) {
+      normalizedFormat = 'Y Many X';
+    } else if (normalizedFormat === 'Single X' && xVars.length === 0 && yVars.length > 0) {
+      // User picked Y only while selecting Single X → honor Y intent
+      normalizedFormat = 'Single Y';
+    } else if (normalizedFormat === 'Single Y' && yVars.length === 0 && xVars.length > 0) {
+      // User picked X only while selecting Single Y → honor X intent
+      normalizedFormat = 'Single X';
+    }
+
     const config = { 
       ...graphConfig, 
       graphType, 
       subType, 
       selectedProject, 
-      dataFormat
+      dataFormat: normalizedFormat,
+      variables: { x: xVars, y: yVars }
     };
     
     setGraphConfig(config);

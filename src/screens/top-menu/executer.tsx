@@ -7,8 +7,7 @@ import { useLicenseStore, useStartProStore } from '@store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMenuCodeExecutor } from '@hooks';
 import { useScatterPlotStore } from '@features/graphs/ScatterPlot/scatterPlotSlice';
-import { DATA, GRAPHS } from '@constants';
-import { useNodeActions } from '@hooks';
+import { GRAPHS } from '@constants';
 const BrowseFile = lazy(() =>
   import('./browse-file').then((module) => ({ default: module.BrowseFile })),
 );
@@ -109,7 +108,6 @@ const MenuSelector: FC<{
     const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
     const projectNames = Object.keys(projects);
     const { openNewTabAction } = useMenuCodeExecutor();
-    const { openNewTab, getOpenRecords } = useNodeActions();
     const { setRenderLatestRun } = useStartProStore();
     
     // For now, use empty datasets array - this would be populated based on selected project
@@ -135,31 +133,20 @@ const MenuSelector: FC<{
         console.error('Failed to insert graph run:', e);
       }
 
-      // Ensure DATA tab for the selected project is open to the left of the GRAPHS tab
-      const project = projects[config.selectedProject];
-      if (project) {
-        const dataSelector: any = { ...project, projectName: config.selectedProject };
-        const { record: existingDataTab } = getOpenRecords(dataSelector, DATA);
-        if (!existingDataTab) {
-          // Open DATA tab first so it appears immediately to the left of the GRAPHS tab
-          openNewTab(dataSelector, Number(project.id), DATA, t);
-        }
-      }
-
-      // Now open the GRAPHS tab for the selected project
-      openNewTabAction({
-        id: GRAPHS,
+      // Open the Graphs output screen under Explorer for the selected project
+      openNewTabAction({ 
+        id: GRAPHS, // Use GRAPHS constant
         isEmptyDataView: false,
         extraConfig: {
-          tabName: projects[config.selectedProject]?.workspacePath,
-          name: config.selectedProject,
-          type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }),
-          bareType: GRAPHS,
-          id: projects[config.selectedProject]?.id,
-          lastModified: new Date().toISOString(),
-          isActive: 1,
-          workspacePath: projects[config.selectedProject]?.workspacePath,
-        },
+          tabName: projects[config.selectedProject]?.workspacePath, // Pass workspacePath as tabName
+          name: config.selectedProject, // Pass project name
+          type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }), // Pass type
+          bareType: GRAPHS, // Pass bareType
+          id: projects[config.selectedProject]?.id, // Pass project ID
+          lastModified: new Date().toISOString(), // Current timestamp
+          isActive: 1, // Set as active
+          workspacePath: projects[config.selectedProject]?.workspacePath, // Pass workspacePath
+        }
       });
       
       // TODO: Pass the scatter plot configuration to the graph tab
