@@ -8,5 +8,10 @@
   "graphview": "Graph View",
   "custom": "Custom View",
   "emptydataview": "Empty Data View",
-  "data": "Data"
+  "data": "Data",
+  "confirmDelete": "Are you sure you want to delete project '{{projectName}}'?",
+  "projectDeletedSuccess": "Project deleted successfully",
+  "ok": "Ok",
+  "cancel": "Cancel",
+  "deleteConfirmation": "Delete Project"
 }

@@ -207,7 +207,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               setFileSize(0);
               setSheets([]);
               getConfigurations();
-              setBlockUI({ value: true, msg: data.error });
+              setBlockUI({ value: false, msg: "" });
               props.closeModal();
             })
             .catch((error) => {
@@ -323,8 +323,8 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             }
           >
             <Input
-              disabled
               value={file ?? ''}
+              onClick={onBrowseFileHandler}
               contentAfter={
                 <Button
                   disabled={loading}

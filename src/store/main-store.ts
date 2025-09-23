@@ -29,7 +29,8 @@ interface IStartProStore {
   model: Model;
   setBulkProjects: (projects: { [projectName: string]: IProjectDetails }) => void;
   setNewProject: (key: string, value: string) => void;
-  setBlockUI: (value: IBlockUIProps) => void
+  setBlockUI: (value: IBlockUIProps) => void;
+  deleteProject: (projectName: string) => void;
 }
 
 export const useStartProStore = create<IStartProStore>((set) => ({
@@ -56,6 +57,13 @@ export const useStartProStore = create<IStartProStore>((set) => ({
     set((state: any) => {
       const newPro = state?.newProject ?? {};
       return { newProject: { ...newPro, [key]: value } };
+    });
+  },
+  deleteProject(projectName): void {
+    set((state) => {
+      const updatedProjects = { ...state.projects };
+      delete updatedProjects[projectName];
+      return { projects: updatedProjects };
     });
   },
 }));

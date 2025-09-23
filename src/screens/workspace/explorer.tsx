@@ -1,4 +1,4 @@
-import { FC, memo, useRef, useCallback } from 'react';
+import { FC, memo, useRef, useCallback, useState } from 'react';
 import {
   Tree,
   TreeItem,
@@ -9,14 +9,15 @@ import {
 } from '@fluentui/react-components';
 import { useShallow } from 'zustand/react/shallow';
 import { AiFillFileExcel, AiFillControl } from 'react-icons/ai';
-import { CONFIGURATION_DB, DATA, OUTPUT } from '@constants';
+import { CONFIGURATION_DB, DATA, OUTPUT, API } from '@constants';
 import { useTranslation } from 'react-i18next';
-import { updateOutputFromProject, updateDataFromProject } from '@backend';
-import { RecordNotFound } from '@libs';
-import { useGetInitialConfig, useFileSize, useFormatter, useNodeActions } from '@hooks';
+import { updateOutputFromProject, updateDataFromProject, deleteProject } from '@backend';
+import { Modal, RecordNotFound } from '@libs';
+import { useGetInitialConfig, useFileSize, useFormatter, useNodeActions, useModal } from '@hooks';
 import { useStartProStore, IProjectDetails } from '@store';
 import { useExplorerLayout } from './styles-hook/use-explorer-style';
 import { Database } from '@utils';
+import { mainWorker } from '@workers/worker';
 import { MdDeleteOutline } from 'react-icons/md';
 
 export interface ISelector extends IProjectDetails {
@@ -29,16 +30,19 @@ const ExplorerComp: FC = () => {
   const { dateFormat } = useFormatter();
   const { getConfigurations } = useGetInitialConfig();
   const treeContainerRef = useRef<HTMLDivElement>(null);
-  const { projects, setBlockUI } = useStartProStore(
+  const { projects, setBlockUI, deleteProject: deleteProjectFromStore } = useStartProStore(
     useShallow((state) => ({
       projects: state.projects,
       model: state.model,
       setBlockUI: state.setBlockUI,
+      deleteProject: state.deleteProject,
     })),
   );
 
   const { selectTab, openNewTab, getOpenRecords } = useNodeActions();
   const { t } = useTranslation('workspace');
+  const [projectToDelete, setProjectToDelete] = useState<{ name: string, id: string } | null>(null);
+  const deleteModal = useModal({ initialOpen: false });
 
   const onSelectedUpdate = (data: ISelector, type: string) => (): void => {
     const { record } = getOpenRecords(data, type);
@@ -68,9 +72,65 @@ const ExplorerComp: FC = () => {
         setBlockUI({ value: true, msg: error.message });
       });
   };
-  const onDeleteHandler = (e: any) => {
-    console.log('deleting the work space');
+
+
+  const onDeleteHandler = (projectName: string, projectId: string) => (e: any) => {
     e.preventDefault();
+    e.stopPropagation();
+    setProjectToDelete({ name: projectName, id: projectId });
+    deleteModal.openModal();
+  };
+
+  const confirmDelete = async () => {
+    if (!projectToDelete) return;
+
+    const db = new Database(CONFIGURATION_DB);
+    let dbDeleteSuccessful = false;
+
+    try {
+      const project = projects[projectToDelete.name];
+      const db_location_array = project.workspacePath?.split("\\").slice(0, -1);
+      const deletePayload = {
+        db_location: db_location_array.join("//"),
+        db_name: project.inputFileName,
+        operation: "delete_db"
+      };
+      // Backend Deletion
+      const response = await mainWorker.axios(`${API.backendURL}/api/${API.analysis}`, deletePayload);
+
+      if (response.error) {
+        throw new Error(`Backend deletion failed: ${response.error}`);
+      }
+
+      if (response.status && response.status !== 'success') {
+        throw new Error(`Backend deletion failed: ${response.msg || 'Unknown error'}`);
+      }
+
+      console.log('Backend deletion successful:', response.msg || 'Project deleted from backend');
+
+      // Frontend Deletion
+      await db.executeQuery(deleteProject, [projectToDelete.id]);
+      dbDeleteSuccessful = true;
+
+      // Update store and UI only if both operations succeeded
+      deleteProjectFromStore(projectToDelete.name);
+      setBlockUI({ value: true, msg: t('projectDeletedSuccess') });
+      deleteModal.closeModal();
+      setProjectToDelete(null);
+    } catch (error: any) {
+      if (dbDeleteSuccessful) {
+        console.error('Database deletion succeeded but subsequent operation failed. Manual cleanup may be required.');
+      }
+
+      setBlockUI({ value: true, msg: error.message });
+      deleteModal.closeModal();
+      setProjectToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    deleteModal.closeModal();
+    setProjectToDelete(null);
   };
 
   const handleTreeItemExpand = useCallback((projectName: string) => {
@@ -125,7 +185,7 @@ const ExplorerComp: FC = () => {
                           </div>
                         </div>
                         <div className={classes.kabobItem}>
-                          <MdDeleteOutline onClick={onDeleteHandler} />
+                          <MdDeleteOutline onClick={onDeleteHandler(projectName, project.id)} />
                         </div>
                       </div>
                     </div>
@@ -162,6 +222,20 @@ const ExplorerComp: FC = () => {
       ) : (
         <RecordNotFound />
       )}
+
+      <Modal
+        {...deleteModal}
+        title={t('deleteConfirmation')}
+        okLabel={t("ok")}
+        cancelLabel={t("cancel")}
+        showCancel={true}
+        showOk={true}
+        size="small"
+        ok={{ onClick: confirmDelete }}
+        cancel={{ onClick: cancelDelete }}
+      >
+        <p> {t('confirmDelete', { projectName: projectToDelete?.name })}</p>
+      </Modal>
     </div>
   );
 };
