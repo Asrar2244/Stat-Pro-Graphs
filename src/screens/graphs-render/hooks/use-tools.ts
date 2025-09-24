@@ -6,6 +6,8 @@ export interface GlobalGraphProperties {
   backgroundColor: string;
   plotColor?: string;
   seriesColor?: string;
+  backgroundTransparencyPct?: number; // 0-100
+  plotTransparencyPct?: number; // 0-100
   showGridLines: boolean;
   showAxisLabels: boolean;
   marginSize: number;
@@ -29,10 +31,76 @@ export interface GlobalGraphProperties {
   legendDirectLabeling: boolean;
   legendUseYOnly: boolean;
 
+  // Legend Items
+  editableLegendText: boolean;
+  symbolPlacement: 'before' | 'after';
+  legendStyle: 'rectangle';
+  legendWidth: number;
+  legendHeight: number;
+  legendTextEntries: Record<string, string>; // Store custom legend text entries
+  legendSeriesColors: Record<string, string>; // Per-series color overrides keyed by legend label
+
   // Export
   imageQuality: number;
   imageFormat: string;
   dpi: number;
+
+  // Grid Settings
+  gridPlane: 'xy2d';
+  gridXMajor: boolean;
+  gridYMajor: boolean;
+  gridXMinor: boolean;
+  gridYMinor: boolean;
+  gridLineStyle: 'none' | 'solid' | 'dashed' | 'dotted';
+  gridThicknessInch: number; // will be mapped to px heuristically
+  gridColor: string;
+  gridGapColor: string;
+  gridTransparencyPct: number; // 0-100
+  gridLayering: 'gridFront' | 'plotFront';
+
+  // Axis Lines
+  yAxisSide: 'left' | 'right';
+  axisLineColor: string;
+  axisLineThicknessInch: number;
+  axisLineTransparencyPct: number; // 0-100
+
+  // Scaling Options (per-axis)
+  xScaleType: 'linear' | 'log10' | 'loge' | 'probability' | 'probit' | 'logit' | 'category' | 'datetime' | 'weibull' | 'reciprocal';
+  yScaleType: 'linear' | 'log10' | 'loge' | 'probability' | 'probit' | 'logit' | 'category' | 'datetime' | 'weibull' | 'reciprocal';
+  xRangeStartMode: 'constant' | 'data';
+  xRangeStart?: number;
+  xRangeEndMode: 'constant' | 'data';
+  xRangeEnd?: number;
+  xPad5: boolean;
+  xNearestTick: boolean;
+  yRangeStartMode: 'constant' | 'data';
+  yRangeStart?: number;
+  yRangeEndMode: 'constant' | 'data';
+  yRangeEnd?: number;
+  yPad5: boolean;
+  yNearestTick: boolean;
+
+  // Tick Labels - Major
+  majorTickShowLeft: boolean;
+  majorTickShowRight: boolean;
+  majorTickPrefix: string;
+  majorTickSuffix: string;
+  majorTickNumericType: 'number' | 'percent' | 'scientific' | 'engineering';
+  majorTickPrecisionMode: 'auto' | 'manual';
+  majorTickPrecision: number; // 0-15
+  majorTickExponentFormat: 'e' | 'SI' | 'power';
+  majorTickFactor: '1e-4' | '1e-3' | '0.1' | '1' | '10';
+
+  // Tick Labels - Minor
+  minorTickShowLeft: boolean;
+  minorTickShowRight: boolean;
+  minorTickPrefix: string;
+  minorTickSuffix: string;
+  minorTickNumericType: 'number' | 'percent' | 'scientific' | 'engineering';
+  minorTickPrecisionMode: 'auto' | 'manual';
+  minorTickPrecision: number; // 0-15
+  minorTickExponentFormat: 'e' | 'SI' | 'power';
+  minorTickFactor: '1e-4' | '1e-3' | '0.1' | '1' | '10';
 }
 
 // Plot-specific properties for different graph types
@@ -95,6 +163,8 @@ export const useTools = () => {
       backgroundColor: '#ffffff',
       plotColor: '',
       seriesColor: '',
+      backgroundTransparencyPct: 0,
+      plotTransparencyPct: 0,
       showGridLines: true,
       showAxisLabels: true,
       marginSize: 20,
@@ -115,10 +185,71 @@ export const useTools = () => {
       legendFramedInBox: true,
       legendDirectLabeling: false,
       legendUseYOnly: false,
+      // Legend Items defaults
+      editableLegendText: true,
+      symbolPlacement: 'before',
+      legendStyle: 'rectangle',
+      legendWidth: 200,
+      legendHeight: 100,
+      legendTextEntries: {}, // Empty object to store custom legend text
+      legendSeriesColors: {},
       // Export defaults
       imageQuality: 150,
       imageFormat: 'PNG',
       dpi: 300,
+
+      // Grid Settings defaults
+      gridPlane: 'xy2d',
+      gridXMajor: true,
+      gridYMajor: true,
+      gridXMinor: false,
+      gridYMinor: false,
+      gridLineStyle: 'solid',
+      gridThicknessInch: 0.01,
+      gridColor: '#e5e5e5',
+      gridGapColor: '#ffffff',
+      gridTransparencyPct: 0,
+      gridLayering: 'plotFront',
+
+      // Axis Lines defaults
+      yAxisSide: 'left',
+      axisLineColor: '#444444',
+      axisLineThicknessInch: 0.0104, // ~1px
+      axisLineTransparencyPct: 0,
+
+      // Scaling Options defaults
+      xScaleType: 'linear',
+      yScaleType: 'linear',
+      xRangeStartMode: 'data',
+      xRangeEndMode: 'data',
+      xPad5: false,
+      xNearestTick: false,
+      yRangeStartMode: 'data',
+      yRangeEndMode: 'data',
+      yPad5: false,
+      yNearestTick: false,
+
+      // Tick Labels defaults - Major
+      majorTickShowLeft: true,
+      majorTickShowRight: true,
+      majorTickPrefix: '',
+      majorTickSuffix: '',
+      majorTickNumericType: 'number',
+      majorTickPrecisionMode: 'auto',
+      majorTickPrecision: 2,
+      majorTickExponentFormat: 'e',
+      majorTickFactor: '1',
+
+      // Tick Labels defaults - Minor
+      minorTickShowLeft: true,
+      minorTickShowRight: true,
+      minorTickPrefix: '',
+      minorTickSuffix: '',
+      minorTickNumericType: 'number',
+      minorTickPrecisionMode: 'auto',
+      minorTickPrecision: 1,
+      minorTickExponentFormat: 'e',
+      minorTickFactor: '1',
     },
     plotSpecific: {
       scatter: {
@@ -208,6 +339,34 @@ export const useTools = () => {
     }));
   };
 
+  // Update legend text entry
+  const updateLegendTextEntry = (originalLabel: string, newText: string) => {
+    setGraphProperties(prev => ({
+      ...prev,
+      global: {
+        ...prev.global,
+        legendTextEntries: {
+          ...prev.global.legendTextEntries,
+          [originalLabel]: newText,
+        },
+      },
+    }));
+  };
+
+  // Update per-series color override
+  const updateLegendSeriesColor = (label: string, color: string) => {
+    setGraphProperties(prev => ({
+      ...prev,
+      global: {
+        ...prev.global,
+        legendSeriesColors: {
+          ...prev.global.legendSeriesColors,
+          [label]: color,
+        },
+      },
+    }));
+  };
+
   // Get current plot type based on subType
   const getCurrentPlotType = (subType?: string): keyof PlotSpecificProperties | null => {
     if (!subType) return null;
@@ -240,6 +399,8 @@ export const useTools = () => {
     toggleGraphProperties,
     updateGraphProperty,
     updatePlotSpecificProperty,
+    updateLegendTextEntry,
+    updateLegendSeriesColor,
     getCurrentPlotType,
     setTotalRuns,
   };

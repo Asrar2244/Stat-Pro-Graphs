@@ -7,6 +7,7 @@ export interface IFetchSingleGraph {
   tabName: string;
   graphType: string;
   modifiedDateTime: string;
+  properties?: any;
 }
 
 export const fetchSingleGraph = async (
@@ -14,18 +15,22 @@ export const fetchSingleGraph = async (
   runId: number,
 ): Promise<IFetchSingleGraph | undefined> => {
   const db = new Database(dbName);
+  await db.executeQuery(createGraphTable);
+  // Attempt to add properties column if it doesn't exist
+  try { await db.executeQuery(`ALTER TABLE ${GRAPHS} ADD COLUMN properties TEXT`); } catch {}
   const records = await db.selectQuery(
-    `SELECT id,config,tabName,graphType,modifiedDateTime FROM ${GRAPHS} WHERE id = ${runId};`,
+    `SELECT id,config,tabName,graphType,modifiedDateTime,properties FROM ${GRAPHS} WHERE id = ${runId};`,
     [],
   );
   if (records.length > 0) {
-    const { id, modifiedDateTime, graphType, tabName, config } = records[0];
+    const { id, modifiedDateTime, graphType, tabName, config, properties } = records[0];
     return {
       id,
       modifiedDateTime,
       graphType,
       tabName,
       config: parseJsonObject(config),
+      properties: parseJsonObject(properties),
     };
   }
   return undefined;
@@ -35,8 +40,9 @@ export const fetchGraphRunList = async (dbName: string): Promise<IFetchSingleGra
   console.log('🔍 Backend: Fetching graph runs from database:', dbName);
   const db = new Database(dbName);
   await db.executeQuery(createGraphTable);
+  try { await db.executeQuery(`ALTER TABLE ${GRAPHS} ADD COLUMN properties TEXT`); } catch {}
   const records = await db.selectQuery(
-    `SELECT id,tabName,graphType,modifiedDateTime,config
+    `SELECT id,tabName,graphType,modifiedDateTime,config,properties
      FROM ${GRAPHS} ORDER BY id DESC;`,
     [],
   );
@@ -44,6 +50,7 @@ export const fetchGraphRunList = async (dbName: string): Promise<IFetchSingleGra
   const result = records.map(record => ({
     ...record,
     config: parseJsonObject(record.config),
+    properties: parseJsonObject(record.properties),
   }));
   console.log('📊 Backend: Processed graph records:', result);
   return result;
@@ -60,16 +67,17 @@ export const createGraphTable = `CREATE TABLE IF NOT EXISTS ${GRAPHS} (
   config TEXT NOT NULL,
   tabName TEXT NOT NULL,
   graphType TEXT NOT NULL,
-  modifiedDateTime TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  modifiedDateTime TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  properties TEXT
 )`;
 
 export const insertToGraphTable = `INSERT INTO ${GRAPHS}
-  (name, createdAt, config, tabName, graphType, modifiedDateTime)
-  VALUES(?,?,?,?,?,?)`;
+  (name, createdAt, config, tabName, graphType, modifiedDateTime, properties)
+  VALUES(?,?,?,?,?,?,?)`;
 
 export const generateIDGraphTable = `INSERT INTO ${GRAPHS}
-  (name, createdAt, config, tabName, graphType, modifiedDateTime)
-  VALUES(?,?,?,?,?,?)`;
+  (name, createdAt, config, tabName, graphType, modifiedDateTime, properties)
+  VALUES(?,?,?,?,?,?,?)`;
 
 export const graphGenerateIDTable = async (dbName: string, parameters: any[]): Promise<number> => {
   const db = new Database(dbName);
@@ -90,6 +98,22 @@ export const updateGraphRunConfig = async (
 ): Promise<void> => {
   const db = new Database(dbName);
   await db.executeQuery(createGraphTable);
+  // Merge with existing config to avoid overwriting fields like workspacePath
+  const rows = await db.selectQuery(`SELECT config FROM ${GRAPHS} WHERE id = ?;`, [runId] as any);
+  const currentCfg = rows && rows[0] ? parseJsonObject(rows[0].config) : {};
+  const merged = { ...currentCfg, ...nextConfig };
   const sql = `UPDATE ${GRAPHS} SET config = ?, modifiedDateTime = CURRENT_TIMESTAMP WHERE id = ?;`;
-  await db.executeQueryWithParams(sql, [JSON.stringify(nextConfig), runId] as any);
+  await db.executeQueryWithParams(sql, [JSON.stringify(merged), runId] as any);
+};
+
+export const updateGraphRunProperties = async (
+  dbName: string,
+  runId: number,
+  nextProperties: any,
+): Promise<void> => {
+  const db = new Database(dbName);
+  await db.executeQuery(createGraphTable);
+  try { await db.executeQuery(`ALTER TABLE ${GRAPHS} ADD COLUMN properties TEXT`); } catch {}
+  const sql = `UPDATE ${GRAPHS} SET properties = ?, modifiedDateTime = CURRENT_TIMESTAMP WHERE id = ?;`;
+  await db.executeQueryWithParams(sql, [JSON.stringify(nextProperties), runId] as any);
 };

@@ -37,7 +37,7 @@ export const GraphSelection: FC<IGraphSelection> = ({ id, showHistory, ...props 
         value={{
           toolBar: props,
           selectedRun: run?.selectedRun,
-          graphProperties: props.graphProperties as any,
+          graphProperties: (props.graphProperties as any) || (run?.selectedRun as any)?.properties,
           onUpdateGraphProperty: props.onUpdateGraphProperty as any,
         }}
       >

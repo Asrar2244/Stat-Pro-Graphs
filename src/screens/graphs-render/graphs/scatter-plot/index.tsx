@@ -5,12 +5,14 @@ import { Card, CardFooter, CardPreview } from '@fluentui/react-components';
 import { GraphTools } from '@libs/graphs/tools';
 import { useFullScreenHandle } from 'react-full-screen';
 import { useGraphStyles } from '@libs/graphs/styles-hook/use-graph-style';
+import { useStartProStore } from '@store/main-store';
 
 export const ScatterPlotGraph: FC = () => {
   const { selectedRun, graphProperties } = useContext(GraphsRenderContext);
   const handle = useFullScreenHandle();
   const plotlyRef = useRef<any>(null);
   const classes = useGraphStyles();
+  const { projects } = useStartProStore();
   
   // Debug logging
   console.log('🔍 ScatterPlotGraph Debug:');
@@ -24,6 +26,12 @@ export const ScatterPlotGraph: FC = () => {
   }
 
   const { graphConfig, workspacePath } = selectedRun.config;
+  // Fallback: if workspacePath missing (older runs), resolve from projects by selectedProject/tabName
+  const resolvedWorkspacePath =
+    workspacePath ||
+    projects?.[graphConfig?.selectedProject || '']?.workspacePath ||
+    projects?.[selectedRun?.tabName || '']?.workspacePath ||
+    '';
   
   console.log('✅ Graph config found:', graphConfig);
   console.log('✅ Workspace path:', workspacePath);
@@ -45,7 +53,7 @@ export const ScatterPlotGraph: FC = () => {
             <GraphCanvas 
               key={`graph-${selectedRun?.id || 'new'}`}
               graphConfig={graphConfig} 
-              workspacePath={workspacePath}
+              workspacePath={resolvedWorkspacePath}
               liveProps={graphProperties}
             />
           </div>

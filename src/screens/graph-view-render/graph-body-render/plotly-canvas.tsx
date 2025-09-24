@@ -2,7 +2,6 @@ import { FC, useEffect, useRef } from 'react';
 import { usePlotly } from '@hooks/plotly';
 import { Database } from '@utils';
 import { ensureGraphFolderAndSave } from './plotly-save';
-import { insertGraphRun } from './graphs-store';
 import { EXCEL } from '@constants';
 import { useStartProStore } from '@store/main-store';
 
@@ -103,6 +102,28 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
         categoryNames
       });
 
+      // Collect legend labels for editing
+      const legendLabels = processedSeries.map(s => s.label);
+      
+      // Store legend labels in the graph config for the properties panel
+      if (legendLabels.length > 0) {
+        graphConfig.legendLabels = legendLabels;
+        
+        // Save legend labels back to the database
+        try {
+          const { updateGraphRunConfig } = await import('@backend/graphs');
+          const currentRunId = graphConfig.runId || graphConfig.id;
+          if (currentRunId) {
+            await updateGraphRunConfig(workspacePath, currentRunId, { 
+              graphConfig: { ...graphConfig, legendLabels } 
+            });
+            console.log('💾 Saved legend labels to database:', legendLabels);
+          }
+        } catch (error) {
+          console.warn('⚠️ Failed to save legend labels to database:', error);
+        }
+      }
+
       // Assess data quality and provide recommendations
       processedSeries.forEach(({ xv, yv, label }) => {
         const qualityReport = assessDataQuality(xv, yv, {
@@ -125,6 +146,74 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
           isValid: qualityReport.isValid
         });
       });
+
+      // Helper: axis transforms for special scales
+      const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+      const probEps = 1e-12;
+      const invNormApprox = (p: number) => {
+        // Acklam's approximation for inverse normal CDF (probit)
+        // Reference: https://web.archive.org/web/20150910044740/http://home.online.no/~pjacklam/notes/invnorm/
+        const a1 = -3.969683028665376e+01;
+        const a2 =  2.209460984245205e+02;
+        const a3 = -2.759285104469687e+02;
+        const a4 =  1.383577518672690e+02;
+        const a5 = -3.066479806614716e+01;
+        const a6 =  2.506628277459239e+00;
+        const b1 = -5.447609879822406e+01;
+        const b2 =  1.615858368580409e+02;
+        const b3 = -1.556989798598866e+02;
+        const b4 =  6.680131188771972e+01;
+        const b5 = -1.328068155288572e+01;
+        const c1 = -7.784894002430293e-03;
+        const c2 = -3.223964580411365e-01;
+        const c3 = -2.400758277161838e+00;
+        const c4 = -2.549732539343734e+00;
+        const c5 =  4.374664141464968e+00;
+        const c6 =  2.938163982698783e+00;
+        const d1 =  7.784695709041462e-03;
+        const d2 =  3.224671290700398e-01;
+        const d3 =  2.445134137142996e+00;
+        const d4 =  3.754408661907416e+00;
+        const plow  = 0.02425;
+        const phigh = 1 - plow;
+        let q: number, r: number;
+        if (p < plow) {
+          q = Math.sqrt(-2 * Math.log(p));
+          return (((((c1*q + c2)*q + c3)*q + c4)*q + c5)*q + c6)/((((d1*q + d2)*q + d3)*q + d4)*q + 1);
+        }
+        if (phigh < p) {
+          q = Math.sqrt(-2 * Math.log(1 - p));
+          return -(((((c1*q + c2)*q + c3)*q + c4)*q + c5)*q + c6)/((((d1*q + d2)*q + d3)*q + d4)*q + 1);
+        }
+        q = p - 0.5;
+        r = q * q;
+        return (((((a1*r + a2)*r + a3)*r + a4)*r + a5)*r + a6)*q/(((((b1*r + b2)*r + b3)*r + b4)*r + b5)*r + 1);
+      };
+      const transformAxisValue = (v: number, scale?: string): number => {
+        if (v == null || Number.isNaN(v)) return v as any;
+        switch (scale) {
+          case 'reciprocal': {
+            return v === 0 ? NaN : 1 / v;
+          }
+          case 'logit': {
+            const p = clamp(v, probEps, 1 - probEps);
+            return Math.log(p / (1 - p));
+          }
+          case 'probit': {
+            const p = clamp(v, probEps, 1 - probEps);
+            return invNormApprox(p);
+          }
+          case 'weibull': {
+            // y = ln(-ln(1 - p)) on a Weibull probability plot
+            const p = clamp(v, probEps, 1 - probEps);
+            return Math.log(-Math.log(1 - p));
+          }
+          case 'probability':
+          default:
+            return v;
+        }
+      };
+      const transformArrayForScale = (arr: number[], scale?: string) => (Array.isArray(arr) ? arr.map((v) => transformAxisValue(v as any, scale)) : arr);
 
       // Create traces for each series with performance optimization
       processedSeries.forEach(({ xv, yv, label }) => {
@@ -174,18 +263,26 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
           console.info(`💡 Performance Recommendations for "${label}":`, recommendations);
         }
         
-        const colorOverride = (liveProps?.plotSpecific?.scatter?.pointColor) || (liveProps?.global?.seriesColor);
+        // Per-series color override: legendSeriesColors[label] > plot-specific color > global seriesColor
+        const perSeriesColor = liveProps?.global?.legendSeriesColors?.[label];
+        const colorOverride = perSeriesColor || (liveProps?.plotSpecific?.scatter?.pointColor) || (liveProps?.global?.seriesColor);
         const color = colorOverride || getSeriesColor(seriesIndex);
         const symbol = getSeriesSymbol(seriesIndex);
         
+        // Apply axis transforms for special scales (keep axes type linear; data transformed)
+        const xScale = liveProps?.global?.xScaleType;
+        const yScale = liveProps?.global?.yScaleType;
+        const tx = transformArrayForScale(optimizedData.xv as any, xScale);
+        const ty = transformArrayForScale(optimizedData.yv as any, yScale);
         try {
           // Create scatter trace with optimized data
+          const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
           const scatterTrace = createScatterTrace({
-            xv: optimizedData.xv,
-            yv: optimizedData.yv,
+            xv: tx as any,
+            yv: ty as any,
             label: optimizedData.optimizationMethod !== 'none' 
-              ? `${label} (${optimizedData.optimizationMethod}, ${optimizedData.optimizedLength}/${optimizedData.originalLength})`
-              : label,
+              ? `${customLabel} (${optimizedData.optimizationMethod}, ${optimizedData.optimizedLength}/${optimizedData.originalLength})`
+              : customLabel,
             color,
             symbol,
             subType: graphConfig?.subType || '',
@@ -205,12 +302,13 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
         } catch (error) {
           console.error(`❌ Error creating trace for "${label}":`, error);
           // Create a fallback trace with minimal data
+          const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
           const fallbackTrace = {
             x: optimizedData.xv.slice(0, 1000), // Limit to 1000 points
             y: optimizedData.yv.slice(0, 1000),
             type: 'scatter',
             mode: 'markers',
-            name: `${label} (fallback)`,
+            name: `${customLabel} (fallback)`,
             marker: { color, size: 4, opacity: 0.6 },
             showlegend: true
           };
@@ -219,11 +317,13 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
         
         // Add regression traces if needed (use optimized data for better performance)
         try {
+          const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
           const regressionTraces = createRegressionTracesIfNeeded(
-            optimizedData.xv, 
-            optimizedData.yv, 
-            label, 
-            (liveProps?.plotSpecific?.regression?.lineColor) || color, 
+            tx as any,
+            ty as any,
+            customLabel, 
+            // Use same per-series override for regression line if not explicitly set
+            (liveProps?.plotSpecific?.regression?.lineColor) || perSeriesColor || color, 
             graphConfig?.subType || ''
           );
           traces.push(...regressionTraces);
@@ -282,8 +382,21 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
             ? { x: 0.02, y: 0.98, xanchor: 'left' as const, yanchor: 'top' as const }
             : { x: 1.02, y: 1, xanchor: 'left' as const, yanchor: 'top' as const })
         : {} as any;
-      const paperBg = liveProps?.global?.backgroundColor || undefined;
-      const plotBg = liveProps?.global?.plotColor || paperBg;
+      // Local RGBA helper for background and plot colors (avoid order issues)
+      const toRgba = (hex?: string, alpha?: number) => {
+        if (!hex) return undefined as any;
+        const h = hex.replace('#', '');
+        if (h.length !== 6) return hex;
+        const r = parseInt(h.substring(0, 2), 16);
+        const g = parseInt(h.substring(2, 4), 16);
+        const b = parseInt(h.substring(4, 6), 16);
+        const a = typeof alpha === 'number' ? alpha : 1;
+        return `rgba(${r}, ${g}, ${b}, ${a})`;
+      };
+      const bgAlpha = Math.max(0, Math.min(1, 1 - (liveProps?.global?.backgroundTransparencyPct || 0) / 100));
+      const plotAlpha = Math.max(0, Math.min(1, 1 - (liveProps?.global?.plotTransparencyPct || 0) / 100));
+      const paperBg = liveProps?.global?.backgroundColor ? toRgba(liveProps.global.backgroundColor, bgAlpha) : undefined;
+      const plotBg = liveProps?.global?.plotColor ? toRgba(liveProps.global.plotColor, plotAlpha) : paperBg;
       // Axis labels: keep defaults, but allow override when provided
       const axisXTitle = liveProps?.global?.showAxisLabels && liveProps?.global?.axisXData
         ? { text: liveProps.global.axisXData }
@@ -292,17 +405,49 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
         ? { text: liveProps.global.axisYData }
         : undefined;
       
+      // Convert inches to pixels (~96 dpi heuristic)
+      const inchToPx = (inch: number) => Math.max(0, Math.round(inch * 96));
+      const gridOpacity = Math.max(0, Math.min(1, 1 - (liveProps?.global?.gridTransparencyPct || 0) / 100));
+      const hexToRgba = (hex?: string, alpha?: number) => {
+        if (!hex) return undefined as any;
+        const h = hex.replace('#', '');
+        if (h.length !== 6) return hex;
+        const r = parseInt(h.substring(0, 2), 16);
+        const g = parseInt(h.substring(2, 4), 16);
+        const b = parseInt(h.substring(4, 6), 16);
+        const a = typeof alpha === 'number' ? alpha : 1;
+        return `rgba(${r}, ${g}, ${b}, ${a})`;
+      };
+      const gridDash = ((): any => {
+        switch (liveProps?.global?.gridLineStyle) {
+          case 'dashed': return 'dash';
+          case 'dotted': return 'dot';
+          case 'none': return undefined;
+          default: return 'solid';
+        }
+      })();
+
+      // Axis line computed properties
+      const axisLineAlpha = Math.max(0, Math.min(1, 1 - (liveProps?.global?.axisLineTransparencyPct || 0) / 100));
+      const axisLineWidthPx = Math.max(1, Math.round((liveProps?.global?.axisLineThicknessInch || 0.0104) * 96));
+      const axisLineColor = hexToRgba(liveProps?.global?.axisLineColor || '#444444', axisLineAlpha);
+
+      const titleVisible = liveProps?.global?.showTitle !== false;
       let layout: any = {
-        title: {
-          text: liveTitle || getTitleText(subType),
-          font: { size: 18, family: 'Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: '#111' },
-          x: 0.5,
-          xanchor: 'center',
-          y: 0.98,
-          yanchor: 'top',
-          pad: { t: 8, b: 4, l: 0, r: 0 },
-        },
+        title: titleVisible
+          ? {
+              text: liveTitle || getTitleText(subType),
+              font: { size: 18, family: 'Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: '#111' },
+              x: 0.5,
+              xanchor: 'center',
+              y: 0.98,
+              yanchor: 'top',
+              pad: { t: 8, b: 4, l: 0, r: 0 },
+            }
+          : undefined,
         autosize: true,
+        // Force Plotly to fully re-evaluate layout changes like RGBA grid colors
+        datarevision: Date.now(),
         showlegend: showLegend,
         legend: {
           ...getLegendConfig(subType),
@@ -314,11 +459,64 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
           bgcolor: framed ? 'rgba(255,255,255,0.85)' : undefined,
           borderpad,
           ...legendPos,
+          // Legend Items properties
+          ...(liveProps?.global?.legendWidth && { width: liveProps.global.legendWidth }),
+          ...(liveProps?.global?.legendHeight && { height: liveProps.global.legendHeight }),
+          ...(liveProps?.global?.symbolPlacement && {
+            traceorder: liveProps.global.symbolPlacement === 'before' ? 'normal' : 'reversed'
+          }),
         },
         xaxis: {
           ...getAxisConfig(subType, 'x'),
           title: axisXTitle ? { ...axisXTitle, standoff: 12 } : undefined,
-          showgrid: liveProps?.global?.showGridLines ?? true,
+          showline: true,
+          linecolor: axisLineColor,
+          linewidth: axisLineWidthPx,
+          type: ((): any => {
+            switch (liveProps?.global?.xScaleType) {
+              case 'linear': return 'linear';
+              case 'log10': return 'log';
+              case 'loge': return 'log';
+              case 'category': return 'category';
+              case 'datetime': return 'date';
+              // Probability/probit/logit/weibull/reciprocal would require transforms; default to linear for now
+              default: return 'linear';
+            }
+          })(),
+          // Range handling
+          ...(liveProps?.global?.xRangeStartMode === 'constant' && typeof liveProps?.global?.xRangeStart === 'number' && liveProps?.global?.xRangeEndMode === 'constant' && typeof liveProps?.global?.xRangeEnd === 'number'
+            ? { range: [liveProps.global.xRangeStart, liveProps.global.xRangeEnd] }
+            : {}),
+          ...(liveProps?.global?.xPad5 ? { rangepadding: 5 } : {}),
+          ...(liveProps?.global?.xNearestTick ? { tickmode: 'auto' } : {}),
+          showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridXMajor),
+          gridcolor: hexToRgba(liveProps?.global?.gridColor, gridOpacity),
+          gridwidth: inchToPx(liveProps?.global?.gridThicknessInch || 0.01),
+          griddash: gridDash,
+          zeroline: false,
+          minor: {
+            showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridXMinor),
+            gridcolor: hexToRgba(liveProps?.global?.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
+            gridwidth: Math.max(1, Math.floor(inchToPx((liveProps?.global?.gridThicknessInch || 0.01) / 2))),
+            griddash: gridDash || 'dot',
+            ticks: 'outside',
+          },
+          layer: liveProps?.global?.gridLayering === 'gridFront' ? 'above traces' : 'below traces',
+          tickprefix: liveProps?.global?.majorTickPrefix || undefined,
+          ticksuffix: liveProps?.global?.majorTickSuffix || undefined,
+          showticklabels: liveProps?.global?.majorTickShowLeft || liveProps?.global?.majorTickShowRight,
+          tickformat: ((): any => {
+            const mode = liveProps?.global?.majorTickPrecisionMode;
+            const prec = liveProps?.global?.majorTickPrecision ?? 2;
+            const numeric = liveProps?.global?.majorTickNumericType;
+            if (numeric === 'percent') return mode === 'manual' ? `.${prec}%` : '.%';
+            if (numeric === 'scientific') return mode === 'manual' ? `.${prec}e` : '.e';
+            if (numeric === 'engineering') return mode === 'manual' ? `.${prec}s` : '.s';
+            return mode === 'manual' ? `.${prec}f` : undefined;
+          })(),
+          exponentformat: liveProps?.global?.majorTickExponentFormat,
+          tickformatstops: liveProps?.global?.majorTickFactor && liveProps.global.majorTickFactor !== '1' ? [{ enabled: true, dtickrange: [null, null], value: liveProps.global.majorTickFactor }] : undefined,
+          // Note: Plotly does not support minor tick label text; only minor grid. Keeping single minor object above.
           ticklen: 6,
           ticks: 'outside',
           automargin: true,
@@ -326,11 +524,60 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
         yaxis: {
           ...getAxisConfig(subType, 'y'),
           title: axisYTitle ? { ...axisYTitle, standoff: 12 } : undefined,
-          showgrid: liveProps?.global?.showGridLines ?? true,
+          showline: true,
+          linecolor: axisLineColor,
+          linewidth: axisLineWidthPx,
+          side: (liveProps?.global?.yAxisSide === 'right') ? 'right' : 'left',
+          type: ((): any => {
+            switch (liveProps?.global?.yScaleType) {
+              case 'linear': return 'linear';
+              case 'log10': return 'log';
+              case 'loge': return 'log';
+              case 'category': return 'category';
+              case 'datetime': return 'date';
+              default: return 'linear';
+            }
+          })(),
+          ...(liveProps?.global?.yRangeStartMode === 'constant' && typeof liveProps?.global?.yRangeStart === 'number' && liveProps?.global?.yRangeEndMode === 'constant' && typeof liveProps?.global?.yRangeEnd === 'number'
+            ? { range: [liveProps.global.yRangeStart, liveProps.global.yRangeEnd] }
+            : {}),
+          ...(liveProps?.global?.yPad5 ? { rangepadding: 5 } : {}),
+          ...(liveProps?.global?.yNearestTick ? { tickmode: 'auto' } : {}),
+          showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridYMajor),
+          gridcolor: hexToRgba(liveProps?.global?.gridColor, gridOpacity),
+          gridwidth: inchToPx(liveProps?.global?.gridThicknessInch || 0.01),
+          griddash: gridDash,
+          zeroline: false,
+          minor: {
+            showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridYMinor),
+            gridcolor: hexToRgba(liveProps?.global?.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
+            gridwidth: Math.max(1, Math.floor(inchToPx((liveProps?.global?.gridThicknessInch || 0.01) / 2))),
+            griddash: gridDash || 'dot',
+            ticks: 'outside',
+          },
+          layer: liveProps?.global?.gridLayering === 'gridFront' ? 'above traces' : 'below traces',
+          tickprefix: liveProps?.global?.majorTickPrefix || undefined,
+          ticksuffix: liveProps?.global?.majorTickSuffix || undefined,
+          showticklabels: liveProps?.global?.majorTickShowLeft || liveProps?.global?.majorTickShowRight,
+          tickformat: ((): any => {
+            const mode = liveProps?.global?.majorTickPrecisionMode;
+            const prec = liveProps?.global?.majorTickPrecision ?? 2;
+            const numeric = liveProps?.global?.majorTickNumericType;
+            if (numeric === 'percent') return mode === 'manual' ? `.${prec}%` : '.%';
+            if (numeric === 'scientific') return mode === 'manual' ? `.${prec}e` : '.e';
+            if (numeric === 'engineering') return mode === 'manual' ? `.${prec}s` : '.s';
+            return mode === 'manual' ? `.${prec}f` : undefined;
+          })(),
+          exponentformat: liveProps?.global?.majorTickExponentFormat,
+          tickformatstops: liveProps?.global?.majorTickFactor && liveProps.global.majorTickFactor !== '1' ? [{ enabled: true, dtickrange: [null, null], value: liveProps.global.majorTickFactor }] : undefined,
+          // Note: Plotly does not support minor tick label text; only minor grid. Keeping single minor object above.
           ticklen: 6,
           ticks: 'outside',
           automargin: true,
         },
+        // Mirror Y axis to requested side by adjusting side and overlaying the opposite if needed
+        // For simplicity, move y-axis side only
+        // Note: traces remain anchored to 'y' axis by default
         margin: { l: liveProps?.global?.marginSize ?? 20, r: 16, t: 64, b: liveProps?.global?.padding ?? 16 },
         automargin: true,
         paper_bgcolor: paperBg,
@@ -395,7 +642,94 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
         lastPlotRef.current = payload;
         plot.redraw(payload);
         // Attach inline editing listeners after initial draw
-        try { applyInlineEditing(); } catch {}
+        try {
+          applyInlineEditing();
+          // Also wire canvas-level context menu to open properties via an option
+          const root = containerRef.current as HTMLElement | null;
+          if (root) {
+            let menuEl: HTMLDivElement | null = null;
+            const disposeMenu = () => {
+              if (menuEl && menuEl.parentElement) menuEl.parentElement.removeChild(menuEl);
+              menuEl = null;
+              document.removeEventListener('click', onDocClick, true);
+              document.removeEventListener('keydown', onKeyDown, true);
+            };
+            const onDocClick = () => disposeMenu();
+            const onKeyDown = (ev: KeyboardEvent) => { if (ev.key === 'Escape') disposeMenu(); };
+            const onContextMenu = (e: MouseEvent) => {
+              e.preventDefault();
+              // Block any other contextmenu listeners from auto-opening properties
+              if (typeof (e as any).stopImmediatePropagation === 'function') {
+                (e as any).stopImmediatePropagation();
+              }
+              disposeMenu();
+              menuEl = document.createElement('div');
+              menuEl.style.position = 'fixed';
+              menuEl.style.left = `${e.clientX}px`;
+              menuEl.style.top = `${e.clientY}px`;
+              menuEl.style.zIndex = '9999';
+              // Theme-aware styling based on actual app background luminance
+              const getPageBg = (): string => {
+                try {
+                  const root = document.documentElement;
+                  const csRoot = window.getComputedStyle(root);
+                  const rootBg = csRoot.getPropertyValue('background-color');
+                  if (rootBg && rootBg !== 'rgba(0, 0, 0, 0)' && rootBg !== 'transparent') return rootBg.trim();
+                  const csBody = window.getComputedStyle(document.body);
+                  const bodyBg = csBody.getPropertyValue('background-color');
+                  if (bodyBg) return bodyBg.trim();
+                } catch {}
+                return '#ffffff';
+              };
+              const parseRgb = (c: string): { r: number; g: number; b: number } => {
+                if (c.startsWith('#')) {
+                  const h = c.replace('#','');
+                  const r = parseInt(h.substring(0,2),16);
+                  const g = parseInt(h.substring(2,4),16);
+                  const b = parseInt(h.substring(4,6),16);
+                  return { r,g,b };
+                }
+                const parts = c.replace(/rgba?\(|\)|\s/g,'').split(',');
+                return { r: parseInt(parts[0]||'255',10), g: parseInt(parts[1]||'255',10), b: parseInt(parts[2]||'255',10) };
+              };
+              const bgCol = getPageBg();
+              const { r:pr, g:pg, b:pb } = parseRgb(bgCol);
+              const lum = (0.2126*pr + 0.7152*pg + 0.0722*pb) / 255;
+              const isDark = lum < 0.5;
+              const bgColor = isDark ? '#1f1f1f' : '#ffffff';
+              const textColor = isDark ? '#f3f3f3' : '#111111';
+              menuEl.style.background = bgColor;
+              menuEl.style.color = textColor;
+              menuEl.style.border = isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.15)';
+              menuEl.style.boxShadow = isDark ? '0 6px 16px rgba(0,0,0,0.5)' : '0 4px 12px rgba(0,0,0,0.12)';
+              menuEl.style.borderRadius = '6px';
+              menuEl.style.minWidth = '180px';
+              menuEl.style.padding = '4px';
+              const item = document.createElement('div');
+              item.textContent = 'Graph Properties';
+              item.style.padding = '8px 12px';
+              item.style.cursor = 'pointer';
+              item.style.background = 'transparent';
+              item.style.color = textColor;
+              item.addEventListener('mouseenter', () => { item.style.background = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'; });
+              item.addEventListener('mouseleave', () => { item.style.background = 'transparent'; });
+              item.addEventListener('click', () => {
+                const ev = new CustomEvent('statpro:openGraphProperties');
+                window.dispatchEvent(ev);
+                disposeMenu();
+              });
+              menuEl.appendChild(item);
+              document.body.appendChild(menuEl);
+              setTimeout(() => {
+                document.addEventListener('click', onDocClick, true);
+                document.addEventListener('keydown', onKeyDown, true);
+              }, 0);
+            };
+            // Remove any inline handler and add our handler in capture phase to override others
+            (root as any).oncontextmenu = null;
+            root.addEventListener('contextmenu', onContextMenu, true);
+          }
+        } catch {}
         console.log('✅ Plot redraw completed');
       } else {
         console.log('❌ Container ref not available');
@@ -409,19 +743,9 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
         }, 50);
       }
 
-      // Save config into project Graphs folder
+      // Save plot payload best-effort to filesystem (DB is the source of truth)
       const projectPath = workspacePath || '';
       await ensureGraphFolderAndSave(projectPath, { graphConfig, traces, layout });
-      await insertGraphRun(projectPath, {
-        name: graphConfig?.subType || 'Scatter Plot',
-        createdAt: new Date().toISOString(),
-        config: { graphConfig, traces, layout },
-        tabName: graphConfig?.selectedProject || '',
-        graphType: graphConfig?.graphType || 'Scatter Plot',
-      });
-      
-      // Set flag to auto-select the latest graph when Graphs tab opens
-      setRenderLatestRun(true);
     };
     run();
   }, [graphConfig, workspacePath, liveProps]);

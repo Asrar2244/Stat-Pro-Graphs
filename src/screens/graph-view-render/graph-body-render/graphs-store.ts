@@ -7,6 +7,7 @@ export interface GraphRunInput {
   config: Record<string, unknown>;
   tabName: string;
   graphType: string;
+  properties?: Record<string, unknown>;
 }
 
 export interface GraphRunRow {
@@ -26,22 +27,23 @@ const createTableSQL = `
     config TEXT NOT NULL,
     tabName TEXT NOT NULL,
     graphType TEXT NOT NULL,
-    modifiedDateTime TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    modifiedDateTime TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    properties TEXT
   );
 `;
 
 export const insertGraphRun = async (workspacePath: string, run: GraphRunInput) => {
   const db = new Database(workspacePath);
   await db.executeQuery(createTableSQL);
-  const sql = `INSERT INTO ${GRAPHS}(name, createdAt, config, tabName, graphType, modifiedDateTime) VALUES(?, ?, ?, ?, ?, ?);`;
-  const params = [run.name, run.createdAt, JSON.stringify(run.config), run.tabName, run.graphType, new Date().toISOString()];
+  const sql = `INSERT INTO ${GRAPHS}(name, createdAt, config, tabName, graphType, modifiedDateTime, properties) VALUES(?, ?, ?, ?, ?, ?, ?);`;
+  const params = [run.name, run.createdAt, JSON.stringify(run.config), run.tabName, run.graphType, new Date().toISOString(), JSON.stringify(run.properties || {})];
   await db.executeQueryWithParams(sql, params as any);
 };
 
 export const listGraphRuns = async (workspacePath: string): Promise<GraphRunRow[]> => {
   const db = new Database(workspacePath);
   await db.executeQuery(createTableSQL);
-  const rows = await db.selectQuery(`SELECT id, name, createdAt, config, tabName, graphType, modifiedDateTime FROM ${GRAPHS} ORDER BY id DESC;`);
+  const rows = await db.selectQuery(`SELECT id, name, createdAt, config, tabName, graphType, modifiedDateTime, properties FROM ${GRAPHS} ORDER BY id DESC;`);
   return rows as GraphRunRow[];
 };
 

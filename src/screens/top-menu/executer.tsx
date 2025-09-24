@@ -125,6 +125,7 @@ const MenuSelector: FC<{
           config: { graphConfig: config, workspacePath },
           tabName: config?.selectedProject || '',
           graphType: config?.graphType || 'Scatter Plot',
+          properties: {},
         });
         
         // Set flag to auto-select the latest run when Graphs tab opens

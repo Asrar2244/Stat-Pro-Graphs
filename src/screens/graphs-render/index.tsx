@@ -18,7 +18,7 @@ const GraphProperties = lazy(() =>
 const ToolBar = lazy(() => import('./tool-bar').then((modules) => ({ default: modules.ToolBar })));
 
 import { useTools } from './hooks/use-tools';
-import { updateGraphRunConfig } from '@backend/graphs';
+import { updateGraphRunConfig, updateGraphRunProperties } from '@backend/graphs';
 
 export const GraphsRender: FC = () => {
   const classes = useGraphsRender();
@@ -67,6 +67,23 @@ export const GraphsRender: FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedGraphRun.id]);
 
+  // On run change, hydrate from DB-stored properties if available
+  useEffect(() => {
+    (async () => {
+      try {
+        const dbName = config.tabName;
+        const runId = selectedGraphRun.id;
+        if (!runId) return;
+        const { fetchSingleGraph } = await import('@backend/graphs');
+        const row = await fetchSingleGraph(dbName, runId);
+        const saved = row?.properties;
+        if (saved && Object.keys(saved).length > 0) {
+          setPropertiesByRun(prev => ({ ...prev, [runId]: saved }));
+        }
+      } catch {}
+    })();
+  }, [selectedGraphRun.id, config.tabName]);
+
   // Accessors for per-run properties
   const currentProps = propertiesByRun[selectedGraphRun.id] || tools.graphProperties;
 
@@ -90,7 +107,7 @@ export const GraphsRender: FC = () => {
       w.statproChangedRuns = w.statproChangedRuns || {};
       w.statproChangedRuns[selectedGraphRun.id] = selectedGraphRun.title || `Graph ${selectedGraphRun.id}`;
     } catch {}
-    // Persist immediately
+    // Persist immediately to properties only
     try {
       const dbName = (propertiesByRun[selectedGraphRun.id]?.global.tabName as any) || config.tabName;
       const selectedId = selectedGraphRun.id;
@@ -101,7 +118,7 @@ export const GraphsRender: FC = () => {
           [key]: value,
         },
       };
-      updateGraphRunConfig(dbName, selectedId, { graphConfig: next });
+      updateGraphRunProperties(dbName, selectedId, next);
     } catch {}
   };
 
@@ -115,6 +132,37 @@ export const GraphsRender: FC = () => {
     window.addEventListener('statpro:updateGraphProperty', handler as any);
     return () => window.removeEventListener('statpro:updateGraphProperty', handler as any);
   }, [selectedGraphRun.id]);
+
+  // Listen for open properties request from canvas (dblclick/right-click)
+  useEffect(() => {
+    const openHandler = () => {
+      // Ensure the drawer is visible
+      if (!tools.showGraphProperties) tools.toggleGraphProperties();
+    };
+    window.addEventListener('statpro:openGraphProperties', openHandler);
+    return () => window.removeEventListener('statpro:openGraphProperties', openHandler);
+  }, [tools.showGraphProperties]);
+
+  // Handle delete run requests from history list
+  useEffect(() => {
+    const handler = async (e: any) => {
+      try {
+        const runId = e?.detail?.id;
+        if (!runId) return;
+        const dbName = config.tabName;
+        const { Database } = await import('@utils');
+        const db: any = new (Database as any)(dbName);
+        await db.executeQuery('DELETE FROM GRAPHS WHERE id = ?', [runId]);
+        // Refresh UI by toggling show history or re-fetch. The useFetchGraphs is keyed by tabName, so re-render triggers fetch.
+        // Quick refresh: set render latest run so the UI updates selection.
+        setRenderLatestRun(true);
+      } catch (err) {
+        console.warn('Failed to delete graph run', err);
+      }
+    };
+    window.addEventListener('statpro:deleteGraphRun', handler as any);
+    return () => window.removeEventListener('statpro:deleteGraphRun', handler as any);
+  }, [config.tabName, setRenderLatestRun]);
 
   // Handle Save selected groups request from close dialog
   useEffect(() => {
@@ -157,6 +205,7 @@ export const GraphsRender: FC = () => {
       }
       try {
         updateGraphRunConfig(dbName, runId, { graphConfig: next });
+        updateGraphRunProperties(dbName, runId, next);
       } catch {}
     };
     window.addEventListener('statpro:saveGraphProperties', handler as any);
@@ -184,8 +233,80 @@ export const GraphsRender: FC = () => {
         },
       };
     });
+    // Persist immediately
+    try {
+      const dbName = config.tabName;
+      const selectedId = selectedGraphRun.id;
+      const base = propertiesByRun[selectedId] || tools.graphProperties;
+      const next = {
+        ...base,
+        plotSpecific: {
+          ...base.plotSpecific,
+          [plotType]: {
+            ...(base.plotSpecific as any)[plotType],
+            [key]: value,
+          },
+        },
+      } as any;
+      updateGraphRunProperties(dbName, selectedId, next);
+    } catch {}
   };
 
+  const resetAllPropertiesPerRun = () => {
+    try {
+      const dbName = config.tabName;
+      const selectedId = selectedGraphRun.id;
+      const defaults = tools.graphProperties;
+      const current = propertiesByRun[selectedId] || tools.graphProperties;
+      const preservedGraphName = current.global.graphName;
+      const next = {
+        ...defaults,
+        global: {
+          ...defaults.global,
+          graphName: preservedGraphName,
+        },
+      };
+      setPropertiesByRun((prev) => ({ ...prev, [selectedId]: next }));
+      updateGraphRunProperties(dbName, selectedId, next);
+    } catch {}
+  };
+
+  const updateLegendTextEntryPerRun = (originalLabel: string, newText: string) => {
+    setPropertiesByRun((prev) => {
+      const base = prev[selectedGraphRun.id] || tools.graphProperties;
+      return {
+        ...prev,
+        [selectedGraphRun.id]: {
+          ...base,
+          global: {
+            ...base.global,
+            legendTextEntries: {
+              ...base.global.legendTextEntries,
+              [originalLabel]: newText,
+            },
+          },
+        },
+      };
+    });
+    // Persist immediately
+    try {
+      const dbName = config.tabName;
+      const selectedId = selectedGraphRun.id;
+      const base = propertiesByRun[selectedId] || tools.graphProperties;
+      const next = {
+        ...base,
+        global: {
+          ...base.global,
+          legendTextEntries: {
+            ...base.global.legendTextEntries,
+            [originalLabel]: newText,
+          },
+        },
+      } as any;
+      updateGraphRunProperties(dbName, selectedId, next);
+    } catch {}
+  };
+  
   return (
     <SuspenseLoad>
       <div className={classes.graphsLayout} data-graphs-root="true">
@@ -215,10 +336,33 @@ export const GraphsRender: FC = () => {
               showGraphProperties: tools.showGraphProperties,
               toggleGraphProperties: tools.toggleGraphProperties,
               graphProperties: currentProps,
+              resetAllProperties: resetAllPropertiesPerRun,
               updateGraphProperty: updateGraphPropertyPerRun,
               updatePlotSpecificProperty: updatePlotSpecificPropertyPerRun,
+              updateLegendSeriesColor: (label: string, color: string) => {
+                // Persist per-run legend series color
+                try {
+                  const dbName = config.tabName;
+                  const selectedId = selectedGraphRun.id;
+                  const base = propertiesByRun[selectedId] || tools.graphProperties;
+                  const next = {
+                    ...base,
+                    global: {
+                      ...base.global,
+                      legendSeriesColors: {
+                        ...base.global.legendSeriesColors,
+                        [label]: color,
+                      },
+                    },
+                  } as any;
+                  setPropertiesByRun(prev => ({ ...prev, [selectedId]: next }));
+                  updateGraphRunProperties(dbName, selectedId, next);
+                } catch {}
+              },
+              updateLegendTextEntry: updateLegendTextEntryPerRun,
               getCurrentPlotType: tools.getCurrentPlotType,
               currentSubType: selectedGraphRun.subTitle,
+              currentLegendLabels: selectedGraphRun.config?.graphConfig?.legendLabels || [],
             }}
           />
         </div>

@@ -1,7 +1,8 @@
 import { FC, memo } from 'react';
-import { Caption1, Caption2, tokens } from '@fluentui/react-components';
+import { Caption1, Caption2, tokens, Button, Tooltip } from '@fluentui/react-components';
 import { useFormatter } from '@hooks';
 import { MdBarChart } from 'react-icons/md';
+import { IoTrashOutline } from 'react-icons/io5';
 
 interface IHistoryListRender {
   id: number;
@@ -55,6 +56,25 @@ const HistoryListRenderComponent: FC<IHistoryListRender> = ({
             {dateFormat(modifiedDateTime)}
           </Caption2>
         </div>
+        <Tooltip content="Delete" relationship="label">
+          <Button
+            appearance="subtle"
+            onClick={(e) => {
+              e.stopPropagation();
+              const ok = window.confirm(`Delete graph "${displayTitle}"? This cannot be undone.`);
+              if (!ok) return;
+              const ev = new CustomEvent('statpro:deleteGraphRun', { detail: { id } });
+              window.dispatchEvent(ev);
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = tokens.colorPaletteRedForeground1;
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = '';
+            }}
+            icon={<IoTrashOutline />}
+          />
+        </Tooltip>
       </div>
     </li>
   );
