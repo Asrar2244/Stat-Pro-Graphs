@@ -101,6 +101,38 @@ export interface GlobalGraphProperties {
   minorTickPrecision: number; // 0-15
   minorTickExponentFormat: 'e' | 'SI' | 'power';
   minorTickFactor: '1e-4' | '1e-3' | '0.1' | '1' | '10';
+
+  // Tick Marks - Major
+  majorTickLength: number; // inches
+  majorTickThickness: number; // inches
+  majorTickColor: string;
+  majorTickTransparency: number; // 0-100%
+  majorTickDirection: 'none' | 'inward' | 'outward' | 'both';
+  majorTickInterval: 'automatic' | 'manual' | 'column';
+  majorTickManualInterval?: number;
+
+  // Tick Marks - Minor
+  minorTickLength: number; // inches
+  minorTickThickness: number; // inches
+  minorTickColor: string;
+  minorTickTransparency: number; // 0-100%
+  minorTickDirection: 'none' | 'inward' | 'outward' | 'both';
+  minorTickInterval: number; // 2-20 per major tick interval
+
+  // Break Range Properties
+  showBreak: boolean;
+  omitRangeStart?: number;
+  omitRangeEnd?: number;
+  breakPosition: number; // 0-99.9%
+  gapWidth: number; // inches
+  postBreakInterval?: number;
+
+  // Break Properties
+  breakSymbol: 'plain' | 'diagonal' | 'perpendicular' | 's-curve';
+  breakLength: number; // inches
+  breakThickness: number; // inches
+  breakColor: string;
+  breakTransparency: number; // 0-100%
 }
 
 // Plot-specific properties for different graph types
@@ -250,6 +282,38 @@ export const useTools = () => {
       minorTickPrecision: 1,
       minorTickExponentFormat: 'e',
       minorTickFactor: '1',
+
+      // Tick Marks defaults - Major
+      majorTickLength: 0.1, // inches
+      majorTickThickness: 0.01, // inches
+      majorTickColor: '#444444',
+      majorTickTransparency: 0, // 0%
+      majorTickDirection: 'outward',
+      majorTickInterval: 'automatic',
+      majorTickManualInterval: 1,
+
+      // Tick Marks defaults - Minor
+      minorTickLength: 0.05, // inches
+      minorTickThickness: 0.005, // inches
+      minorTickColor: '#888888',
+      minorTickTransparency: 0, // 0%
+      minorTickDirection: 'outward',
+      minorTickInterval: 5, // 5 per major tick interval
+
+      // Break Range defaults
+      showBreak: false,
+      omitRangeStart: undefined,
+      omitRangeEnd: undefined,
+      breakPosition: 50, // 50%
+      gapWidth: 0.1, // inches
+      postBreakInterval: undefined,
+
+      // Break Properties defaults
+      breakSymbol: 'diagonal',
+      breakLength: 0.15, // inches
+      breakThickness: 0.01, // inches
+      breakColor: '#000000',
+      breakTransparency: 0, // 0%
     },
     plotSpecific: {
       scatter: {

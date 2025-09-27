@@ -408,6 +408,20 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
       // Convert inches to pixels (~96 dpi heuristic)
       const inchToPx = (inch: number) => Math.max(0, Math.round(inch * 96));
       const gridOpacity = Math.max(0, Math.min(1, 1 - (liveProps?.global?.gridTransparencyPct || 0) / 100));
+      
+      // Debug break properties
+      console.log('🔍 Break Properties Debug:', {
+        showBreak: liveProps?.global?.showBreak,
+        omitRangeStart: liveProps?.global?.omitRangeStart,
+        omitRangeEnd: liveProps?.global?.omitRangeEnd,
+        breakPosition: liveProps?.global?.breakPosition,
+        gapWidth: liveProps?.global?.gapWidth,
+        breakSymbol: liveProps?.global?.breakSymbol,
+        breakLength: liveProps?.global?.breakLength,
+        breakThickness: liveProps?.global?.breakThickness,
+        breakColor: liveProps?.global?.breakColor,
+        breakTransparency: liveProps?.global?.breakTransparency
+      });
       const hexToRgba = (hex?: string, alpha?: number) => {
         if (!hex) return undefined as any;
         const h = hex.replace('#', '');
@@ -499,7 +513,21 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
             gridcolor: hexToRgba(liveProps?.global?.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
             gridwidth: Math.max(1, Math.floor(inchToPx((liveProps?.global?.gridThicknessInch || 0.01) / 2))),
             griddash: gridDash || 'dot',
-            ticks: 'outside',
+            // Minor tick marks
+            ticks: (() => {
+              const direction = liveProps?.global?.minorTickDirection || 'outward';
+              switch (direction) {
+                case 'none': return '';
+                case 'inward': return 'inside';
+                case 'outward': return 'outside';
+                case 'both': return 'outside';
+                default: return 'outside';
+              }
+            })(),
+            ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickLength || 0.05))),
+            tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickThickness || 0.005))),
+            tickcolor: hexToRgba(liveProps?.global?.minorTickColor || '#888888', Math.max(0, Math.min(1, 1 - ((liveProps?.global?.minorTickTransparency || 0) / 100)))),
+            nticks: liveProps?.global?.minorTickInterval || 5,
           },
           layer: liveProps?.global?.gridLayering === 'gridFront' ? 'above traces' : 'below traces',
           tickprefix: liveProps?.global?.majorTickPrefix || undefined,
@@ -516,9 +544,41 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
           })(),
           exponentformat: liveProps?.global?.majorTickExponentFormat,
           tickformatstops: liveProps?.global?.majorTickFactor && liveProps.global.majorTickFactor !== '1' ? [{ enabled: true, dtickrange: [null, null], value: liveProps.global.majorTickFactor }] : undefined,
-          // Note: Plotly does not support minor tick label text; only minor grid. Keeping single minor object above.
-          ticklen: 6,
-          ticks: 'outside',
+          // Tick marks properties
+          ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickLength || 0.1))),
+          tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickThickness || 0.01))),
+          tickcolor: hexToRgba(liveProps?.global?.majorTickColor || '#444444', Math.max(0, Math.min(1, 1 - ((liveProps?.global?.majorTickTransparency || 0) / 100)))),
+          ticks: (() => {
+            const direction = liveProps?.global?.majorTickDirection || 'outward';
+            switch (direction) {
+              case 'none': return '';
+              case 'inward': return 'inside';
+              case 'outward': return 'outside';
+              case 'both': return 'outside';
+              default: return 'outside';
+            }
+          })(),
+          // Manual tick interval
+          ...(liveProps?.global?.majorTickInterval === 'manual' && liveProps?.global?.majorTickManualInterval 
+            ? { dtick: liveProps.global.majorTickManualInterval }
+            : {}),
+          // Break properties for X-axis
+          ...(liveProps?.global?.showBreak && 
+            typeof liveProps?.global?.omitRangeStart === 'number' && 
+            typeof liveProps?.global?.omitRangeEnd === 'number' 
+            ? (() => {
+                console.log('🔍 Applying X-axis break:', {
+                  showBreak: liveProps?.global?.showBreak,
+                  omitRangeStart: liveProps?.global?.omitRangeStart,
+                  omitRangeEnd: liveProps?.global?.omitRangeEnd
+                });
+                return {
+                  rangebreaks: [{
+                    bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
+                  }]
+                };
+              })()
+            : {}),
           automargin: true,
         },
         yaxis: {
@@ -553,7 +613,21 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
             gridcolor: hexToRgba(liveProps?.global?.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
             gridwidth: Math.max(1, Math.floor(inchToPx((liveProps?.global?.gridThicknessInch || 0.01) / 2))),
             griddash: gridDash || 'dot',
-            ticks: 'outside',
+            // Minor tick marks
+            ticks: (() => {
+              const direction = liveProps?.global?.minorTickDirection || 'outward';
+              switch (direction) {
+                case 'none': return '';
+                case 'inward': return 'inside';
+                case 'outward': return 'outside';
+                case 'both': return 'outside';
+                default: return 'outside';
+              }
+            })(),
+            ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickLength || 0.05))),
+            tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickThickness || 0.005))),
+            tickcolor: hexToRgba(liveProps?.global?.minorTickColor || '#888888', Math.max(0, Math.min(1, 1 - ((liveProps?.global?.minorTickTransparency || 0) / 100)))),
+            nticks: liveProps?.global?.minorTickInterval || 5,
           },
           layer: liveProps?.global?.gridLayering === 'gridFront' ? 'above traces' : 'below traces',
           tickprefix: liveProps?.global?.majorTickPrefix || undefined,
@@ -570,9 +644,41 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
           })(),
           exponentformat: liveProps?.global?.majorTickExponentFormat,
           tickformatstops: liveProps?.global?.majorTickFactor && liveProps.global.majorTickFactor !== '1' ? [{ enabled: true, dtickrange: [null, null], value: liveProps.global.majorTickFactor }] : undefined,
-          // Note: Plotly does not support minor tick label text; only minor grid. Keeping single minor object above.
-          ticklen: 6,
-          ticks: 'outside',
+          // Tick marks properties
+          ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickLength || 0.1))),
+          tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickThickness || 0.01))),
+          tickcolor: hexToRgba(liveProps?.global?.majorTickColor || '#444444', Math.max(0, Math.min(1, 1 - ((liveProps?.global?.majorTickTransparency || 0) / 100)))),
+          ticks: (() => {
+            const direction = liveProps?.global?.majorTickDirection || 'outward';
+            switch (direction) {
+              case 'none': return '';
+              case 'inward': return 'inside';
+              case 'outward': return 'outside';
+              case 'both': return 'outside';
+              default: return 'outside';
+            }
+          })(),
+          // Manual tick interval
+          ...(liveProps?.global?.majorTickInterval === 'manual' && liveProps?.global?.majorTickManualInterval 
+            ? { dtick: liveProps.global.majorTickManualInterval }
+            : {}),
+          // Break properties for Y-axis
+          ...(liveProps?.global?.showBreak && 
+            typeof liveProps?.global?.omitRangeStart === 'number' && 
+            typeof liveProps?.global?.omitRangeEnd === 'number' 
+            ? (() => {
+                console.log('🔍 Applying Y-axis break:', {
+                  showBreak: liveProps?.global?.showBreak,
+                  omitRangeStart: liveProps?.global?.omitRangeStart,
+                  omitRangeEnd: liveProps?.global?.omitRangeEnd
+                });
+                return {
+                  rangebreaks: [{
+                    bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
+                  }]
+                };
+              })()
+            : {}),
           automargin: true,
         },
         // Mirror Y axis to requested side by adjusting side and overlaying the opposite if needed

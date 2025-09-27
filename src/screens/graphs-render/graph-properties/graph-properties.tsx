@@ -1119,6 +1119,299 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
               </AccordionPanel>
             </AccordionItem>
 
+            {/* Major Tick Marks Section */}
+            <AccordionItem value="majorTickMarks">
+              <AccordionHeader>
+                <div className={classes.accordionHeader}>
+                  <MdSettings size={20} />
+                  <Text weight="semibold">Major Tick Marks</Text>
+                </div>
+              </AccordionHeader>
+              <AccordionPanel>
+                <div className={classes.propertyContent}>
+                  <Card>
+                    <CardHeader>
+                      <Text weight="semibold">Major Tick Properties</Text>
+                    </CardHeader>
+                    <div style={{ display: 'grid', gap: 12 }}>
+                      <Field label={`Length: ${globalProps.majorTickLength?.toFixed(3)} inches`}>
+                        <Slider 
+                          min={0.01} 
+                          max={0.5} 
+                          step={0.01}
+                          value={globalProps.majorTickLength || 0.1}
+                          onChange={(_, data) => updateGraphProperty('majorTickLength', data.value)}
+                        />
+                      </Field>
+                      <Field label={`Thickness: ${globalProps.majorTickThickness?.toFixed(4)} inches`}>
+                        <Slider 
+                          min={0.001} 
+                          max={0.05} 
+                          step={0.001}
+                          value={globalProps.majorTickThickness || 0.01}
+                          onChange={(_, data) => updateGraphProperty('majorTickThickness', data.value)}
+                        />
+                      </Field>
+                      <Field label="Color">
+                        <input
+                          type="color"
+                          value={globalProps.majorTickColor || '#444444'}
+                          onChange={(e) => updateGraphProperty('majorTickColor', e.target.value)}
+                          style={{ width: '100%', height: 40, border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
+                        />
+                      </Field>
+                      <Field label={`Transparency: ${globalProps.majorTickTransparency || 0}%`}>
+                        <Slider 
+                          min={0} 
+                          max={100} 
+                          value={globalProps.majorTickTransparency || 0}
+                          onChange={(_, data) => updateGraphProperty('majorTickTransparency', data.value)}
+                        />
+                      </Field>
+                      <Field label="Direction">
+                        <select 
+                          value={globalProps.majorTickDirection || 'outward'} 
+                          onChange={(e) => updateGraphProperty('majorTickDirection', e.target.value as any)} 
+                          style={{ width: '100%', height: 36 }}
+                        >
+                          <option value="none">None</option>
+                          <option value="inward">Inward</option>
+                          <option value="outward">Outward</option>
+                          <option value="both">Both</option>
+                        </select>
+                      </Field>
+                      <Field label="Interval">
+                        <select 
+                          value={globalProps.majorTickInterval || 'automatic'} 
+                          onChange={(e) => updateGraphProperty('majorTickInterval', e.target.value as any)} 
+                          style={{ width: '100%', height: 36 }}
+                        >
+                          <option value="automatic">Automatic</option>
+                          <option value="manual">Manual</option>
+                          <option value="column">Column Based</option>
+                        </select>
+                      </Field>
+                      {globalProps.majorTickInterval === 'manual' && (
+                        <Field label={`Manual Interval: ${globalProps.majorTickManualInterval || 1}`}>
+                          <Slider 
+                            min={0.1} 
+                            max={10} 
+                            step={0.1}
+                            value={globalProps.majorTickManualInterval || 1}
+                            onChange={(_, data) => updateGraphProperty('majorTickManualInterval', data.value)}
+                          />
+                        </Field>
+                      )}
+                    </div>
+                  </Card>
+                </div>
+              </AccordionPanel>
+            </AccordionItem>
+
+            {/* Minor Tick Marks Section */}
+            <AccordionItem value="minorTickMarks">
+              <AccordionHeader>
+                <div className={classes.accordionHeader}>
+                  <MdSettings size={20} />
+                  <Text weight="semibold">Minor Tick Marks</Text>
+                </div>
+              </AccordionHeader>
+              <AccordionPanel>
+                <div className={classes.propertyContent}>
+                  <Card>
+                    <CardHeader>
+                      <Text weight="semibold">Minor Tick Properties</Text>
+                    </CardHeader>
+                    <div style={{ display: 'grid', gap: 12 }}>
+                      <Field label={`Length: ${globalProps.minorTickLength?.toFixed(3)} inches`}>
+                        <Slider 
+                          min={0.01} 
+                          max={0.3} 
+                          step={0.01}
+                          value={globalProps.minorTickLength || 0.05}
+                          onChange={(_, data) => updateGraphProperty('minorTickLength', data.value)}
+                        />
+                      </Field>
+                      <Field label={`Thickness: ${globalProps.minorTickThickness?.toFixed(4)} inches`}>
+                        <Slider 
+                          min={0.001} 
+                          max={0.025} 
+                          step={0.001}
+                          value={globalProps.minorTickThickness || 0.005}
+                          onChange={(_, data) => updateGraphProperty('minorTickThickness', data.value)}
+                        />
+                      </Field>
+                      <Field label="Color">
+                        <input
+                          type="color"
+                          value={globalProps.minorTickColor || '#888888'}
+                          onChange={(e) => updateGraphProperty('minorTickColor', e.target.value)}
+                          style={{ width: '100%', height: 40, border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
+                        />
+                      </Field>
+                      <Field label={`Transparency: ${globalProps.minorTickTransparency || 0}%`}>
+                        <Slider 
+                          min={0} 
+                          max={100} 
+                          value={globalProps.minorTickTransparency || 0}
+                          onChange={(_, data) => updateGraphProperty('minorTickTransparency', data.value)}
+                        />
+                      </Field>
+                      <Field label="Direction">
+                        <select 
+                          value={globalProps.minorTickDirection || 'outward'} 
+                          onChange={(e) => updateGraphProperty('minorTickDirection', e.target.value as any)} 
+                          style={{ width: '100%', height: 36 }}
+                        >
+                          <option value="none">None</option>
+                          <option value="inward">Inward</option>
+                          <option value="outward">Outward</option>
+                          <option value="both">Both</option>
+                        </select>
+                      </Field>
+                      <Field label={`Interval: ${globalProps.minorTickInterval || 5} per Major Tick Interval`}>
+                        <Slider 
+                          min={2} 
+                          max={20} 
+                          value={globalProps.minorTickInterval || 5}
+                          onChange={(_, data) => updateGraphProperty('minorTickInterval', data.value)}
+                        />
+                      </Field>
+                    </div>
+                  </Card>
+                </div>
+              </AccordionPanel>
+            </AccordionItem>
+
+            {/* Break Properties Section */}
+            <AccordionItem value="breakProperties">
+              <AccordionHeader>
+                <div className={classes.accordionHeader}>
+                  <MdSettings size={20} />
+                  <Text weight="semibold">Break Properties</Text>
+                </div>
+              </AccordionHeader>
+              <AccordionPanel>
+                <div className={classes.propertyContent}>
+                  {/* Break Range */}
+                  <Card>
+                    <CardHeader>
+                      <Text weight="semibold">Break Range</Text>
+                    </CardHeader>
+                    <div style={{ display: 'grid', gap: 12 }}>
+                      <Field label="Show Break">
+                        <Switch 
+                          checked={globalProps.showBreak || false}
+                          onChange={(_, data) => updateGraphProperty('showBreak', data.checked)}
+                        />
+                      </Field>
+                      {globalProps.showBreak && (
+                        <>
+                          <Field label="Omit Range Start">
+                            <Input 
+                              type="number"
+                              value={globalProps.omitRangeStart?.toString() ?? ''} 
+                              onChange={(_, data) => updateGraphProperty('omitRangeStart', data.value ? Number(data.value) : undefined)}
+                              placeholder="Enter start value"
+                            />
+                          </Field>
+                          <Field label="Omit Range End">
+                            <Input 
+                              type="number"
+                              value={globalProps.omitRangeEnd?.toString() ?? ''} 
+                              onChange={(_, data) => updateGraphProperty('omitRangeEnd', data.value ? Number(data.value) : undefined)}
+                              placeholder="Enter end value"
+                            />
+                          </Field>
+                          <Field label={`Position: ${globalProps.breakPosition || 50}%`}>
+                            <Slider 
+                              min={0} 
+                              max={99.9} 
+                              step={0.1}
+                              value={globalProps.breakPosition || 50}
+                              onChange={(_, data) => updateGraphProperty('breakPosition', data.value)}
+                            />
+                          </Field>
+                          <Field label={`Gap Width: ${globalProps.gapWidth?.toFixed(3)} inches`}>
+                            <Slider 
+                              min={0.01} 
+                              max={1.0} 
+                              step={0.01}
+                              value={globalProps.gapWidth || 0.1}
+                              onChange={(_, data) => updateGraphProperty('gapWidth', data.value)}
+                            />
+                          </Field>
+                          <Field label="Post Break Interval">
+                            <Input 
+                              type="number"
+                              value={globalProps.postBreakInterval?.toString() ?? ''} 
+                              onChange={(_, data) => updateGraphProperty('postBreakInterval', data.value ? Number(data.value) : undefined)}
+                              placeholder="Enter interval"
+                            />
+                          </Field>
+                        </>
+                      )}
+                    </div>
+                  </Card>
+
+                  {/* Break Properties */}
+                  <Card>
+                    <CardHeader>
+                      <Text weight="semibold">Break Properties</Text>
+                    </CardHeader>
+                    <div style={{ display: 'grid', gap: 12 }}>
+                      <Field label="Symbol">
+                        <select 
+                          value={globalProps.breakSymbol || 'diagonal'} 
+                          onChange={(e) => updateGraphProperty('breakSymbol', e.target.value as any)} 
+                          style={{ width: '100%', height: 36 }}
+                        >
+                          <option value="plain">Plain</option>
+                          <option value="diagonal">Diagonal</option>
+                          <option value="perpendicular">Perpendicular</option>
+                          <option value="s-curve">S-Curve</option>
+                        </select>
+                      </Field>
+                      <Field label={`Length: ${globalProps.breakLength?.toFixed(3)} inches`}>
+                        <Slider 
+                          min={0.01} 
+                          max={0.5} 
+                          step={0.01}
+                          value={globalProps.breakLength || 0.15}
+                          onChange={(_, data) => updateGraphProperty('breakLength', data.value)}
+                        />
+                      </Field>
+                      <Field label={`Thickness: ${globalProps.breakThickness?.toFixed(4)} inches`}>
+                        <Slider 
+                          min={0.001} 
+                          max={0.05} 
+                          step={0.001}
+                          value={globalProps.breakThickness || 0.01}
+                          onChange={(_, data) => updateGraphProperty('breakThickness', data.value)}
+                        />
+                      </Field>
+                      <Field label="Color">
+                        <input
+                          type="color"
+                          value={globalProps.breakColor || '#000000'}
+                          onChange={(e) => updateGraphProperty('breakColor', e.target.value)}
+                          style={{ width: '100%', height: 40, border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
+                        />
+                      </Field>
+                      <Field label={`Transparency: ${globalProps.breakTransparency || 0}%`}>
+                        <Slider 
+                          min={0} 
+                          max={100} 
+                          value={globalProps.breakTransparency || 0}
+                          onChange={(_, data) => updateGraphProperty('breakTransparency', data.value)}
+                        />
+                      </Field>
+                    </div>
+                  </Card>
+                </div>
+              </AccordionPanel>
+            </AccordionItem>
+
             {/* Export Section */}
             <AccordionItem value="export">
               <AccordionHeader>

@@ -143,90 +143,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
         flexWrap: 'wrap',
         alignItems: 'flex-start'
       }}>
-        {requireY && (
-          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
-            <div className={classes.columnHeader}>
-              <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
-              <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>
-                {showVariableSelection && dataFormat === 'Single X' ? 'Available Variables' : 'Y Variables'}
-              </Text>
-              <div className={classes.columnHeaderBadge}>{yVariableList.size}</div>
-            </div>
-
-            <VariableListRender
-              list={yVariableList}
-              selectAll={selectAllY}
-              setSelectAll={setSelectAllY}
-              setList={setYVariableList}
-              listName="yVariableList"
-              selectAllText="Select All"
-              maxSelected={dataFormat === 'Y Many X' ? 1 : undefined}
-            />
-
-            {showVariableSelection && dataFormat !== 'Single X' && yVariableList.size > 0 && (
-              <Button icon={<MdOutlineRemove />} appearance="outline" onClick={onRemoveY} className={classes.removeBtn}>
-                Remove from Y
-              </Button>
-            )}
-          </div>
-        )}
-
-        {requireErrorBar && (
-          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
-            <div className={classes.columnHeader}>
-              <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
-              <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>Error Bar Variables</Text>
-              <div className={classes.columnHeaderBadge}>{errorBarVariableList?.size || 0}</div>
-            </div>
-
-            {errorBarVariableList && VariableListRender && (
-              <VariableListRender
-                list={errorBarVariableList}
-                selectAll={selectAllErrorBar}
-                setSelectAll={setSelectAllErrorBar}
-                setList={setErrorBarVariableList}
-                listName="errorBarVariableList"
-                selectAllText="Select All"
-                maxSelected={1}
-              />
-            )}
-
-            {showVariableSelection && errorBarVariableList && errorBarVariableList.size > 0 && (
-              <Button icon={<MdOutlineRemove />} appearance="outline" onClick={handleRemoveFromErrorBar} className={classes.removeBtn}>
-                Remove from Error Bar
-              </Button>
-            )}
-          </div>
-        )}
-
-        {requireCategory && (
-          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
-            <div className={classes.columnHeader}>
-              <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
-              <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>Category Variables</Text>
-              <div className={classes.columnHeaderBadge}>{categoryVariableList?.size || 0}</div>
-            </div>
-
-            {categoryVariableList && VariableListRender && (
-              <VariableListRender
-                list={categoryVariableList}
-                selectAll={selectAllCategory}
-                setSelectAll={setSelectAllCategory}
-                setList={setCategoryVariableList}
-                listName="categoryVariableList"
-                selectAllText="Select All"
-                maxSelected={1}
-              />
-            )}
-
-            {showVariableSelection && categoryVariableList && categoryVariableList.size > 0 && (
-              <Button icon={<MdOutlineRemove />} appearance="outline" onClick={handleRemoveFromCategory} className={classes.removeBtn}>
-                Remove from Category
-              </Button>
-            )}
-          </div>
-        )}
-
+        {/* Available Variables - Leftmost position */}
         <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
           <div className={classes.columnHeader}>
             <MdInfoOutline size={18} color={tokens.colorNeutralForeground2} />
@@ -248,11 +165,11 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
               <>
                 {(dataFormat === 'XY Pair' || dataFormat === 'XY Pairs' || dataFormat === 'XY Category' || dataFormat === 'X Many Y' || dataFormat === 'Y Many X') && (
                   <>
-                    <Button icon={<MdKeyboardDoubleArrowLeft />} onClick={onSendToY} className={classes.actionBtn} disabled={!canSendToY}>
-                      Send to Y
-                    </Button>
                     <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToX} className={classes.actionBtn} disabled={!canSendToX}>
                       Send to X
+                    </Button>
+                    <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToY} className={classes.actionBtn} disabled={!canSendToY}>
+                      Send to Y
                     </Button>
                     {requireErrorBar && (
                       <Button icon={<MdTrendingUp />} onClick={handleSendToErrorBar} className={classes.actionBtn} disabled={!canSendToErrorBar}>
@@ -262,7 +179,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                   </>
                 )}
                 {(dataFormat === 'Single Y' || dataFormat === 'Many Y' || dataFormat === 'Y Category') && (
-                  <Button icon={<MdKeyboardDoubleArrowLeft />} onClick={onSendToY} className={classes.actionBtn} disabled={!canSendToY}>
+                  <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToY} className={classes.actionBtn} disabled={!canSendToY}>
                     Send to Y
                   </Button>
                 )}
@@ -285,8 +202,9 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
           </div>
         </div>
 
+        {/* X Variables - Second position */}
         {requireX && (
-          <div className={classes.columnNoRightBorder}>
+          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
             <div className={classes.columnHeader}>
               <MdTrendingDown size={18} color={tokens.colorNeutralForeground2} />
               <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>
@@ -306,8 +224,175 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
             />
 
             {showVariableSelection && dataFormat !== 'Single Y' && xVariableList.size > 0 && (
-              <Button icon={<MdOutlineRemove />} appearance="outline" onClick={onRemoveX} className={classes.removeBtn}>
+              <Button 
+                icon={<MdOutlineRemove />} 
+                appearance="outline" 
+                onClick={onRemoveX} 
+                className={classes.removeBtn} 
+                style={{ 
+                  color: '#8a8886', 
+                  borderColor: '#8a8886',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#d13438';
+                  e.currentTarget.style.borderColor = '#d13438';
+                  e.currentTarget.style.backgroundColor = '#fdf2f2';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#8a8886';
+                  e.currentTarget.style.borderColor = '#8a8886';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
                 Remove from X
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Y Variables - Third position */}
+        {requireY && (
+          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
+            <div className={classes.columnHeader}>
+              <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
+              <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>
+                {showVariableSelection && dataFormat === 'Single X' ? 'Available Variables' : 'Y Variables'}
+              </Text>
+              <div className={classes.columnHeaderBadge}>{yVariableList.size}</div>
+            </div>
+
+            <VariableListRender
+              list={yVariableList}
+              selectAll={selectAllY}
+              setSelectAll={setSelectAllY}
+              setList={setYVariableList}
+              listName="yVariableList"
+              selectAllText="Select All"
+              maxSelected={dataFormat === 'Y Many X' ? 1 : undefined}
+            />
+
+            {showVariableSelection && dataFormat !== 'Single X' && yVariableList.size > 0 && (
+              <Button 
+                icon={<MdOutlineRemove />} 
+                appearance="outline" 
+                onClick={onRemoveY} 
+                className={classes.removeBtn} 
+                style={{ 
+                  color: '#8a8886', 
+                  borderColor: '#8a8886',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#d13438';
+                  e.currentTarget.style.borderColor = '#d13438';
+                  e.currentTarget.style.backgroundColor = '#fdf2f2';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#8a8886';
+                  e.currentTarget.style.borderColor = '#8a8886';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                Remove from Y
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Error Bar Variables - Fourth position (if available) */}
+        {requireErrorBar && (
+          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
+            <div className={classes.columnHeader}>
+              <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
+              <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>Error Bar Variables</Text>
+              <div className={classes.columnHeaderBadge}>{errorBarVariableList?.size || 0}</div>
+            </div>
+
+            {errorBarVariableList && VariableListRender && (
+              <VariableListRender
+                list={errorBarVariableList}
+                selectAll={selectAllErrorBar}
+                setSelectAll={setSelectAllErrorBar}
+                setList={setErrorBarVariableList}
+                listName="errorBarVariableList"
+                selectAllText="Select All"
+                maxSelected={1}
+              />
+            )}
+
+            {showVariableSelection && errorBarVariableList && errorBarVariableList.size > 0 && (
+              <Button 
+                icon={<MdOutlineRemove />} 
+                appearance="outline" 
+                onClick={handleRemoveFromErrorBar} 
+                className={classes.removeBtn} 
+                style={{ 
+                  color: '#8a8886', 
+                  borderColor: '#8a8886',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#d13438';
+                  e.currentTarget.style.borderColor = '#d13438';
+                  e.currentTarget.style.backgroundColor = '#fdf2f2';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#8a8886';
+                  e.currentTarget.style.borderColor = '#8a8886';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                Remove from Error Bar
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Category Variables - Last position (if needed) */}
+        {requireCategory && (
+          <div className={classes.columnNoRightBorder} style={{ flex: '1', minWidth: '200px' }}>
+            <div className={classes.columnHeader}>
+              <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
+              <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>Category Variables</Text>
+              <div className={classes.columnHeaderBadge}>{categoryVariableList?.size || 0}</div>
+            </div>
+
+            {categoryVariableList && VariableListRender && (
+              <VariableListRender
+                list={categoryVariableList}
+                selectAll={selectAllCategory}
+                setSelectAll={setSelectAllCategory}
+                setList={setCategoryVariableList}
+                listName="categoryVariableList"
+                selectAllText="Select All"
+                maxSelected={1}
+              />
+            )}
+
+            {showVariableSelection && categoryVariableList && categoryVariableList.size > 0 && (
+              <Button 
+                icon={<MdOutlineRemove />} 
+                appearance="outline" 
+                onClick={handleRemoveFromCategory} 
+                className={classes.removeBtn} 
+                style={{ 
+                  color: '#8a8886', 
+                  borderColor: '#8a8886',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#d13438';
+                  e.currentTarget.style.borderColor = '#d13438';
+                  e.currentTarget.style.backgroundColor = '#fdf2f2';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#8a8886';
+                  e.currentTarget.style.borderColor = '#8a8886';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                Remove from Category
               </Button>
             )}
           </div>
