@@ -162,9 +162,17 @@ fn main() {
                             let _ = main.show();
                         }
                     } else {
-                        // If backend didn't come up, still show main so user isn't stuck on splash
-                        if let Some(main) = handle.get_webview_window("main") {
-                            let _ = main.show();
+                        #[cfg(debug_assertions)]
+                        {
+                            // DEV: keep splash up until backend is reachable
+                            println!("[dev] Backend not reachable yet; keeping splash visible.");
+                        }
+                        #[cfg(not(debug_assertions))]
+                        {
+                            // RELEASE: fallback to show main to avoid user being stuck on splash
+                            if let Some(main) = handle.get_webview_window("main") {
+                                let _ = main.show();
+                            }
                         }
                     }
                 });
