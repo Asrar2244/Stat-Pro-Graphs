@@ -162,9 +162,9 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
       console.log('Validation check - projectName:', projectName);
       
       // More robust validation
-      const hasProjectName = newProject?.name && newProject.name.trim() !== '';
+      const hasProjectName = (newProject?.name && newProject.name.trim() !== '') || (projectName && projectName.trim() !== '');
       const hasFile = file && file.trim() !== '';
-      const hasBusinessObj = newProject?.impBusinessObjFile && newProject.impBusinessObjFile.trim() !== '';
+      const hasBusinessObj = (newProject?.impBusinessObjFile && newProject.impBusinessObjFile.trim() !== '') || (file && file.trim() !== '');
       const hasSelectedSheet = selectedSheet && selectedSheet.trim() !== '';
       
       console.log('Validation results:', {
@@ -238,7 +238,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               setFileSize(0);
               setSheets([]);
               getConfigurations();
-              setBlockUI({ value: true, msg: data.error });
+              setBlockUI({ value: true, msg: t('projectCreated', { ns: 'success' }) });
               props.closeModal();
             })
             .catch((error) => {
@@ -287,7 +287,9 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   };
   const onProjectNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setProjectName(e?.target.value.toLowerCase());
+    const value = e?.target.value.toLowerCase();
+    setProjectName(value);
+    setNewProject('name', value);
   };
   const okDisabled = !!file && newProject?.name && newProject?.name !== '';
   return (
@@ -427,3 +429,5 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
     </Modal>
   );
 };
+
+export default BrowseFile;

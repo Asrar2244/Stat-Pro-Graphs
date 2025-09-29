@@ -13,7 +13,7 @@
       {
         "title": "start-pro",
         "height": 800,
-        "visible": false,
+        "visible": true,
         "label": "main",
         "resizable": true,
         "fullscreen": false,
@@ -22,7 +22,8 @@
         "decorations": true,
         "alwaysOnTop": false,
         "width": 900,
-        "transparent": false
+        "transparent": false,
+        "center": true
       },
       {
         "title": "start-pro",
@@ -34,11 +35,15 @@
         "decorations": false,
         "resizable": false,
         "dragDropEnabled": false,
-        "visible": true
+        "visible": false,
+        "skipTaskbar": true
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": [
+        "default"
+      ]
     }
   },
   "bundle": {

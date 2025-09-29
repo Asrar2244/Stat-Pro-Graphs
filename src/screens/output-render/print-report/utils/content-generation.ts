@@ -90,7 +90,10 @@ export const generateCompleteDataFromDatabase = async (
         let displayValue = '';
         if (cellValue !== null && cellValue !== undefined) {
           if (typeof cellValue === 'number') {
-            if (Number.isInteger(cellValue)) {
+            // Display numeric zero as "0"
+            if (cellValue === 0) {
+              displayValue = '0';
+            } else if (Number.isInteger(cellValue)) {
               displayValue = cellValue.toString();
             } else {
               const formatted = cellValue.toFixed(6).replace(/\.?0+$/, '');
@@ -101,7 +104,9 @@ export const generateCompleteDataFromDatabase = async (
             // If the string looks numeric, format it like a number to keep it compact
             if (raw !== '' && !Number.isNaN(Number(raw))) {
               const num = Number(raw);
-              if (Number.isInteger(num)) {
+              if (num === 0) {
+                displayValue = '0';
+              } else if (Number.isInteger(num)) {
                 displayValue = num.toString();
               } else {
                 const formatted = num.toFixed(6).replace(/\.?0+$/, '');
@@ -162,14 +167,23 @@ export const generateCompleteDataFromDatabase = async (
         let displayValue = '';
         if (cellValue !== null && cellValue !== undefined) {
           if (typeof cellValue === 'number') {
-            if (Number.isInteger(cellValue)) {
+            // Display numeric zero as "0"
+            if (cellValue === 0) {
+              displayValue = '0';
+            } else if (Number.isInteger(cellValue)) {
               displayValue = cellValue.toString();
             } else {
               const formatted = cellValue.toFixed(6).replace(/\.?0+$/, '');
               displayValue = formatted;
             }
           } else {
-            displayValue = String(cellValue);
+            const raw = String(cellValue).trim();
+            // Check if string represents zero
+            if (raw !== '' && !Number.isNaN(Number(raw)) && Number(raw) === 0) {
+              displayValue = '0';
+            } else {
+              displayValue = raw;
+            }
           }
         }
         const isNumeric = isNumericColumnByHeader.get(header) === true;

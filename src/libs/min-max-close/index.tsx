@@ -16,13 +16,6 @@ const MinMaxCloseComponent: FC = () => {
     return platformInfo() === 'mac';
   }, []);
   
-  const onHandleMaximize = async () => {
-    try {
-      await getCurrentWindow().toggleMaximize();
-    } catch (e) {
-      console.warn('Maximize failed:', e);
-    }
-  };
 
   const onHandleMinimize = async () => {
     try {
@@ -39,6 +32,20 @@ const MinMaxCloseComponent: FC = () => {
       console.warn('Close failed:', e);
     }
   };
+
+  const onHandleToggleFullscreen = async () => {
+    try {
+      const window = getCurrentWindow();
+      const isFullscreen = await window.isFullscreen();
+      if (isFullscreen) {
+        await window.setFullscreen(false);
+      } else {
+        await window.setFullscreen(true);
+      }
+    } catch (e) {
+      console.warn('Toggle fullscreen failed:', e);
+    }
+  };
   
   return (
     <div className={classes.minMaxClose}>
@@ -50,7 +57,7 @@ const MinMaxCloseComponent: FC = () => {
           <ThemeSwitch />
         </li>
       </ul>
-      {/* Custom window controls for non-macOS when native decorations are disabled */}
+      {/* Custom window controls for non-macOS */}
       {!platformIsMac && (
         <>
           <Divider vertical />
@@ -58,7 +65,7 @@ const MinMaxCloseComponent: FC = () => {
             <li onClick={onHandleMinimize}>
               <Minimize />
             </li>
-            <li onClick={onHandleMaximize}>
+            <li onClick={onHandleToggleFullscreen}>
               <Maximize />
             </li>
             <li data-close-window="true" onClick={onHandleClose}>

@@ -38,6 +38,8 @@ export const useLayout = makeStyles({
     },
     '& .flexlayout__border_left': {
       borderRightColor: tokens.colorNeutralStroke1,
+      overflow: 'hidden',
+      height: '100%',
     },
     '& .flexlayout__tabset': {
       backgroundColor: tokens.colorNeutralForegroundStaticInverted,

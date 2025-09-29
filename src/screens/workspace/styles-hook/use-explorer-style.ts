@@ -6,11 +6,30 @@ export const useExplorerLayout = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
+    height: '100%',
+    overflow: 'hidden',
     '& .selected': {
       backgroundColor: tokens.colorNeutralStencil2Alpha, //colorBrandBackgroundInvertedSelected
     },
     '& .tree-comp': {
       backgroundColor: tokens.colorNeutralBackground3,
+      flex: 1,
+      overflow: 'auto',
+      scrollbarWidth: 'thin',
+      ...shorthands.padding(tokens.spacingVerticalS, 0),
+      '&::-webkit-scrollbar': {
+        width: '8px',
+      },
+      '&::-webkit-scrollbar-track': {
+        backgroundColor: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        backgroundColor: tokens.colorNeutralBackgroundStatic,
+        borderRadius: '8px',
+        '&:hover': {
+          backgroundColor: tokens.colorNeutralBackgroundStatic,
+        },
+      },
     },
   },
   treeItem: {
@@ -31,6 +50,8 @@ export const useExplorerLayout = makeStyles({
     fontWeight: 600,
     fontSize: 'small',
     textTransform: 'uppercase',
+    flexShrink: 0,
+    ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke1),
   },
   treeItemLayout: {
     display: 'flex',
