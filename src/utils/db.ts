@@ -1,6 +1,5 @@
 import DB from '@tauri-apps/plugin-sql';
-import { join } from '@tauri-apps/api/path';
-import { homeDirectory } from './app-apis';
+import { join, appLocalDataDir } from '@tauri-apps/api/path';
 import { CONFIGURATION_DB } from '@constants';
 const { MODE } = import.meta.env;
 
@@ -58,9 +57,10 @@ export class Database {
     
     if (dbName === CONFIGURATION_DB) {
       try {
-        const appFolder = await homeDirectory();
+        // Use app-local data directory to store writable app data
+        const appFolder = await appLocalDataDir();
         const collectionsPath = await join(appFolder, 'collections');
-        dbLocation = await join(appFolder, 'collections', dbName);
+        dbLocation = await join(collectionsPath, `${dbName}.db`);
         
         if (MODE === 'development') {
           console.log('Database - appFolder path:', appFolder);

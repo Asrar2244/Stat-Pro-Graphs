@@ -3,9 +3,11 @@
 use tauri_plugin_log;
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 use std::env;
-use std::process::{Child, Command};
+use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use tauri::{Manager, RunEvent, Window};
+use std::time::{Duration, Instant};
+use std::net::{TcpStream, SocketAddr, Ipv4Addr};
 mod excel_csv_file;
 mod tauri_json_file;
 #[tauri::command]
@@ -58,6 +60,7 @@ fn main() {
             // Clone reference for the setup closure
             let child_process = Arc::clone(&child_process);
             move |_app| {
+                const BACKEND_PORT: u16 = 5000;
                 // Set the path to the backend executable based on OS
                 let exe_path = {
                     let mut path = env::current_exe()
@@ -84,14 +87,46 @@ fn main() {
                     panic!("Backend executable not found at {:?}", exe_path);
                 }
 
-                // Proactively terminate any stale backend instances from a previous run
+                // Proactively terminate any stale backend instances from a previous run (synchronously to avoid racing our new spawn)
                 #[cfg(target_os = "windows")]
-                let _ = Command::new("taskkill").args(["/IM", "main.exe", "/F", "/T"]).spawn();
+                {
+                    let _ = Command::new("taskkill")
+                        .args(["/IM", "main.exe", "/F", "/T"]) // kill by image
+                        .status(); // wait for completion to avoid killing the freshly spawned process
+                    std::thread::sleep(std::time::Duration::from_millis(250));
+                }
 
-                // Start the backend executable without canonicalizing the path
-                let child = Command::new(exe_path)
-                    .spawn()
-                    .expect("Failed to start backend executable");
+                // Start the backend executable with proper working directory and PORT env
+                let exe_dir = exe_path.parent().unwrap().to_path_buf();
+                let mut cmd = Command::new(&exe_path);
+                cmd.current_dir(&exe_dir)
+                    .env("PORT", BACKEND_PORT.to_string())
+                    .arg("--port").arg(BACKEND_PORT.to_string())
+                    .arg("--host").arg("127.0.0.1")
+                    .stdout(Stdio::piped())
+                    .stderr(Stdio::piped());
+
+                let mut child = cmd.spawn().expect("Failed to start backend executable");
+
+                // Pipe backend stdout/stderr to tauri process logs for visibility
+                if let Some(stdout) = child.stdout.take() {
+                    std::thread::spawn(move || {
+                        use std::io::{BufRead, BufReader};
+                        let reader = BufReader::new(stdout);
+                        for line in reader.lines().flatten() {
+                            println!("[backend stdout] {}", line);
+                        }
+                    });
+                }
+                if let Some(stderr) = child.stderr.take() {
+                    std::thread::spawn(move || {
+                        use std::io::{BufRead, BufReader};
+                        let reader = BufReader::new(stderr);
+                        for line in reader.lines().flatten() {
+                            eprintln!("[backend stderr] {}", line);
+                        }
+                    });
+                }
 
                 // Store the child process in the shared state
                 *child_process.lock().unwrap() = Some(child);
@@ -104,14 +139,35 @@ fn main() {
                 #[cfg(target_os = "macos")]
                 window.set_fullscreen(true).unwrap();
 
-                // Backend launched successfully: close splash and show main
-                if let Some(splash) = _app.get_webview_window("splashscreen") {
-                    let _ = splash.close();
-                }
-                let _ = _app
-                    .get_webview_window("main")
-                    .expect("no window labeled 'main' found")
-                    .show();
+                // Wait for backend to listen before switching from splash
+                let handle = _app.handle().clone();
+                std::thread::spawn(move || {
+                    let deadline = Instant::now() + Duration::from_secs(45);
+                    let mut connected = false;
+                    while Instant::now() < deadline {
+                        let addr = SocketAddr::from((Ipv4Addr::new(127, 0, 0, 1), BACKEND_PORT));
+                        if TcpStream::connect_timeout(&addr, Duration::from_millis(400)).is_ok() {
+                            connected = true;
+                            break;
+                        }
+                        std::thread::sleep(Duration::from_millis(300));
+                    }
+
+                    // Switch windows depending on connection result
+                    if connected {
+                        if let Some(splash) = handle.get_webview_window("splashscreen") {
+                            let _ = splash.close();
+                        }
+                        if let Some(main) = handle.get_webview_window("main") {
+                            let _ = main.show();
+                        }
+                    } else {
+                        // If backend didn't come up, still show main so user isn't stuck on splash
+                        if let Some(main) = handle.get_webview_window("main") {
+                            let _ = main.show();
+                        }
+                    }
+                });
 
                 Ok(())
             }
