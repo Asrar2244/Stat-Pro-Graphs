@@ -84,6 +84,10 @@ fn main() {
                     panic!("Backend executable not found at {:?}", exe_path);
                 }
 
+                // Proactively terminate any stale backend instances from a previous run
+                #[cfg(target_os = "windows")]
+                let _ = Command::new("taskkill").args(["/IM", "main.exe", "/F", "/T"]).spawn();
+
                 // Start the backend executable without canonicalizing the path
                 let child = Command::new(exe_path)
                     .spawn()
@@ -99,6 +103,15 @@ fn main() {
                 window.maximize().unwrap();
                 #[cfg(target_os = "macos")]
                 window.set_fullscreen(true).unwrap();
+
+                // Backend launched successfully: close splash and show main
+                if let Some(splash) = _app.get_webview_window("splashscreen") {
+                    let _ = splash.close();
+                }
+                let _ = _app
+                    .get_webview_window("main")
+                    .expect("no window labeled 'main' found")
+                    .show();
 
                 Ok(())
             }
@@ -116,7 +129,7 @@ fn main() {
 
                     #[cfg(target_os = "windows")]
                     let _ = Command::new("taskkill")
-                        .args(&["/IM", "main.exe", "/F"])
+                        .args(["/IM", "main.exe", "/F", "/T"]) // kill process tree
                         .spawn();
 
                     #[cfg(target_os = "macos")]
@@ -124,6 +137,21 @@ fn main() {
 
                     #[cfg(target_os = "linux")]
                     let _ = Command::new("pkill").arg("-f").arg("main").spawn();
+                }
+                // Ensure backend is also killed if the main window is closed directly
+                tauri::RunEvent::WindowEvent { label, event, .. } => {
+                    if label == "main" {
+                        if let tauri::WindowEvent::CloseRequested { .. } = event {
+                            if let Some(mut child) = child_process.lock().unwrap().take() {
+                                let _ = child.kill();
+                            }
+
+                            #[cfg(target_os = "windows")]
+                            let _ = Command::new("taskkill")
+                                .args(["/IM", "main.exe", "/F", "/T"]) // kill process tree
+                                .spawn();
+                        }
+                    }
                 }
                 _ => {}
             }
