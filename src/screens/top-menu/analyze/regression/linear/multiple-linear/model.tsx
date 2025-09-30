@@ -100,7 +100,7 @@ const IndependentListRender: FC = () => {
 };
 
 const DependentListRender: FC = () => {
-  const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
+  const [, setSelectAll] = useState<boolean | string | undefined>(false);
   const { t } = useTranslation('regLinearMultipleLinear');
   const { availableList, dependentList, setModelBulk } = useMultipleLinear(
     useShallow((state) => ({

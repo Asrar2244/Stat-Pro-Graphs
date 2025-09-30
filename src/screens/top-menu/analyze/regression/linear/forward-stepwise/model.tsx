@@ -108,7 +108,7 @@ const IndependentListRender: FC = () => {
   );
 };
 const DependentListRender: FC = () => {
-  const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
+  const [, setSelectAll] = useState<boolean | string | undefined>(false);
 
   const { t } = useTranslation('regLinearForwardStepwise');
   const { availableList, dependentList, setModelBulk } = useLinearLeastSquares(
