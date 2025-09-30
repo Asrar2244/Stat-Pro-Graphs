@@ -127,7 +127,7 @@ const DependentListRender: FC = () => {
     <div className="section-available">
       <SimpleListRender
         list={dependentList}
-        selectAll={selectAll}
+        selectAll={false}
         setSelectAll={setSelectAll}
         setModelBulk={setModelBulk}
         listName="dependentList"
@@ -166,10 +166,19 @@ const AvailableListRender: FC = () => {
       return;
     }
     
+    if (name === 'dependent') {
+      const selected = Array.from(availableList.entries()).filter(([, v]) => v).map(([k]) => k);
+      if (selected.length > 1) {
+        alert('Please select only one dependent variable.');
+        return;
+      }
+    }
     availableList.forEach((value: boolean, key: string) => {
       if (value) {
         if (name === 'dependent') {
-          dependentList.set(key, true);  // ✅ Set to true for selected variables
+          // enforce single dependent in polynomial
+          dependentList.clear();
+          dependentList.set(key, true);
         } else {
           // Only add if we don't already have an independent variable
           if (independentList.size === 0) {
@@ -195,7 +204,7 @@ const AvailableListRender: FC = () => {
         selectAllText={t('selectAll')}
       />
       <div className="send-buttons">
-        <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler}>
+        <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler} disabled={dependentList.size >= 1}>
           {t('sendToDependent')}
         </Button>
         <Button

@@ -4,6 +4,7 @@ import { IActiveNode, useAnalyzeSave } from '@hooks';
 import { useEffect } from 'react';
 import { IColumn } from '../../../../../table-render/use-column-count';
 import { EXCEL, API } from '@constants';
+import { useStartProStore } from '@store/main-store';
 
 interface IOutput {
   executeAnalysis: (id: string) => void;
@@ -23,6 +24,7 @@ export const usePrepareAnalysis = ({
     })),
   );
   const { execute } = useAnalyzeSave();
+  const { setBlockUI } = useStartProStore();
 
   useEffect(() => {
     const columnMap = new Map<string, boolean>();
@@ -39,6 +41,12 @@ export const usePrepareAnalysis = ({
   const executeAnalysis = async (id: string): Promise<void> => {
     const tableName = config.tabName;
 
+    const dependentVars = Array.from(model.dependentList.keys());
+    if (dependentVars.length !== 1) {
+      setBlockUI({ value: true, msg: 'Please select exactly one dependent variable.' });
+      return;
+    }
+
     const parameters = {
       data_name: tableName,
       input_data_type: 'file',
@@ -46,7 +54,7 @@ export const usePrepareAnalysis = ({
       sheet_name: EXCEL,
       db_name: tableName,
       table_name: EXCEL,
-      dependent_var_names: Array.from(model.dependentList.keys()),
+      dependent_var_names: dependentVars,
       independent_var_names: Array.from(model.independentList.keys()),
       regressionType: 'linear',
       linearparameters: {

@@ -4,6 +4,7 @@ import { IActiveNode, useAnalyzeSave } from '@hooks';
 import { useEffect } from 'react';
 import { IColumn } from '../../../../../table-render/use-column-count';
 import { EXCEL, API } from '@constants';
+import { useStartProStore } from '@store/main-store';
 
 interface IOutput {
   executeAnalysis: (id: string) => void;
@@ -23,6 +24,7 @@ export const usePrepareAnalysis = ({
     })),
   );
   const { execute } = useAnalyzeSave();
+  const { setBlockUI } = useStartProStore();
 
   useEffect(() => {
     const columnMap = new Map<string, boolean>();
@@ -51,8 +53,8 @@ export const usePrepareAnalysis = ({
       .map(([name, _]) => name);
     
     // Validate variable selection
-    if (dependentVars.length === 0) {
-      console.error('No dependent variables selected');
+    if (dependentVars.length !== 1) {
+      setBlockUI({ value: true, msg: 'Please select exactly one dependent variable.' });
       return;
     }
     if (independentVars.length !== 1) {

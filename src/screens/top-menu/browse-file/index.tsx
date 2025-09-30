@@ -1,9 +1,8 @@
-import { ChangeEvent, FC, FormEvent, useState } from 'react';
+import { ChangeEvent, FC, FormEvent, useState, useRef } from 'react';
 import { Field, Input, Button, Dropdown, Option, Spinner } from '@fluentui/react-components';
 import { BiDotsHorizontalRounded, BiPlayCircle } from 'react-icons/bi';
 import { Modal, ITranslate } from '@libs';
 import { open } from '@tauri-apps/plugin-dialog';
-import { exists } from '@tauri-apps/plugin-fs';
 import { getFileSize, getFileNameFromPath, getDirPath, joinPaths } from '@utils';
 import { IModal, useFileSize, useGetInitialConfig, useAxios } from '@hooks';
 import { useStartProStore } from '@store';
@@ -46,15 +45,11 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   );
 
   const classes = useBrowseLayout();
+  const pickingRef = useRef(false);
   const onBrowseFileHandler = async (): Promise<void> => {
     try {
-      // Prefer a default path only if the drive exists (prevents dialog failing silently)
-      let defaultPath: string | undefined = undefined;
-      try {
-        if (await exists('Z:\\')) {
-          defaultPath = 'Z:\\';
-        }
-      } catch {}
+      if (pickingRef.current) return;
+      pickingRef.current = true;
 
       const openedFile = await open({
         multiple: false,
@@ -65,7 +60,6 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             extensions: browseFile.acceptFiles,
           },
         ],
-        ...(defaultPath ? { defaultPath } : {}),
       });
 
       if (openedFile) {
@@ -125,6 +119,8 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
       }
     } catch (e) {
       console.error('error==>', e);
+    } finally {
+      pickingRef.current = false;
     }
   };
 
@@ -276,13 +272,19 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   };
 
   const onChangeWorkSpacePath = async () => {
-    const openedFolder = await open({
-      multiple: false,
-      directory: true,
-      title: t('selectWorkspacePath', { ns: 'common' }),
-    });
-    if (openedFolder) {
-      setNewProject('workspacePath', openedFolder);
+    if (pickingRef.current) return;
+    pickingRef.current = true;
+    try {
+      const openedFolder = await open({
+        multiple: false,
+        directory: true,
+        title: t('selectWorkspacePath', { ns: 'common' }),
+      });
+      if (openedFolder) {
+        setNewProject('workspacePath', openedFolder);
+      }
+    } finally {
+      pickingRef.current = false;
     }
   };
   const onProjectNameChange = (e: ChangeEvent<HTMLInputElement>) => {
