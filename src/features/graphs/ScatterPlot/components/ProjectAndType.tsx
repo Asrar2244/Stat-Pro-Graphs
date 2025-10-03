@@ -1,7 +1,10 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { Field, Dropdown, Option, tokens } from '@fluentui/react-components';
 import type { ScatterSubType } from '../scatterPlotSlice';
 
+/**
+ * Props for the ProjectAndType component
+ */
 interface ProjectAndTypeProps {
   classes: Record<string, string>;
   projects: string[];
@@ -12,6 +15,9 @@ interface ProjectAndTypeProps {
   subTypes: ScatterSubType[];
 }
 
+/**
+ * Component for selecting project and scatter plot type
+ */
 export const ProjectAndType: FC<ProjectAndTypeProps> = ({
   classes,
   projects,
@@ -58,5 +64,3 @@ export const ProjectAndType: FC<ProjectAndTypeProps> = ({
     </div>
   );
 };
-
-

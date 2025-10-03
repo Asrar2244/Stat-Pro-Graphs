@@ -1,5 +1,8 @@
 import type { ScatterSubType, DataFormat } from './scatterPlotSlice';
 
+/**
+ * Available scatter plot sub-types
+ */
 export const SUB_TYPES: ScatterSubType[] = [
   // A) Simple Scatter
   'Simple Scatter',
@@ -37,6 +40,9 @@ export const SUB_TYPES: ScatterSubType[] = [
   'Horizontal Dot Plot',
 ];
 
+/**
+ * Available data formats for scatter plots
+ */
 export const DATA_FORMATS: DataFormat[] = [
   // Basic formats
   'XY Pair',
@@ -68,7 +74,9 @@ export const DATA_FORMATS: DataFormat[] = [
   'Category Many X',
 ];
 
-// Mapping between scatter plot sub-types and their valid data formats
+/**
+ * Mapping between scatter plot sub-types and their valid data formats
+ */
 export const SUB_TYPE_DATA_FORMATS: Record<ScatterSubType, DataFormat[]> = {
   // A) Simple Scatter
   'Simple Scatter': ['XY Pair', 'Single X', 'Single Y'],
@@ -133,6 +141,7 @@ export const SUB_TYPE_DATA_FORMATS: Record<ScatterSubType, DataFormat[]> = {
   
   // H) Multiple Scatter - Error Bars & Regressions
   'Multiple Scatter Error Bar and Regression': [
+    'XY Pair',
     'X Many Y',
     'Many Y',
     'X Many Y Replicates',
@@ -164,6 +173,7 @@ export const SUB_TYPE_DATA_FORMATS: Record<ScatterSubType, DataFormat[]> = {
   
   // K) Vertical Asymmetric Error Bars
   'Vertical Asymmetric Error Bars': [
+    'XY Pair',
     'X Many Y',
     'Many Y',
     'XY Pairs'
@@ -171,6 +181,7 @@ export const SUB_TYPE_DATA_FORMATS: Record<ScatterSubType, DataFormat[]> = {
   
   // L) Horizontal Asymmetric Error Bars
   'Horizontal Asymmetric Error Bars': [
+    'XY Pair',
     'Y Many X',
     'Many X',
     'XY Pairs'
@@ -178,47 +189,62 @@ export const SUB_TYPE_DATA_FORMATS: Record<ScatterSubType, DataFormat[]> = {
   
   // M) Bi-directional Asymmetric Error Bars
   'Bidirectional Asymmetric Error Bars': [
-    'XY Pairs'
+    'XY Pair',
+    'XY Pairs',
+    'X Many Y',
+    'Y Many X',
+    'Many X',
+    'Many Y'
   ],
   
   // N) Vertical Point Plot
   'Vertical Point Plot': [
-    'Many Y',
-    'X Many Y',
+    'X Many Y Replicates',
     'Many Y Replicates',
-    'X Many Y Replicates'
+    'X Many Y',
+    'Many Y',
+    'Y Category'
   ],
   
   // O) Horizontal Point Plot
   'Horizontal Point Plot': [
-    'Many X',
-    'Y Many X',
+    'Y Many X Replicates',
     'Many X Replicates',
-    'Y Many X Replicates'
+    'Y Many X',
+    'Many X',
+    'X Category'
   ],
   
   // P) Vertical Dot Plot
   'Vertical Dot Plot': [
-    'Many Y',
+    'XY Pair',
     'X Many Y',
-    'XY Pairs',
-    'X Category'
+    'Many Y'
   ],
   
   // Q) Horizontal Dot Plot
   'Horizontal Dot Plot': [
-    'Many X',
+    'XY Pair',
     'Y Many X',
-    'YX Pairs'
+    'Many X'
   ]
 };
 
-// Helper function to get valid data formats for a given sub-type
+/**
+ * Gets valid data formats for a given scatter plot sub-type
+ * @param subType - The scatter plot sub-type
+ * @returns Array of valid data formats for the sub-type
+ */
 export const getValidDataFormats = (subType: ScatterSubType): DataFormat[] => {
   return SUB_TYPE_DATA_FORMATS[subType] || [];
 };
 
-// Helper function to check if a data format is valid for a sub-type
+/**
+ * Checks if a data format is valid for a scatter plot sub-type
+ * @param subType - The scatter plot sub-type
+ * @param dataFormat - The data format to validate
+ * @returns True if the data format is valid for the sub-type
+ */
 export const isValidDataFormat = (subType: ScatterSubType, dataFormat: DataFormat): boolean => {
   return getValidDataFormats(subType).includes(dataFormat);
 };

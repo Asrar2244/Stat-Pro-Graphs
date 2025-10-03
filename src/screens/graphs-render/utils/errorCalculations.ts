@@ -13,6 +13,7 @@ export interface ErrorCalculationParams {
   xv: number[];
   yv: number[];
   symbolValue: string;
+  subType?: string;
   errorCalculationUpper?: string;
   errorCalculationLower?: string;
   errorBarData?: number[];
@@ -22,11 +23,20 @@ export interface ErrorCalculationParams {
  * Enhanced error calculation with dynamic statistical methods
  */
 export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValues => {
-  const { xv, yv, symbolValue, errorCalculationUpper, errorCalculationLower, errorBarData } = params;
+  const { xv, yv, symbolValue, subType, errorCalculationUpper, errorCalculationLower, errorBarData } = params;
   const n = xv.length;
+  
+  // Check if this is an asymmetric error bar case
+  const isAsymmetricSubType = subType?.toLowerCase().includes('asymmetric') || false;
+  const isAsymmetricSymbolValue = symbolValue === 'Asymmetric Error Bar';
+  const isAsymmetric = isAsymmetricSubType || isAsymmetricSymbolValue;
   
   console.log('🔍 calculateErrorValues called with:', {
     symbolValue,
+    subType,
+    isAsymmetricSubType,
+    isAsymmetricSymbolValue,
+    isAsymmetric,
     errorCalculationUpper,
     errorCalculationLower,
     dataLength: n,
@@ -189,28 +199,33 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
       // Use actual error bar variable data
       if (errorBarData && errorBarData.length === n) {
         console.log('📊 Using Error Bar Data for', symbolValue, ':', errorBarData.slice(0, 3), '...');
-        if (symbolValue === 'Asymmetric Error Bar') {
+        if (isAsymmetric) {
           // For asymmetric, use different upper and lower values
           yUpper = errorBarData.map(val => Math.abs(val));
-          yLower = errorBarData.map(val => Math.abs(val * 0.7)); // 70% of upper value
-          xUpper = Array(n).fill(0);
-          xLower = Array(n).fill(0);
+          yLower = errorBarData.map(val => Math.abs(val * 0.5)); // 50% of upper value for more visible asymmetry
+          // For bidirectional error bars, also calculate X errors (use same error bar data for both X and Y)
+          xUpper = errorBarData.map(val => Math.abs(val));
+          xLower = errorBarData.map(val => Math.abs(val * 0.5));
           console.log('📊 Asymmetric Y Upper:', yUpper.slice(0, 3), 'Y Lower:', yLower.slice(0, 3));
+          console.log('📊 Asymmetric X Upper:', xUpper.slice(0, 3), 'X Lower:', xLower.slice(0, 3));
         } else {
           // For worksheet columns, use symmetric error bars
           yUpper = errorBarData.map(val => Math.abs(val));
           yLower = errorBarData.map(val => Math.abs(val));
-          xUpper = Array(n).fill(0);
-          xLower = Array(n).fill(0);
+          // For bidirectional error bars, also calculate X errors (use same error bar data for both X and Y)
+          xUpper = errorBarData.map(val => Math.abs(val));
+          xLower = errorBarData.map(val => Math.abs(val));
           console.log('📊 Symmetric Y Error:', yUpper.slice(0, 3));
+          console.log('📊 Symmetric X Error:', xUpper.slice(0, 3));
         }
       } else {
         console.log('📊 No error bar data available, using fallback');
         // Fallback if no error bar data
         yUpper = yv.map(y => Math.abs(y * 0.1));
         yLower = yv.map(y => Math.abs(y * 0.1));
-        xUpper = Array(n).fill(0);
-        xLower = Array(n).fill(0);
+        // For bidirectional error bars, also provide X error values
+        xUpper = xv.map(x => Math.abs(x * 0.1));
+        xLower = xv.map(x => Math.abs(x * 0.1));
       }
       break;
       
@@ -230,8 +245,9 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
         // Fallback if no error bar data
         yUpper = yv.map(y => Math.abs(y * 0.1));
         yLower = yv.map(y => Math.abs(y * 0.1));
-        xUpper = Array(n).fill(0);
-        xLower = Array(n).fill(0);
+        // For bidirectional error bars, also provide X error values
+        xUpper = xv.map(x => Math.abs(x * 0.1));
+        xLower = xv.map(x => Math.abs(x * 0.1));
       }
       break;
       

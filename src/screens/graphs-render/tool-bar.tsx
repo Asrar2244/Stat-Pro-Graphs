@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Button, Text, Toolbar, ToolbarButton } from '@fluentui/react-components';
+import { Text, Toolbar, ToolbarButton } from '@fluentui/react-components';
 import { MdHistory, MdSettings } from 'react-icons/md';
 import { tokens } from '@fluentui/react-components';
 import { GraphProperties, GlobalGraphProperties, PlotSpecificProperties } from './hooks/use-tools';
@@ -34,7 +34,7 @@ interface IToolBarProps {
 export const ToolBar: FC<IToolBarProps> = ({ tools, title, subTitle }) => {
   return (
     <div style={{ 
-      background: `linear-gradient(135deg, ${tokens.colorBrandBackground2} 0%, ${tokens.colorBrandBackground1} 100%)`,
+      background: `linear-gradient(135deg, ${tokens.colorBrandBackground2} 0%, ${tokens.colorBrandBackground} 100%)`,
       padding: tokens.spacingVerticalM,
       borderBottom: `2px solid ${tokens.colorBrandStroke1}`,
       boxShadow: `0 2px 8px ${tokens.colorNeutralShadowAmbient}`

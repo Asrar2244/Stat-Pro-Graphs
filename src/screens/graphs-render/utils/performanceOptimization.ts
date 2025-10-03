@@ -20,6 +20,7 @@ export interface OptimizedData {
   optimizedLength: number;
   optimizationMethod: 'none' | 'sampling' | 'decimation' | 'progressive';
   performanceWarning?: string;
+  errorBarVariable?: string;
 }
 
 export interface PerformanceMetrics {
@@ -223,7 +224,8 @@ export const progressiveRendering = (
 export const optimizeDataForPerformance = (
   xv: number[],
   yv: number[],
-  config: Partial<PerformanceConfig> = {}
+  config: Partial<PerformanceConfig> = {},
+  errorBarVariable?: string
 ): OptimizedData => {
   const perfConfig = { ...DEFAULT_PERFORMANCE_CONFIG, ...config };
   const dataSize = xv.length;
@@ -242,7 +244,8 @@ export const optimizeDataForPerformance = (
       originalLength: dataSize,
       optimizedLength: dataSize,
       optimizationMethod: 'none',
-      performanceWarning
+      performanceWarning,
+      errorBarVariable
     };
   }
 
@@ -251,20 +254,23 @@ export const optimizeDataForPerformance = (
     // Only use progressive rendering for extremely large datasets
     return {
       ...progressiveRendering(xv, yv, 2000), // Increased batch size
-      performanceWarning
+      performanceWarning,
+      errorBarVariable
     };
   } else if (perfConfig.enableDecimation && dataSize > 100000) {
     // Use aggressive decimation for very large datasets
     const decimationFactor = Math.max(2, Math.floor(dataSize / perfConfig.maxPointsPerTrace));
     return {
       ...dataDecimation(xv, yv, decimationFactor),
-      performanceWarning
+      performanceWarning,
+      errorBarVariable
     };
   } else if (perfConfig.enableSampling && dataSize > perfConfig.samplingThreshold) {
     // Use smart sampling for large datasets
     return {
       ...smartSampling(xv, yv, perfConfig.maxPointsPerTrace),
-      performanceWarning
+      performanceWarning,
+      errorBarVariable
     };
   }
 
@@ -274,7 +280,8 @@ export const optimizeDataForPerformance = (
     originalLength: dataSize,
     optimizedLength: dataSize,
     optimizationMethod: 'none',
-    performanceWarning
+    performanceWarning,
+    errorBarVariable
   };
 };
 

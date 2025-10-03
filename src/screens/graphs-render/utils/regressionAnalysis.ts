@@ -20,11 +20,16 @@ export interface RegressionResult {
  * Enhanced linear regression with comprehensive statistics
  */
 export const computeLinearRegression = (xs: number[], ys: number[]): RegressionResult | null => {
+  
   const pairs = xs
     .map((x, i) => [x, ys[i]] as [number, number])
     .filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
   const n = pairs.length;
-  if (n < 2) return null;
+  
+  
+  if (n < 2) {
+    return null;
+  }
   
   let sumX = 0, sumY = 0, sumXX = 0, sumXY = 0, sumYY = 0;
   for (let i = 0; i < n; i++) {
@@ -41,7 +46,7 @@ export const computeLinearRegression = (xs: number[], ys: number[]): RegressionR
   
   // Calculate R-squared
   const yMean = sumY / n;
-  const ssRes = pairs.reduce((sum, [, y]) => sum + Math.pow(y - (m * pairs[sum]?.[0] + b), 2), 0);
+  const ssRes = pairs.reduce((sum, [x, y], i) => sum + Math.pow(y - (m * x + b), 2), 0);
   const ssTot = pairs.reduce((sum, [, y]) => sum + Math.pow(y - yMean, 2), 0);
   const rSquared = ssTot > 0 ? 1 - (ssRes / ssTot) : 0;
   
@@ -64,7 +69,7 @@ export const computeLinearRegression = (xs: number[], ys: number[]): RegressionR
     };
   });
   
-  return { 
+  const result = { 
     m, 
     b, 
     rSquared, 
@@ -76,6 +81,15 @@ export const computeLinearRegression = (xs: number[], ys: number[]): RegressionR
     xMean,
     yMean
   };
+  
+  console.log(`✅ Regression computation successful:`, {
+    slope: m,
+    intercept: b,
+    rSquared: rSquared,
+    n: n
+  });
+  
+  return result;
 };
 
 /**
@@ -89,13 +103,30 @@ export const createRegressionTraces = (
   subType: string,
   regressionResult: RegressionResult
 ): any[] => {
+  console.log(`🔍 createRegressionTraces called for "${label}":`, {
+    xValsLength: xVals.length,
+    yValsLength: yVals.length,
+    color,
+    subType,
+    regressionResult: {
+      slope: regressionResult.m,
+      intercept: regressionResult.b,
+      rSquared: regressionResult.rSquared
+    }
+  });
+  
   const traces: any[] = [];
   const isErrorBar = subType.toLowerCase().includes('error bar');
   const { m, b, rSquared, predictionIntervals } = regressionResult;
   
   // Determine domain from finite x values
   const finiteX = xVals.filter((x) => Number.isFinite(x));
-  if (finiteX.length < 2) return traces;
+  console.log(`📊 Finite X values: ${finiteX.length} out of ${xVals.length}`);
+  
+  if (finiteX.length < 2) {
+    console.log(`❌ Not enough finite X values for regression line: ${finiteX.length}`);
+    return traces;
+  }
   
   const xMin = Math.min(...finiteX);
   const xMax = Math.max(...finiteX);
@@ -196,5 +227,6 @@ export const createRegressionTraces = (
     traces.push(confidenceLowerLine);
   }
   
+  console.log(`✅ Created ${traces.length} regression traces for "${label}":`, traces.map(t => t.name));
   return traces;
 };

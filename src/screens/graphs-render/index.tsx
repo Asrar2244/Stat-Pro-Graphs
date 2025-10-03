@@ -31,17 +31,12 @@ export const GraphsRender: FC = () => {
   
   // Auto-select latest run when renderLatestRun flag is set
   useEffect(() => {
-    console.log('🔍 Auto-selection check:', { 
-      dataLength: data?.length, 
-      renderLatestRun, 
-      selectedRunId: selectedGraphRun.id 
-    });
     
     if (Array.isArray(data) && data.length > 0 && renderLatestRun) {
       const nice = friendlyTitleForGraph(data[0]?.graphType, data[0]?.config?.graphConfig?.subType);
-      setSelectedGraphRun(data[0]?.id, nice);
+      const subTitle = data[0]?.config?.graphConfig?.subType || data[0]?.config?.graphConfig?.dataFormat;
+      setSelectedGraphRun(data[0]?.id, nice, subTitle);
       setRenderLatestRun(false);
-      console.log('🎯 Auto-selected latest graph:', data[0]?.id, nice);
     }
   }, [data, renderLatestRun, selectedGraphRun.id, setSelectedGraphRun, setRenderLatestRun]);
   
@@ -157,7 +152,6 @@ export const GraphsRender: FC = () => {
         // Quick refresh: set render latest run so the UI updates selection.
         setRenderLatestRun(true);
       } catch (err) {
-        console.warn('Failed to delete graph run', err);
       }
     };
     window.addEventListener('statpro:deleteGraphRun', handler as any);
@@ -328,7 +322,7 @@ export const GraphsRender: FC = () => {
               showHistory: tools.showRunHistory,
               toggleShowHistory: tools.toggleShowHistory,
               setTotalRuns: tools.setTotalRuns,
-              selectedRun: setSelectedGraphRun,
+              selectedRun: (id: number, title: string, subTitle?: string) => setSelectedGraphRun(id, title, subTitle),
             }}
           />
           <GraphProperties
@@ -361,8 +355,15 @@ export const GraphsRender: FC = () => {
               },
               updateLegendTextEntry: updateLegendTextEntryPerRun,
               getCurrentPlotType: tools.getCurrentPlotType,
+              getDetectedPlotFeatures: tools.getDetectedPlotFeatures,
               currentSubType: selectedGraphRun.subTitle,
               currentLegendLabels: selectedGraphRun.config?.graphConfig?.legendLabels || [],
+              currentDataFormat: selectedGraphRun.config?.graphConfig?.dataFormat,
+              currentVariables: {
+                xNames: selectedGraphRun.config?.graphConfig?.variables?.x || [],
+                yNames: selectedGraphRun.config?.graphConfig?.variables?.y || [],
+                categoryNames: selectedGraphRun.config?.graphConfig?.variables?.category || []
+              },
             }}
           />
         </div>

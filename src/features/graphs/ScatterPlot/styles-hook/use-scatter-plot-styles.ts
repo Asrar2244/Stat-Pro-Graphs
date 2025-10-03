@@ -206,7 +206,3 @@ export const useScatterPlotStyles = makeStyles({
     ...shorthands.padding(tokens.spacingVerticalM),
   },
 });
-
-
-
-

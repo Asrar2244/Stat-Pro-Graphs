@@ -1,6 +1,9 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { Checkbox, tokens } from '@fluentui/react-components';
 
+/**
+ * Props for the VariableList component
+ */
 export interface VariableListRenderProps {
   list: Map<string, boolean>;
   selectAll: boolean | string | undefined;
@@ -12,11 +15,15 @@ export interface VariableListRenderProps {
   disabled?: boolean;
 }
 
+/**
+ * Component for rendering a list of variables with checkbox selection
+ */
 export const VariableList: FC<VariableListRenderProps> = ({
   list,
   selectAll,
   setSelectAll,
   setList,
+  listName,
   selectAllText,
   maxSelected,
   disabled
@@ -43,9 +50,11 @@ export const VariableList: FC<VariableListRenderProps> = ({
 
   const handleItemChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
+    console.log(`🔍 VariableList handleItemChange: ${name} = ${checked}, disabled = ${disabled}`);
     if (disabled) return;
     const newList = new Map(list);
     newList.set(name, checked);
+    
     if (maxSelected && checked) {
       const selectedKeys = Array.from(newList.entries()).filter(([, v]) => v).map(([k]) => k);
       if (selectedKeys.length > (maxSelected || Infinity)) {
@@ -55,6 +64,7 @@ export const VariableList: FC<VariableListRenderProps> = ({
         }
       }
     }
+    
     setList(newList);
     const allChecked = Array.from(newList.values()).every((val) => val);
     const someChecked = Array.from(newList.values()).some((val) => val);
@@ -138,5 +148,3 @@ export const VariableList: FC<VariableListRenderProps> = ({
     </div>
   );
 };
-
-

@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 
+/**
+ * Available scatter plot sub-types
+ */
 export type ScatterSubType =
   // A) Simple Scatter
   | 'Simple Scatter'
@@ -36,6 +39,9 @@ export type ScatterSubType =
   // Q) Horizontal Dot Plot
   | 'Horizontal Dot Plot';
 
+/**
+ * Available data formats for scatter plots
+ */
 export type DataFormat =
   // Basic formats
   | 'XY Pair'
@@ -71,6 +77,9 @@ export type DataFormat =
   | 'Y Replicate'
   | 'Category Y';
 
+/**
+ * Symbol value options for error bar configuration
+ */
 export type SymbolValueOption =
   | 'Worksheet Columns'
   | 'Asymmetric Error Bar'
@@ -85,6 +94,9 @@ export type SymbolValueOption =
   | 'Last Column Entry'
   | 'Last Row Entry';
 
+/**
+ * Error calculation options for error bars
+ */
 export type ErrorCalculationOption =
   | 'Mean'
   | 'Median'
@@ -116,12 +128,18 @@ export type ErrorCalculationOption =
   | 'Dynamic (Data-driven)'
   | 'None';
 
+/**
+ * Represents a variable that can be used in scatter plots
+ */
 export interface Variable {
   id: string;
   name: string;
   type: 'numeric' | 'categorical';
 }
 
+/**
+ * State interface for the scatter plot store
+ */
 interface ScatterPlotState {
   selectedProject?: string;
   graphType: 'Scatter Plot';
@@ -168,8 +186,16 @@ const initial: Omit<ScatterPlotState, 'setProject' | 'setSubType' | 'setDataset'
   dataSource: 'project',
   availableVariables: [],
   graphConfig: {},
+  // Error Bar defaults to prevent uncontrolled to controlled warnings
+  symbolValue: 'Worksheet Columns',
+  errorCalculationUpper: undefined,
+  errorCalculationLower: undefined,
+  errorBarVariable: undefined,
 };
 
+/**
+ * Zustand store for managing scatter plot configuration state
+ */
 export const useScatterPlotStore = create<ScatterPlotState>((set) => ({
   ...initial,
   setProject: (selectedProject) => set({ selectedProject }),
@@ -178,6 +204,12 @@ export const useScatterPlotStore = create<ScatterPlotState>((set) => ({
     // Auto-set data format for Simple Scatter types
     if (subType === 'Simple Scatter' || subType === 'Simple Scatter Regression') {
       set({ dataFormat: 'XY Pair' });
+    }
+    // Auto-set symbol value to Worksheet Columns for specific error bar subplot types
+    if (subType === 'Multiple Scatter Error Bar and Regression' || 
+        subType === 'Simple Scatter Horizontal Error Bar' || 
+        subType === 'Simple Scatter Bidirectional Error Bars') {
+      set({ symbolValue: 'Worksheet Columns' });
     }
   },
   setDataset: (selectedDataset) => set({ selectedDataset }),

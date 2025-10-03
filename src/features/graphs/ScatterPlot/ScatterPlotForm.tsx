@@ -1,88 +1,31 @@
-import { FC, useEffect, useMemo, useState, useRef } from 'react';
-import { Spinner, Text } from '@fluentui/react-components';
+import { FC, useEffect, useMemo, useRef } from 'react';
+import { Spinner, Text, tokens } from '@fluentui/react-components';
+import { MdWarning } from 'react-icons/md';
 import { ScatterHeader } from './components/Header';
 import { ProjectAndType } from './components/ProjectAndType';
 import { DataFormatSection } from './components/DataFormatSection';
 import { VariableSelection } from './components/VariableSelection';
 import { ErrorBarsConfiguration } from './components/ErrorBarsConfiguration';
-import { MdWarning } from 'react-icons/md';
-import { useScatterPlotStore, DataFormat } from './scatterPlotSlice';
-import { SUB_TYPES, getValidDataFormats } from './constants';
 import { VariableList as VariableListRender } from './VariableList';
+import { useScatterPlotStore } from './scatterPlotSlice';
 import { useScatterPlotStyles } from './styles-hook/use-scatter-plot-styles';
-import { useStartProStore } from '@store';
-import { useShallow } from 'zustand/react/shallow';
-import { Database } from '@utils';
-import { EXCEL } from '@constants';
+import { SUB_TYPES } from './constants';
+import { useProjectVariables, useVariableManagement, useAvailableFormats } from './hooks';
+import { requiresX, requiresY, requiresCategory, canSendToX, canSendToY, canSendToErrorBar, getRequiredErrorBarCount } from './utils';
+import { getPlotTypeFlags, isAsymmetricErrorBar, needsErrorBarsConfiguration, isErrorBarSubType } from './utils';
 
-// Helper function to get data formats based on Symbol Value
-const getDataFormatsBySymbolValue = (symbolValue: string): DataFormat[] => {
-  switch (symbolValue) {
-    case 'Worksheet Columns':
-      return ['XY Pair', 'Single Y'];
-    case 'Asymmetric Error Bar':
-      return ['XY Pair', 'Single Y'];
-    case 'Column Means':
-      return ['X Many Y', 'Many Y'];
-    case 'Row Means':
-      return ['XY Replicate'];
-    case 'By Category Mean':
-      return ['Category Y'];
-    case 'Column Median':
-      return ['X Many Y', 'Many Y'];
-    case 'Row Median':
-      return ['X Replicate', 'Y Replicate'];
-    case 'By Category Median':
-      return ['Category Y'];
-    case 'First Column Entry':
-      return ['X Many Y', 'Many Y'];
-    case 'First Row Entry':
-      return ['X Replicate', 'Y Replicate'];
-    case 'Last Column Entry':
-      return ['X Many Y', 'Many Y'];
-    case 'Last Row Entry':
-      return ['X Replicate', 'Y Replicate'];
-    default:
-      return [];
-  }
-};
-
-// Helper function to check if subType is an error bar type that needs variable selection
-const isErrorBarSubType = (subType: string): boolean => {
-  return [
-    'Simple Scatter Error Bar',
-    'Multiple Scatter Error Bar',
-    'Simple Scatter Error Bar and Regression',
-    'Multiple Scatter Error Bar and Regression',
-    'Simple Scatter Horizontal Error Bar',
-    'Simple Scatter Bidirectional Error Bars',
-    'Vertical Asymmetric Error Bars',
-    'Horizontal Asymmetric Error Bars',
-    'Bidirectional Asymmetric Error Bars'
-  ].includes(subType);
-};
-
-// Helper function to check if subType needs Error Bars Configuration dropdowns
-const needsErrorBarsConfiguration = (subType: string): boolean => {
-  return [
-    'Simple Scatter Error Bar',
-    'Multiple Scatter Error Bar',
-    'Simple Scatter Error Bar and Regression',
-    'Multiple Scatter Error Bar and Regression',
-    'Simple Scatter Horizontal Error Bar',
-    'Simple Scatter Bidirectional Error Bars'
-  ].includes(subType);
-};
-
-// constants moved to constants.ts
-
+/**
+ * Main form component for scatter plot configuration
+ */
 export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ projects }) => {
   const classes = useScatterPlotStyles();
+  const isUpdatingDataFormat = useRef(false);
+  
+  // Store state
   const { 
     selectedProject, 
     subType, 
     dataFormat,
-    availableVariables,
     symbolValue,
     errorCalculationUpper,
     errorCalculationLower,
@@ -96,32 +39,79 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
     setErrorCalculationLower
   } = useScatterPlotStore();
   
-  const { projects: projectStore } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+  // Load project variables
+  const { variables, isLoading: isLoadingVariables, error: loadError } = useProjectVariables(selectedProject);
 
-  // State for variable management
-  const [availableList, setAvailableList] = useState<Map<string, boolean>>(new Map());
-  const [xVariableList, setXVariableList] = useState<Map<string, boolean>>(new Map());
-  const [yVariableList, setYVariableList] = useState<Map<string, boolean>>(new Map());
-  const [errorBarVariableList, setErrorBarVariableList] = useState<Map<string, boolean>>(new Map());
-  const [categoryVariableList, setCategoryVariableList] = useState<Map<string, boolean>>(new Map());
-  const [selectAllAvailable, setSelectAllAvailable] = useState<boolean | string | undefined>(false);
-  const [selectAllX, setSelectAllX] = useState<boolean | string | undefined>(false);
-  const [selectAllY, setSelectAllY] = useState<boolean | string | undefined>(false);
-  const [selectAllErrorBar, setSelectAllErrorBar] = useState<boolean | string | undefined>(false);
-  const [selectAllCategory, setSelectAllCategory] = useState<boolean | string | undefined>(false);
-  const [isLoadingVariables, setIsLoadingVariables] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const isUpdatingDataFormat = useRef(false);
+  // Variable management - pass variables so we can filter by type
+  const variableManagement = useVariableManagement(dataFormat, subType, variables);
+  const {
+    availableList,
+    xVariableList,
+    yVariableList,
+    errorBarVariableList,
+    categoryVariableList,
+    setAvailableList,
+    setXVariableList,
+    setYVariableList,
+    selectAllAvailable,
+    selectAllX,
+    selectAllY,
+    selectAllErrorBar,
+    selectAllCategory,
+    setSelectAllAvailable,
+    setSelectAllX,
+    setSelectAllY,
+    setSelectAllErrorBar,
+    setSelectAllCategory,
+    xCount,
+    yCount,
+    availableCheckedCount,
+    handleSendToX,
+    handleSendToY,
+    handleSendToErrorBar,
+    handleSendToCategory,
+    handleRemoveFromX,
+    handleRemoveFromY,
+    handleRemoveFromErrorBar,
+    handleRemoveFromCategory,
+  } = variableManagement;
+
+  // Available formats based on subtype and symbol value
+  const availableFormats = useAvailableFormats(subType, symbolValue);
+
+  // Plot type flags
+  const { showVariableSelection } = getPlotTypeFlags(subType);
+
+  // Format requirements
+  const requireX = requiresX(dataFormat);
+  const requireY = requiresY(dataFormat);
+  const requireErrorBar = useMemo(() => {
+    return subType ? isErrorBarSubType(subType) : false;
+  }, [subType]);
+  const requireCategory = requiresCategory(dataFormat);
+
+  // Can send validation
+  const canSendX = canSendToX(availableCheckedCount, xCount, dataFormat);
+  const canSendY = canSendToY(availableCheckedCount, yCount, dataFormat);
+  const canSendErrorBar = canSendToErrorBar(
+    availableCheckedCount, 
+    errorBarVariableList.size, 
+    xCount, 
+    yCount, 
+    dataFormat, 
+    subType
+  );
+  
+  const canSendCategory = useMemo(() => {
+    if (availableCheckedCount === 0) return false;
+    if (!requireCategory) return false;
+    return categoryVariableList.size < 1;
+  }, [availableCheckedCount, requireCategory, categoryVariableList.size]);
 
   // Clear symbolValue for asymmetric error bar types
   useEffect(() => {
-    if (subType && [
-      'Vertical Asymmetric Error Bars',
-      'Horizontal Asymmetric Error Bars', 
-      'Bidirectional Asymmetric Error Bars'
-    ].includes(subType)) {
+    if (isAsymmetricErrorBar(subType)) {
       if (symbolValue) {
-        console.log('🔍 Clearing symbolValue for asymmetric error bar:', subType);
         setSymbolValue(undefined);
         setErrorCalculationUpper(undefined);
         setErrorCalculationLower(undefined);
@@ -132,213 +122,30 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
   // Reset data format when symbol value changes for error bar subplot types
   useEffect(() => {
     if (needsErrorBarsConfiguration(subType || '') && symbolValue && dataFormat && !isUpdatingDataFormat.current) {
-      const validFormats = getDataFormatsBySymbolValue(symbolValue);
-      if (!validFormats.includes(dataFormat)) {
+      if (!availableFormats.includes(dataFormat)) {
         isUpdatingDataFormat.current = true;
-        // Reset to first valid format or clear if none available
-        setDataFormat(validFormats[0] || undefined);
-        // Reset the flag after a short delay
+        setDataFormat(availableFormats[0] || undefined);
         setTimeout(() => {
           isUpdatingDataFormat.current = false;
         }, 0);
       }
     }
-  }, [symbolValue, subType, setDataFormat]);
+  }, [symbolValue, subType, dataFormat, setDataFormat, availableFormats]);
 
-  // Load variables when project is selected
+  // Update store with loaded variables
   useEffect(() => {
-    if (selectedProject) {
-      loadProjectVariables(selectedProject);
-    } else {
-      setAvailableVariables([]);
-      setAvailableList(new Map());
-      setXVariableList(new Map());
-      setYVariableList(new Map());
-    }
-  }, [selectedProject]);
+    setAvailableVariables(variables);
+  }, [variables, setAvailableVariables]);
 
   // Update available list when variables are loaded
   useEffect(() => {
-    console.log('🔄 Updating available list with variables:', availableVariables);
     const newMap = new Map();
-    availableVariables.forEach(variable => {
+    // Show all variables in available list - filtering happens at send time
+    variables.forEach(variable => {
       newMap.set(variable.name, false);
     });
-    console.log('📝 New available list map:', Array.from(newMap.entries()));
     setAvailableList(newMap);
-  }, [availableVariables]);
-
-  const loadProjectVariables = async (projectName: string) => {
-    setIsLoadingVariables(true);
-    setLoadError(null);
-    
-    try {
-      console.log('🔍 Loading variables for project:', projectName);
-      const project = projectStore[projectName];
-      if (!project) {
-        console.log('❌ Project not found in store:', projectName);
-        setLoadError('Project not found in workspace');
-        return;
-      }
-
-      console.log('📁 Project details:', project);
-
-      // Load variables from the project's database
-      const db = new Database(project.workspacePath);
-      const columnQuery = `PRAGMA table_info(${EXCEL});`;
-      
-      console.log('🗄️ Database path:', project.workspacePath);
-      console.log('📋 Column query:', columnQuery);
-      
-      const columns = await db.selectQuery(columnQuery);
-      console.log('📊 Raw columns from database:', columns);
-      
-      if (!columns || columns.length === 0) {
-        setLoadError('No data columns found in the selected project');
-        setAvailableVariables([]);
-        return;
-      }
-      
-      const variables = columns.map((col: any) => ({
-        id: col.name,
-        name: col.name,
-        type: 'numeric' as const
-      }));
-      
-      console.log('✅ Processed variables:', variables);
-      setAvailableVariables(variables);
-    } catch (error) {
-      console.error('❌ Failed to load project variables:', error);
-      setLoadError(`Failed to load variables: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setAvailableVariables([]);
-    } finally {
-      setIsLoadingVariables(false);
-    }
-  };
-
-  const isSimple = subType === 'Simple Scatter' || subType === 'Simple Scatter Regression';
-  const isMulti = subType === 'Multiple Scatter' || subType === 'Multiple Scatter Regression';
-  const isErrorBar = subType === 'Simple Scatter Error Bar' || 
-                     subType === 'Multiple Scatter Error Bar' ||
-                     subType === 'Simple Scatter Error Bar and Regression' ||
-                     subType === 'Multiple Scatter Error Bar and Regression' ||
-                     subType === 'Simple Scatter Horizontal Error Bar' ||
-                     subType === 'Simple Scatter Bidirectional Error Bars' ||
-                     subType === 'Vertical Asymmetric Error Bars' ||
-                     subType === 'Horizontal Asymmetric Error Bars' ||
-                     subType === 'Bidirectional Asymmetric Error Bars';
-  const isPointPlot = subType === 'Vertical Point Plot' || subType === 'Horizontal Point Plot';
-  const isDotPlot = subType === 'Vertical Dot Plot' || subType === 'Horizontal Dot Plot';
-  
-  const showVariableSelection = isSimple || isMulti || isErrorBar || isPointPlot || isDotPlot;
-
-  // Available data formats based on sub-type and symbol value
-  const availableFormats = useMemo<DataFormat[]>(() => {
-    if (!subType) return [];
-    
-    // For asymmetric error bars, use standard mapping (no Symbol Value needed)
-    if (isErrorBarSubType(subType) && !needsErrorBarsConfiguration(subType)) {
-      return getValidDataFormats(subType);
-    }
-    
-    // For error bar subplot types with Symbol Value configuration
-    if (isErrorBarSubType(subType) && symbolValue) {
-      return getDataFormatsBySymbolValue(symbolValue);
-    }
-    
-    // For other subplot types, use the standard mapping
-    return getValidDataFormats(subType);
-  }, [subType, symbolValue]);
-
-  // Determine which variable buckets are required for current format
-  const requireX = useMemo(() => {
-    switch (dataFormat) {
-      // Simple formats
-      case 'Single X':
-      case 'XY Pair':
-        return true;
-      
-      // Multi formats
-      case 'XY Pairs':
-      case 'X Many Y':
-      case 'Y Many X':
-      case 'Many X':
-      case 'XY Category':
-      case 'X Category':
-        return true;
-      
-      // Replicate formats
-      case 'X Single Y Replicate':
-      case 'X Many Y Replicates':
-      case 'X Replicates':
-      case 'Y Single X Replicates':
-      case 'Y Many X Replicates':
-        return true;
-      
-      // Special formats
-      case 'YX Pairs':
-      case 'Category Many X':
-        return true;
-      
-      default:
-        return false;
-    }
-  }, [dataFormat]);
-
-  const requireY = useMemo(() => {
-    switch (dataFormat) {
-      // Simple formats
-      case 'Single Y':
-      case 'XY Pair':
-        return true;
-      
-      // Multi formats
-      case 'XY Pairs':
-      case 'X Many Y':
-      case 'Y Many X':
-      case 'Many Y':
-      case 'XY Category':
-      case 'Y Category':
-        return true;
-      
-      // Replicate formats
-      case 'Y Replicate':
-      case 'Many Y Replicates':
-      case 'Y Many X Replicates':
-      case 'Many X Replicates':
-        return true;
-      
-      // Special formats
-      case 'YX Pairs':
-      case 'Category Many Y':
-        return true;
-      
-      default:
-        return false;
-    }
-  }, [dataFormat]);
-
-  const requireErrorBar = useMemo(() => {
-    // Error bar variables are ONLY needed for error bar subplot types
-    if (subType && isErrorBarSubType(subType)) return true;
-    
-    return false;
-  }, [subType]);
-
-  const requireCategory = useMemo(() => {
-    // Category variables are needed for category-based data formats
-    if (dataFormat && [
-      'XY Category',
-      'X Category',
-      'Y Category',
-      'Category Many Y',
-      'Category Many X'
-    ].includes(dataFormat)) {
-      return true;
-    }
-    
-    return false;
-  }, [dataFormat]);
+  }, [variables, setAvailableList]);
 
   // Ensure dataFormat remains valid when subType changes
   useEffect(() => {
@@ -348,261 +155,23 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
     }
   }, [availableFormats, dataFormat, setDataFormat]);
 
-  // When format changes, clear lists that are not required
+  // Clear lists that are not required when format changes
   useEffect(() => {
     if (!requireX && xVariableList.size > 0) setXVariableList(new Map());
     if (!requireY && yVariableList.size > 0) setYVariableList(new Map());
-  }, [requireX, requireY]);
+  }, [requireX, requireY, xVariableList.size, yVariableList.size, setXVariableList, setYVariableList]);
 
-  // Validation: ensure variable selection satisfies chosen data format
-  const xCount = useMemo(() => xVariableList.size, [xVariableList]);
-  const yCount = useMemo(() => yVariableList.size, [yVariableList]);
-  const availableCheckedCount = useMemo(() => Array.from(availableList.values()).filter(v => v).length, [availableList]);
-
-  // Variable management functions
-  const handleSendToX = () => {
-    const newXList = new Map(xVariableList);
-    const newAvailableList = new Map(availableList);
-    // Determine max X allowed for current format
-    const maxX = (dataFormat === 'X Many Y') ? 1 : undefined;
-    const freeSlots = maxX ? Math.max(0, maxX - newXList.size) : Infinity;
-    let moved = 0;
-    for (const [variableName, checked] of availableList.entries()) {
-      if (!checked) continue;
-      if (moved >= freeSlots) break;
-        newXList.set(variableName, false);
-        newAvailableList.delete(variableName);
-      moved++;
-      }
-    setXVariableList(newXList);
-    setAvailableList(newAvailableList);
-    if (newAvailableList.size === 0) setSelectAllAvailable(false);
-  };
-
-  const handleSendToY = () => {
-    const newYList = new Map(yVariableList);
-    const newAvailableList = new Map(availableList);
-    // Determine max Y allowed for current format
-    const maxY = (dataFormat === 'Y Many X') ? 1 : undefined;
-    const freeSlots = maxY ? Math.max(0, maxY - newYList.size) : Infinity;
-    let moved = 0;
-    for (const [variableName, checked] of availableList.entries()) {
-      if (!checked) continue;
-      if (moved >= freeSlots) break;
-        newYList.set(variableName, false);
-        newAvailableList.delete(variableName);
-      moved++;
-      }
-    setYVariableList(newYList);
-    setAvailableList(newAvailableList);
-    if (newAvailableList.size === 0) setSelectAllAvailable(false);
-  };
-
-  const handleSendToErrorBar = () => {
-    const newErrorBarList = new Map(errorBarVariableList);
-    const newAvailableList = new Map(availableList);
-    // Error bar variables are limited to 1
-    const maxErrorBar = 1;
-    const freeSlots = Math.max(0, maxErrorBar - newErrorBarList.size);
-    let moved = 0;
-    for (const [variableName, checked] of availableList.entries()) {
-      if (!checked) continue;
-      if (moved >= freeSlots) break;
-      newErrorBarList.set(variableName, false);
-      newAvailableList.delete(variableName);
-      moved++;
-    }
-    setErrorBarVariableList(newErrorBarList);
-    setAvailableList(newAvailableList);
-    if (newAvailableList.size === 0) setSelectAllAvailable(false);
-  };
-
-  const handleSendToCategory = () => {
-    const newCategoryList = new Map(categoryVariableList);
-    const newAvailableList = new Map(availableList);
-    // Category variables are limited to 1
-    const maxCategory = 1;
-    const freeSlots = Math.max(0, maxCategory - newCategoryList.size);
-    let moved = 0;
-    for (const [variableName, checked] of availableList.entries()) {
-      if (!checked) continue;
-      if (moved >= freeSlots) break;
-      newCategoryList.set(variableName, false);
-      newAvailableList.delete(variableName);
-      moved++;
-    }
-    setCategoryVariableList(newCategoryList);
-    setAvailableList(newAvailableList);
-    if (newAvailableList.size === 0) setSelectAllAvailable(false);
-  };
-
-  const handleRemoveFromX = () => {
-    const newXList = new Map(xVariableList);
-    const newAvailableList = new Map(availableList);
-    
-    xVariableList.forEach((checked, variableName) => {
-      if (checked) {
-        newXList.delete(variableName);
-        newAvailableList.set(variableName, false);
-      }
-    });
-    
-    setXVariableList(newXList);
-    setAvailableList(newAvailableList);
-    if (xVariableList.size === 0) setSelectAllX(false);
-  };
-
-  const handleRemoveFromY = () => {
-    const newYList = new Map(yVariableList);
-    const newAvailableList = new Map(availableList);
-    
-    yVariableList.forEach((checked, variableName) => {
-      if (checked) {
-        newYList.delete(variableName);
-        newAvailableList.set(variableName, false);
-      }
-    });
-    
-    setYVariableList(newYList);
-    setAvailableList(newAvailableList);
-    if (yVariableList.size === 0) setSelectAllY(false);
-  };
-
-  const handleRemoveFromErrorBar = () => {
-    const newErrorBarList = new Map(errorBarVariableList);
-    const newAvailableList = new Map(availableList);
-    
-    errorBarVariableList.forEach((checked, variableName) => {
-      if (checked) {
-        newErrorBarList.delete(variableName);
-        newAvailableList.set(variableName, false);
-      }
-    });
-    
-    setErrorBarVariableList(newErrorBarList);
-    setAvailableList(newAvailableList);
-    if (errorBarVariableList.size === 0) setSelectAllErrorBar(false);
-  };
-
-  const handleRemoveFromCategory = () => {
-    const newCategoryList = new Map(categoryVariableList);
-    const newAvailableList = new Map(availableList);
-    
-    categoryVariableList.forEach((checked, variableName) => {
-      if (checked) {
-        newCategoryList.delete(variableName);
-        newAvailableList.set(variableName, false);
-      }
-    });
-    
-    setCategoryVariableList(newCategoryList);
-    setAvailableList(newAvailableList);
-    if (categoryVariableList.size === 0) setSelectAllCategory(false);
-  };
-
-  // Button enable/disable logic for sending from Available → X/Y
-  const canSendToX = useMemo(() => {
-    if (availableCheckedCount === 0) return false;
-    switch (dataFormat) {
-      // Simple formats
-      case 'Single X':
-        return xCount < 1; // cap X to 1
-      case 'XY Pair':
-        return true; // allow one X
-      
-      // Multi formats
-      case 'X Many Y':
-        return xCount < 1; // cap X to 1
-      case 'Y Many X':
-      case 'Many X':
-      case 'XY Pairs':
-      case 'XY Category':
-      case 'X Category':
-        return true; // allow multiple or at least one; no cap here
-      
-      // Replicate formats
-      case 'X Single Y Replicate':
-      case 'X Many Y Replicates':
-      case 'X Replicates':
-      case 'Y Single X Replicates':
-      case 'Y Many X Replicates':
-        return true; // allow X variables
-      
-      // Special formats
-      case 'YX Pairs':
-      case 'Category Many X':
-        return true; // allow X variables
-      
-      default:
-        return true;
-    }
-  }, [availableCheckedCount, dataFormat, xCount]);
-
-  const canSendToY = useMemo(() => {
-    if (availableCheckedCount === 0) return false;
-    switch (dataFormat) {
-      // Simple formats
-      case 'Single Y':
-        return yCount < 1; // cap Y to 1
-      case 'XY Pair':
-        return true; // allow one Y
-      
-      // Multi formats
-      case 'Y Many X':
-        return yCount < 1; // cap Y to 1
-      case 'X Many Y':
-      case 'Many Y':
-      case 'XY Pairs':
-      case 'XY Category':
-      case 'Y Category':
-        return true; // allow multiple or at least one; no cap here
-      
-      // Replicate formats
-      case 'Y Replicate':
-      case 'Many Y Replicates':
-      case 'Y Many X Replicates':
-      case 'Many X Replicates':
-        return true; // allow Y variables
-      
-      // Special formats
-      case 'YX Pairs':
-      case 'Category Many Y':
-        return true; // allow Y variables
-      
-      default:
-        return true;
-    }
-  }, [availableCheckedCount, dataFormat, yCount]);
-
-  const canSendToErrorBar = useMemo(() => {
-    if (availableCheckedCount === 0) return false;
-    // Error bar variables are only needed for error bar subplot types
-    if (!subType || !isErrorBarSubType(subType)) return false;
-    // Error bar variables are limited to 1
-    return errorBarVariableList.size < 1;
-  }, [availableCheckedCount, subType, errorBarVariableList.size]);
-
-  const canSendToCategory = useMemo(() => {
-    if (availableCheckedCount === 0) return false;
-    // Category variables are only needed for category-based data formats
-    if (!requireCategory) return false;
-    // Category variables are limited to 1
-    return categoryVariableList.size < 1;
-  }, [availableCheckedCount, requireCategory, categoryVariableList.size]);
-
-  // Keep graphConfig in store up to date with current selections so modal can use it
+  // Keep graphConfig in store up to date
   useEffect(() => {
     const xVars = Array.from(xVariableList.keys());
     const yVars = Array.from(yVariableList.keys());
     const errorBarVars = Array.from(errorBarVariableList.keys());
     const categoryVars = Array.from(categoryVariableList.keys());
     
-    // For asymmetric error bars, don't include symbolValue (should be undefined)
-    const isAsymmetricErrorBar = subType && [
-      'Vertical Asymmetric Error Bars',
-      'Horizontal Asymmetric Error Bars', 
-      'Bidirectional Asymmetric Error Bars'
-    ].includes(subType);
+    
+    const isAsymmetric = isAsymmetricErrorBar(subType);
+    const isManualAsymmetric = symbolValue === 'Asymmetric Error Bar';
+    const shouldUseAsymmetric = isAsymmetric || isManualAsymmetric;
     
     setGraphConfig({
       selectedProject,
@@ -610,12 +179,24 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
       subType,
       dataFormat,
       variables: { x: xVars, y: yVars, errorBar: errorBarVars, category: categoryVars },
-      symbolValue: isAsymmetricErrorBar ? undefined : symbolValue,
-      errorCalculationUpper: isAsymmetricErrorBar ? undefined : errorCalculationUpper,
-      errorCalculationLower: isAsymmetricErrorBar ? undefined : errorCalculationLower,
-      errorBarVariable: errorBarVars[0], // Use first selected error bar variable
+      symbolValue: shouldUseAsymmetric ? 'Asymmetric Error Bar' : symbolValue,
+      errorCalculationUpper: shouldUseAsymmetric ? undefined : errorCalculationUpper,
+      errorCalculationLower: shouldUseAsymmetric ? undefined : errorCalculationLower,
+      errorBarVariable: errorBarVars[0], // Legacy single variable support
     });
-  }, [selectedProject, subType, dataFormat, xVariableList, yVariableList, errorBarVariableList, symbolValue, errorCalculationUpper, errorCalculationLower, setGraphConfig]);
+  }, [
+    selectedProject, 
+    subType, 
+    dataFormat, 
+    xVariableList, 
+    yVariableList, 
+    errorBarVariableList, 
+    categoryVariableList,
+    symbolValue, 
+    errorCalculationUpper, 
+    errorCalculationLower, 
+    setGraphConfig
+  ]);
 
   return (
     <div className={classes.root}>
@@ -643,15 +224,34 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
         />
       )}
 
+      {/* Error Bar Validation Message */}
+      {isErrorBarSubType(subType || '') && dataFormat && (xVariableList.size > 0 || yVariableList.size > 0) && (
+        <div style={{ 
+          padding: tokens.spacingVerticalS, 
+          backgroundColor: tokens.colorNeutralBackground3, 
+          borderRadius: tokens.borderRadiusMedium,
+          marginTop: tokens.spacingVerticalS
+        }}>
+          <Text size={300} style={{ color: tokens.colorNeutralForeground2 }}>
+            📊 Error Bar Requirement: {(() => {
+              const required = getRequiredErrorBarCount(xVariableList.size, yVariableList.size, dataFormat);
+              const current = errorBarVariableList.size;
+              
+              if (required === 0) return 'No error bars needed for this format';
+              if (current === required) return `✅ ${required} error bar variable${required > 1 ? 's' : ''} selected (correct)`;
+              if (current < required) return `⚠️ Need ${required} error bar variable${required > 1 ? 's' : ''}, currently have ${current}`;
+              return `❌ Too many error bars: need ${required}, have ${current}`;
+            })()}
+          </Text>
+        </div>
+      )}
+
       {/* Error Bars Configuration */}
           {subType && needsErrorBarsConfiguration(subType) && (
-            <>
-              {console.log('🔍 Rendering ErrorBarsConfiguration for subType:', subType)}
               <ErrorBarsConfiguration 
                 errorBarVariableList={errorBarVariableList}
-                setErrorBarVariableList={setErrorBarVariableList}
+          setErrorBarVariableList={variableManagement.setErrorBarVariableList}
               />
-            </>
           )}
 
       {/* Loading State */}
@@ -671,7 +271,7 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
       )}
 
       {/* Variable Selection Layout */}
-      {selectedProject && availableVariables.length > 0 && !isLoadingVariables && (
+      {selectedProject && variables.length > 0 && !isLoadingVariables && (
         <VariableSelection
           classes={classes}
           requireX={requireX}
@@ -688,19 +288,19 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
           yVariableList={yVariableList}
           selectAllY={selectAllY}
           setSelectAllY={setSelectAllY}
-          setYVariableList={setYVariableList}
+          setYVariableList={variableManagement.setYVariableList}
           xVariableList={xVariableList}
           selectAllX={selectAllX}
           setSelectAllX={setSelectAllX}
-          setXVariableList={setXVariableList}
+          setXVariableList={variableManagement.setXVariableList}
           errorBarVariableList={errorBarVariableList}
           selectAllErrorBar={selectAllErrorBar}
           setSelectAllErrorBar={setSelectAllErrorBar}
-          setErrorBarVariableList={setErrorBarVariableList}
+          setErrorBarVariableList={variableManagement.setErrorBarVariableList}
           categoryVariableList={categoryVariableList}
           selectAllCategory={selectAllCategory}
           setSelectAllCategory={setSelectAllCategory}
-          setCategoryVariableList={setCategoryVariableList}
+          setCategoryVariableList={variableManagement.setCategoryVariableList}
           handleSendToX={handleSendToX}
           handleSendToY={handleSendToY}
           handleSendToErrorBar={handleSendToErrorBar}
@@ -709,14 +309,14 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
           handleRemoveFromY={handleRemoveFromY}
           handleRemoveFromErrorBar={handleRemoveFromErrorBar}
           handleRemoveFromCategory={handleRemoveFromCategory}
-          canSendToX={canSendToX}
-          canSendToY={canSendToY}
-          canSendToErrorBar={canSendToErrorBar}
-          canSendToCategory={canSendToCategory}
+          canSendToX={canSendX}
+          canSendToY={canSendY}
+          canSendToErrorBar={canSendErrorBar}
+          canSendToCategory={canSendCategory}
+          xCount={xCount}
+          yCount={yCount}
         />
       )}
     </div>
   );
 };
-
-// variable list moved to VariableList.tsx

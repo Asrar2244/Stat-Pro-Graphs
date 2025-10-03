@@ -9,7 +9,7 @@ interface IHistoryListRender {
   graphType: string;
   modifiedDateTime: string;
   config: any;
-  selectedRun: (id: number, title: string) => void;
+  selectedRun: (id: number, title: string, subTitle?: string) => void;
   selectedID: number;
 }
 
@@ -31,7 +31,8 @@ const HistoryListRenderComponent: FC<IHistoryListRender> = ({
 
   const handleClick = () => {
     const title = displayTitle;
-    selectedRun(id, title);
+    const subTitle = config?.graphConfig?.subType || config?.graphConfig?.dataFormat;
+    selectedRun(id, title, subTitle);
   };
 
   return (

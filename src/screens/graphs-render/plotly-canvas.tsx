@@ -1,9 +1,8 @@
-import { FC, useEffect, useRef } from 'react';
+import { FC, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { usePlotly } from '@hooks/plotly';
 import { Database } from '@utils';
 import { ensureGraphFolderAndSave } from './plotly-save';
 import { EXCEL } from '@constants';
-import { useStartProStore } from '@store/main-store';
 
 // Import utility modules
 import { getLegendConfig, getTitleText, getAxisConfig, getAnnotations } from './utils/layoutConfig';
@@ -12,60 +11,60 @@ import { createScatterTrace, createRegressionTracesIfNeeded, createDotPlotDotted
 import { processDataByFormat } from './utils/dataProcessing';
 import { assessDataQuality } from './utils/dataValidation';
 import { optimizeDataForPerformance, measurePerformance, optimizeTraceForLargeData, getPerformanceRecommendations } from './utils/performanceOptimization';
+import { plotWithCategory } from './utils/categoryScatterPlot';
+import { getPlotProperties, applyScatterProperties, applyRegressionProperties } from './utils/plotProperties';
 
-export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) => {
+export interface GraphCanvasRef {
+  current: HTMLDivElement | null;
+  plotly: any;
+}
+
+export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, workspacePath, liveProps }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const plot = usePlotly({ data: [], layout: { title: graphConfig?.subType || 'Scatter Plot', autosize: true } as any, config: { responsive: true } } as any);
   // Keep last successful plot payload to restore on visibility/resize
   const lastPlotRef = useRef<{ data: any[]; layout: any; config: any } | null>(null);
-  const { setRenderLatestRun } = useStartProStore();
+
+  // Expose the container ref and plotly instance to parent components
+  useImperativeHandle(ref, () => ({
+    current: containerRef.current,
+    plotly: plot
+  }), [plot]);
 
   // Build data arrays from project DB based on selected variables
   useEffect(() => {
     const run = async () => {
-      console.log('🔍 GraphCanvas useEffect triggered');
-      console.log('graphConfig:', graphConfig);
-      console.log('workspacePath:', workspacePath);
-      
       if (!graphConfig?.selectedProject || !graphConfig?.variables) {
-        console.log('❌ Missing graphConfig.selectedProject or graphConfig.variables');
         return;
       }
-      
-      console.log('✅ Graph config validation passed');
-      console.log('selectedProject:', graphConfig.selectedProject);
-      console.log('variables:', graphConfig.variables);
       
       const db = new Database(workspacePath || graphConfig.selectedProject);
       const cols = [...(graphConfig.variables?.x || []), ...(graphConfig.variables?.y || []), ...(graphConfig.variables?.category || [])];
       
-      // Add error bar variable if needed
+      // Add error bar variables if needed
+      const errorBarVars = graphConfig.variables?.errorBar || [];
+      errorBarVars.forEach((errorBarVar: string) => {
+        if (!cols.includes(errorBarVar)) {
+          cols.push(errorBarVar);
+        }
+      });
+      
+      // Legacy support: add single errorBarVariable if it exists and not already added
       if (graphConfig?.errorBarVariable && !cols.includes(graphConfig.errorBarVariable)) {
         cols.push(graphConfig.errorBarVariable);
-        console.log('🔍 Added error bar variable to columns:', graphConfig.errorBarVariable);
       }
       
       if (cols.length === 0) {
-        console.log('❌ No columns selected');
         return;
       }
-      
-      console.log('✅ Columns to fetch:', cols);
       const colList = cols.map((c: string) => `"${c}"`).join(',');
       const rows = await db.selectQuery(`SELECT ${colList} FROM ${EXCEL};`);
 
-      console.log('✅ Database query completed');
-      console.log('Rows count:', rows.length);
-      console.log('First few rows:', rows.slice(0, 3));
-      console.log('🔍 Error bar variable in data:', graphConfig?.errorBarVariable, 'Sample values:', rows.slice(0, 3).map((row: any) => row[graphConfig?.errorBarVariable || '']));
 
       // Selected columns by role
       const xNames = (graphConfig.variables?.x as string[]) || [];
       const yNames = (graphConfig.variables?.y as string[]) || [];
       const categoryNames = (graphConfig.variables?.category as string[]) || [];
-      console.log('xNames:', xNames);
-      console.log('yNames:', yNames);
-      console.log('categoryNames:', categoryNames);
 
       // Plotly traces accumulator
       const traces: any[] = [];
@@ -74,6 +73,9 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
       const seriesConfig = getSeriesConfig();
       const getSeriesColor = (i: number) => seriesConfig.colors[i % seriesConfig.colors.length];
       const getSeriesSymbol = (i: number) => seriesConfig.symbols[i % seriesConfig.symbols.length];
+
+      // Get plot properties for live customization
+      const plotProperties = getPlotProperties(liveProps);
 
       let seriesIndex = 0;
       
@@ -117,10 +119,8 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
             await updateGraphRunConfig(workspacePath, currentRunId, { 
               graphConfig: { ...graphConfig, legendLabels } 
             });
-            console.log('💾 Saved legend labels to database:', legendLabels);
           }
         } catch (error) {
-          console.warn('⚠️ Failed to save legend labels to database:', error);
         }
       }
 
@@ -134,17 +134,8 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
         });
         
         if (!qualityReport.isValid) {
-          console.warn(`⚠️ Data quality issues for series "${label}":`, qualityReport.warnings);
-          console.info(`💡 Recommendations:`, qualityReport.recommendations);
+          // Data quality issues detected - handled silently
         }
-        
-        // Log data quality summary
-        console.log(`📊 Data Quality Report for "${label}":`, {
-          sampleSize: xv.length,
-          outliers: qualityReport.outliers.length,
-          missingValues: qualityReport.missingValues.length,
-          isValid: qualityReport.isValid
-        });
       });
 
       // Helper: axis transforms for special scales
@@ -215,11 +206,39 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
       };
       const transformArrayForScale = (arr: number[], scale?: string) => (Array.isArray(arr) ? arr.map((v) => transformAxisValue(v as any, scale)) : arr);
 
+      // Check if this is a category-based plot and handle differently
+      const isCategoryPlot = categoryNames && categoryNames.length > 0;
+      const isCategoryFormat = normalizedFormat?.toLowerCase().includes('category');
+      let categoryPlotResult: any = null;
+      
+      if (isCategoryPlot && isCategoryFormat) {
+        
+        // For XY Category format, use the specialized category plot utility
+        if (normalizedFormat === 'XY Category') {
+          categoryPlotResult = plotWithCategory({
+            rows,
+            xCol: xNames?.[0],
+            yCol: yNames?.[0],
+            categoryCol: categoryNames?.[0],
+            subType: graphConfig?.subType || 'Scatter Plot',
+            liveProps
+          });
+          
+          // Add category traces
+          traces.push(...categoryPlotResult.traces);
+        } else {
+          // For X Category and Y Category formats, use standard scatter with category styling
+          // The processedSeries already contains the correct data with category grouping
+        }
+      }
+
       // Create traces for each series with performance optimization
-      processedSeries.forEach(({ xv, yv, label }) => {
+      // Skip this only if we already have category traces from XY Category format
+      // X Category and Y Category formats need standard processing for regression lines
+      if (!(isCategoryPlot && isCategoryFormat && normalizedFormat === 'XY Category')) {
+        processedSeries.forEach(({ xv, yv, label, errorBarVariable }) => {
         const startTime = performance.now();
         
-        console.log(`🔍 Processing series "${label}" with ${xv.length} points`);
         
         // Optimize data for large datasets with better configuration for very large datasets
         const optimizedData = optimizeDataForPerformance(xv, yv, {
@@ -230,38 +249,15 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
           samplingThreshold: 5000,
           decimationFactor: 2,
           performanceWarningThreshold: 50000
-        });
+        }, errorBarVariable);
         
-        console.log(`✅ Optimization result for "${label}":`, {
-          original: optimizedData.originalLength,
-          optimized: optimizedData.optimizedLength,
-          method: optimizedData.optimizationMethod,
-          reduction: `${((1 - optimizedData.optimizedLength / optimizedData.originalLength) * 100).toFixed(1)}%`
-        });
         
         // Log performance metrics
         const processingTime = performance.now() - startTime;
         const performanceMetrics = measurePerformance(optimizedData.originalLength, processingTime);
         
-        console.log(`📊 Performance Metrics for "${label}":`, {
-          originalSize: optimizedData.originalLength,
-          optimizedSize: optimizedData.optimizedLength,
-          optimizationMethod: optimizedData.optimizationMethod,
-          processingTime: `${processingTime.toFixed(2)}ms`,
-          performanceScore: performanceMetrics.performanceScore,
-          optimizationApplied: performanceMetrics.optimizationApplied
-        });
         
-        // Show performance warnings
-        if (optimizedData.performanceWarning) {
-          console.warn(`⚠️ Performance Warning for "${label}":`, optimizedData.performanceWarning);
-        }
-        
-        // Show performance recommendations
-        const recommendations = getPerformanceRecommendations(optimizedData.originalLength);
-        if (recommendations.length > 0) {
-          console.info(`💡 Performance Recommendations for "${label}":`, recommendations);
-        }
+        // Performance warnings and recommendations handled silently
         
         // Per-series color override: legendSeriesColors[label] > plot-specific color > global seriesColor
         const perSeriesColor = liveProps?.global?.legendSeriesColors?.[label];
@@ -289,18 +285,34 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
             symbolValue: graphConfig?.symbolValue,
             errorCalculationUpper: graphConfig?.errorCalculationUpper,
             errorCalculationLower: graphConfig?.errorCalculationLower,
-            errorBarVariable: graphConfig?.errorBarVariable,
-            errorBarData: undefined, // Will be calculated in createScatterTrace
+            errorBarVariable: optimizedData.errorBarVariable || graphConfig?.errorBarVariable, // Use series-specific error bar variable
+            errorBarData: optimizedData.errorBarVariable ? (() => {
+              const errorData = rows.map((row: any) => {
+                const value = row[optimizedData.errorBarVariable];
+                return typeof value === 'number' ? value : parseFloat(value) || 0;
+              });
+              console.log('🔍 Error Bar Data Calculated:', {
+                errorBarVariable: optimizedData.errorBarVariable,
+                dataLength: errorData.length,
+                sampleData: errorData.slice(0, 3)
+              });
+              return errorData;
+            })() : undefined, // Calculate error bar data from rows
             rows
           });
           
           // Optimize trace for large datasets
           const optimizedTrace = optimizeTraceForLargeData(scatterTrace, optimizedData.originalLength);
-          traces.push(optimizedTrace);
           
-          console.log(`✅ Successfully created trace for "${label}" with ${optimizedTrace.x?.length || optimizedTrace.xv?.length || 0} points`);
+          // Apply plot-specific scatter properties
+          const finalTrace = plotProperties.scatter ? applyScatterProperties(
+            optimizedTrace, 
+            plotProperties.scatter!
+          ) : optimizedTrace;
+          
+          traces.push(finalTrace);
+          
         } catch (error) {
-          console.error(`❌ Error creating trace for "${label}":`, error);
           // Create a fallback trace with minimal data
           const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
           const fallbackTrace = {
@@ -318,17 +330,26 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
         // Add regression traces if needed (use optimized data for better performance)
         try {
           const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
+          const subType = graphConfig?.subType || '';
+          
           const regressionTraces = createRegressionTracesIfNeeded(
             tx as any,
             ty as any,
             customLabel, 
             // Use same per-series override for regression line if not explicitly set
             (liveProps?.plotSpecific?.regression?.lineColor) || perSeriesColor || color, 
-            graphConfig?.subType || ''
+            subType
           );
-          traces.push(...regressionTraces);
+          
+          if (regressionTraces.length > 0) {
+            
+            // Apply plot-specific regression properties
+            const finalRegressionTraces = plotProperties.regression ? regressionTraces.map(trace => 
+              applyRegressionProperties(trace, plotProperties.regression!)
+            ) : regressionTraces;
+            traces.push(...finalRegressionTraces);
+          }
         } catch (error) {
-          console.warn(`⚠️ Error creating regression traces for "${label}":`, error);
         }
         
         // Add dotted lines for dot plots (limit for large datasets)
@@ -343,22 +364,17 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
               );
           traces.push(...dottedLines);
         } catch (error) {
-          console.warn(`⚠️ Error creating dotted lines for "${label}":`, error);
         }
         
         seriesIndex += 1;
       });
+      }
 
       // Check if we have any traces to plot
       if (traces.length === 0) {
-        console.error('❌ No traces created - cannot plot graph');
         return;
       }
       
-      console.log(`📊 Total traces created: ${traces.length}`);
-      traces.forEach((trace, index) => {
-        console.log(`  Trace ${index + 1}: ${trace.name || 'Unnamed'} - ${trace.x?.length || trace.xv?.length || 0} points`);
-      });
 
       // Create layout based on sub-type
       const subType = graphConfig?.subType || '';
@@ -409,19 +425,6 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
       const inchToPx = (inch: number) => Math.max(0, Math.round(inch * 96));
       const gridOpacity = Math.max(0, Math.min(1, 1 - (liveProps?.global?.gridTransparencyPct || 0) / 100));
       
-      // Debug break properties
-      console.log('🔍 Break Properties Debug:', {
-        showBreak: liveProps?.global?.showBreak,
-        omitRangeStart: liveProps?.global?.omitRangeStart,
-        omitRangeEnd: liveProps?.global?.omitRangeEnd,
-        breakPosition: liveProps?.global?.breakPosition,
-        gapWidth: liveProps?.global?.gapWidth,
-        breakSymbol: liveProps?.global?.breakSymbol,
-        breakLength: liveProps?.global?.breakLength,
-        breakThickness: liveProps?.global?.breakThickness,
-        breakColor: liveProps?.global?.breakColor,
-        breakTransparency: liveProps?.global?.breakTransparency
-      });
       const hexToRgba = (hex?: string, alpha?: number) => {
         if (!hex) return undefined as any;
         const h = hex.replace('#', '');
@@ -567,11 +570,6 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
             typeof liveProps?.global?.omitRangeStart === 'number' && 
             typeof liveProps?.global?.omitRangeEnd === 'number' 
             ? (() => {
-                console.log('🔍 Applying X-axis break:', {
-                  showBreak: liveProps?.global?.showBreak,
-                  omitRangeStart: liveProps?.global?.omitRangeStart,
-                  omitRangeEnd: liveProps?.global?.omitRangeEnd
-                });
                 return {
                   rangebreaks: [{
                     bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
@@ -667,11 +665,6 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
             typeof liveProps?.global?.omitRangeStart === 'number' && 
             typeof liveProps?.global?.omitRangeEnd === 'number' 
             ? (() => {
-                console.log('🔍 Applying Y-axis break:', {
-                  showBreak: liveProps?.global?.showBreak,
-                  omitRangeStart: liveProps?.global?.omitRangeStart,
-                  omitRangeEnd: liveProps?.global?.omitRangeEnd
-                });
                 return {
                   rangebreaks: [{
                     bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
@@ -728,6 +721,17 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
         }
       };
 
+      // For category plots, merge category-specific axis settings
+      if (isCategoryPlot && isCategoryFormat && categoryPlotResult) {
+        // Merge category-specific axis settings while preserving all the comprehensive settings
+        if (categoryPlotResult.layout.xaxis) {
+          layout.xaxis = { ...layout.xaxis, ...categoryPlotResult.layout.xaxis };
+        }
+        if (categoryPlotResult.layout.yaxis) {
+          layout.yaxis = { ...layout.yaxis, ...categoryPlotResult.layout.yaxis };
+        }
+      }
+
       // Add annotations if needed
       const annotations = getAnnotations(subType);
       if (annotations.length > 0) {
@@ -737,10 +741,6 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
       const allowDragResize = (liveProps?.global?.legendAllowDragResize ?? true) && !(liveProps?.global?.legendLock);
       const config = { responsive: true, edits: { legendPosition: allowDragResize, titleText: true, axisTitleText: true } } as any;
       
-      console.log('🎯 Final plotting data:');
-      console.log('Traces count:', traces.length);
-      console.log('Traces:', traces);
-      console.log('Layout:', layout);
       
       if (containerRef.current) {
         (plot as any).graph.current = containerRef.current;
@@ -836,17 +836,24 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
             root.addEventListener('contextmenu', onContextMenu, true);
           }
         } catch {}
-        console.log('✅ Plot redraw completed');
       } else {
-        console.log('❌ Container ref not available');
-        // Retry shortly if ref isn't attached yet (e.g., first paint race)
-        setTimeout(() => {
-          const div = containerRef.current;
-          if (div && lastPlotRef.current) {
-            (plot as any).graph.current = div;
-            plot.redraw(lastPlotRef.current as any);
+        // Retry with exponential backoff
+        let retryCount = 0;
+        const maxRetries = 10;
+        const retry = () => {
+          if (retryCount < maxRetries && !containerRef.current) {
+            retryCount++;
+            setTimeout(() => {
+              if (containerRef.current && lastPlotRef.current) {
+                (plot as any).graph.current = containerRef.current;
+                plot.redraw(lastPlotRef.current as any);
+              } else {
+                retry();
+              }
+            }, 100 * retryCount); // Exponential backoff
           }
-        }, 50);
+        };
+        retry();
       }
 
       // Save plot payload best-effort to filesystem (DB is the source of truth)
@@ -894,4 +901,4 @@ export const GraphCanvas: FC<any> = ({ graphConfig, workspacePath, liveProps }) 
   }, [plot]);
 
   return <div style={{ width: '100%', height: '100%', minHeight: 400 }} ref={containerRef} />;
-};
+});

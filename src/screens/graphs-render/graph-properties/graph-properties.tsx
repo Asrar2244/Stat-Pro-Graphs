@@ -1,4 +1,4 @@
-import { FC, ReactNode, memo, useEffect, useRef, useState } from 'react';
+import { FC, memo, useEffect, useRef, useState } from 'react';
 import {
   Button,
   Text,
@@ -11,21 +11,20 @@ import {
   Input,
   Slider,
   Switch,
-  Label,
   Card,
   CardHeader,
-  CardPreview,
   Accordion,
   AccordionItem,
   AccordionHeader,
   AccordionPanel,
 } from '@fluentui/react-components';
 
-import { useTranslation } from 'react-i18next';
 import { useGraphPropertiesClasses } from '../styles-hook/use-graph-properties-style';
 import { IoCloseOutline } from 'react-icons/io5';
-import { MdSettings, MdPalette, MdTune, MdVisibility, MdExpandMore, MdExpandLess, MdScatterPlot, MdError, MdTrendingUp } from 'react-icons/md';
+import { MdSettings, MdPalette, MdVisibility, MdScatterPlot, MdError, MdTrendingUp } from 'react-icons/md';
 import { GraphProperties as GraphPropertiesType, GlobalGraphProperties, PlotSpecificProperties } from '../hooks/use-tools';
+import { DataFormatPropertiesPanel } from '../components/DataFormatPropertiesPanel';
+import { DataFormatProperties, createDataFormatProperties, getSeriesLabels } from '../utils/dataFormatProperties';
 
 interface IGraphProperties {
   showGraphProperties: boolean;
@@ -37,26 +36,52 @@ interface IGraphProperties {
   updateLegendTextEntry: (originalLabel: string, newText: string) => void;
   updateLegendSeriesColor: (label: string, color: string) => void;
   getCurrentPlotType: (subType?: string) => keyof PlotSpecificProperties | null;
+  getDetectedPlotFeatures: (subType?: string) => {
+    hasScatter: boolean;
+    hasRegression: boolean;
+    hasErrorBars: boolean;
+    hasPointPlot: boolean;
+    hasDotPlot: boolean;
+  };
   currentSubType?: string;
   currentLegendLabels?: string[]; // Current legend labels from the graph
+  currentDataFormat?: string; // Current data format
+  currentVariables?: { xNames: string[]; yNames: string[]; categoryNames: string[] }; // Current variables
 }
 
 const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
   properties,
 }) => {
   const classes = useGraphPropertiesClasses();
-  const { t } = useTranslation('graphProperties');
-  const { graphProperties, resetAllProperties, updateGraphProperty, updatePlotSpecificProperty, updateLegendTextEntry, updateLegendSeriesColor, getCurrentPlotType, currentSubType, currentLegendLabels } = properties;
+  const { graphProperties, resetAllProperties, updateGraphProperty, updatePlotSpecificProperty, updateLegendTextEntry, updateLegendSeriesColor, getCurrentPlotType, getDetectedPlotFeatures, currentSubType, currentLegendLabels, currentDataFormat, currentVariables } = properties;
   
   const currentPlotType = getCurrentPlotType(currentSubType);
+  const detectedFeatures = getDetectedPlotFeatures(currentSubType);
   const globalProps = graphProperties.global;
   const gridDisabled = !globalProps.showGridLines;
   const plotProps = graphProperties.plotSpecific;
+  
 
   const [drawerWidth, setDrawerWidth] = useState<number>(560);
   const isDraggingRef = useRef(false);
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
+  
+  // Data format properties state
+  const [dataFormatProperties, setDataFormatProperties] = useState<DataFormatProperties | null>(null);
+  
+  // Create series labels based on current data format and variables
+  const seriesLabels = currentDataFormat && currentVariables ? 
+    getSeriesLabels(currentDataFormat, currentVariables.xNames, currentVariables.yNames, currentVariables.categoryNames) : 
+    [];
+  
+  // Initialize data format properties when data format or variables change
+  useEffect(() => {
+    if (currentDataFormat && currentVariables && seriesLabels.length > 0) {
+      const newProperties = createDataFormatProperties(currentDataFormat, seriesLabels);
+      setDataFormatProperties(newProperties);
+    }
+  }, [currentDataFormat, currentVariables, seriesLabels.join(',')]);
   const minWidth = 320;
   const maxWidth = 900;
 
@@ -481,9 +506,33 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
               </AccordionPanel>
             </AccordionItem>
 
+            {/* Data Format Properties Section */}
+            {dataFormatProperties && (
+              <AccordionItem value="dataFormatProperties">
+                <AccordionHeader>
+                  <div className={classes.accordionHeader}>
+                    <MdPalette size={20} />
+                    <Text weight="semibold">Data Format Properties</Text>
+                    <Text size={200} style={{ marginLeft: 'auto', color: 'rgba(0,0,0,0.6)' }}>
+                      ({currentDataFormat})
+                    </Text>
+                  </div>
+                </AccordionHeader>
+                <AccordionPanel>
+                  <div className={classes.propertyContent}>
+                    <DataFormatPropertiesPanel
+                      properties={dataFormatProperties}
+                      onPropertiesChange={setDataFormatProperties}
+                      dataFormat={currentDataFormat || ''}
+                      seriesLabels={seriesLabels}
+                    />
+                  </div>
+                </AccordionPanel>
+              </AccordionItem>
+            )}
+
             {/* Plot-Specific Properties Section */}
-            {currentPlotType && (
-              <AccordionItem value="plotSpecific">
+            <AccordionItem value="plotSpecific">
                 <AccordionHeader>
                   <div className={classes.accordionHeader}>
                     {currentPlotType === 'scatter' && <MdScatterPlot size={20} />}
@@ -497,6 +546,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                       {currentPlotType === 'pointPlot' && 'Point Plot Properties'}
                       {currentPlotType === 'dotPlot' && 'Dot Plot Properties'}
                       {currentPlotType === 'regression' && 'Regression Properties'}
+                      {!currentPlotType && 'Plot Properties'}
                     </Text>
                     <Text size={200} style={{ marginLeft: 'auto', color: 'rgba(0,0,0,0.6)' }}>
                       (Current plot only)
@@ -506,8 +556,13 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                 <AccordionPanel>
                   <div className={classes.propertyContent}>
                     {/* Scatter Plot Properties */}
-                    {currentPlotType === 'scatter' && plotProps.scatter && (
+                    {(detectedFeatures.hasScatter || currentPlotType === 'scatter') && plotProps.scatter && (
                       <>
+                        <Card style={{ marginBottom: '16px' }}>
+                          <CardHeader>
+                            <Text weight="semibold">Scatter Points</Text>
+                          </CardHeader>
+                          <div style={{ padding: '12px' }}>
                         <Field label={`Point Size: ${plotProps.scatter.pointSize}`}>
                           <Slider 
                             min={1} 
@@ -550,11 +605,13 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                             style={{ width: '100%', height: 40, border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
                           />
                         </Field>
+                          </div>
+                        </Card>
                       </>
                     )}
 
                     {/* Error Bar Properties */}
-                    {currentPlotType === 'errorBar' && plotProps.errorBar && (
+                    {(detectedFeatures.hasErrorBars || currentPlotType === 'errorBar') && plotProps.errorBar && (
                       <>
                         <Field label={`Error Bar Thickness: ${plotProps.errorBar.errorBarThickness}`}>
                           <Slider 
@@ -604,7 +661,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                     )}
 
                     {/* Point Plot Properties */}
-                    {currentPlotType === 'pointPlot' && plotProps.pointPlot && (
+                    {(detectedFeatures.hasPointPlot || currentPlotType === 'pointPlot') && plotProps.pointPlot && (
                       <>
                         <Field label={`Point Size: ${plotProps.pointPlot.pointSize}`}>
                           <Slider 
@@ -653,7 +710,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                     )}
 
                     {/* Dot Plot Properties */}
-                    {currentPlotType === 'dotPlot' && plotProps.dotPlot && (
+                    {(detectedFeatures.hasDotPlot || currentPlotType === 'dotPlot') && plotProps.dotPlot && (
                       <>
                         <Field label={`Dot Size: ${plotProps.dotPlot.dotSize}`}>
                           <Slider 
@@ -712,8 +769,13 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                     )}
 
                     {/* Regression Properties */}
-                    {currentPlotType === 'regression' && plotProps.regression && (
+                    {(detectedFeatures.hasRegression || currentPlotType === 'regression') && plotProps.regression && (
                       <>
+                        <Card style={{ marginBottom: '16px' }}>
+                          <CardHeader>
+                            <Text weight="semibold">Regression Lines</Text>
+                          </CardHeader>
+                          <div style={{ padding: '12px' }}>
                         <Field label={`Line Width: ${plotProps.regression.lineWidth}`}>
                           <Slider 
                             min={1} 
@@ -758,12 +820,22 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                             onChange={(_, data) => updatePlotSpecificProperty('regression', 'confidenceIntervalOpacity', data.value)}
                           />
                         </Field>
+                          </div>
+                        </Card>
                       </>
+                    )}
+                    
+                    {/* Fallback when no specific plot type is detected */}
+                    {!currentPlotType && (
+                      <div style={{ padding: '16px', textAlign: 'center', color: 'rgba(0,0,0,0.6)' }}>
+                        <Text>No specific plot type detected.</Text>
+                        <Text size={200}>Current subType: {currentSubType || 'None'}</Text>
+                        <Text size={200}>Plot properties will be available when a specific plot type is detected.</Text>
+                      </div>
                     )}
                   </div>
                 </AccordionPanel>
               </AccordionItem>
-            )}
 
             {/* Grid Settings */}
             <AccordionItem value="gridSettings">

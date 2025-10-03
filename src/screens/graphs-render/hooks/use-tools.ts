@@ -433,17 +433,53 @@ export const useTools = () => {
 
   // Get current plot type based on subType
   const getCurrentPlotType = (subType?: string): keyof PlotSpecificProperties | null => {
-    if (!subType) return null;
+    if (!subType) {
+      return null;
+    }
     
     const subTypeLower = subType.toLowerCase();
     
-    if (subTypeLower.includes('scatter')) return 'scatter';
-    if (subTypeLower.includes('error bar')) return 'errorBar';
-    if (subTypeLower.includes('point plot')) return 'pointPlot';
-    if (subTypeLower.includes('dot plot')) return 'dotPlot';
-    if (subTypeLower.includes('regression')) return 'regression';
+    // Priority order: regression first, then others
+    if (subTypeLower.includes('regression') || subTypeLower.includes('fit')) {
+      return 'regression';
+    }
+    if (subTypeLower.includes('error') || subTypeLower.includes('bar')) {
+      return 'errorBar';
+    }
+    if (subTypeLower.includes('point')) {
+      return 'pointPlot';
+    }
+    if (subTypeLower.includes('dot')) {
+      return 'dotPlot';
+    }
+    if (subTypeLower.includes('scatter') || subTypeLower.includes('xy')) {
+      return 'scatter';
+    }
     
-    return null;
+    // Default to scatter for most plot types
+    return 'scatter';
+  };
+
+  // Get detected plot features from subType
+  const getDetectedPlotFeatures = (subType?: string): {
+    hasScatter: boolean;
+    hasRegression: boolean;
+    hasErrorBars: boolean;
+    hasPointPlot: boolean;
+    hasDotPlot: boolean;
+  } => {
+    if (!subType) {
+      return { hasScatter: false, hasRegression: false, hasErrorBars: false, hasPointPlot: false, hasDotPlot: false };
+    }
+    
+    const subTypeLower = subType.toLowerCase();
+    return {
+      hasScatter: subTypeLower.includes('scatter') || subTypeLower.includes('xy'),
+      hasRegression: subTypeLower.includes('regression') || subTypeLower.includes('fit'),
+      hasErrorBars: subTypeLower.includes('error') || subTypeLower.includes('bar'),
+      hasPointPlot: subTypeLower.includes('point'),
+      hasDotPlot: subTypeLower.includes('dot')
+    };
   };
 
   return {
@@ -466,6 +502,7 @@ export const useTools = () => {
     updateLegendTextEntry,
     updateLegendSeriesColor,
     getCurrentPlotType,
+    getDetectedPlotFeatures,
     setTotalRuns,
   };
 };

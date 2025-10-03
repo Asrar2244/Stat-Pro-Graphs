@@ -1,11 +1,23 @@
-import React, { FC, useMemo } from 'react';
+import { FC, useMemo } from 'react';
 import { Modal } from '@libs';
 import { ScatterPlotForm } from './ScatterPlotForm';
 import { useScatterPlotStore } from './scatterPlotSlice';
 import { IModal } from '@hooks';
-import { tokens } from '@fluentui/react-components';
+import { useScatterPlotModalStyles } from './styles-hook/use-scatter-plot-modal-styles';
 
-export const ScatterPlotModal: FC<IModal & { projects: string[]; datasets: string[]; onCreateGraph: (config: any) => void; }> = ({ 
+/**
+ * Props for the ScatterPlotModal component
+ */
+interface ScatterPlotModalProps extends IModal {
+  projects: string[];
+  datasets: string[];
+  onCreateGraph: (config: any) => void;
+}
+
+/**
+ * Modal component for configuring and creating scatter plots
+ */
+export const ScatterPlotModal: FC<ScatterPlotModalProps> = ({ 
   projects, 
   datasets, 
   onCreateGraph, 
@@ -22,6 +34,8 @@ export const ScatterPlotModal: FC<IModal & { projects: string[]; datasets: strin
     selectedXVariable,
     selectedYVariable,
   } = useScatterPlotStore();
+
+  const { modalContentStyles } = useScatterPlotModalStyles();
 
   // Determine if error bar variables are required (for variable selection column)
   const isErrorBarSubType = (subType: string): boolean => {
@@ -49,20 +63,26 @@ export const ScatterPlotModal: FC<IModal & { projects: string[]; datasets: strin
     // Prefer explicit selections; fall back to graphConfig.variables if provided by the form
     const gx = (graphConfig as any)?.variables?.x as string[] | undefined;
     const gy = (graphConfig as any)?.variables?.y as string[] | undefined;
+    const gCategory = (graphConfig as any)?.variables?.category as string[] | undefined;
+    const gErrorBar = (graphConfig as any)?.variables?.errorBar as string[] | undefined;
+    
     const xVars: string[] = selectedXVariable ? [selectedXVariable] : (Array.isArray(gx) ? gx : []);
     const yVars: string[] = selectedYVariable ? [selectedYVariable] : (Array.isArray(gy) ? gy : []);
+    const categoryVars: string[] = Array.isArray(gCategory) ? gCategory : [];
+    const errorBarVars: string[] = Array.isArray(gErrorBar) ? gErrorBar : [];
+
 
     // Basic validation to avoid surprises
     if (dataFormat === 'Single X' && xVars.length === 0 && yVars.length === 0) {
-      console.warn('[Scatter] Single X requires at least X or Y. No variables selected.');
+      // No variables selected for Single X format
       return;
     }
     if (dataFormat === 'Single Y' && xVars.length === 0 && yVars.length === 0) {
-      console.warn('[Scatter] Single Y requires at least X or Y. No variables selected.');
+      // No variables selected for Single Y format
       return;
     }
 
-    // Normalize intent so renderer doesn’t guess
+    // Normalize intent so renderer doesn't guess
     let normalizedFormat = dataFormat;
     // If user picked a single variable but placed it on the wrong side, coerce to the intended axis
     if (normalizedFormat === 'Single X' && xVars.length === 0 && yVars.length === 1) {
@@ -92,7 +112,12 @@ export const ScatterPlotModal: FC<IModal & { projects: string[]; datasets: strin
       subType, 
       selectedProject, 
       dataFormat: normalizedFormat,
-      variables: { x: xVars, y: yVars }
+      variables: { 
+        x: xVars, 
+        y: yVars,
+        category: categoryVars,
+        errorBar: errorBarVars
+      }
     };
     
     setGraphConfig(config);
@@ -112,13 +137,7 @@ export const ScatterPlotModal: FC<IModal & { projects: string[]; datasets: strin
       ok={{ onClick: onCreate }}
       modalType="non-modal"
     >
-      <div style={{ 
-        maxHeight: '80vh',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: tokens.spacingVerticalS,
-        overflowY: 'auto'
-      }}>
+      <div style={modalContentStyles}>
         <ScatterPlotForm projects={projects} datasets={datasets} />
       </div>
     </Modal>

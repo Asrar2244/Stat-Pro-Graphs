@@ -1,8 +1,12 @@
-import React, { FC, ReactNode } from 'react';
+import { FC } from 'react';
 import { Button, Text, tokens } from '@fluentui/react-components';
-import { MdCheckCircle, MdInfoOutline, MdOutlineRemove, MdKeyboardDoubleArrowLeft, MdKeyboardDoubleArrowRight, MdTrendingDown, MdTrendingUp } from 'react-icons/md';
+import { MdCheckCircle, MdInfoOutline, MdOutlineRemove, MdKeyboardDoubleArrowRight, MdTrendingDown, MdTrendingUp } from 'react-icons/md';
+import { getRequiredErrorBarCount } from '../utils/formatRequirements';
 import { useScatterPlotStore } from '../scatterPlotSlice';
 
+/**
+ * Props for the VariableSelection component
+ */
 interface VariableSelectionProps {
   classes: Record<string, string>;
   requireX: boolean;
@@ -44,8 +48,13 @@ interface VariableSelectionProps {
   canSendToY: boolean;
   canSendToErrorBar?: boolean;
   canSendToCategory?: boolean;
+  xCount?: number;
+  yCount?: number;
 }
 
+/**
+ * Component for managing variable selection and assignment to X, Y, error bar, and category axes
+ */
 export const VariableSelection: FC<VariableSelectionProps> = (props) => {
   const {
     classes,
@@ -88,10 +97,15 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
     canSendToY,
     canSendToErrorBar,
     canSendToCategory,
+    xCount = 0,
+    yCount = 0,
   } = props;
 
   // Wire variable assignment to the store so the modal always has X/Y at Create time
   const { setXVariable, setYVariable } = useScatterPlotStore();
+  
+  // Calculate max allowed error bars based on data format and X/Y counts
+  const maxErrorBars = getRequiredErrorBarCount(xCount, yCount, dataFormat);
 
   const pickFirst = (list: Map<string, boolean>): string | undefined => {
     const selected = Array.from(list.entries()).find(([, v]) => v);
@@ -179,14 +193,28 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                   </>
                 )}
                 {(dataFormat === 'Single Y' || dataFormat === 'Many Y' || dataFormat === 'Y Category') && (
-                  <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToY} className={classes.actionBtn} disabled={!canSendToY}>
-                    Send to Y
-                  </Button>
+                  <>
+                    <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToY} className={classes.actionBtn} disabled={!canSendToY}>
+                      Send to Y
+                    </Button>
+                    {requireErrorBar && (
+                      <Button icon={<MdTrendingUp />} onClick={handleSendToErrorBar} className={classes.actionBtn} disabled={!canSendToErrorBar}>
+                        Send to Error Bar
+                      </Button>
+                    )}
+                  </>
                 )}
                 {(dataFormat === 'Single X' || dataFormat === 'Many X' || dataFormat === 'X Category') && (
-                  <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToX} className={classes.actionBtn} disabled={!canSendToX}>
-                    Send to X
-                  </Button>
+                  <>
+                    <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToX} className={classes.actionBtn} disabled={!canSendToX}>
+                      Send to X
+                    </Button>
+                    {requireErrorBar && (
+                      <Button icon={<MdTrendingUp />} onClick={handleSendToErrorBar} className={classes.actionBtn} disabled={!canSendToErrorBar}>
+                        Send to Error Bar
+                      </Button>
+                    )}
+                  </>
                 )}
                 {requireCategory && (dataFormat === 'XY Category' || dataFormat === 'X Category' || dataFormat === 'Y Category' || dataFormat === 'Category Many Y' || dataFormat === 'Category Many X') && (
                   <Button icon={<MdTrendingUp />} onClick={handleSendToCategory} className={classes.actionBtn} disabled={!canSendToCategory}>
@@ -317,7 +345,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                 setList={setErrorBarVariableList}
                 listName="errorBarVariableList"
                 selectAllText="Select All"
-                maxSelected={1}
+                maxSelected={maxErrorBars}
               />
             )}
 
@@ -401,6 +429,3 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
     </div>
   );
 };
-
-
-

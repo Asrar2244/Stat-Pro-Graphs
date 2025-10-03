@@ -25,7 +25,7 @@ interface IHistory {
   showHistory: boolean;
   toggleShowHistory: () => void;
   setTotalRuns: (value: number) => void;
-  selectedRun: (id: number, title: string) => void;
+  selectedRun: (id: number, title: string, subTitle?: string) => void;
 }
 
 const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({

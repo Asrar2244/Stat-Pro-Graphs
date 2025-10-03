@@ -3,6 +3,9 @@ import { Field, Dropdown, Option, Text, tokens } from '@fluentui/react-component
 import { MdCheckCircle } from 'react-icons/md';
 import type { DataFormat } from '../scatterPlotSlice';
 
+/**
+ * Props for the DataFormatSection component
+ */
 interface DataFormatSectionProps {
   classes: Record<string, string>;
   dataFormat: DataFormat | null;
@@ -10,6 +13,9 @@ interface DataFormatSectionProps {
   availableFormats: DataFormat[];
 }
 
+/**
+ * Component for selecting data format with descriptions for each format
+ */
 export const DataFormatSection: FC<DataFormatSectionProps> = ({
   classes,
   dataFormat,
@@ -116,5 +122,3 @@ export const DataFormatSection: FC<DataFormatSectionProps> = ({
     </div>
   );
 };
-
-

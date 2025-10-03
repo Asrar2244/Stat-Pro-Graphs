@@ -1,7 +1,15 @@
 import { Field, Combobox, Option } from '@fluentui/react-components';
 import { useGraphPropertyLayout } from '../../styles-hook/use-graph-property';
 import { GraphProperties } from './graph-properties';
-export const GraphProperty = () => {
+import { PlotSpecificProperties } from '../../../graphs-render/utils/plotProperties';
+
+interface GraphPropertyProps {
+  graphConfig?: any;
+  plotProperties?: PlotSpecificProperties;
+  onPlotPropertiesChange?: (properties: PlotSpecificProperties) => void;
+}
+
+export const GraphProperty = ({ graphConfig, plotProperties, onPlotPropertiesChange }: GraphPropertyProps) => {
   const classes = useGraphPropertyLayout();
   return (
     <div className={classes.propsLayout}>
@@ -18,7 +26,11 @@ export const GraphProperty = () => {
         </div>
       </div>
       <div className={classes.propertySelector}>
-        <GraphProperties />
+        <GraphProperties 
+          graphConfig={graphConfig} 
+          plotProperties={plotProperties}
+          onPlotPropertiesChange={onPlotPropertiesChange}
+        />
       </div>
     </div>
   );

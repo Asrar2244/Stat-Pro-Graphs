@@ -88,7 +88,19 @@ export const createScatterTrace = (config: TraceConfig): any => {
   const isErrorBar = subType.toLowerCase().includes('error bar');
   const isVerticalErrorBar = subType.toLowerCase().includes('vertical') && isErrorBar;
   const isHorizontalErrorBar = subType.toLowerCase().includes('horizontal') && isErrorBar;
-  const isAsymmetricErrorBar = subType.toLowerCase().includes('asymmetric') && isErrorBar;
+  const isAsymmetricErrorBar = (subType.toLowerCase().includes('asymmetric') || symbolValue === 'Asymmetric Error Bar') && isErrorBar;
+  
+  // Debug asymmetric error bar detection
+  if (isErrorBar) {
+    console.log('🔍 Error Bar Detection Debug:', {
+      subType,
+      symbolValue,
+      isErrorBar,
+      isAsymmetricErrorBar,
+      containsAsymmetric: subType.toLowerCase().includes('asymmetric'),
+      isAsymmetricSymbolValue: symbolValue === 'Asymmetric Error Bar'
+    });
+  }
   const isBidirectionalErrorBar = subType.toLowerCase().includes('bidirectional') && isErrorBar;
   const isPointPlot = subType.toLowerCase().includes('point plot');
   const isDotPlot = subType.toLowerCase().includes('dot plot');
@@ -109,7 +121,6 @@ export const createScatterTrace = (config: TraceConfig): any => {
     // Get error bar data if needed
     let errorBarDataForCalculation: number[] | undefined;
     if (errorBarVariable) {
-      console.log('📊 Error Bar Variable:', errorBarVariable);
       // For asymmetric error bars, use direct error bar variable data
       if (isAsymmetricErrorBar) {
         errorBarDataForCalculation = rows.map((row: any) => {
@@ -131,6 +142,7 @@ export const createScatterTrace = (config: TraceConfig): any => {
     // Calculate error values based on Symbol Value and Error Calculation options
     const errorValues = calculateErrorValues({
       xv, yv, symbolValue: symbolValue || '', 
+      subType: subType || '',
       errorCalculationUpper, errorCalculationLower, 
       errorBarData: errorBarDataForCalculation
     });
@@ -157,6 +169,11 @@ export const createScatterTrace = (config: TraceConfig): any => {
     if (isVerticalErrorBar || (!isHorizontalErrorBar && !isBidirectionalErrorBar)) {
       // Vertical Error Bars with enhanced styling
       if (isAsymmetricErrorBar) {
+        console.log('🔍 Applying Asymmetric Y Error Bars:', {
+          yUpper: errorValues.yUpper?.slice(0, 3),
+          yLower: errorValues.yLower?.slice(0, 3),
+          symmetric: false
+        });
         traceConfig.error_y = {
           type: 'data',
           symmetric: false,
@@ -191,6 +208,11 @@ export const createScatterTrace = (config: TraceConfig): any => {
     } else if (isHorizontalErrorBar) {
       // Horizontal Error Bars with enhanced styling
       if (isAsymmetricErrorBar) {
+        console.log('🔍 Applying Asymmetric X Error Bars:', {
+          xUpper: errorValues.xUpper?.slice(0, 3),
+          xLower: errorValues.xLower?.slice(0, 3),
+          symmetric: false
+        });
         traceConfig.error_x = {
           type: 'data',
           symmetric: false,
@@ -225,6 +247,13 @@ export const createScatterTrace = (config: TraceConfig): any => {
     } else if (isBidirectionalErrorBar) {
       // Bidirectional Error Bars with enhanced styling
       if (isAsymmetricErrorBar) {
+        console.log('🔍 Applying Asymmetric Bidirectional Error Bars:', {
+          yUpper: errorValues.yUpper?.slice(0, 3),
+          yLower: errorValues.yLower?.slice(0, 3),
+          xUpper: errorValues.xUpper?.slice(0, 3),
+          xLower: errorValues.xLower?.slice(0, 3),
+          symmetric: false
+        });
         traceConfig.error_y = {
           type: 'data',
           symmetric: false,
@@ -435,10 +464,27 @@ export const createRegressionTracesIfNeeded = (
   subType: string
 ): any[] => {
   const isRegression = subType.toLowerCase().includes('regression');
-  if (!isRegression) return [];
+  console.log(`🔍 createRegressionTracesIfNeeded for "${label}":`, {
+    subType,
+    isRegression,
+    dataLength: xv.length,
+    hasValidData: xv.length > 0 && yv.length > 0
+  });
+  
+  if (!isRegression) {
+    console.log(`❌ Not a regression subType: ${subType}`);
+    return [];
+  }
   
   const regressionResult = computeLinearRegression(xv, yv);
-  if (!regressionResult) return [];
+  console.log(`📊 Regression result for "${label}":`, regressionResult ? 'SUCCESS' : 'FAILED');
   
-  return createRegressionTraces(xv, yv, label, color, subType, regressionResult);
+  if (!regressionResult) {
+    console.log(`❌ No regression result for "${label}" - insufficient data or invalid values`);
+    return [];
+  }
+  
+  const traces = createRegressionTraces(xv, yv, label, color, subType, regressionResult);
+  console.log(`✅ Created ${traces.length} regression traces for "${label}"`);
+  return traces;
 };

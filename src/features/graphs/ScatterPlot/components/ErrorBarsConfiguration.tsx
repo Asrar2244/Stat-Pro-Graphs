@@ -1,8 +1,11 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { Dropdown, Field, Option, tokens } from '@fluentui/react-components';
 import { useScatterPlotStore } from '../scatterPlotSlice';
 import type { SymbolValueOption, ErrorCalculationOption } from '../scatterPlotSlice';
 
+/**
+ * Props for the ErrorBarsConfiguration component
+ */
 interface ErrorBarsConfigurationProps {
   errorBarVariableList?: Map<string, boolean>;
   setErrorBarVariableList?: (list: Map<string, boolean>) => void;
@@ -55,6 +58,9 @@ const ERROR_CALCULATION_OPTIONS: ErrorCalculationOption[] = [
   'None'
 ];
 
+/**
+ * Component for configuring error bars in scatter plots
+ */
 export const ErrorBarsConfiguration: FC<ErrorBarsConfigurationProps> = ({ 
   errorBarVariableList, 
   setErrorBarVariableList 
@@ -71,14 +77,11 @@ export const ErrorBarsConfiguration: FC<ErrorBarsConfigurationProps> = ({
     setErrorBarVariable
   } = useScatterPlotStore();
 
-  console.log('🔍 ErrorBarsConfiguration rendered with:', { symbolValue, errorBarVariable, availableVariables: availableVariables.length });
-
   // Determine if error bar variable selection should be shown
   const showErrorBarVariable = false; // Disabled error bar variable dropdown
-  console.log('🔍 showErrorBarVariable:', showErrorBarVariable, 'symbolValue:', symbolValue);
 
   // Determine if error calculation dropdowns should be shown
-  const showErrorCalculation = symbolValue && 
+  const shouldShowErrorCalculation = symbolValue && 
     symbolValue !== 'Worksheet Columns' && 
     symbolValue !== 'Asymmetric Error Bar';
 
@@ -124,14 +127,10 @@ export const ErrorBarsConfiguration: FC<ErrorBarsConfigurationProps> = ({
             value={errorBarVariable}
             selectedOptions={errorBarVariable ? [errorBarVariable] : []}
             onOptionSelect={(_, data) => {
-              if (data.optionValue && setErrorBarVariableList) {
-                // Update both the direct errorBarVariable and the errorBarVariableList
+              if (data.optionValue) {
+                // Only update the direct errorBarVariable (legacy support)
+                // Don't interfere with the errorBarVariableList managed by VariableSelection
                 setErrorBarVariable(data.optionValue);
-                
-                // Update the errorBarVariableList to match
-                const newErrorBarList = new Map<string, boolean>();
-                newErrorBarList.set(data.optionValue, true);
-                setErrorBarVariableList(newErrorBarList);
               }
             }}
           >
@@ -144,7 +143,7 @@ export const ErrorBarsConfiguration: FC<ErrorBarsConfigurationProps> = ({
         </Field>
       )}
 
-      {showErrorCalculation && (
+      {shouldShowErrorCalculation && (
         <>
           <Field label="Error Calculation – Upper" required>
             <Dropdown

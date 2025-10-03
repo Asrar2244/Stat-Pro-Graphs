@@ -1,11 +1,17 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { Text } from '@fluentui/react-components';
 import { MdTrendingUp } from 'react-icons/md';
 
+/**
+ * Props for the ScatterHeader component
+ */
 interface HeaderProps {
   classes: Record<string, string>;
 }
 
+/**
+ * Header component for scatter plot configuration
+ */
 export const ScatterHeader: FC<HeaderProps> = ({ classes }) => {
   return (
     <div className={classes.header}>
@@ -19,11 +25,6 @@ export const ScatterHeader: FC<HeaderProps> = ({ classes }) => {
     </div>
   );
 };
-
-
-
-
-
 
 
 

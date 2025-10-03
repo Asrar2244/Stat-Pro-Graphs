@@ -7,8 +7,32 @@ import {
 } from '@fluentui/react-components';
 import { GraphAddTraces } from './graph-add-traces';
 import { useGraphPropertyLayout } from '../../styles-hook/use-graph-property';
-export const GraphProperties = () => {
+import { PlotPropertiesPanel } from '../../../graphs-render/components/PlotPropertiesPanel';
+import { PlotSpecificProperties, DEFAULT_PLOT_PROPERTIES } from '../../../graphs-render/utils/plotProperties';
+interface GraphPropertiesProps {
+  graphConfig?: any;
+  plotProperties?: PlotSpecificProperties;
+  onPlotPropertiesChange?: (properties: PlotSpecificProperties) => void;
+}
+
+export const GraphProperties = ({ graphConfig, plotProperties, onPlotPropertiesChange }: GraphPropertiesProps) => {
   const classes = useGraphPropertyLayout();
+  
+  // Use passed properties or defaults
+  const currentPlotProperties = plotProperties || DEFAULT_PLOT_PROPERTIES;
+  
+  // Determine properties based on actual graph configuration
+  const hasRegression = graphConfig?.subType?.toLowerCase().includes('regression') || false;
+  const hasErrorBars = graphConfig?.subType?.toLowerCase().includes('error') || false;
+  const isCategoryPlot = graphConfig?.dataFormat?.toLowerCase().includes('category') || false;
+  
+  const handlePlotPropertiesChange = (newProperties: PlotSpecificProperties) => {
+    if (onPlotPropertiesChange) {
+      onPlotPropertiesChange(newProperties);
+    }
+    console.log('🎨 Plot properties updated:', newProperties);
+  };
+
   return (
     <Accordion>
       <AccordionItem value="1">
@@ -22,6 +46,20 @@ export const GraphProperties = () => {
         </AccordionPanel>
       </AccordionItem>
       <AccordionItem value="2">
+        <AccordionHeader className={classes.propertyField}>Plot Properties</AccordionHeader>
+        <AccordionPanel>
+          <div className={classes.propertyBody}>
+            <PlotPropertiesPanel
+              properties={currentPlotProperties}
+              onPropertiesChange={handlePlotPropertiesChange}
+              hasRegression={hasRegression}
+              hasErrorBars={hasErrorBars}
+              isCategoryPlot={isCategoryPlot}
+            />
+          </div>
+        </AccordionPanel>
+      </AccordionItem>
+      <AccordionItem value="3">
         <AccordionHeader className={classes.propertyField}>Traces Overview</AccordionHeader>
         <AccordionPanel>
           <div className={classes.propertyBody}>
@@ -29,7 +67,7 @@ export const GraphProperties = () => {
           </div>
         </AccordionPanel>
       </AccordionItem>
-      <AccordionItem value="3">
+      <AccordionItem value="4">
         <AccordionHeader className={classes.propertyField}>Layout Options</AccordionHeader>
         <AccordionPanel>
           <div className={classes.propertyBody}>

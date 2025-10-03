@@ -1,6 +1,6 @@
-import { FC, useContext, useRef } from 'react';
+import { FC, useContext, useRef, useState, useEffect } from 'react';
 import { GraphsRenderContext } from '../../context';
-import { GraphCanvas } from '../../../graph-view-render/graph-body-render/plotly-canvas';
+import { GraphCanvas, GraphCanvasRef } from '../../plotly-canvas';
 import { Card, CardFooter, CardPreview } from '@fluentui/react-components';
 import { GraphTools } from '@libs/graphs/tools';
 import { useFullScreenHandle } from 'react-full-screen';
@@ -10,18 +10,12 @@ import { useStartProStore } from '@store/main-store';
 export const ScatterPlotGraph: FC = () => {
   const { selectedRun, graphProperties } = useContext(GraphsRenderContext);
   const handle = useFullScreenHandle();
-  const plotlyRef = useRef<any>(null);
+  const plotlyRef = useRef<GraphCanvasRef>(null);
+  const [isPlotlyReady, setIsPlotlyReady] = useState(false);
   const classes = useGraphStyles();
   const { projects } = useStartProStore();
   
-  // Debug logging
-  console.log('🔍 ScatterPlotGraph Debug:');
-  console.log('selectedRun:', selectedRun);
-  console.log('selectedRun?.config:', selectedRun?.config);
-  console.log('selectedRun?.config?.graphConfig:', selectedRun?.config?.graphConfig);
-  
   if (!selectedRun?.config?.graphConfig) {
-    console.log('❌ No graph configuration found');
     return <div>No graph configuration found</div>;
   }
 
@@ -33,11 +27,28 @@ export const ScatterPlotGraph: FC = () => {
     projects?.[selectedRun?.tabName || '']?.workspacePath ||
     '';
   
-  console.log('✅ Graph config found:', graphConfig);
-  console.log('✅ Workspace path:', workspacePath);
 
-  // Create a mock graph object for the tools
-  const mockGraph = {
+  // Monitor when plotly ref becomes available
+  useEffect(() => {
+    const checkPlotlyReady = () => {
+      if (plotlyRef.current?.current && plotlyRef.current?.plotly) {
+        setIsPlotlyReady(true);
+      }
+    };
+
+    // Check immediately
+    checkPlotlyReady();
+
+    // Set up interval to check periodically
+    const interval = setInterval(checkPlotlyReady, 100);
+
+    return () => clearInterval(interval);
+  }, [selectedRun?.id]);
+
+  // Create a proper graph object for the tools
+  const graphObject = {
+    name: graphConfig?.subType || 'Scatter Plot',
+    traces: {} as { [key: string]: any }, // Will be populated by the actual plot
     download: [
       { format: 'png', description: 'pngFormat' },
       { format: 'svg', description: 'svgFormat' },
@@ -49,8 +60,9 @@ export const ScatterPlotGraph: FC = () => {
     <div className={classes.graph}>
       <Card>
         <CardPreview>
-          <div ref={plotlyRef} style={{ width: '100%', height: 'calc(100vh - 300px)', minHeight: '400px' }}>
+          <div style={{ width: '100%', height: 'calc(100vh - 300px)', minHeight: '400px' }}>
             <GraphCanvas 
+              ref={plotlyRef}
               key={`graph-${selectedRun?.id || 'new'}`}
               graphConfig={graphConfig} 
               workspacePath={resolvedWorkspacePath}
@@ -60,13 +72,15 @@ export const ScatterPlotGraph: FC = () => {
         </CardPreview>
         <CardFooter>
           <div className={classes.toolsWrapper}>
-            <GraphTools
-              handle={handle}
-              plotly={plotlyRef}
-              graph={mockGraph}
-              dbFileName={workspacePath || ''}
-              dbTableName="EXCEL"
-            />
+            {isPlotlyReady && plotlyRef.current && (
+              <GraphTools
+                handle={handle}
+                plotly={plotlyRef.current}
+                graph={graphObject}
+                dbFileName={workspacePath || ''}
+                dbTableName="EXCEL"
+              />
+            )}
           </div>
         </CardFooter>
       </Card>
