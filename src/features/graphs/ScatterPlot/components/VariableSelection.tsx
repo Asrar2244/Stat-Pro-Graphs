@@ -177,7 +177,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
           <div className={classes.actions}>
             {showVariableSelection ? (
               <>
-                {(dataFormat === 'XY Pair' || dataFormat === 'XY Pairs' || dataFormat === 'XY Category' || dataFormat === 'X Many Y' || dataFormat === 'Y Many X') && (
+                {(dataFormat === 'XY Pair' || dataFormat === 'XY Pairs' || dataFormat === 'XY Category' || dataFormat === 'X Many Y' || dataFormat === 'Y Many X' || dataFormat === 'X Many Y Replicates' || dataFormat === 'Y Many X Replicates' || dataFormat === 'Category Many Y' || dataFormat === 'Category Many X') && (
                   <>
                     <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToX} className={classes.actionBtn} disabled={!canSendToX}>
                       Send to X
@@ -192,7 +192,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                     )}
                   </>
                 )}
-                {(dataFormat === 'Single Y' || dataFormat === 'Many Y' || dataFormat === 'Y Category') && (
+                {(dataFormat === 'Single Y' || dataFormat === 'Many Y' || dataFormat === 'Y Category' || dataFormat === 'Many Y Replicates') && (
                   <>
                     <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToY} className={classes.actionBtn} disabled={!canSendToY}>
                       Send to Y
@@ -204,7 +204,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                     )}
                   </>
                 )}
-                {(dataFormat === 'Single X' || dataFormat === 'Many X' || dataFormat === 'X Category') && (
+                {(dataFormat === 'Single X' || dataFormat === 'Many X' || dataFormat === 'X Category' || dataFormat === 'Many X Replicates') && (
                   <>
                     <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToX} className={classes.actionBtn} disabled={!canSendToX}>
                       Send to X

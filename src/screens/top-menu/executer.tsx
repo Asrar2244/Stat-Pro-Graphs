@@ -118,7 +118,7 @@ const MenuSelector: FC<{
       try {
         const workspacePath = projects[config.selectedProject]?.workspacePath;
         // Persist a run immediately so history shows up
-        const { insertGraphRun } = await import('../graph-view-render/graph-body-render/graphs-store');
+        const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
         await insertGraphRun(workspacePath, {
           name: config?.subType || 'Scatter Plot',
           createdAt: new Date().toISOString(),

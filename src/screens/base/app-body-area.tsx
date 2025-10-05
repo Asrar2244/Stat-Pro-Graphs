@@ -10,7 +10,7 @@ import { Explorer } from '../workspace/explorer';
 import { TableRender } from '../table-render';
 import { OutputRender } from '../output-render';
 import { GraphsRender } from '../graphs-render';
-import { GraphViewRender } from '../graph-view-render';
+// import { GraphViewRender } from '../graph-view-render';
 import { EmptyDataView } from '../empty-data-view';
 import { DATA, OUTPUT, CONFIGURATION_DB, GRAPH, GRAPHS, EMPTY_GRAPH_VIEW } from '@constants';
 import { updateDataProjectClose, updateOutputProjectClose, updateGraphsProjectClose } from '@backend';
@@ -51,7 +51,8 @@ const AppBody: FC = () => {
       case `${GRAPH}-render`:
         return (
           <div className={classes.suppressOverFlow}>
-            <GraphViewRender {...node.getConfig()} />
+            {/* <GraphViewRender {...node.getConfig()} /> */}
+            <div>Graph View Render temporarily disabled</div>
           </div>
         );
       case `${EMPTY_GRAPH_VIEW}-render`:

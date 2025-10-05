@@ -29,6 +29,7 @@ export const requiresX = (dataFormat?: DataFormat): boolean => {
     case 'X Replicates':
     case 'Y Single X Replicates':
     case 'Y Many X Replicates':
+    case 'Many X Replicates':
       return true;
     
     // Special formats
@@ -66,9 +67,9 @@ export const requiresY = (dataFormat?: DataFormat): boolean => {
     
     // Replicate formats
     case 'Y Replicate':
+    case 'X Many Y Replicates':
     case 'Many Y Replicates':
     case 'Y Many X Replicates':
-    case 'Many X Replicates':
       return true;
     
     // Special formats

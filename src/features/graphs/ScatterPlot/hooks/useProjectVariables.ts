@@ -100,7 +100,7 @@ export const useProjectVariables = (selectedProject?: string) => {
     };
 
     loadVariables();
-  }, [selectedProject, projectStore]);
+  }, [selectedProject, projectStore[selectedProject]?.workspacePath]);
 
   return { variables, isLoading, error };
 };

@@ -34,16 +34,16 @@ interface IToolBarProps {
 export const ToolBar: FC<IToolBarProps> = ({ tools, title, subTitle }) => {
   return (
     <div style={{ 
-      background: `linear-gradient(135deg, ${tokens.colorBrandBackground2} 0%, ${tokens.colorBrandBackground} 100%)`,
+      background: `linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%)`,
       padding: tokens.spacingVerticalM,
-      borderBottom: `2px solid ${tokens.colorBrandStroke1}`,
-      boxShadow: `0 2px 8px ${tokens.colorNeutralShadowAmbient}`
+      borderBottom: `2px solid #404040`,
+      boxShadow: `0 2px 8px rgba(0, 0, 0, 0.3)`
     }}>
       <Toolbar>
         <ToolbarButton>
           <Text style={{ 
             fontWeight: 'bold', 
-            color: tokens.colorBrandForeground1,
+            color: '#ffffff',
             fontSize: tokens.fontSizeBase400
           }}>
             {title}
@@ -51,7 +51,7 @@ export const ToolBar: FC<IToolBarProps> = ({ tools, title, subTitle }) => {
           {subTitle && (
             <Text style={{ 
               fontSize: tokens.fontSizeBase200, 
-              color: tokens.colorBrandForeground2, 
+              color: '#cccccc', 
               marginLeft: tokens.spacingHorizontalM 
             }}>
               {subTitle}

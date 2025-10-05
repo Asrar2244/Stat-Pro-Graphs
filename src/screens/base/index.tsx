@@ -124,12 +124,10 @@ export const BaseComponent: FC = () => {
           from {
             opacity: 0;
             max-height: 0;
-            transform: translateY(-20px);
           }
           to {
             opacity: 1;
             max-height: 400px;
-            transform: translateY(0);
           }
         }
       `}</style>
@@ -144,8 +142,7 @@ export const BaseComponent: FC = () => {
         {/* Dropdown panels positioned between ribbon and workspace */}
         <div ref={panelRef} style={{ 
           width: '100%', 
-          overflow: 'hidden',
-          transition: 'all 0.3s ease-in-out'
+          overflow: 'hidden'
         }}>
           {testsOpen && (
             <div style={{

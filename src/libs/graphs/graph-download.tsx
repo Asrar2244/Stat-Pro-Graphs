@@ -60,16 +60,37 @@ const DownloadConfig: FC<IDownloadTools & { format: string; description: string 
   description,
 }) => {
   const [filename, setFilename] = useState<string>(graph.title ?? 'graph');
-  const [width, setWidth] = useState<string | undefined>(plotly.current.clientWidth);
-  const [height, setHeight] = useState<string | undefined>(plotly.current.clientHeight);
+  const [width, setWidth] = useState<string | undefined>(plotly.current.clientWidth.toString()); // Same as canvas
+  const [height, setHeight] = useState<string | undefined>(plotly.current.clientHeight.toString()); // Same as canvas
   const classes = useToolsStyles();
   const { t } = useTranslation('common');
   useEffect(() => {
-    setWidth(plotly.current.clientWidth);
-    setHeight(plotly.current.clientHeight);
+    setWidth(plotly.current.clientWidth.toString()); // Same as canvas
+    setHeight(plotly.current.clientHeight.toString()); // Same as canvas
   }, [plotly.current]);
   const onClickDownload = (format: string) => (): void => {
-    downloadImage(plotly.current, { format, filename, width, height });
+    // Download with same dimensions as canvas
+    const downloadOptions = {
+      format,
+      filename,
+      width: width ? parseInt(width) : plotly.current.clientWidth, // Same as canvas width
+      height: height ? parseInt(height) : plotly.current.clientHeight, // Same as canvas height
+      scale: 1, // 1x scale to match canvas exactly
+      ...(format === 'jpeg' && { quality: 0.95 }), // High quality for JPEG
+      ...(format === 'webp' && { quality: 0.95 }), // High quality for WEBP
+      ...(format === 'png' && { 
+        scale: 1, // Same scale as canvas
+        width: width ? parseInt(width) : plotly.current.clientWidth, // Same as canvas
+        height: height ? parseInt(height) : plotly.current.clientHeight, // Same as canvas
+      }), // PNG matches canvas dimensions
+      ...(format === 'svg' && { 
+        scale: 1, // SVG should not be scaled
+        width: width ? parseInt(width) : plotly.current.clientWidth, // Same as canvas
+        height: height ? parseInt(height) : plotly.current.clientHeight, // Same as canvas
+      }), // SVG matches canvas dimensions
+    };
+    
+    downloadImage(plotly.current, downloadOptions);
   };
   const onChangeHandle = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e.target.type === 'number') {
@@ -92,6 +113,19 @@ const DownloadConfig: FC<IDownloadTools & { format: string; description: string 
       <Divider />
       {format !== 'svg' ? (
         <>
+          {format === 'png' && (
+            <div style={{ 
+              backgroundColor: '#e6f3ff', 
+              border: '1px solid #0078d4', 
+              borderRadius: '4px', 
+              padding: '8px', 
+              marginBottom: '12px',
+              fontSize: '12px',
+              color: '#0078d4'
+            }}>
+              ⭐ <strong>Recommended Format</strong> - Same as canvas with mouse zoom support
+            </div>
+          )}
           <Field label={t('filename')}>
             <Input defaultValue={filename} onChange={onChangeHandle} />
           </Field>

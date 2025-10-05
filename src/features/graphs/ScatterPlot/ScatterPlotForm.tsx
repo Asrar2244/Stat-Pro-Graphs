@@ -134,18 +134,22 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
 
   // Update store with loaded variables
   useEffect(() => {
-    setAvailableVariables(variables);
-  }, [variables, setAvailableVariables]);
+    if (variables.length > 0) {
+      setAvailableVariables(variables);
+    }
+  }, [variables.length, setAvailableVariables]);
 
   // Update available list when variables are loaded
   useEffect(() => {
+    if (variables.length === 0) return;
+    
     const newMap = new Map();
     // Show all variables in available list - filtering happens at send time
     variables.forEach(variable => {
       newMap.set(variable.name, false);
     });
     setAvailableList(newMap);
-  }, [variables, setAvailableList]);
+  }, [variables.length, setAvailableList]);
 
   // Ensure dataFormat remains valid when subType changes
   useEffect(() => {
