@@ -139,17 +139,37 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
     }
   }, [variables.length, setAvailableVariables]);
 
-  // Update available list when variables are loaded
+  // Update available list when variables are loaded (but preserve existing selections)
   useEffect(() => {
     if (variables.length === 0) return;
     
-    const newMap = new Map();
-    // Show all variables in available list - filtering happens at send time
-    variables.forEach(variable => {
-      newMap.set(variable.name, false);
-    });
-    setAvailableList(newMap);
-  }, [variables.length, setAvailableList]);
+    // Only update if we don't have any variables in the available list yet
+    // This prevents clearing user selections when variables reload
+    if (availableList.size === 0) {
+      const newMap = new Map();
+      // Show all variables in available list - filtering happens at send time
+      variables.forEach(variable => {
+        newMap.set(variable.name, false);
+      });
+      setAvailableList(newMap);
+    } else {
+      // If we already have variables, only add new ones that aren't already present
+      const newMap = new Map(availableList);
+      let hasNewVariables = false;
+      
+      variables.forEach(variable => {
+        if (!newMap.has(variable.name)) {
+          newMap.set(variable.name, false);
+          hasNewVariables = true;
+        }
+      });
+      
+      // Only update if we found new variables
+      if (hasNewVariables) {
+        setAvailableList(newMap);
+      }
+    }
+  }, [variables.length, setAvailableList, availableList]);
 
   // Ensure dataFormat remains valid when subType changes
   useEffect(() => {
@@ -284,6 +304,7 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
           requireCategory={requireCategory}
           showVariableSelection={showVariableSelection}
           dataFormat={dataFormat as any}
+          subType={subType}
           availableList={availableList}
           selectAllAvailable={selectAllAvailable}
           setSelectAllAvailable={setSelectAllAvailable}

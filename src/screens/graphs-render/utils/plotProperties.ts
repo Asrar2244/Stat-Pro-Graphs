@@ -81,7 +81,6 @@ export interface PlotSpecificProperties {
 export interface LiveProperties {
   /** Global properties */
   global?: {
-    seriesColor?: string;
     legendTextEntries?: Record<string, string>;
     legendSeriesColors?: Record<string, string>;
     xScaleType?: string;

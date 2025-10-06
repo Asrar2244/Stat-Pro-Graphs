@@ -195,7 +195,6 @@ export const GraphsRender: FC = () => {
         delete next.global.padding;
       }
       if (!groups?.series) {
-        delete next.global.seriesColor;
       }
       try {
         updateGraphRunConfig(dbName, runId, { graphConfig: next });

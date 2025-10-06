@@ -235,7 +235,8 @@ export const SUB_TYPE_DATA_FORMATS: Record<ScatterSubType, DataFormat[]> = {
  * @param subType - The scatter plot sub-type
  * @returns Array of valid data formats for the sub-type
  */
-export const getValidDataFormats = (subType: ScatterSubType): DataFormat[] => {
+export const getValidDataFormats = (subType?: ScatterSubType): DataFormat[] => {
+  if (!subType) return [];
   return SUB_TYPE_DATA_FORMATS[subType] || [];
 };
 
@@ -245,6 +246,7 @@ export const getValidDataFormats = (subType: ScatterSubType): DataFormat[] => {
  * @param dataFormat - The data format to validate
  * @returns True if the data format is valid for the sub-type
  */
-export const isValidDataFormat = (subType: ScatterSubType, dataFormat: DataFormat): boolean => {
+export const isValidDataFormat = (subType?: ScatterSubType, dataFormat?: DataFormat): boolean => {
+  if (!subType || !dataFormat) return false;
   return getValidDataFormats(subType).includes(dataFormat);
 };

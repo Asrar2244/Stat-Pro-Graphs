@@ -297,26 +297,7 @@ export const getAnnotations = (subType: string): any[] => {
       }
     ];
   } else if (isPointPlot) {
-    return [
-      {
-        text: 'Point plot displays individual data points',
-        xref: 'paper',
-        yref: 'paper',
-        x: 0.5,
-        y: -0.12,
-        showarrow: false,
-        font: { 
-          size: 12, 
-          color: 'rgba(0,0,0,0.8)',
-          family: 'Arial, sans-serif'
-        },
-        align: 'center',
-        bgcolor: 'rgba(255,255,255,0.9)',
-        bordercolor: 'rgba(0,0,0,0.25)',
-        borderwidth: 1,
-        borderpad: 8
-      }
-    ];
+    return [];
   } else if (isDotPlot) {
     return [
       {

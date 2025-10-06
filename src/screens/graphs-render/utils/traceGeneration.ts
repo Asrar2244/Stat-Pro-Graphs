@@ -18,6 +18,11 @@ export interface TraceConfig {
   errorCalculationLower?: string;
   errorBarVariable?: string;
   errorBarData?: number[];
+  // For bidirectional error bars - separate X and Y error bar variables
+  errorBarVariableX?: string;
+  errorBarVariableY?: string;
+  errorBarDataX?: number[];
+  errorBarDataY?: number[];
   rows: any[];
 }
 
@@ -82,7 +87,8 @@ export const getSeriesConfig = (): SeriesConfig => {
 export const createScatterTrace = (config: TraceConfig): any => {
   const {
     xv, yv, label, color, symbol, subType, symbolValue,
-    errorCalculationUpper, errorCalculationLower, errorBarVariable, errorBarData, rows
+    errorCalculationUpper, errorCalculationLower, errorBarVariable, errorBarData, 
+    errorBarVariableX, errorBarVariableY, errorBarDataX, errorBarDataY, rows
   } = config;
   
   const isErrorBar = subType.toLowerCase().includes('error bar');
@@ -120,8 +126,27 @@ export const createScatterTrace = (config: TraceConfig): any => {
     
     // Get error bar data if needed
     let errorBarDataForCalculation: number[] | undefined;
-    if (errorBarVariable) {
-      // For asymmetric error bars, use direct error bar variable data
+    let errorBarDataXForCalculation: number[] | undefined;
+    let errorBarDataYForCalculation: number[] | undefined;
+    
+    if (isBidirectionalErrorBar) {
+      // For bidirectional error bars, use separate X and Y error bar variables
+      if (errorBarVariableX) {
+        errorBarDataXForCalculation = rows.map((row: any) => {
+          const value = row[errorBarVariableX];
+          return typeof value === 'number' ? value : parseFloat(value) || 0;
+        });
+        console.log('📊 Bidirectional X Error Bar Data:', errorBarDataXForCalculation?.slice(0, 5), '...');
+      }
+      if (errorBarVariableY) {
+        errorBarDataYForCalculation = rows.map((row: any) => {
+          const value = row[errorBarVariableY];
+          return typeof value === 'number' ? value : parseFloat(value) || 0;
+        });
+        console.log('📊 Bidirectional Y Error Bar Data:', errorBarDataYForCalculation?.slice(0, 5), '...');
+      }
+    } else if (errorBarVariable) {
+      // For regular error bars, use single error bar variable
       if (isAsymmetricErrorBar) {
         errorBarDataForCalculation = rows.map((row: any) => {
           const value = row[errorBarVariable];
@@ -144,7 +169,10 @@ export const createScatterTrace = (config: TraceConfig): any => {
       xv, yv, symbolValue: symbolValue || '', 
       subType: subType || '',
       errorCalculationUpper, errorCalculationLower, 
-      errorBarData: errorBarDataForCalculation
+      errorBarData: errorBarDataForCalculation,
+      // For bidirectional error bars, pass separate X and Y error bar data
+      errorBarDataX: errorBarDataXForCalculation,
+      errorBarDataY: errorBarDataYForCalculation
     });
     
     console.log('🔍 Error Values Calculated:', {
@@ -158,12 +186,12 @@ export const createScatterTrace = (config: TraceConfig): any => {
       }
     });
     
-    // Enhanced error bar styling with dynamic customization
+    // Enhanced error bar styling with SigmaPlot-style customization
     const errorBarStyle = {
-      thickness: 2,
-      width: 3,
-      opacity: 0.8,
-      capSize: 4
+      thickness: isAsymmetricErrorBar ? 1.5 : 2,  // Thinner for asymmetric (SigmaPlot style)
+      width: isAsymmetricErrorBar ? 2 : 3,       // Narrower for asymmetric
+      opacity: isAsymmetricErrorBar ? 0.9 : 0.8, // Higher opacity for asymmetric
+      capSize: isAsymmetricErrorBar ? 3 : 4      // Smaller caps for asymmetric
     };
 
     if (isVerticalErrorBar || (!isHorizontalErrorBar && !isBidirectionalErrorBar)) {
@@ -187,7 +215,13 @@ export const createScatterTrace = (config: TraceConfig): any => {
             size: errorBarStyle.capSize,
             color: color
           },
-          visible: true
+          visible: true,
+          // SigmaPlot-style asymmetric error bar enhancements
+          line: {
+            color: color,
+            width: errorBarStyle.thickness,
+            dash: 'solid'
+          }
         };
       } else {
         traceConfig.error_y = {
@@ -267,7 +301,13 @@ export const createScatterTrace = (config: TraceConfig): any => {
             size: errorBarStyle.capSize,
             color: color
           },
-          visible: true
+          visible: true,
+          // SigmaPlot-style asymmetric error bar enhancements
+          line: {
+            color: color,
+            width: errorBarStyle.thickness,
+            dash: 'solid'
+          }
         };
         traceConfig.error_x = {
           type: 'data',
@@ -282,7 +322,13 @@ export const createScatterTrace = (config: TraceConfig): any => {
             size: errorBarStyle.capSize,
             color: color
           },
-          visible: true
+          visible: true,
+          // SigmaPlot-style asymmetric error bar enhancements
+          line: {
+            color: color,
+            width: errorBarStyle.thickness,
+            dash: 'solid'
+          }
         };
       } else {
         traceConfig.error_y = {

@@ -5,7 +5,6 @@ export interface GlobalGraphProperties {
   // Appearance
   backgroundColor: string;
   plotColor?: string;
-  seriesColor?: string;
   backgroundTransparencyPct?: number; // 0-100
   plotTransparencyPct?: number; // 0-100
   showGridLines: boolean;
@@ -194,7 +193,6 @@ export const useTools = () => {
     global: {
       backgroundColor: '#ffffff',
       plotColor: '',
-      seriesColor: '',
       backgroundTransparencyPct: 0,
       plotTransparencyPct: 0,
       showGridLines: true,

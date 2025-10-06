@@ -14,8 +14,12 @@ export const useDropdownState = () => {
   };
 
   const toggleTests = () => {
-    setTestsOpen((open) => !open);
-    if (!testsOpen && graphsOpen) setGraphsOpen(false); // Close graphs if opening tests
+    setTestsOpen((open) => {
+      const newOpen = !open;
+      // Close graphs if opening tests
+      if (newOpen && graphsOpen) setGraphsOpen(false);
+      return newOpen;
+    });
   };
 
   const openGraphs = () => {
@@ -28,8 +32,12 @@ export const useDropdownState = () => {
   };
 
   const toggleGraphs = () => {
-    setGraphsOpen((open) => !open);
-    if (!graphsOpen && testsOpen) setTestsOpen(false); // Close tests if opening graphs
+    setGraphsOpen((open) => {
+      const newOpen = !open;
+      // Close tests if opening graphs
+      if (newOpen && testsOpen) setTestsOpen(false);
+      return newOpen;
+    });
   };
 
   const closeAllDropdowns = () => {

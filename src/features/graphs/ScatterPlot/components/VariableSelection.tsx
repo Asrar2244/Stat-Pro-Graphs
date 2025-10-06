@@ -15,6 +15,7 @@ interface VariableSelectionProps {
   requireCategory?: boolean;
   showVariableSelection: boolean;
   dataFormat: string;
+  subType?: string;
   availableList: Map<string, boolean>;
   selectAllAvailable: boolean | string | undefined;
   setSelectAllAvailable: (v: boolean | string | undefined) => void;
@@ -64,6 +65,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
     requireCategory,
     showVariableSelection,
     dataFormat,
+    subType,
     availableList,
     selectAllAvailable,
     setSelectAllAvailable,
@@ -105,7 +107,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
   const { setXVariable, setYVariable } = useScatterPlotStore();
   
   // Calculate max allowed error bars based on data format and X/Y counts
-  const maxErrorBars = getRequiredErrorBarCount(xCount, yCount, dataFormat);
+  const maxErrorBars = getRequiredErrorBarCount(xCount, yCount, dataFormat, subType);
 
   const pickFirst = (list: Map<string, boolean>): string | undefined => {
     const selected = Array.from(list.entries()).find(([, v]) => v);

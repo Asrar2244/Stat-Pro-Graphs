@@ -128,7 +128,7 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     // Calculate required error bars based on current X/Y counts and data format
     const xCount = xVariableList.size;
     const yCount = yVariableList.size;
-    const requiredCount = getRequiredErrorBarCount(xCount, yCount, dataFormat);
+    const requiredCount = getRequiredErrorBarCount(xCount, yCount, dataFormat, subType);
     const currentCount = newErrorBarList.size;
     const freeSlots = Math.max(0, requiredCount - currentCount);
     
@@ -138,11 +138,17 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
       return;
     }
     
+    // For bidirectional error bars, allow sending multiple variables at once
+    // Calculate how many variables we can actually move
+    const checkedVariables = Array.from(availableList.entries()).filter(([, checked]) => checked);
+    const validVariables = checkedVariables.filter(([variableName]) => isValidForSlot(variableName, 'errorBar'));
+    const variablesToMove = Math.min(validVariables.length, freeSlots);
+    
     let moved = 0;
     
     for (const [variableName, checked] of availableList.entries()) {
       if (!checked) continue;
-      if (moved >= freeSlots) break;
+      if (moved >= variablesToMove) break;
       // Only move numeric variables to ErrorBar
       if (!isValidForSlot(variableName, 'errorBar')) continue;
       

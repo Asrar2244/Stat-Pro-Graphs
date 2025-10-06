@@ -236,7 +236,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       // Skip this only if we already have category traces from XY Category format
       // X Category and Y Category formats need standard processing for regression lines
       if (!(isCategoryPlot && isCategoryFormat && normalizedFormat === 'XY Category')) {
-        processedSeries.forEach(({ xv, yv, label, errorBarVariable }) => {
+        processedSeries.forEach(({ xv, yv, label, errorBarVariable }, seriesIndex) => {
         const startTime = performance.now();
         
         
@@ -259,9 +259,9 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         
         // Performance warnings and recommendations handled silently
         
-        // Per-series color override: legendSeriesColors[label] > plot-specific color > global seriesColor
+        // Per-series color override: legendSeriesColors[label] > plot-specific color
         const perSeriesColor = liveProps?.global?.legendSeriesColors?.[label];
-        const colorOverride = perSeriesColor || (liveProps?.plotSpecific?.scatter?.pointColor) || (liveProps?.global?.seriesColor);
+        const colorOverride = perSeriesColor || (liveProps?.plotSpecific?.scatter?.pointColor);
         const color = colorOverride || getSeriesColor(seriesIndex);
         const symbol = getSeriesSymbol(seriesIndex);
         
@@ -273,6 +273,36 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         try {
           // Create scatter trace with optimized data
           const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
+          // Check if this is a bidirectional error bar
+          const isBidirectionalErrorBar = graphConfig?.subType?.toLowerCase().includes('bidirectional') && 
+                                        graphConfig?.subType?.toLowerCase().includes('error bar');
+          
+          // Get error bar variables for bidirectional error bars
+          const errorBarVars = graphConfig?.variables?.errorBar || [];
+          
+          // For bidirectional error bars, we need to find the correct X and Y error bar variables
+          // based on the current series index
+          let errorBarVarX: string | undefined;
+          let errorBarVarY: string | undefined;
+          
+          if (isBidirectionalErrorBar && errorBarVars.length >= 2) {
+            // Calculate which error bar variables to use for this series
+            // Each series gets 2 error bar variables: one for X, one for Y
+            const xErrorBarIndex = seriesIndex * 2;     // X error bar index (0, 2, 4, ...)
+            const yErrorBarIndex = seriesIndex * 2 + 1; // Y error bar index (1, 3, 5, ...)
+            
+            errorBarVarX = errorBarVars[xErrorBarIndex];
+            errorBarVarY = errorBarVars[yErrorBarIndex];
+            
+            console.log('🔍 Bidirectional Error Bar Variables for Series', seriesIndex, ':', {
+              xErrorBarIndex,
+              yErrorBarIndex,
+              errorBarVarX,
+              errorBarVarY,
+              totalErrorBarVars: errorBarVars.length
+            });
+          }
+          
           const scatterTrace = createScatterTrace({
             xv: tx as any,
             yv: ty as any,
@@ -298,6 +328,33 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
               });
               return errorData;
             })() : undefined, // Calculate error bar data from rows
+            // For bidirectional error bars, pass separate X and Y error bar variables
+            errorBarVariableX: isBidirectionalErrorBar ? errorBarVarX : undefined,
+            errorBarVariableY: isBidirectionalErrorBar ? errorBarVarY : undefined,
+            errorBarDataX: isBidirectionalErrorBar && errorBarVarX ? (() => {
+              const errorDataX = rows.map((row: any) => {
+                const value = row[errorBarVarX];
+                return typeof value === 'number' ? value : parseFloat(value) || 0;
+              });
+              console.log('🔍 Bidirectional X Error Bar Data:', {
+                errorBarVariableX: errorBarVarX,
+                dataLength: errorDataX.length,
+                sampleData: errorDataX.slice(0, 3)
+              });
+              return errorDataX;
+            })() : undefined,
+            errorBarDataY: isBidirectionalErrorBar && errorBarVarY ? (() => {
+              const errorDataY = rows.map((row: any) => {
+                const value = row[errorBarVarY];
+                return typeof value === 'number' ? value : parseFloat(value) || 0;
+              });
+              console.log('🔍 Bidirectional Y Error Bar Data:', {
+                errorBarVariableY: errorBarVarY,
+                dataLength: errorDataY.length,
+                sampleData: errorDataY.slice(0, 3)
+              });
+              return errorDataY;
+            })() : undefined,
             rows
           });
           

@@ -226,14 +226,6 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                   <Field label={`Plot Transparency: ${globalProps.plotTransparencyPct || 0}%`}>
                     <Slider min={0} max={100} value={globalProps.plotTransparencyPct || 0} onChange={(_, d) => updateGraphProperty('plotTransparencyPct', d.value)} />
                   </Field>
-                  <Field label="Series Color (points/lines)">
-                    <input
-                      type="color"
-                      value={globalProps.seriesColor || '#1f77b4'}
-                      onChange={(e) => updateGraphProperty('seriesColor', e.target.value)}
-                      style={{ width: '100%', height: 40, border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
-                    />
-                  </Field>
                   
                   <Field label="Grid Lines">
                     <Switch 

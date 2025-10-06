@@ -58,10 +58,10 @@ export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClos
             borderRadius: tokens.borderRadiusSmall,
             boxShadow: tokens.shadow2,
             minHeight: '60px',
-            flexWrap: title === '2D Graphs' ? 'nowrap' : 'wrap',
-            overflowX: title === '2D Graphs' ? 'auto' : 'visible',
+            flexWrap: 'nowrap',
+            overflowX: 'auto',
             overflowY: 'hidden',
-            maxWidth: title === '2D Graphs' ? '600px' : '100%'
+            maxWidth: '600px'
           }}
         >
           {options.map((category) => 

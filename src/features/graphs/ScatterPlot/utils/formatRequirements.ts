@@ -100,14 +100,41 @@ export const requiresErrorBar = (dataFormat?: DataFormat): boolean => {
  * @param xCount - Number of X variables
  * @param yCount - Number of Y variables  
  * @param dataFormat - The selected data format
+ * @param subType - The selected sub type (for bidirectional error bars)
  * @returns Required number of error bar variables
  */
 export const getRequiredErrorBarCount = (
   xCount: number, 
   yCount: number, 
-  dataFormat?: DataFormat
+  dataFormat?: DataFormat,
+  subType?: string
 ): number => {
   if (!dataFormat) return 0;
+  
+  // Check if this is a bidirectional error bar - requires 2 error bar variables per X-Y pair
+  const isBidirectionalErrorBar = subType?.toLowerCase().includes('bidirectional') && 
+                                  subType?.toLowerCase().includes('error bar');
+  
+  // Check if this is an asymmetric error bar - requires 2 error bar variables per direction
+  const isAsymmetricErrorBar = subType?.toLowerCase().includes('asymmetric') && 
+                               subType?.toLowerCase().includes('error bar');
+  
+  if (isBidirectionalErrorBar && isAsymmetricErrorBar) {
+    // For bidirectional asymmetric error bars, require 4 error bar variables per X-Y pair
+    // Each X-Y pair needs: upper X + lower X + upper Y + lower Y = 4 total
+    const pairCount = Math.max(xCount, yCount);
+    return pairCount * 4;
+  } else if (isBidirectionalErrorBar) {
+    // For bidirectional symmetric error bars, require 2 error bar variables per X-Y pair
+    // Each X-Y pair needs: 1 for X direction + 1 for Y direction = 2 total
+    const pairCount = Math.max(xCount, yCount);
+    return pairCount * 2;
+  } else if (isAsymmetricErrorBar) {
+    // For asymmetric error bars, require 2 error bar variables per X-Y pair
+    // Each X-Y pair needs: 1 for upper + 1 for lower = 2 total
+    const pairCount = Math.max(xCount, yCount);
+    return pairCount * 2;
+  }
   
   // If user has multiple X or Y variables, allow multiple error bars
   // This provides flexibility for users to assign different error bars to different XY pairs
@@ -254,7 +281,7 @@ export const canSendToErrorBar = (
   const isErrorBarSubType = subType?.toLowerCase().includes('error bar') || false;
   if (!isErrorBarSubType) return false;
   
-  const requiredCount = getRequiredErrorBarCount(xCount, yCount, dataFormat);
+  const requiredCount = getRequiredErrorBarCount(xCount, yCount, dataFormat, subType);
   if (requiredCount === 0) return false;
   
   // Allow adding error bars if we haven't reached the required count

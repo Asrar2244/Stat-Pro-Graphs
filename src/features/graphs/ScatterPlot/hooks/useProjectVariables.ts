@@ -21,7 +21,7 @@ export const useProjectVariables = (selectedProject?: string) => {
 
   useEffect(() => {
     if (!selectedProject) {
-      setVariables([]);
+      // Don't clear variables immediately - keep them for better UX
       return;
     }
 
@@ -100,7 +100,7 @@ export const useProjectVariables = (selectedProject?: string) => {
     };
 
     loadVariables();
-  }, [selectedProject, projectStore[selectedProject]?.workspacePath]);
+  }, [selectedProject]); // Removed workspacePath dependency that was causing unnecessary reloads
 
   return { variables, isLoading, error };
 };
