@@ -43,6 +43,12 @@ export const usePagination = (totalRecords: number, PageDefaultSize?: number): I
 
   useEffect(() => {
     if (pageSize > 0) {
+      setPageCount(Math.ceil(totalRecords / pageSize));
+    }
+  }, [pageSize, totalRecords]);
+
+  useEffect(() => {
+    if (pageSize > 0) {
       const startIndex = (currentPage - 1) * pageSize;
       const stopIndex = startIndex + pageSize;
       setStopIndex(stopIndex);
@@ -81,6 +87,7 @@ export const usePagination = (totalRecords: number, PageDefaultSize?: number): I
   };
   const pageSizeChanged = (value: number): void => {
     setPageSize(value);
+    setCurrentPage(1);
   };
   const jumpChanged = (value: number): void => {
     setCurrentPage(value);

@@ -1,6 +1,27 @@
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 
 export const useThemeSwitchStyles = makeStyles({
+  triggerButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    padding: tokens.spacingHorizontalXS,
+    borderRadius: tokens.borderRadiusMedium,
+
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+    },
+    '& .fui-Badge': {
+      cursor: 'pointer',
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  },
   ul: {
     display: 'inline-flex',
     listStyleType: 'none',

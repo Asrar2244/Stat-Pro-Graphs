@@ -1,3 +1,4 @@
+
 export interface IMenuItem {
   label: string;
   id: string;
@@ -24,6 +25,9 @@ export const exporters = {
   openNewTabForGraph: 'openNewTabAction',
   emptyDataView: 'openNewTabAction',
   regressionBayesian: 'bayesian',
+  tests: "tests",
+  options: "options",
+  pairedTTest: "paired-t-test"
 };
 
 export const topMenuConfig = {
@@ -107,6 +111,27 @@ export const topMenuConfig = {
           id: 'descriptiveStat',
           label: 'descriptiveStat',
           execute: exporters.descriptiveStat,
+        },
+        {
+          id: 'test',
+          label: 'test',
+          submenu: [
+            {
+              id: "options",
+              label: "options",
+              execute: exporters.options,
+            },
+            {
+              id: "t-test",
+              label: "t-test",
+              execute: exporters.tests,
+            },
+            // {
+            //   id: "paired-t-test",
+            //   label: "paired-t-test",
+            //   execute: exporters.pairedTTest,
+            // }
+          ]
         },
       ],
     },

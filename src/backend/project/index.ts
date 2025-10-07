@@ -14,3 +14,6 @@ export const updateOutputFromProject = `UPDATE ${PROJECTS_TABLE} SET isOpenedOut
 export const updateDataProjectClose = `UPDATE ${PROJECTS_TABLE} SET isOpenedData=0 where id=?`;
 
 export const updateOutputProjectClose = `UPDATE ${PROJECTS_TABLE} SET isOpenedOutput=0 where id=?`;
+
+export const deleteProject = `DELETE FROM ${PROJECTS_TABLE} WHERE id=?`;
+

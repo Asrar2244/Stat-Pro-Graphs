@@ -69,6 +69,10 @@ const PolynomialRegression = lazy(() =>
   import('./analyze/regression/linear/polynomial').then((modules) => ({
     default: modules.PolynomialRegression,
   }))
+const TTestComponent = lazy(() =>
+  import('./analyze/tests/t-test').then((modules) => ({
+    default: modules.TTestComponent,
+  })),
 );
 
 interface IOutputSelection extends IToolBar {
@@ -87,7 +91,8 @@ const load: any = {
   regLinearBayesian: <LinearBayesianRegression />,
   estimationOfModules: <EstimationOfModule />,
   pairwiseComparisonModules: <PairwiseComparisonOfModules />,
-  descriptiveStatistics: <DescriptiveStatistics />
+  descriptiveStatistics: <DescriptiveStatistics />,
+  tTestModule: <TTestComponent />
 };
 export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...props }) => {
   const { config } = useActiveNode([]);

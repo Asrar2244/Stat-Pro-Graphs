@@ -7,16 +7,16 @@ import { useTranslation } from 'react-i18next';
 import { IList, useEstimateModel } from '../use-estimation-store';
 import { useColumnsRowsCount, useActiveNode } from '@hooks';
 import { MdDeleteOutline } from 'react-icons/md';
-
 import { FaRegCopyright } from 'react-icons/fa';
 import { RiFacebookCircleLine } from 'react-icons/ri';
 import { SiDevpost } from 'react-icons/si';
 import { useEstimateModelPrepare } from './use-prepare-columns';
+import { useStartProStore } from '@store/main-store';
 export const EstimationOfModuleModel: FC = () => {
   const { t } = useTranslation(['estimationOfModules']);
   const classes = useEstimateModelStyles();
   const { config } = useActiveNode([]);
-
+  const { setBlockUI } = useStartProStore()
   const { columns } = useColumnsRowsCount({
     ...config,
     noRowCount: true,
@@ -31,15 +31,22 @@ export const EstimationOfModuleModel: FC = () => {
   const onClickAddToDependencies = (): void => {
     if (setModel) {
       let depList: IList = {};
+      let availList: IList = {}
       Object.keys(model.availableList).forEach((key: string) => {
         if (model.availableList[key]) {
-          delete model.availableList[key];
           depList[key] = false
-        }
+        } else { availList[key] = false }
       });
+      if (Object.keys(model.dependentList).length === 0 && Object.keys(depList).length === 1) {
+        setModel({
+          dependentList: { ...model.dependentList, ...depList },
+        });
+      } else {
+        setBlockUI({ value: true, msg: t('allowOnlyOneRecord', { ns: 'errors' }) })
+        return;
+      }
       setModel({
-        dependentList: { ...model.dependentList, ...depList },
-        availableList: { ...model.availableList },
+        availableList: availList,
       });
     }
   };

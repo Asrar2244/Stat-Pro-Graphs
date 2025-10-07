@@ -1,0 +1,25 @@
+{
+    "t-test_type": "{{t-test_type}}",
+    "t-sample_hypothesized_population_mean": "Hypothesized population mean : {{t-sample_hypothesized_population_mean}}",
+    "t-sample_confidence_interval_lower_bound": "percent two-tailed confidence interval for the population mean {{t-sample_confidence_interval_lower_bound}} to {{t-sample_confidence_interval_upper_bound}}",
+    "t-conclusion": "{{t-conclusion}}",
+    "t-sample_degrees_of_freedom": "t = {{t-sample_t_statistic}} with {{t-sample_degrees_of_freedom}} degrees of freedom.",
+    "t-Group-Name": "Group Name",
+    "t-sample_sample_size": "N",
+    "t-Missing": "Missing",
+    "t-sample_sample_mean": "Mean",
+    "t-sample_sample_std_dev": "Std Dev",
+    "t-sample_standard_error_of_mean": "SEM",
+    "t-conclusion_one_tailed": "{{t-conclusion_one_tailed}}",
+    "t-conclusion_two_tailed": "{{t-conclusion_two_tailed}}",
+    "t-normality_tests_shapiro_wilk_p_value": "",
+    "t-normality_tests_shapiro_wilk_result": "Normality Test (Shapiro-Wilk): {{t-normality_tests_shapiro_wilk_result}} (P = {{t-normality_tests_shapiro_wilk_p_value}})",
+    "t-sample_confidence_interval_upper_bound": "",
+    "t-sample_one_tailed_p_value": "One-tailed P-value =  {{t-sample_one_tailed_p_value}}",
+    "t-sample_p_value": "sample_p_value {{t-sample_p_value}}",
+    "t-sample_two_tailed_p_value": "Two-tailed P-value =  {{t-sample_two_tailed_p_value}}",
+    "t-sample_t_statistic": "",
+    "t-statistical_power_performed_one_tailed_test_with_alpha": "Power of performed one-tailed test with alpha : {{t-statistical_power_performed_one_tailed_test_with_alpha}}",
+    "t-statistical_power_power_of_performed_two_tailed_test_with_alpha": "Power of performed two-tailed test with alpha : {{t-statistical_power_power_of_performed_two_tailed_test_with_alpha}}"
+
+}

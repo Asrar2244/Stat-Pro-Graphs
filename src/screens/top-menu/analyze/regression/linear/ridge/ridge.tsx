@@ -91,7 +91,23 @@ export const Ridge: FC = () => {
 
   const onChangeHandler = (e: ChangeEvent<HTMLInputElement>): void => {
     if (e.target.type === 'checkbox') {
-      setRidge({ [e.target.name]: e.target.checked });
+      // Implement mutually exclusive behavior for lambda options
+      if (e.target.name === 'lambdaRangeOfValues' && e.target.checked) {
+        // If Range of Values is selected, disable and uncheck Individual
+        setRidge({ 
+          [e.target.name]: e.target.checked,
+          lambdaIndividual: false 
+        });
+      } else if (e.target.name === 'lambdaIndividual' && e.target.checked) {
+        // If Individual is selected, disable and uncheck Range of Values
+        setRidge({ 
+          [e.target.name]: e.target.checked,
+          lambdaRangeOfValues: false 
+        });
+      } else {
+        // For other checkboxes or when unchecking, use normal behavior
+        setRidge({ [e.target.name]: e.target.checked });
+      }
     } else {
       setRidge({ [e.target.name]: Number(e.target.value) });
     }
@@ -214,6 +230,7 @@ export const Ridge: FC = () => {
             label={t('rangeOfValues', { ns: 'regLinearRidge' })}
             onChange={onChangeHandler}
             checked={ridge.lambdaRangeOfValues}
+            disabled={ridge.lambdaIndividual} 
           />
         </div>
         <div className={classes.lambda}>
@@ -222,7 +239,7 @@ export const Ridge: FC = () => {
               type="number"
               name="lambdaMinimum"
               value={String(ridge.lambdaMinimum)}
-              disabled={!ridge.lambdaRangeOfValues}
+              disabled={!ridge.lambdaRangeOfValues || ridge.lambdaIndividual} 
               onChange={onChangeHandler}
             />
           </Field>
@@ -231,7 +248,7 @@ export const Ridge: FC = () => {
               type="number"
               name="lambdaMaximum"
               value={String(ridge.lambdaMaximum)}
-              disabled={!ridge.lambdaRangeOfValues}
+              disabled={!ridge.lambdaRangeOfValues || ridge.lambdaIndividual} 
               onChange={onChangeHandler}
             />
           </Field>
@@ -239,7 +256,7 @@ export const Ridge: FC = () => {
             <Input
               type="number"
               name="lambdaIncrement"
-              disabled={!ridge.lambdaRangeOfValues}
+              disabled={!ridge.lambdaRangeOfValues || ridge.lambdaIndividual} 
               value={String(ridge.lambdaIncrement)}
               onChange={onChangeHandler}
             />
@@ -253,11 +270,12 @@ export const Ridge: FC = () => {
             label={t('individual', { ns: 'regLinearRidge' })}
             checked={ridge.lambdaIndividual}
             onChange={onChangeHandler}
+            disabled={ridge.lambdaRangeOfValues} 
           />
           <Input
             name="lambdaIndividualValues"
             type="text"
-            disabled={!ridge.lambdaIndividual}
+            disabled={!ridge.lambdaIndividual || ridge.lambdaRangeOfValues}
             onBlur={onBlurHandler}
           />
         </div>

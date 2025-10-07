@@ -31,5 +31,9 @@
   "estimationOfModule": "Estimation of Module",
   "pairwiseComparison": "Pairwise Comparison",
   "descriptiveStat": "Descriptive Stats",
-  "graphView": "Graph View"
+  "graphView": "Graph View",
+  "test": "Test",
+  "t-test": "T-Test",
+  "options": "Options",
+  "paired-t-test": "Paired T Test"
 }

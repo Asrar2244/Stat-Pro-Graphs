@@ -13,23 +13,9 @@ export const useExplorerLayout = makeStyles({
     },
     '& .tree-comp': {
       backgroundColor: tokens.colorNeutralBackground3,
-      flex: 1,
-      overflow: 'auto',
-      scrollbarWidth: 'thin',
-      ...shorthands.padding(tokens.spacingVerticalS, 0),
-      '&::-webkit-scrollbar': {
-        width: '8px',
-      },
-      '&::-webkit-scrollbar-track': {
-        backgroundColor: 'transparent',
-      },
-      '&::-webkit-scrollbar-thumb': {
-        backgroundColor: tokens.colorNeutralBackgroundStatic,
-        borderRadius: '8px',
-        '&:hover': {
-          backgroundColor: tokens.colorNeutralBackgroundStatic,
-        },
-      },
+      flex: '1',
+      overflowY: 'auto',
+      scrollBehavior: 'smooth',
     },
   },
   treeItem: {

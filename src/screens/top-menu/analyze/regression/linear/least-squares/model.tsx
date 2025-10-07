@@ -13,6 +13,7 @@ import { useModelStyle } from './styles-hook/use-model-style';
 import { ListCheckboxWithSelectAll } from '@libs';
 import { useStartProStore } from '@store/main-store';
 import { generateKey } from '@utils/helper';
+import { useStartProStore } from '@store/main-store';
 export const Model: FC = () => {
   const classes = useModelStyle();
   const { t } = useTranslation('regLinearLeastSquare');
@@ -163,12 +164,15 @@ const DependentListRender: FC = () => {
 const AvailableListRender: FC = () => {
   const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
   const { t } = useTranslation('regLinearLeastSquare');
-  const { availableList, dependentList, independentList, setModelBulk } = useLinearLeastSquares(
+
+  const { setBlockUI } = useStartProStore();
+  const { availableList, dependentList, setModelBulk, setModel } = useLinearLeastSquares(
     useShallow((state) => ({
       availableList: state.model.availableList,
       dependentList: state.model.dependentList,
       independentList: state.model.independentList,
       setModelBulk: state.setModelBulk,
+      setModel: state.setModel
     })),
   );
   const [propKey, setPropKey] = useState(generateKey(availableList))
@@ -180,30 +184,28 @@ const AvailableListRender: FC = () => {
 
   const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
     const name = (e.currentTarget as HTMLButtonElement).dataset.name;
-    // Prevent multi-select send to dependent
+    const movList = new Map<string, boolean>();
+    const availList = new Map<string, boolean>();
+
+    availableList.forEach((value, key) =>
+      (value ? movList : availList).set(key, value)
+    );
     if (name === 'dependent') {
-      const selected = Array.from(availableList.entries()).filter(([, v]) => v).map(([k]) => k);
-      if (selected.length > 1) {
-        setBlockUI({ value: true, msg: 'Please select exactly one dependent variable.' });
+      if (dependentList.size === 0 && movList.size === 1) {
+
+        setModel({ dependentList: movList });
+      } else {
+        setBlockUI({ value: true, msg: t('allowOnlyOneRecord', { ns: 'errors' }) });
         return;
       }
+    } else {
+      setModel({ independentList: movList });
     }
-    availableList.forEach((value: boolean, key: string) => {
-      if (value) {
-        if (name === 'dependent') {
-          // Enforce single dependent: clear existing and set only this one
-          dependentList.clear();
-          dependentList.set(key, true);
-        } else {
-          independentList.set(key, false);
-        }
-        availableList.delete(key);
-      }
-    });
 
-    setModelBulk(availableList, 'availableList');
-    if (availableList.size === 0) setSelectAll(false);
+    setModelBulk(availList, 'availableList');
+    if (!availableList.size) setSelectAll(false);
   };
+
   return (
     <div className="section-available">
       <ListCheckboxWithSelectAll

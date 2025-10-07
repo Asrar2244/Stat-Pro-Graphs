@@ -1,5 +1,5 @@
 import { Tooltip } from '@fluentui/react-components';
-import { FC, ReactNode, memo, useEffect } from 'react';
+import { FC, ReactNode, memo, useEffect, useState } from 'react';
 import { useColumnsRowsCount } from './use-column-count';
 import { useFetchRecords } from './use-fetch-rows';
 import { ListSkeleton, DivShowScrollOnHover, Pagination } from '@libs';
@@ -25,8 +25,14 @@ const noContentRenderer = (): ReactNode => {
 const TableDataRender: FC<ITableProps> = (props) => {
   const classes = useTableStyles();
   const { columns, count } = useColumnsRowsCount(props);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const pageContext = usePagination(count);
   const { data, isLoading, loadMoreFun } = useFetchRecords(props.tabName, pageContext.pageSize);
+
+  // Filter columns based on selection
+  const filteredColumns = selectedColumns.length > 0
+    ? columns.filter(col => selectedColumns.includes(col.columnId) || col.columnId === '')
+    : columns;
   useEffect(() => {
     pageContext.dataLoader(loadMoreFun);
   }, [pageContext.startIndex, pageContext.stopIndex]);
@@ -40,8 +46,8 @@ const TableDataRender: FC<ITableProps> = (props) => {
     if (rowIndex === 0) {
       if (columnIndex === 0) return <div>&nbsp;</div>;
       return (
-        <Tooltip content={columns[columnIndex].columnId} relationship="label" withArrow>
-          <span> {columns[columnIndex].columnId}</span>
+        <Tooltip content={filteredColumns[columnIndex].columnId} relationship="label" withArrow>
+          <span> {filteredColumns[columnIndex].columnId}</span>
         </Tooltip>
       );
     }
@@ -56,7 +62,7 @@ const TableDataRender: FC<ITableProps> = (props) => {
       <input
         type="text"
         className={classes.textBoxCss}
-        defaultValue={data[rowIndex][columns[columnIndex].columnId]}
+        defaultValue={data[rowIndex][filteredColumns[columnIndex].columnId]}
       />
     );
   };
@@ -93,14 +99,14 @@ const TableDataRender: FC<ITableProps> = (props) => {
   });
   return (
     <div className={classes.completeLayout}>
-      <TableSearch {...props} />
+      <TableSearch {...props} onSelectedColumnsChange={setSelectedColumns} />
       <DivShowScrollOnHover>
         {isLoading ? (
           <ListSkeleton skeletonCount={20} />
         ) : (
           <AutoSizer>
             {({ width, height }): ReactNode => (
-              <ColumnSizer columnMinWidth={44} columnCount={columns.length} width={width}>
+              <ColumnSizer columnMinWidth={44} columnCount={filteredColumns.length} width={width}>
                 {({ adjustedWidth, registerChild }): ReactNode => (
                   <MultiGrid
                     className={classes.cellStyle}
@@ -108,7 +114,7 @@ const TableDataRender: FC<ITableProps> = (props) => {
                     fixedColumnCount={1}
                     fixedRowCount={1}
                     columnWidth={cache.columnWidth}
-                    columnCount={columns.length}
+                    columnCount={filteredColumns.length}
                     height={height - 95}
                     noContentRenderer={noContentRenderer}
                     cellRenderer={cellRenderer}

@@ -1,0 +1,22 @@
+{
+    "title": "Paired T test API",
+    "ok": "Ok",
+    "close": "Cancel",
+    "titleData": "Paired T test",
+    "back": "Back",
+    "next": "Next",
+    "mean": "Mean",
+    "dataForAfter": "Data for After",
+    "dataForBefore": "Data for before",
+    "dataForSubject": "Data for Subject",
+    "dataForTreatment": "Data for Treatment",
+    "dataForData": "Data for Data",
+    "selectedColumn": "Selected Column",
+    "dataFormat": "Data Format",
+    "data": "Data",
+    "populationMean": "Population Mean",
+    "subject": "Subject",
+    "treatment": "Treatment",
+    "after": "After",
+    "before": "Before"
+}
