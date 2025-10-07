@@ -43,7 +43,42 @@ export const useTableFetch = ({
 
         const result = await tableWorker.generateQueryColumn(viewNew, tableName, recordType);
         return Promise.resolve({ ...result, viewNew });
-
+      case 'json-array': {
+        const columnsQuery2 = await tableWorker.generateQueryColumn(view, tableName, recordType);
+        const db = new Database(dbName);
+        const rawRows = await db.selectQuery(columnsQuery2.query);
+        let jsonStr: string | undefined;
+        if (rawRows && rawRows.length > 0) {
+          const row0 = rawRows[0];
+          for (const key of Object.keys(row0)) {
+            const val = row0[key];
+            if (typeof val === 'string') {
+              const trimmed = val.trim();
+              if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+                jsonStr = trimmed;
+                break;
+              }
+            }
+          }
+        }
+        let viewNew2: Array<Array<string>> = [];
+        try {
+          if (jsonStr) {
+            const arr = JSON.parse(jsonStr);
+            if (Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'object') {
+              const keys = Object.keys(arr[0]);
+              viewNew2.push(keys);
+              for (let i = 0; i < arr.length; i++) {
+                const obj = arr[i] as Record<string, any>;
+                viewNew2.push(keys.map((k) => (obj[k] == null ? '' : String(obj[k]))));
+              }
+            }
+          }
+        } catch (_) {
+          viewNew2 = [];
+        }
+        return Promise.resolve({ query: '', pageQuery: '', checkColumnsExistsQuery: '', viewNew: viewNew2 });
+      }
       default:
         return await tableWorker.generateQueryColumn(view, tableName, recordType);
     }
@@ -104,6 +139,10 @@ export const useTableFetch = ({
         setTemplateView([]);
       }
       setHeaderClass && setHeaderClass(existedColumns.length > 0 ? "show" : "hide")
+      setLoading(false);
+    } else if (Array.isArray(viewNew) && Array.isArray(viewNew[0])) {
+      setTemplateView(viewNew as Array<Array<string>>);
+      setHeaderClass && setHeaderClass((viewNew as Array<any>).length > 0 ? "show" : "hide")
       setLoading(false);
     }
   };

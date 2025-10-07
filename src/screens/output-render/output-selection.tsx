@@ -17,6 +17,11 @@ const LinearRidgeRegression = lazy(() =>
     default: modules.LinearRidgeRegression,
   })),
 );
+const LinearBayesianRegression = lazy(() =>
+  import('./analyze/regression/linear/bayesian').then((modules) => ({
+    default: modules.default,
+  })),
+);
 const DescriptiveStatistics = lazy(() =>
   import('./analyze/descriptive-stats').then((modules) => ({
     default: modules.DescriptiveStatisticsRegression,
@@ -79,6 +84,7 @@ const load: any = {
   regLinearMultipleLinear: <MultipleLinearRegression />,
   regLinearPolynomial: <PolynomialRegression />,
   regLinearRidge: <LinearRidgeRegression />,
+  regLinearBayesian: <LinearBayesianRegression />,
   estimationOfModules: <EstimationOfModule />,
   pairwiseComparisonModules: <PairwiseComparisonOfModules />,
   descriptiveStatistics: <DescriptiveStatistics />

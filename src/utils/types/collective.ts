@@ -36,7 +36,7 @@ export interface ITableCreator {
   name?: string;
   recordType: IRecordTableType;
   translationColumns?: Array<number>;
-  type?: 'columns';
+  type?: 'columns' | 'json-array';
   appendColumn?: Array<string>;
   postfix?: string;
   prefix?: string;

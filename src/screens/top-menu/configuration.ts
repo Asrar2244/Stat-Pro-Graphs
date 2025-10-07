@@ -23,6 +23,7 @@ export const exporters = {
   pairwiseComparisonOfModule: 'pairwise-comparison',
   openNewTabForGraph: 'openNewTabAction',
   emptyDataView: 'openNewTabAction',
+  regressionBayesian: 'bayesian',
 };
 
 export const topMenuConfig = {

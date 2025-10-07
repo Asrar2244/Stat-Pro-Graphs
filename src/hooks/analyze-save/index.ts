@@ -147,6 +147,14 @@ export const useAnalyzeSave = () => {
           response.outputType = 'regLinearMultipleLinear';
         }
 
+        // Inject outputType for bayesian regression
+        if (
+          parameters?.regressionType === 'linear' &&
+          parameters?.sub_type === 'bayesian'
+        ) {
+          response.outputType = 'regLinearBayesian';
+        }
+
         outputUpdateResult(dbName, [JSON.stringify(response), outputId])
           .then(() => {
             const { isEmptyDataView } = config;

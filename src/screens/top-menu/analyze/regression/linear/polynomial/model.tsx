@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, MouseEvent, useState } from 'react';
+import { ChangeEvent, FC, MouseEvent, useEffect, useState } from 'react';
 import { Checkbox, Button } from '@fluentui/react-components';
 import {
   MdKeyboardDoubleArrowLeft,
@@ -10,6 +10,9 @@ import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import { usePolynomial } from './use-polynomial-hook';
 import { useModelStyle } from '../forward-stepwise/styles-hook/use-model-style';
+import { useStartProStore } from '@store/main-store';
+import { ListCheckboxWithSelectAll } from '@libs';
+import { generateKey } from '@utils/helper';
 
 export const Model: FC = () => {
   const classes = useModelStyle();
@@ -61,6 +64,12 @@ const IndependentListRender: FC = () => {
       setModelBulk: state.setModelBulk,
     })),
   );
+  const [propKey, setPropKey] = useState(generateKey(independentList));
+  const { setBlockUI } = useStartProStore();
+
+  useEffect(() => {
+    setPropKey(generateKey(independentList))
+  }, [...independentList.values()])
 
   const onRemoveHandler = (): void => {
     independentList.forEach((value: boolean, name: string) => {
@@ -75,17 +84,20 @@ const IndependentListRender: FC = () => {
       setSelectAll(false);
     }
   };
-
   return (
     <div className="section-available">
-      <SimpleListRender
+      <ListCheckboxWithSelectAll
+        listSize={independentList.size}
         list={independentList}
-        selectAll={selectAll}
-        setSelectAll={setSelectAll}
-        setModelBulk={setModelBulk}
-        listName="independentList"
         selectAllText={t('selectAll')}
+        selectValue={selectAll}
+        requiredSelectAll
+        onSelectAllChanged={setSelectAll}
+        setModelBulk={setModelBulk}
+        listName='independentList'
+        propKey={propKey}
       />
+
       <Button
         icon={<MdOutlineRemove />}
         className="remove-button"
@@ -97,9 +109,9 @@ const IndependentListRender: FC = () => {
     </div>
   );
 };
-
 const DependentListRender: FC = () => {
   const [, setSelectAll] = useState<boolean | string | undefined>(false);
+
   const { t } = useTranslation('regLinearPolynomial');
   const { availableList, dependentList, setModelBulk } = usePolynomial(
     useShallow((state) => ({
@@ -108,7 +120,11 @@ const DependentListRender: FC = () => {
       setModelBulk: state.setModelBulk,
     })),
   );
+  const [propKey, setPropKey] = useState(generateKey(dependentList))
 
+  useEffect(() => {
+    setPropKey(generateKey(dependentList))
+  }, [...dependentList.values()])
   const onRemoveHandler = (): void => {
     dependentList.forEach((value: boolean, name: string) => {
       if (value) {
@@ -118,21 +134,22 @@ const DependentListRender: FC = () => {
     });
     setModelBulk(availableList, 'availableList');
     setModelBulk(dependentList, 'dependentList');
-    if (dependentList.size === 0) {
-      setSelectAll(false);
-    }
+    if (dependentList.size === 0) setSelectAll(false);
   };
-
   return (
     <div className="section-available">
-      <SimpleListRender
+      <ListCheckboxWithSelectAll
+        listSize={dependentList.size}
         list={dependentList}
-        selectAll={false}
-        setSelectAll={setSelectAll}
-        setModelBulk={setModelBulk}
-        listName="dependentList"
         selectAllText={t('selectAll')}
+        selectValue={false}
+        requiredSelectAll
+        onSelectAllChanged={setSelectAll}
+        propKey={propKey}
+        setModelBulk={setModelBulk}
+        listName='dependentList'
       />
+
       <Button
         icon={<MdOutlineRemove />}
         className="remove-button"
@@ -156,33 +173,38 @@ const AvailableListRender: FC = () => {
       setModelBulk: state.setModelBulk,
     })),
   );
+  const [propKey, setPropKey] = useState(generateKey(availableList))
+  const { setBlockUI } = useStartProStore();
+
+  useEffect(() => {
+    setPropKey(generateKey(availableList))
+  }, [...availableList.values()])
 
   const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
     const name = (e.currentTarget as HTMLButtonElement).dataset.name;
-    
     // Check if trying to add independent variable when one already exists
     if (name === 'independent' && independentList.size >= 1) {
-      alert('Polynomial regression allows only one independent variable. Please remove the existing one first.');
+      setBlockUI({ value: true, msg: 'Polynomial regression allows only one independent variable. Please remove the existing one first.' });
       return;
     }
-    
+
     if (name === 'dependent') {
       const selected = Array.from(availableList.entries()).filter(([, v]) => v).map(([k]) => k);
       if (selected.length > 1) {
-        alert('Please select only one dependent variable.');
+        setBlockUI({ value: true, msg: 'Please select exactly one dependent variable.' });
         return;
       }
     }
     availableList.forEach((value: boolean, key: string) => {
       if (value) {
         if (name === 'dependent') {
-          // enforce single dependent in polynomial
+          // Enforce single dependent in polynomial
           dependentList.clear();
           dependentList.set(key, true);
         } else {
           // Only add if we don't already have an independent variable
           if (independentList.size === 0) {
-            independentList.set(key, true); // ✅ Set to true for selected variables
+            independentList.set(key, true);
           }
         }
         availableList.delete(key);
@@ -192,98 +214,33 @@ const AvailableListRender: FC = () => {
     setModelBulk(availableList, 'availableList');
     if (availableList.size === 0) setSelectAll(false);
   };
-
   return (
     <div className="section-available">
-      <SimpleListRender
+      <ListCheckboxWithSelectAll
+        listSize={availableList.size}
         list={availableList}
-        selectAll={selectAll}
-        setSelectAll={setSelectAll}
-        setModelBulk={setModelBulk}
-        listName="availableList"
         selectAllText={t('selectAll')}
+        selectValue={selectAll}
+        requiredSelectAll
+        onSelectAllChanged={setSelectAll}
+        propKey={propKey}
+        setModelBulk={setModelBulk}
+        listName='availableList'
       />
+
       <div className="send-buttons">
         <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler} disabled={dependentList.size >= 1}>
           {t('sendToDependent')}
         </Button>
+
         <Button
           icon={<MdKeyboardDoubleArrowRight />}
           iconPosition="after"
           data-name="independent"
           onClick={onSendHandler}
-          disabled={independentList.size >= 1}
         >
           {t('sendToIndependent')}
         </Button>
-      </div>
-    </div>
-  );
-};
-
-// Simple implementation of ListCheckboxWithSelectAll functionality
-interface SimpleListRenderProps {
-  list: Map<string, boolean>;
-  selectAll: boolean | string | undefined;
-  setSelectAll: (value: boolean | string | undefined) => void;
-  setModelBulk: (list: Map<string, boolean>, listName: string) => void;
-  listName: string;
-  selectAllText: string;
-}
-
-const SimpleListRender: FC<SimpleListRenderProps> = ({
-  list,
-  selectAll,
-  setSelectAll,
-  setModelBulk,
-  listName,
-  selectAllText
-}) => {
-  const handleSelectAllChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { checked } = e.target;
-    list.forEach((_, key) => list.set(key, checked));
-    setModelBulk(list, listName);
-    setSelectAll(checked);
-  };
-
-  const handleItemChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    list.set(name, checked);
-    setModelBulk(list, listName);
-    
-    const allChecked = Array.from(list.values()).every((val) => val);
-    const someChecked = Array.from(list.values()).some((val) => val);
-    setSelectAll(allChecked ? true : someChecked ? "mixed" : false);
-  };
-
-  // Determine the appropriate CSS class based on listName
-  const getListClassName = () => {
-    if (listName === 'availableList') return 'available-list';
-    if (listName === 'dependentList') return 'dependent-list';
-    return 'available-list'; // default for independentList
-  };
-
-  return (
-    <div>
-      <div className="select-size">
-        <Checkbox
-          label={selectAllText}
-          checked={selectAll === true}
-          onChange={handleSelectAllChange}
-        />
-        <span>{list.size}</span>
-      </div>
-      <div className={getListClassName()}>
-        {Array.from(list.entries()).map(([key, checked]) => (
-          <div key={key}>
-            <Checkbox
-              label={key}
-              name={key}
-              checked={checked}
-              onChange={handleItemChange}
-            />
-          </div>
-        ))}
       </div>
     </div>
   );

@@ -5,11 +5,10 @@ import { exporters } from './configuration';
 import { useTranslation } from 'react-i18next';
 import { useLicenseStore } from '@store';
 import { useShallow } from 'zustand/react/shallow';
+import { LeastSquare } from './analyze/regression/linear/least-squares/least-squares';
+import { Bayesian } from './analyze/regression/linear/bayesian/bayesian';
 const BrowseFile = lazy(() =>
   import('./browse-file').then((module) => ({ default: module.BrowseFile })),
-);
-const LeastSquare = lazy(() =>
-  import('./analyze').then((module) => ({ default: module.LeastSquare })),
 );
 const Ridge = lazy(() => import('./analyze').then((module) => ({ default: module.RidgeModule })));
 
@@ -100,6 +99,8 @@ const MenuSelector: FC<{
         return <BrowseFile {...modal} t={t} />;
       case exporters.regressionLeastSquare:
         return <LeastSquare {...modal} />;
+      case exporters.regressionBayesian:
+        return <Bayesian {...modal} />;
       case exporters.regressionRidge:
         return <Ridge {...modal} />;
       case exporters.regressionForwardStepwise:

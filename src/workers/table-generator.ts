@@ -9,6 +9,19 @@ interface IQuery {
 }
 
 const numberFormat = (value: string | number): string => {
+  // Try to parse JSON-like strings (e.g., '[{"lambda":0.2,...}]') so they display as valid JSON
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    const looksJson = (trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'));
+    if (looksJson) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return JSON.stringify(parsed);
+      } catch (_) {
+        // fall through to default handling
+      }
+    }
+  }
   if (isNaN(value as number)) {
     return value?.toString();
   }

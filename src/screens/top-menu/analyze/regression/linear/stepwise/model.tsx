@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import { useLinearLeastSquares } from './use-squares-hook';
 import { useModelStyle } from '../forward-stepwise/styles-hook/use-model-style';
+import { useStartProStore } from '@store/main-store';
 
 
 
@@ -160,14 +161,24 @@ const AvailableListRender: FC = () => {
       setModelBulk: state.setModelBulk,
     })),
   );
+  const { setBlockUI } = useStartProStore();
 
 
   const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
     const name = (e.currentTarget as HTMLButtonElement).dataset.name;
+    if (name === 'dependent') {
+      const selected = Array.from(availableList.entries()).filter(([, v]) => v).map(([k]) => k);
+      if (selected.length > 1) {
+        setBlockUI({ value: true, msg: 'Please select exactly one dependent variable.' });
+        return;
+      }
+    }
     availableList.forEach((value: boolean, key: string) => {
       if (value) {
         if (name === 'dependent') {
-          dependentList.set(key, false);
+          // Enforce single dependent
+          dependentList.clear();
+          dependentList.set(key, true);
         } else {
           independentList.set(key, false);
         }

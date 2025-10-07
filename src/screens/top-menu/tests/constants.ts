@@ -15,6 +15,7 @@ export const analysisOptions: TestOption[] = [
         { label: 'Best Subset', value: 'bestSubset', execute: 'best-subset' },
         { label: 'Multiple Linear', value: 'multipleLinear', execute: 'multiple-linear' },
         { label: 'Polynomial', value: 'polynomial', execute: 'polynomial' },
+        { label: 'Bayesian', value: 'bayesian', execute: 'bayesian' },
       ] },
     ],
   },
