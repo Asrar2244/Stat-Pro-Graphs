@@ -65,7 +65,6 @@ const IndependentListRender: FC = () => {
     })),
   );
   const [propKey, setPropKey] = useState(generateKey(independentList));
-  const { setBlockUI } = useStartProStore();
 
   useEffect(() => {
     setPropKey(generateKey(independentList))
