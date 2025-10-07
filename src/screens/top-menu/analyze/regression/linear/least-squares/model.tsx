@@ -13,7 +13,7 @@ import { useModelStyle } from './styles-hook/use-model-style';
 import { ListCheckboxWithSelectAll } from '@libs';
 import { useStartProStore } from '@store/main-store';
 import { generateKey } from '@utils/helper';
-import { useStartProStore } from '@store/main-store';
+
 export const Model: FC = () => {
   const classes = useModelStyle();
   const { t } = useTranslation('regLinearLeastSquare');
@@ -176,7 +176,6 @@ const AvailableListRender: FC = () => {
     })),
   );
   const [propKey, setPropKey] = useState(generateKey(availableList))
-  const { setBlockUI } = useStartProStore();
 
   useEffect(() => {
     setPropKey(generateKey(availableList))

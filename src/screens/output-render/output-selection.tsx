@@ -69,6 +69,7 @@ const PolynomialRegression = lazy(() =>
   import('./analyze/regression/linear/polynomial').then((modules) => ({
     default: modules.PolynomialRegression,
   }))
+);
 const TTestComponent = lazy(() =>
   import('./analyze/tests/t-test').then((modules) => ({
     default: modules.TTestComponent,
