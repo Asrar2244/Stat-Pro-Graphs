@@ -33,12 +33,19 @@ export const useFormatter = (): IFormatter => {
     });
   };
   const numberFormat = (value: string | number): string => {
-    if (isNaN(value as number)) {
+    // Handle empty string case explicitly
+    if (value === '' || value === null || value === undefined) {
+      return '';
+    }
+
+    const numValue = Number(value);
+    if (isNaN(numValue)) {
       return value?.toString();
     }
+
     return new Intl.NumberFormat(i18n.language, {
       maximumFractionDigits: DECIMAL_PLACES,
-    }).format(Number(value));
+    }).format(numValue);
   };
   const snitizedSpecialChar = (value: string): string => {
     return value.replace(/[^a-zA-Z0-9]/g, ' ');

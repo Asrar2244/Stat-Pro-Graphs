@@ -9,7 +9,7 @@ interface IModalInput {
   initialOpen?: boolean;
 }
 export const useModal = ({ initialOpen }: IModalInput): IModal => {
-  const [open, setOpen] = useState<boolean>(!initialOpen && false);
+  const [open, setOpen] = useState<boolean>(initialOpen ?? false);
   const closeModal = (): void => {
     setOpen(false);
   };
