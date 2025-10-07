@@ -23,6 +23,32 @@ async fn close_splashscreen(window: Window) {
         .unwrap();
 }
 fn main() {
+    let log_path = {
+        #[cfg(target_os = "windows")]
+        let base = if let Ok(appdata) = std::env::var("APPDATA") {
+            appdata
+        } else {
+            // Fallback if APPDATA is not set
+            let home = std::env::var("USERPROFILE").expect("USERPROFILE not set");
+            format!("{}/AppData/Roaming", home)
+        };
+
+        #[cfg(target_os = "macos")]
+        let base = {
+            let home = std::env::var("HOME").expect("HOME not set");
+            format!("{}/Library/Logs", home)
+        };
+
+        #[cfg(target_os = "linux")]
+        let base = if let Ok(xdg_config) = std::env::var("XDG_CONFIG_HOME") {
+            xdg_config
+        } else {
+            let home = std::env::var("HOME").expect("HOME not set");
+            format!("{}/.config", home)
+        };
+
+        std::path::PathBuf::from(base).join("start-pro-logs")
+    };
     let child_process: Arc<Mutex<Option<Child>>> = Arc::new(Mutex::new(None));
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
@@ -38,7 +64,7 @@ fn main() {
             tauri_plugin_log::Builder::new()
                 .target(tauri_plugin_log::Target::new(
                     tauri_plugin_log::TargetKind::Folder {
-                        path: std::path::PathBuf::from("start-pro-logs"),
+                        path: log_path,
                         file_name: None,
                     },
                 ))
