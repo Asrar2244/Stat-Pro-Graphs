@@ -22,8 +22,7 @@
         "decorations": true,
         "alwaysOnTop": false,
         "width": 900,
-        "transparent": false,
-        "center": true
+        "transparent": true
       },
       {
         "title": "start-pro",
@@ -35,15 +34,11 @@
         "decorations": false,
         "resizable": false,
         "dragDropEnabled": false,
-        "visible": true,
-        "skipTaskbar": true
+        "visible": true
       }
     ],
     "security": {
-      "csp": null,
-      "capabilities": [
-        "default"
-      ]
+      "csp": null
     }
   },
   "bundle": {

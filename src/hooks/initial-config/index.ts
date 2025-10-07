@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { invoke } from '@tauri-apps/api/core';
 import { exists, mkdir, create } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
 import { Database, homeDirectory } from '@utils';
@@ -17,12 +16,6 @@ export const useInitialConfig = () => {
   const { t } = useTranslation('dockLayout', { useSuspense: false }); // Change to false
 
   useEffect(() => {
-    // Close splash screen immediately, don't wait for config
-    safeTauriCall(
-      () => invoke('close_splashscreen'),
-      Promise.resolve()
-    );
-    
     // Run config setup in background
     seedInitialConfig();
     //To Print App Version

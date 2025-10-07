@@ -29,7 +29,7 @@
       "view": [
         [ "", "t-test_stat", "t-p_value" ],
         [ "t-ks_stat", "ks_stat", "ks_p_value" ],
-        [ "t-shaprio_stat", "shaprio_stat", "shaprio_p_value" ]
+        [ "t-shapiro_stat", "shapiro_stat", "shapiro_p_value" ]
       ]
     },
     {

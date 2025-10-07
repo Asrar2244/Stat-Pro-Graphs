@@ -3,11 +3,9 @@
 use tauri_plugin_log;
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 use std::env;
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, Command};
 use std::sync::{Arc, Mutex};
 use tauri::{Manager, RunEvent, Window};
-use std::time::{Duration, Instant};
-use std::net::{TcpStream, SocketAddr, Ipv4Addr};
 mod excel_csv_file;
 mod tauri_json_file;
 #[tauri::command]
@@ -25,6 +23,32 @@ async fn close_splashscreen(window: Window) {
         .unwrap();
 }
 fn main() {
+    let log_path = {
+        #[cfg(target_os = "windows")]
+        let base = if let Ok(appdata) = std::env::var("APPDATA") {
+            appdata
+        } else {
+            // Fallback if APPDATA is not set
+            let home = std::env::var("USERPROFILE").expect("USERPROFILE not set");
+            format!("{}/AppData/Roaming", home)
+        };
+
+        #[cfg(target_os = "macos")]
+        let base = {
+            let home = std::env::var("HOME").expect("HOME not set");
+            format!("{}/Library/Logs", home)
+        };
+
+        #[cfg(target_os = "linux")]
+        let base = if let Ok(xdg_config) = std::env::var("XDG_CONFIG_HOME") {
+            xdg_config
+        } else {
+            let home = std::env::var("HOME").expect("HOME not set");
+            format!("{}/.config", home)
+        };
+
+        std::path::PathBuf::from(base).join("start-pro-logs")
+    };
     let child_process: Arc<Mutex<Option<Child>>> = Arc::new(Mutex::new(None));
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
@@ -40,7 +64,7 @@ fn main() {
             tauri_plugin_log::Builder::new()
                 .target(tauri_plugin_log::Target::new(
                     tauri_plugin_log::TargetKind::Folder {
-                        path: std::path::PathBuf::from("start-pro-logs"),
+                        path: log_path,
                         file_name: None,
                     },
                 ))
@@ -52,6 +76,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             close_splashscreen,
             tauri_json_file::save_json_to_file,
+            tauri_json_file::read_json_from_file,
             tauri_json_file::get_file_size,
             excel_csv_file::save_excel_to_file,
             excel_csv_file::save_csv_to_file
@@ -60,7 +85,6 @@ fn main() {
             // Clone reference for the setup closure
             let child_process = Arc::clone(&child_process);
             move |_app| {
-                const BACKEND_PORT: u16 = 5000;
                 // Set the path to the backend executable based on OS
                 let exe_path = {
                     let mut path = env::current_exe()
@@ -87,95 +111,28 @@ fn main() {
                     panic!("Backend executable not found at {:?}", exe_path);
                 }
 
-                // Proactively terminate any stale backend instances from a previous run (synchronously to avoid racing our new spawn)
-                #[cfg(target_os = "windows")]
-                {
-                    let _ = Command::new("taskkill")
-                        .args(["/IM", "main.exe", "/F", "/T"]) // kill by image
-                        .status(); // wait for completion to avoid killing the freshly spawned process
-                    std::thread::sleep(std::time::Duration::from_millis(250));
-                }
-
-                // Start the backend executable with proper working directory and PORT env
-                let exe_dir = exe_path.parent().unwrap().to_path_buf();
-                let mut cmd = Command::new(&exe_path);
-                cmd.current_dir(&exe_dir)
-                    .env("PORT", BACKEND_PORT.to_string())
-                    .arg("--port").arg(BACKEND_PORT.to_string())
-                    .arg("--host").arg("127.0.0.1")
-                    .stdout(Stdio::piped())
-                    .stderr(Stdio::piped());
-
-                let mut child = cmd.spawn().expect("Failed to start backend executable");
-
-                // Pipe backend stdout/stderr to tauri process logs for visibility
-                if let Some(stdout) = child.stdout.take() {
-                    std::thread::spawn(move || {
-                        use std::io::{BufRead, BufReader};
-                        let reader = BufReader::new(stdout);
-                        for line in reader.lines().flatten() {
-                            println!("[backend stdout] {}", line);
-                        }
-                    });
-                }
-                if let Some(stderr) = child.stderr.take() {
-                    std::thread::spawn(move || {
-                        use std::io::{BufRead, BufReader};
-                        let reader = BufReader::new(stderr);
-                        for line in reader.lines().flatten() {
-                            eprintln!("[backend stderr] {}", line);
-                        }
-                    });
-                }
+                // Start the backend executable without canonicalizing the path
+                let child = Command::new(exe_path)
+                    .spawn()
+                    .expect("Failed to start backend executable");
 
                 // Store the child process in the shared state
                 *child_process.lock().unwrap() = Some(child);
 
-                // Window settings
-                let window = _app.get_webview_window("main").unwrap();
+                // Window settings - show the main window and close splash screen
+                let main_window = _app.get_webview_window("main").unwrap();
+                
+                // Close splash screen first
+                if let Some(splashscreen) = _app.get_webview_window("splashscreen") {
+                    splashscreen.close().unwrap();
+                }
+                
                 #[cfg(not(target_os = "macos"))]
-                window.set_decorations(false).unwrap();
-                window.maximize().unwrap();
+                main_window.set_decorations(false).unwrap();
+                main_window.maximize().unwrap();
+                main_window.show().unwrap();
                 #[cfg(target_os = "macos")]
-                window.set_fullscreen(true).unwrap();
-
-                // Wait for backend to listen before switching from splash
-                let handle = _app.handle().clone();
-                std::thread::spawn(move || {
-                    let deadline = Instant::now() + Duration::from_secs(45);
-                    let mut connected = false;
-                    while Instant::now() < deadline {
-                        let addr = SocketAddr::from((Ipv4Addr::new(127, 0, 0, 1), BACKEND_PORT));
-                        if TcpStream::connect_timeout(&addr, Duration::from_millis(400)).is_ok() {
-                            connected = true;
-                            break;
-                        }
-                        std::thread::sleep(Duration::from_millis(300));
-                    }
-
-                    // Switch windows depending on connection result
-                    if connected {
-                        if let Some(splash) = handle.get_webview_window("splashscreen") {
-                            let _ = splash.close();
-                        }
-                        if let Some(main) = handle.get_webview_window("main") {
-                            let _ = main.show();
-                        }
-                    } else {
-                        #[cfg(debug_assertions)]
-                        {
-                            // DEV: keep splash up until backend is reachable
-                            println!("[dev] Backend not reachable yet; keeping splash visible.");
-                        }
-                        #[cfg(not(debug_assertions))]
-                        {
-                            // RELEASE: fallback to show main to avoid user being stuck on splash
-                            if let Some(main) = handle.get_webview_window("main") {
-                                let _ = main.show();
-                            }
-                        }
-                    }
-                });
+                main_window.set_fullscreen(true).unwrap();
 
                 Ok(())
             }
@@ -193,7 +150,7 @@ fn main() {
 
                     #[cfg(target_os = "windows")]
                     let _ = Command::new("taskkill")
-                        .args(["/IM", "main.exe", "/F", "/T"]) // kill process tree
+                        .args(&["/IM", "main.exe", "/F"])
                         .spawn();
 
                     #[cfg(target_os = "macos")]
@@ -201,21 +158,6 @@ fn main() {
 
                     #[cfg(target_os = "linux")]
                     let _ = Command::new("pkill").arg("-f").arg("main").spawn();
-                }
-                // Ensure backend is also killed if the main window is closed directly
-                tauri::RunEvent::WindowEvent { label, event, .. } => {
-                    if label == "main" {
-                        if let tauri::WindowEvent::CloseRequested { .. } = event {
-                            if let Some(mut child) = child_process.lock().unwrap().take() {
-                                let _ = child.kill();
-                            }
-
-                            #[cfg(target_os = "windows")]
-                            let _ = Command::new("taskkill")
-                                .args(["/IM", "main.exe", "/F", "/T"]) // kill process tree
-                                .spawn();
-                        }
-                    }
                 }
                 _ => {}
             }

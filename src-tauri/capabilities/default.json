@@ -26,7 +26,6 @@
     "sql:allow-load",
     "sql:allow-execute",
     "sql:allow-select",
-    "core:path:allow-join",
     "fs:allow-create",
     "fs:allow-copy-file",
     "fs:allow-exists",
@@ -57,9 +56,6 @@
     "fs:scope-home-recursive",
     "dialog:default",
     "dialog:allow-open",
-    "log:default",
-    "log:allow-log",
-    "core:window:allow-is-fullscreen",
-    "core:window:allow-set-fullscreen"
+    "log:default"
   ]
 }
