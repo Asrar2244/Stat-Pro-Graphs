@@ -1,0 +1,46 @@
+{
+	"tables": [
+		{
+			"name": "bayesian-inputs",
+			"showCaption": false,
+			"showHeaders": false,
+			"view": [
+				[ "t-dependentVariables", "dependent_var_names" ],
+				[ "t-independentVariables", "independent_var_names" ],
+				[ "t-sampleSize", "dependent_variables_len" ],
+				[ "t-credibleInterval", "credibility" ],
+				[ "t-coefficientMarginalDistribution", "beta_marginal_distribution" ],
+				[ "t-degreesOfFreedom", "t_df" ]
+			]
+		},
+		{
+			"name": "posterior-parameters",
+			"showCaption": true,
+			"showHeaders": false,
+			"view": [
+				[ "t-posteriorShapeAN", "a_n" ],
+				[ "t-posteriorScaleBN", "b_n" ],
+				[ "t-varianceMean", "sigma2_mean" ],
+				[ "t-varianceMode", "sigma2_mode" ],
+				[ "t-varianceShapeAN", "sigma2_shape_a_n" ],
+				[ "t-varianceScaleBN", "sigma2_scale_b_n" ],
+				[ "t-precisionMarginalDistribution", "tau_marginal_distribution" ],
+				[ "t-precisionShape", "tau_shape" ],
+				[ "t-precisionRate", "tau_rate" ]
+			]
+		},
+		{
+			"name": "coefficients",
+			"showHeaders": true,
+			"showCaption": true,
+			"view": [
+				"t-results.effect",
+				"t-results.coefficeint",
+				"t-results.bse",
+				"t-results.ci_lower",
+				"t-results.ci_upper"
+			],
+			"recordType": true
+		}
+	]
+}

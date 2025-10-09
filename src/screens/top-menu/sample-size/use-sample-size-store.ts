@@ -10,7 +10,7 @@ import {
   ISampleSizeResult,
   SampleSizeTestType,
 } from './types';
-import { makeSampleSizeRequest } from '@constants/api-config';
+import { useAnalyzeSave } from '@hooks';
 
 const initValues = {
   ttestForm: {
@@ -125,7 +125,7 @@ export const useSampleSizeStore = create<ISampleSizeStore>((set, get) => ({
     set(cloneDeep(initValues));
   },
 
-  calculateSampleSize: async (test: SampleSizeTestType) => {
+  calculateSampleSize: async (test: SampleSizeTestType, queueFor: string, queueType: string, id: string) => {
     set((state) => ({ ...state, isLoading: true, error: '', sampleSize: null }));
     try {
       let formData: ITTestForm | IProportionForm | IPairedTTestForm | IAnovaForm | IChiSquareForm;
@@ -148,8 +148,31 @@ export const useSampleSizeStore = create<ISampleSizeStore>((set, get) => ({
         default:
           throw new Error('Unknown test type');
       }
-      const result = await makeSampleSizeRequest(test, formData);
-      set((state) => ({ ...state, sampleSize: { sample_size: result.sample_size, test_type: test, parameters: formData }, isLoading: false, error: '' }));
+
+      // Create parameters in the same format as regression
+      const parameters = {
+        operation: 'sample_size',
+        test_type: test,
+        parameters: formData,
+        // Add any additional parameters needed for sample size
+        input_data_type: 'parameters', // Sample size doesn't need data files
+      };
+
+      // Use the same queued task system as regression
+      const { execute } = useAnalyzeSave();
+      await execute(
+        'sample_size_calculation', // tabName
+        parameters,
+        {
+          queueFor,
+          url: `/api/analysis`,
+          method: 'POST',
+          queueType,
+        },
+        id,
+      );
+
+      set((state) => ({ ...state, isLoading: false, error: '' }));
     } catch (error) {
       set((state) => ({ ...state, error: error instanceof Error ? error.message : 'Calculation failed', isLoading: false, sampleSize: null }));
     }

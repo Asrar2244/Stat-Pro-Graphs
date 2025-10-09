@@ -1,4 +1,4 @@
-import { FC, memo, useEffect } from 'react';
+import { FC, memo, useEffect, useState } from 'react';
 import {
   TableBody,
   TableCell,
@@ -34,6 +34,7 @@ interface ITableComp extends ITranslate {
 const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName, t, setHeaderClass }) => {
   const { showHeaders, view, recordType, appendColumn, postfix, prefix, type, translationColumns } =
     table;
+
   const { numberFormat, snitizedSpecialChar } = useFormatter();
   const { templateView, totalRecords, loadTemplateView, loading } = useTableFetch({
     dbName: dbFileName,
@@ -47,6 +48,7 @@ const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName,
     type,
     setHeaderClass
   });
+  const [jsonData, updateJsonData] = useState({})
   const pageContext = usePagination(totalRecords, DEFAULT_OUTPUT_TABLE_PAGE_SIZE);
   useEffect(() => {
     if (typeof recordType !== 'boolean' && recordType?.pageSize && totalRecords > 0) {
@@ -55,6 +57,10 @@ const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName,
       loadTemplateView(0, 0);
     }
   }, [totalRecords, pageContext.startIndex, pageContext.stopIndex]);
+  useEffect(() => {
+    updateJsonData(Object.fromEntries(templateView));
+  }, [templateView])
+
   const classes = useCreateTableStyles();
   const headers = showHeaders ?? true;
   const tableBodyClass = mergeClasses(
@@ -83,14 +89,14 @@ const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName,
               </TableRow>
             ) : (
               templateView.slice(headers ? 1 : 0, templateView.length).map((row, rIndex) => (
-                <TableRow key={rIndex}>
+                <TableRow key={rIndex} className='test-table'>
                   {row?.map((col, cIndex) => {
                     const transCell =
                       Array.isArray(translationColumns) && translationColumns[cIndex];
                     return (
-                      <TableCell key={cIndex}>
+                      <TableCell key={cIndex} data-cellType={col.startsWith('t-') || row.length > 2 ? "left" : "right"}>
                         {col && (col.startsWith('t-') || transCell !== undefined)
-                          ? t(numberFormat(col))
+                          ? t(numberFormat(col), { ...jsonData })
                           : numberFormat(col)}
                       </TableCell>
                     );

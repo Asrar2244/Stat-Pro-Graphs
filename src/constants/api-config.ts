@@ -1,25 +1,14 @@
-export const getSampleSizeEndpoint = (testType: string): string => {
-  // Map test types to endpoints
-  switch (testType) {
-    case 'ttest-sample-size':
-      return 'http://localhost:5000/sample_size/api/ttest-sample-size';
-    case 'proportion-sample-size':
-      return 'http://localhost:5000/sample_size/api/proportion-sample-size';
-    case 'paired-ttest-sample-size':
-      return 'http://localhost:5000/sample_size/api/paired-ttest-sample-size';
-    case 'anova-sample-size':
-      return 'http://localhost:5000/sample_size/api/anova-sample-size';
-    case 'chi-square-sample-size':
-      return 'http://localhost:5000/sample_size/api/chi-square-sample-size';
-    default:
-      return '';
-  }
+// Sample size now uses the same queued task system as regression
+export const getSampleSizeEndpoint = (_testType: string): string => {
+  // All sample size tests use the same analysis endpoint like regression
+  return `/api/analysis`; // Using direct string since API import might cause circular dependency
 };
 
 export const getLegacySampleSizeEndpoint = (): string => '';
 
 export const makeApiRequest = () => {};
 
+// Legacy direct HTTP call - kept for backward compatibility but not used
 export const makeSampleSizeRequest = async (testType: string, formData: Record<string, any>): Promise<any> => {
   const endpoint = getSampleSizeEndpoint(testType);
   if (!endpoint) throw new Error('Unknown test type or endpoint not set');

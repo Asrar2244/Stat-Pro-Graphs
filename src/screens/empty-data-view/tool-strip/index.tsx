@@ -1,14 +1,12 @@
 import {
   Button,
-  Popover,
-  PopoverTrigger,
   Tooltip,
   Spinner,
   Link,
   Text,
 } from '@fluentui/react-components';
 import { useToolStripLayout } from '../styles-hook/use-tool-strip';
-import { RiFileExcel2Fill, RiLayoutGrid2Fill } from 'react-icons/ri';
+import { RiFileExcel2Fill /*RiLayoutGrid2Fill*/ } from 'react-icons/ri';
 import { FaFileCsv } from 'react-icons/fa6';
 import { useTranslation } from 'react-i18next';
 import { dataGenWorker } from '@workers/data-gen-worker';
@@ -20,7 +18,7 @@ import { saveExcelToFile, saveCsvToFile } from '@utils';
 import { useToaster, useDraftData } from '@hooks';
 import { MdOutlinePublish, MdHelp } from 'react-icons/md';
 
-import { RowsColumns } from './rows-columns';
+// import { RowsColumns } from './rows-columns';
 const ToolStripComp = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -129,7 +127,7 @@ const ToolStripComp = () => {
     <div className={classes.layoutToolStrip}>
       <div>
         <ul className={classes.listToolStrip}>
-          <li>
+          {/* <li>
             <Tooltip content={t('insertRowAndColumns')} relationship="description" withArrow>
               <div className={classes.itemWrapper}>
                 <Popover withArrow size="small" appearance="brand">
@@ -145,7 +143,7 @@ const ToolStripComp = () => {
                 </Popover>
               </div>
             </Tooltip>
-          </li>
+          </li> */}
 
           <li>
             <Tooltip content={t('exportExcel')} relationship="description" withArrow>

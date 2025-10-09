@@ -1,7 +1,6 @@
 import { exists, remove, copyFile, mkdir } from '@tauri-apps/plugin-fs';
 import { join, extname, basename, dirname } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/core';
-
 import { homeDirectory } from './app-apis';
 import { EXCEL_DIR } from '@constants';
 const { VITE_DOCKER_VOLUME_LOCATION } = import.meta.env;
@@ -44,6 +43,11 @@ export const getExtension = async (path: string): Promise<string> => {
 export const saveLargeJsonToFile = async (filePath: string, jsonData: any): Promise<any> => {
   return await invoke('save_json_to_file', { filePath, jsonData });
 };
+
+
+export const readJsonFile = async (filePath: string): Promise<any> => {
+  return await invoke('read_json_from_file', { filePath })
+}
 
 export const removeFileFromGivenPath = async (filePath: string): Promise<boolean> => {
   if (await exists(filePath)) {

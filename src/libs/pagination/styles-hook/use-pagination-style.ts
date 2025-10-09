@@ -34,10 +34,15 @@ export const usePaginationStyles = makeStyles({
     '& input': {
       width: '50%',
       textAlign: 'right',
+      '&::-webkit-inner-spin-button, &::-webkit-outer-spin-button': {
+        WebkitAppearance: 'none',
+        margin: 0,
+      },
     },
     '& small': {
       width: '50%',
     },
+
   },
   select: {
     backgroundColor: 'transparent',

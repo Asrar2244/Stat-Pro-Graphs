@@ -1,0 +1,59 @@
+{
+    "tables": [
+        {
+            "name": "t-test-inputs",
+            "showCaption": false,
+            "showHeaders": false,
+            "view": [
+                [ "t-test_type", "test_type" ]
+            ]
+        },
+        {
+            "name": "t-test-table",
+            "showCaption": false,
+            "showHeaders": true,
+            "view": [
+                "t-Group-Name",
+                "t-sample_sample_size",
+                "t-Missing",
+                "t-sample_sample_mean",
+                "t-sample_sample_std_dev",
+                "t-sample_standard_error_of_mean"
+            ],
+            "recordType": {
+                "pageSize": 1
+            }
+        }
+    ],
+    "customScreen": [
+        {
+            "name": "t-test-inputs-2",
+            "showCaption": false,
+            "showHeaders": false,
+            "customFields": [
+                { "name": "t-conclusion_two_tailed", "type": "conclusion_two_tailed" },
+                { "name": "t-conclusion_one_tailed", "type": "conclusion_one_tailed" } ],
+            "view":
+            [
+                [ "t-normality_tests_shapiro_wilk_result", "normality_tests_shapiro_wilk_result" ],
+                [ "t-normality_tests_shapiro-wilk_result", "normality_tests_shapiro-wilk_result" ],
+                [ "t-normality_tests_shapiro_wilk_result", "normality_tests_shapiro_wilk_result" ],
+                [ "t-normality_tests_shapiro-wilk_result", "normality_tests_shapiro-wilk_result" ],
+                [ "t-sample_hypothesized_population_mean", "sample_hypothesized_population_mean" ],
+                [ "t-sample_degrees_of_freedom", "sample_degrees_of_freedom" ],
+                [ "t-sample_confidence_interval_lower_bound", "sample_confidence_interval_lower_bound" ],
+                [ "t-sample_two_tailed_p_value", "sample_two_tailed_p_value" ],
+                [ "t-conclusion_two_tailed", "conclusion_two_tailed" ],
+                [ "t-sample_one_tailed_p_value", "sample_one_tailed_p_value" ],
+                [ "t-conclusion_one_tailed", "conclusion_one_tailed" ],
+                [ "t-statistical_power_power_of_performed_two_tailed_test_with_alpha", "statistical_power_power_of_performed_two_tailed_test_with_alpha" ],
+                [ "t-statistical_power_performed_one_tailed_test_with_alpha", "statistical_power_performed_one_tailed_test_with_alpha" ],
+                [ "t-conclusion", "conclusion" ],
+                [ "t-sample_t_statistic", "sample_t_statistic" ],
+                [ "t-sample_confidence_interval_upper_bound", "sample_confidence_interval_upper_bound" ],
+                [ "t-normality_tests_shapiro_wilk_p_value", "normality_tests_shapiro_wilk_p_value" ]
+
+            ]
+        }
+    ]
+}

@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Tooltip, Caption1Strong, Button } from '@fluentui/react-components';
 import { LuChevronFirst, LuChevronLast, LuChevronLeft, LuChevronRight } from 'react-icons/lu';
 import { useTranslation } from 'react-i18next';
@@ -9,16 +9,24 @@ import { IPagination } from '@hooks';
 
 export const Pagination: FC<IPagination> = (props) => {
   const classes = usePaginationStyles();
+  const [currPageVal, setCurrPageVal] = useState(props.currentPage)
   const { t } = useTranslation('table', { useSuspense: false });
   const onPageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
     props.pageSizeChanged(Number(e.target.value));
   };
-  const onChangeJump = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const value = Number(e.target.value);
-    if (value > 0 && value <= props.pageCount) {
-      props.jumpChanged(Number(value));
-    }
+  const onJumpChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const value = e.target.value;
+    setCurrPageVal(Number(value));
   };
+
+  const onJumpCommit = (): void => {
+    if (currPageVal > 0 && currPageVal <= props.pageCount) {
+      props.jumpChanged(currPageVal);
+    } else {
+      // reset to valid current page if invalid input
+      setCurrPageVal(props.currentPage);
+    }
+  }
   const showPageSize = props.showPageSize ?? true;
   const enableJump = props.enableJump ?? true;
   return (
@@ -73,11 +81,13 @@ export const Pagination: FC<IPagination> = (props) => {
         <div className={classes.jump}>
           <Tooltip content={t('jump')} relationship="label" withArrow>
             <input
-              type="text"
+              type="number"
               disabled={!enableJump}
-              className={classes.select}
-              value={props.currentPage}
-              onChange={onChangeJump}
+              className={`${classes.select} no-spin`}
+              value={currPageVal}
+              onChange={onJumpChange}
+              onBlur={onJumpCommit}
+              onKeyDown={(e) => e.key === 'Enter' && onJumpCommit()}
             />
           </Tooltip>
           <RxDividerVertical />

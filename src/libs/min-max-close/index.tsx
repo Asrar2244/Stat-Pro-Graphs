@@ -8,7 +8,6 @@ import { Minimize } from './minimize';
 import { Maximize } from './maximize';
 import { Close } from './close';
 import { platformInfo } from '@utils';
-// import { isTauriEnvironment } from '@utils/tauri-utils';
 
 const MinMaxCloseComponent: FC = () => {
   const classes = useMinMaxCloseStyles();
@@ -19,27 +18,33 @@ const MinMaxCloseComponent: FC = () => {
     return isMac;
   }, []);
   
-  const onHandleMaximize = async () => {
-    try {
-      await getCurrentWindow().toggleMaximize();
-    } catch (err) {
-      console.warn('Maximize not available in this environment', err);
-    }
-  };
-
   const onHandleMinimize = async () => {
     try {
       await getCurrentWindow().minimize();
-    } catch (err) {
-      console.warn('Minimize not available in this environment', err);
+    } catch (e) {
+      console.warn('Minimize failed:', e);
     }
   };
 
   const onHandleClose = async () => {
     try {
       await getCurrentWindow().close();
-    } catch (err) {
-      console.warn('Close not available in this environment', err);
+    } catch (e) {
+      console.warn('Close failed:', e);
+    }
+  };
+
+  const onHandleToggleFullscreen = async () => {
+    try {
+      const window = getCurrentWindow();
+      const isFullscreen = await window.isFullscreen();
+      if (isFullscreen) {
+        await window.setFullscreen(false);
+      } else {
+        await window.setFullscreen(true);
+      }
+    } catch (e) {
+      console.warn('Toggle fullscreen failed:', e);
     }
   };
   
@@ -53,14 +58,15 @@ const MinMaxCloseComponent: FC = () => {
           <ThemeSwitch />
         </li>
       </ul>
-      {(!platformIsMac) && (
+      {/* Custom window controls for non-macOS */}
+      {!platformIsMac && (
         <>
           <Divider vertical />
           <ul className={classMerge}>
             <li onClick={onHandleMinimize}>
               <Minimize />
             </li>
-            <li onClick={onHandleMaximize}>
+            <li onClick={onHandleToggleFullscreen}>
               <Maximize />
             </li>
             <li data-close-window="true" onClick={onHandleClose}>

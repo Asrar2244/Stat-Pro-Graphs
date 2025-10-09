@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { FC, memo, useMemo } from 'react';
 import AdvanceFormat from 'dayjs/plugin/advancedFormat';
 import { useClassCalender } from './styles-hook/use-calender-style';
-interface ICalenderTab {
+export interface ICalenderTab {
   date?: string;
 }
 

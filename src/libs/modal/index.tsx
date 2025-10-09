@@ -23,11 +23,14 @@ export interface IDialogProps extends IModal, PropsWithChildren {
   okLabel?: ReactElement | string;
   cancelLabel?: ReactElement | string;
   ok?: ButtonProps;
+  next?: ButtonProps;
   cancel?: ButtonProps;
   size?: 'small' | 'medium' | 'large' | 'extra-large';
   showCancel?: boolean;
   showOk?: boolean;
   modalType?: 'modal' | 'non-modal';
+  showNext?: boolean;
+  nextLabel?: ReactElement | string;
 }
 
 const useModalLayout = makeStyles({
@@ -244,6 +247,9 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
   showTitle = true,
   showOk = true,
   modalType = 'modal',
+  showNext = false,
+  next,
+  nextLabel,
   ...others
 }) => {
   const classes = useModalLayout();
@@ -295,6 +301,11 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
             {showOk && (
               <Button appearance="primary" {...ok}>
                 {okLabel}
+              </Button>
+            )}
+            {showNext && (
+              <Button appearance="primary" {...next}>
+                {nextLabel}
               </Button>
             )}
           </DialogActions>

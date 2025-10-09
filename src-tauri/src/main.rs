@@ -22,6 +22,33 @@ async fn close_splashscreen(window: Window) {
         .unwrap();
 }
 fn main() {
+    let log_path = {
+        #[cfg(target_os = "windows")]
+        let base = if let Ok(appdata) = std::env::var("APPDATA") {
+            appdata
+        } else {
+            // Fallback if APPDATA is not set
+            let home = std::env::var("USERPROFILE").expect("USERPROFILE not set");
+            format!("{}/AppData/Roaming", home)
+        };
+
+        #[cfg(target_os = "macos")]
+        let base = {
+            let home = std::env::var("HOME").expect("HOME not set");
+            format!("{}/Library/Logs", home)
+        };
+
+        #[cfg(target_os = "linux")]
+        let base = if let Ok(xdg_config) = std::env::var("XDG_CONFIG_HOME") {
+            xdg_config
+        } else {
+            let home = std::env::var("HOME").expect("HOME not set");
+            format!("{}/.config", home)
+        };
+
+        std::path::PathBuf::from(base).join("start-pro-logs")
+    };
+    let child_process: Arc<Mutex<Option<Child>>> = Arc::new(Mutex::new(None));
     tauri::Builder::default()
         // .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
         //     let _ = app
@@ -36,7 +63,7 @@ fn main() {
             tauri_plugin_log::Builder::new()
                 .target(tauri_plugin_log::Target::new(
                     tauri_plugin_log::TargetKind::Folder {
-                        path: std::path::PathBuf::from("start-pro-logs"),
+                        path: log_path,
                         file_name: None,
                     },
                 ))
@@ -48,6 +75,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             close_splashscreen,
             tauri_json_file::save_json_to_file,
+            tauri_json_file::read_json_from_file,
             tauri_json_file::get_file_size,
             excel_csv_file::save_excel_to_file,
             excel_csv_file::save_csv_to_file
@@ -74,7 +102,34 @@ fn main() {
                 }
             });
 
+<<<<<<< HEAD
             Ok(())
+=======
+                // Start the backend executable without canonicalizing the path
+                let child = Command::new(exe_path)
+                    .spawn()
+                    .expect("Failed to start backend executable");
+
+                // Store the child process in the shared state
+                *child_process.lock().unwrap() = Some(child);
+
+                // Window settings - show the main window and close splash screen
+                let main_window = _app.get_webview_window("main").unwrap();
+                
+                // Close splash screen first
+                if let Some(splashscreen) = _app.get_webview_window("splashscreen") {
+                    splashscreen.close().unwrap();
+                }
+                
+                #[cfg(not(target_os = "macos"))]
+                main_window.set_decorations(false).unwrap();
+                main_window.maximize().unwrap();
+                main_window.show().unwrap();
+                #[cfg(target_os = "macos")]
+                main_window.set_fullscreen(true).unwrap();
+
+                Ok(())
+            }
         })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")

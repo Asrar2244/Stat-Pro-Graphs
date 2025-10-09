@@ -11,6 +11,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLinearLeastSquares } from './use-squares-hook';
 import { useModelStyle } from './styles-hook/use-model-style';
 import { ListCheckboxWithSelectAll } from '@libs';
+import { useStartProStore } from '@store/main-store';
 import { generateKey } from '@utils/helper';
 export const Model: FC = () => {
   const classes = useModelStyle();
@@ -107,7 +108,7 @@ const IndependentListRender: FC = () => {
   );
 };
 const DependentListRender: FC = () => {
-  const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
+  const [, setSelectAll] = useState<boolean | string | undefined>(false);
 
   const { t } = useTranslation('regLinearForwardStepwise');
   const { availableList, dependentList, setModelBulk } = useLinearLeastSquares(
@@ -139,7 +140,7 @@ const DependentListRender: FC = () => {
         listSize={dependentList.size}
         list={dependentList}
         selectAllText={t('selectAll')}
-        selectValue={selectAll}
+        selectValue={false}
         requiredSelectAll
         onSelectAllChanged={setSelectAll}
         propKey={propKey}
@@ -171,6 +172,7 @@ const AvailableListRender: FC = () => {
     })),
   );
   const [propKey, setPropKey] = useState(generateKey(availableList))
+  const { setBlockUI } = useStartProStore();
 
   useEffect(() => {
     setPropKey(generateKey(availableList))
@@ -178,10 +180,18 @@ const AvailableListRender: FC = () => {
 
   const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
     const name = (e.currentTarget as HTMLButtonElement).dataset.name;
+    if (name === 'dependent') {
+      const selected = Array.from(availableList.entries()).filter(([, v]) => v).map(([k]) => k);
+      if (selected.length > 1) {
+        setBlockUI({ value: true, msg: 'Please select exactly one dependent variable.' });
+        return;
+      }
+    }
     availableList.forEach((value: boolean, key: string) => {
       if (value) {
         if (name === 'dependent') {
-          dependentList.set(key, false);
+          dependentList.clear();
+          dependentList.set(key, true);
         } else {
           independentList.set(key, false);
         }
@@ -207,7 +217,7 @@ const AvailableListRender: FC = () => {
       />
 
       <div className="send-buttons">
-        <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler}>
+        <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler} disabled={dependentList.size >= 1}>
           {t('sendToDependent')}
         </Button>
 

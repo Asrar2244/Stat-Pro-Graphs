@@ -6,18 +6,16 @@ export const useExplorerLayout = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
-    maxHeight: 'calc(100vh - 90px)',
-    overflowY: 'auto',
-    paddingRight: tokens.spacingHorizontalS,
+    height: '100%',
+    overflow: 'hidden',
     '& .selected': {
       backgroundColor: tokens.colorNeutralStencil2Alpha, //colorBrandBackgroundInvertedSelected
     },
     '& .tree-comp': {
       backgroundColor: tokens.colorNeutralBackground3,
-      maxHeight: 'calc(100vh - 140px)',
+      flex: '1',
       overflowY: 'auto',
       scrollBehavior: 'smooth',
-      WebkitOverflowScrolling: 'touch',
     },
     // Thin scrollbar styling
     '&::-webkit-scrollbar': { width: '8px' },
@@ -47,6 +45,8 @@ export const useExplorerLayout = makeStyles({
     fontWeight: 600,
     fontSize: 'small',
     textTransform: 'uppercase',
+    flexShrink: 0,
+    ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke1),
   },
   treeItemLayout: {
     display: 'flex',

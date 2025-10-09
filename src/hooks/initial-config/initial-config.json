@@ -1,0 +1,18 @@
+{
+    "assumptionChecking": {
+        "P_value_reject": 0.05,
+        "shaprio_walk": true,
+        "kolmo_with_correction": false,
+        "normality": true,
+        "populationMean": "50"
+    },
+    "results": {
+        "summary_table": true,
+        "confidence_level": 95,
+        "isConfidenceSelected": false
+    },
+    "postHocTests": {
+        "alpha_value": 0.050,
+        "isAlphaSelected": false
+    }
+}

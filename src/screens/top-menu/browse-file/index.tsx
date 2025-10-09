@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, FormEvent, useState } from 'react';
+import { ChangeEvent, FC, FormEvent, useState, useRef } from 'react';
 import { Field, Input, Button, Dropdown, Option, Spinner } from '@fluentui/react-components';
 import { BiDotsHorizontalRounded, BiPlayCircle } from 'react-icons/bi';
 import { Modal, ITranslate } from '@libs';
@@ -22,10 +22,28 @@ import { API } from '@constants';
 import { CONFIGURATION_DB } from '@constants';
 import { insertIntoProject } from '@backend';
 import { useBrowseLayout } from './styles-hook/use-browse-style';
+import { faker } from '@faker-js/faker';
+const createRandomUser = (): string => {
+  const animalGenerators = [
+    faker.animal.bird,
+    faker.animal.cat,
+    faker.animal.dog,
+    faker.animal.snake,
+    faker.animal.bear,
+    faker.animal.lion,
+    faker.animal.cow,
+    faker.animal.horse,
+    faker.animal.fish,
+    faker.animal.insect,
+    faker.animal.rabbit,
+  ];
+  const randomFn = faker.helpers.arrayElement(animalGenerators);
+  return randomFn();
+};
 
 export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   const [file, setFile] = useState<string | undefined>(undefined);
-  const [projectName, setProjectName] = useState<string | undefined>(undefined);
+  const [projectName, setProjectName] = useState<string | undefined>(createRandomUser);
   const [selectedSheet, setSelectedSheet] = useState<string>('');
   const [projectExists, setProjectExists] = useState<boolean | undefined>(undefined);
   const [fileSize, setFileSize] = useState<number>(0);
@@ -45,8 +63,12 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   );
 
   const classes = useBrowseLayout();
+  const pickingRef = useRef(false);
   const onBrowseFileHandler = async (): Promise<void> => {
     try {
+      if (pickingRef.current) return;
+      pickingRef.current = true;
+
       const openedFile = await open({
         multiple: false,
         directory: false,
@@ -56,7 +78,6 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             extensions: browseFile.acceptFiles,
           },
         ],
-        defaultPath: 'Z:\\',
       });
 
       if (openedFile) {
@@ -116,6 +137,8 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
       }
     } catch (e) {
       console.error('error==>', e);
+    } finally {
+      pickingRef.current = false;
     }
   };
 
@@ -153,9 +176,9 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
       console.log('Validation check - projectName:', projectName);
       
       // More robust validation
-      const hasProjectName = newProject?.name && newProject.name.trim() !== '';
+      const hasProjectName = (newProject?.name && newProject.name.trim() !== '') || (projectName && projectName.trim() !== '');
       const hasFile = file && file.trim() !== '';
-      const hasBusinessObj = newProject?.impBusinessObjFile && newProject.impBusinessObjFile.trim() !== '';
+      const hasBusinessObj = (newProject?.impBusinessObjFile && newProject.impBusinessObjFile.trim() !== '') || (file && file.trim() !== '');
       const hasSelectedSheet = selectedSheet && selectedSheet.trim() !== '';
       
       console.log('Validation results:', {
@@ -229,7 +252,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               setFileSize(0);
               setSheets([]);
               getConfigurations();
-              setBlockUI({ value: true, msg: data.error });
+              setBlockUI({ value: false, msg: "" });
               props.closeModal();
             })
             .catch((error) => {
@@ -267,18 +290,26 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   };
 
   const onChangeWorkSpacePath = async () => {
-    const openedFolder = await open({
-      multiple: false,
-      directory: true,
-      title: t('selectWorkspacePath', { ns: 'common' }),
-    });
-    if (openedFolder) {
-      setNewProject('workspacePath', openedFolder);
+    if (pickingRef.current) return;
+    pickingRef.current = true;
+    try {
+      const openedFolder = await open({
+        multiple: false,
+        directory: true,
+        title: t('selectWorkspacePath', { ns: 'common' }),
+      });
+      if (openedFolder) {
+        setNewProject('workspacePath', openedFolder);
+      }
+    } finally {
+      pickingRef.current = false;
     }
   };
   const onProjectNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setProjectName(e?.target.value.toLowerCase());
+    const value = e?.target.value.toLowerCase();
+    setProjectName(value);
+    setNewProject('name', value);
   };
   const okDisabled = !!file && newProject?.name && newProject?.name !== '';
   return (
@@ -358,8 +389,8 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
             }
           >
             <Input
-              disabled
               value={file ?? ''}
+              onClick={onBrowseFileHandler}
               contentAfter={
                 <Button
                   disabled={loading}
@@ -418,3 +449,5 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
     </Modal>
   );
 };
+
+export default BrowseFile;

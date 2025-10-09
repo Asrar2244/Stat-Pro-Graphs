@@ -140,11 +140,41 @@ export const findBestDataForSection = (allData: Map<string, any[]>, sectionTitle
     }
   }
   
-  if (bestMatch) {
-    // selected best table
-  } else {
-    // no table found
+  if (!bestMatch) {
+    return null;
   }
-  
+
+  // For outlier sections: display only present values and hide null/undefined
+  if (sectionLower.includes('outlier')) {
+    const isEmptyCell = (v: any): boolean => v == null || v === '' || (typeof v === 'string' && (v.toLowerCase() === 'null' || v.toLowerCase() === 'undefined'));
+    const isEmptyRow = (row: any): boolean => {
+      if (!row || typeof row !== 'object') return true;
+      return Object.values(row).every(isEmptyCell);
+    };
+    const sanitizeRow = (row: any): any => {
+      if (!row || typeof row !== 'object') return row;
+      return Object.fromEntries(Object.entries(row).map(([k, v]) => {
+        if (isEmptyCell(v)) {
+          return [k, '']; // Hide null/undefined/empty values completely
+        }
+        // Display numeric zero as "0"
+        if (typeof v === 'number' && v === 0) {
+          return [k, '0'];
+        }
+        return [k, v];
+      }));
+    };
+
+    // Remove fully empty rows and sanitize remaining cells
+    const cleaned = bestMatch.filter((r) => !isEmptyRow(r)).map(sanitizeRow);
+
+    // Optionally trim trailing empties if any slipped through
+    let lastIdx = -1;
+    for (let i = 0; i < cleaned.length; i += 1) {
+      if (!isEmptyRow(cleaned[i])) lastIdx = i;
+    }
+    return lastIdx >= 0 ? cleaned.slice(0, lastIdx + 1) : [];
+  }
+
   return bestMatch;
 };

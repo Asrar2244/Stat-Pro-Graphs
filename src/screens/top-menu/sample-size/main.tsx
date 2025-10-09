@@ -80,7 +80,7 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
         <Button
           appearance="subtle"
           className={classes.calculateButton}
-          onClick={() => calculateSampleSize('ttest-sample-size')}
+          onClick={() => calculateSampleSize('ttest-sample-size', 'sample_size', 'sample_size', 'ttest_' + Date.now())}
           disabled={isLoading || !currentTestCanRun || !ttestForm.expected_difference || !ttestForm.expected_std_dev || !ttestForm.desired_power || !ttestForm.alpha}
         >
           {isLoading ? 'Calculating...' : 'Calculate Sample Size'}
@@ -155,7 +155,7 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
         <Button
           appearance="subtle"
           className={classes.calculateButton}
-          onClick={() => calculateSampleSize('proportion-sample-size')}
+          onClick={() => calculateSampleSize('proportion-sample-size', 'sample_size', 'sample_size', 'proportion_' + Date.now())}
           disabled={isLoading || !currentTestCanRun || !proportionForm.group1_proportion || !proportionForm.group2_proportion || !proportionForm.desired_power || !proportionForm.alpha}
         >
           {isLoading ? 'Calculating...' : 'Calculate Sample Size'}
@@ -237,7 +237,7 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
         <Button
           appearance="subtle"
           className={classes.calculateButton}
-          onClick={() => calculateSampleSize('paired-ttest-sample-size')}
+          onClick={() => calculateSampleSize('paired-ttest-sample-size', 'sample_size', 'sample_size', 'paired_ttest_' + Date.now())}
           disabled={isLoading || !currentTestCanRun || !pairedTTestForm.change_to_be_detected || !pairedTTestForm.expected_std_dev_of_change || !pairedTTestForm.desired_power || !pairedTTestForm.alpha || !pairedTTestForm.correlation}
         >
           {isLoading ? 'Calculating...' : 'Calculate Sample Size'}
@@ -318,7 +318,7 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
         <Button
           appearance="subtle"
           className={classes.calculateButton}
-          onClick={() => calculateSampleSize('anova-sample-size')}
+          onClick={() => calculateSampleSize('anova-sample-size', 'sample_size', 'sample_size', 'anova_' + Date.now())}
           disabled={isLoading || !currentTestCanRun || !anovaForm.minimum_detectable_difference || !anovaForm.expected_std_dev_residuals || !anovaForm.num_groups || !anovaForm.desired_power || !anovaForm.alpha}
         >
           {isLoading ? 'Calculating...' : 'Calculate Sample Size'}
@@ -367,7 +367,7 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
         <Button
           appearance="subtle"
           className={classes.calculateButton}
-          onClick={() => calculateSampleSize('chi-square-sample-size')}
+          onClick={() => calculateSampleSize('chi-square-sample-size', 'sample_size', 'sample_size', 'chi_square_' + Date.now())}
           disabled={isLoading || !currentTestCanRun || !chiSquareForm.desired_power}
         >
           {isLoading ? 'Calculating...' : 'Calculate Sample Size'}

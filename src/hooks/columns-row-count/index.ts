@@ -26,7 +26,7 @@ interface IColumnsRowsCount extends ITableProps {
 export const useColumnsRowsCount = ({ id, tabName, noRowCount }: IColumnsRowsCount): IOutput => {
   const [columns, setColumns] = useState<IColumn[]>([]);
   const [count, setCount] = useState<number>(0);
-  const { setBlockUI } = useStartProStore()
+  const { setBlockUI } = useStartProStore();
 
   useEffect(() => {
     if (id) {
@@ -54,11 +54,12 @@ export const useColumnsRowsCount = ({ id, tabName, noRowCount }: IColumnsRowsCou
             setCount(cnt);
             createColumns.unshift({ columnId: '' });
           }
-          setColumns(createColumns);
+          const cols = createColumns.filter((f) => f.columnId !== 'xxx_start_pro_id');
+          setColumns(cols);
         })
         .catch((error) => {
           console.error('error', error);
-          setBlockUI({ value: true, msg: error.message })
+          setBlockUI({ value: true, msg: error.message });
         });
     }
   }, [id]);

@@ -77,6 +77,7 @@ export const useSampleSizeEnhanced = () => {
     handleInputChange,
     canUseBackend,
     requiresDataFile,
-    calculateSampleSize,
+    calculateSampleSize: (test: SampleSizeTestType, queueFor: string, queueType: string, id: string) => 
+      calculateSampleSize(test, queueFor, queueType, id),
   };
 }; 

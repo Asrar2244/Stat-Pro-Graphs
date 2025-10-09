@@ -22,7 +22,7 @@
         "decorations": true,
         "alwaysOnTop": false,
         "width": 900,
-        "transparent": false
+        "transparent": true
       },
       {
         "title": "start-pro",

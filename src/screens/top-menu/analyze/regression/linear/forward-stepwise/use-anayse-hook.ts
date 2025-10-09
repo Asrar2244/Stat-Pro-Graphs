@@ -4,6 +4,7 @@ import { IActiveNode, useAnalyzeSave } from '@hooks';
 import { useEffect } from 'react';
 import { IColumn } from '../../../../../table-render/use-column-count';
 import { EXCEL, API } from '@constants';
+import { useStartProStore } from '@store/main-store';
 interface IOutput {
   executeAnalysis: (id: string) => void;
 }
@@ -21,6 +22,7 @@ export const usePrepareAnalysis = ({
     })),
   );
   const { execute } = useAnalyzeSave();
+  const { setBlockUI } = useStartProStore();
 
   useEffect(() => {
     const columnMap = new Map<string, boolean>();
@@ -37,6 +39,12 @@ export const usePrepareAnalysis = ({
   const executeAnalysis = async (id: string): Promise<void> => {
     const tableName = config.tabName;
 
+    const dependentVars = Array.from(model.dependentList.keys());
+    if (dependentVars.length !== 1) {
+      setBlockUI({ value: true, msg: 'Please select exactly one dependent variable.' });
+      return;
+    }
+
     const parameters = {
       data_name: tableName,
       input_data_type: 'file',
@@ -44,14 +52,14 @@ export const usePrepareAnalysis = ({
       sheet_name: EXCEL,
       db_name: tableName,
       table_name: EXCEL,
-      dependent_var_names: Array.from(model.dependentList.keys()),
+      dependent_var_names: dependentVars,
       independent_var_names: Array.from(model.independentList.keys()),
-      regressionType: 'linear_db',
+      regressionType: 'linear',
       linearparameters: {
         inc_constant: model.includeConst,
         confidence: parseFloat(estimate.confidence),
         tolerance: parseFloat(estimate.tolerance),
-        estimation: 'stepwise',
+        estimation_type: 'stepwise',
         probability_threshold_enter: Number(estimate.propEnter),
         probability_threshold_remove: Number(estimate.propRemove),
         f_statistic_threshold_enter: Number(estimate.fStatisticEnter),
@@ -60,7 +68,7 @@ export const usePrepareAnalysis = ({
         force_features: estimate.force ? estimate.force.split(',').map(s => s.trim()) : [],
         direction: estimate.direction || 'forward',
       },
-      sub_type: 'none',
+      sub_type: 'estimation',
     };
     await execute(
       config.tabName,

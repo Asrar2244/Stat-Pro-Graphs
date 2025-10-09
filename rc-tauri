@@ -1,0 +1,42 @@
+[33mcommit 796825d82d071c14373aff3ad30ae417d9cd521e[m
+Author: Abha-saxena123 <85979768+Abha-saxena123@users.noreply.github.com>
+Date:   Sun Feb 23 23:13:14 2025 +0530
+
+    test: added test setup and checkboxList test (#78)
+    
+    * test: added test setup and checkboxList test
+    
+    * test: added test setup and checkboxList test
+    
+    * test: added test setup and checkboxList test
+    
+    * fix: test utils and translation
+    
+    ---------
+    
+    Co-authored-by: Abha-saxena123 <abhasaxena.962007@gmail.com>
+
+.babelrc.cjs
+.gitignore
+coverage/clover.xml
+coverage/coverage-final.json
+coverage/lcov-report/base.css
+coverage/lcov-report/block-navigation.js
+coverage/lcov-report/favicon.png
+coverage/lcov-report/index.html
+coverage/lcov-report/index.tsx.html
+coverage/lcov-report/libs/checkbox-list/index.html
+coverage/lcov-report/libs/checkbox-list/index.tsx.html
+coverage/lcov-report/prettify.css
+coverage/lcov-report/prettify.js
+coverage/lcov-report/sort-arrow-sprite.png
+coverage/lcov-report/sorter.js
+coverage/lcov-report/utils/index.html
+coverage/lcov-report/utils/test-utils.tsx.html
+coverage/lcov.info
+jest.config.cjs
+jest.setup.js
+package.json
+pnpm-lock.yaml
+src/libs/checkbox-list/index.test.tsx
+src/utils/test-utils.tsx

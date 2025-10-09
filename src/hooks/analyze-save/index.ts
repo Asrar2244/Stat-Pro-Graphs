@@ -8,6 +8,7 @@ import {
   deleteNotification,
   outputGenerateIDTable,
   outputUpdateResult,
+  deleteByIDOutputTable,
 } from '@backend';
 // import { v4 as uuidv4 } from 'uuid';
 /**
@@ -89,11 +90,32 @@ export const useAnalyzeSave = () => {
     otherParameters['notificationId'] = notificationID;
     otherParameters['dbName'] = dbName;
     // await insertInTasks('', JSON.stringify(otherParameters));
+    let errorOccurred = false;
     mainWorker
       .axios(`${API.backendURL}/api/${API.analysis}`, parameters)
       .then((response: any) => {
-        if (response.error) {
-          throw new Error(response.error);
+        // Normalize backend error formats and stop output rendering immediately
+        const normalizedError: string | undefined = (() => {
+          if (!response) return 'Backend returned no response';
+          if (typeof response === 'string') return response;
+          if (response.error) return String(response.error);
+          if (response.message && (response.status === 'error' || response.code === 'error')) return String(response.message);
+          if (response.return_value && String(response.return_value).toLowerCase() !== 'success') {
+            return String(response.message || response.detail || response.return_value);
+          }
+          return undefined;
+        })();
+
+        if (normalizedError) {
+          errorOccurred = true;
+          // Do NOT persist failed outputs in history: delete the created OUTPUT row and remove notification
+          return deleteByIDOutputTable(dbName, [outputId])
+            .then(async () => {
+              if (otherParameters.notificationId) {
+                await insertInNotifications(otherParameters.notificationId, '', '', 0);
+              }
+              setBlockUI({ value: true, msg: normalizedError, hideOk: false });
+            });
         }
 
         // Inject outputType for stepwise regression (forward/backward/stepwise)
@@ -125,6 +147,14 @@ export const useAnalyzeSave = () => {
           response.outputType = 'regLinearMultipleLinear';
         }
 
+        // Inject outputType for bayesian regression
+        if (
+          parameters?.regressionType === 'linear' &&
+          parameters?.sub_type === 'bayesian'
+        ) {
+          response.outputType = 'regLinearBayesian';
+        }
+
         outputUpdateResult(dbName, [JSON.stringify(response), outputId])
           .then(() => {
             const { isEmptyDataView } = config;
@@ -154,10 +184,13 @@ export const useAnalyzeSave = () => {
       })
       .catch((errorMsg: any) => {
         console.log('errorMsg===>', errorMsg);
-        setBlockUI({ value: true, msg: errorMsg.message });
+        errorOccurred = true;
+        setBlockUI({ value: true, msg: errorMsg.message, hideOk: false });
       })
       .finally(() => {
-        setBlockUI({ value: false, msg: '' });
+        if (!errorOccurred) {
+          setBlockUI({ value: false, msg: '' });
+        }
       });
   };
   return { execute };

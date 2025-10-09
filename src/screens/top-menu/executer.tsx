@@ -8,11 +8,10 @@ import { useShallow } from 'zustand/react/shallow';
 import { useMenuCodeExecutor } from '@hooks';
 import { useScatterPlotStore } from '@features/graphs/ScatterPlot/scatterPlotSlice';
 import { GRAPHS } from '@constants';
+import { LeastSquare } from './analyze/regression/linear/least-squares/least-squares';
+import { Bayesian } from './analyze/regression/linear/bayesian/bayesian';
 const BrowseFile = lazy(() =>
   import('./browse-file').then((module) => ({ default: module.BrowseFile })),
-);
-const LeastSquare = lazy(() =>
-  import('./analyze').then((module) => ({ default: module.LeastSquare })),
 );
 const Ridge = lazy(() => import('./analyze').then((module) => ({ default: module.RidgeModule })));
 
@@ -48,6 +47,12 @@ const MultipleLinear = lazy(() =>
 const Polynomial = lazy(() =>
   import('./analyze').then((module) => ({ default: module.PolynomialModule }))
 );
+const TestsAnalysis = lazy(() => import('./advanced').then((module) => ({ default: module.TestsAnalysis })));
+
+const Options = lazy(() => import('./advanced').then((module) => ({ default: module.Options })));
+
+const PairedTestsAnalysis = lazy(() => import('./advanced').then((module) => ({ default: module.PairedTestsAnalysis })));
+
 
 // Scatter Plot Modal
 const ScatterPlotModal = lazy(() =>
@@ -102,6 +107,7 @@ const MenuSelector: FC<{
   if (isLicensed) {
     return <OpenDevTools {...modal} showCloseButton={true} />;
   }
+<<<<<<< HEAD
 
   // Scatter Plot wrapper with real data integration
   const ScatterWrapper: FC<IModal> = (m) => {
@@ -159,11 +165,16 @@ const MenuSelector: FC<{
   };
 
   const d = () => {
+=======
+  const runSelector = () => {
+>>>>>>> source-repo/feature/asrar-dev-fixes
     switch (selector) {
       case exporters.importBusinessObject:
         return <BrowseFile {...modal} t={t} />;
       case exporters.regressionLeastSquare:
         return <LeastSquare {...modal} />;
+      case exporters.regressionBayesian:
+        return <Bayesian {...modal} />;
       case exporters.regressionRidge:
         return <Ridge {...modal} />;
       case exporters.regressionForwardStepwise:
@@ -186,13 +197,22 @@ const MenuSelector: FC<{
         return <OpenDevTools {...modal} />;
       case exporters.pairwiseComparisonOfModule:
         return <PairwiseComparisonOfModule {...modal} />;
+<<<<<<< HEAD
       case 'open-scatter-plot-modal':
         return <ScatterWrapper {...modal} />;
+=======
+      case exporters.tests:
+        return <TestsAnalysis {...modal} />
+      case exporters.options:
+        return <Options {...modal} />
+      case exporters.pairedTTest:
+        return <PairedTestsAnalysis {...modal} />
+>>>>>>> source-repo/feature/asrar-dev-fixes
       default:
         return null;
     }
   };
-  return modal.open ? <>{d()}</> : <></>;
+  return modal.open ? <>{runSelector()}</> : <></>;
 };
 
 export { MenuSelector };

@@ -9,6 +9,19 @@ interface IQuery {
 }
 
 const numberFormat = (value: string | number): string => {
+  // Try to parse JSON-like strings (e.g., '[{"lambda":0.2,...}]') so they display as valid JSON
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    const looksJson = (trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'));
+    if (looksJson) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return JSON.stringify(parsed);
+      } catch (_) {
+        // fall through to default handling
+      }
+    }
+  }
   if (isNaN(value as number)) {
     return value?.toString();
   }
@@ -92,8 +105,14 @@ const mergingDataWithOutRecordType = (
         } else {
           const details = [];
           for (let l = 0; l < result.length; l++) {
-            if (result[l][cell] !== null && result[l][cell] !== undefined) {
-              details.push(numberFormat(result[l][cell]));
+            const value = result[l][cell];
+            if (value !== null && value !== undefined) {
+              // Display numeric zero as "0"
+              if (typeof value === 'number' && value === 0) {
+                details.push('0');
+              } else {
+                details.push(numberFormat(value));
+              }
             }
           }
           view[i][j] = details.length === 1 ? String(details[0]) : details.join(',');
@@ -113,7 +132,20 @@ const mergingDataWithRecordType = (
     const row = [];
     for (let c = 0; c < viewDtl.length; c++) {
       const sanitizedCell = viewDtl[c].replace('t-', '');
-      row.push(String(result[i][sanitizedCell]));
+      const value = result[i][sanitizedCell];
+      
+      // Handle null/undefined values - don't display them
+      if (value == null || value === '') {
+        row.push('');
+      }
+      // Display numeric zero as "0"
+      else if (typeof value === 'number' && value === 0) {
+        row.push('0');
+      }
+      // Convert all other values to string
+      else {
+        row.push(String(value));
+      }
     }
     view.push(row);
   }

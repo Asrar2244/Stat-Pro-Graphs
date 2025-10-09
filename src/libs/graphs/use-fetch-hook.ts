@@ -86,12 +86,18 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
     );
     const db = new Database(dbName);
     const recordColumns = await db.selectQuery(initialQuery);
+    console.log('🔍 Graph data fetch - Initial query:', initialQuery);
+    console.log('🔍 Graph data fetch - Record columns:', recordColumns);
+    
     if (recordColumns.length === 0) {
+      console.log('⚠️ No data found in output table, trying fallback to input table');
       // Try plotting directly from input as a fallback for first graph
       const didFallback = await fallbackPlotFromInput(dbName, tableName);
       if (didFallback) {
+        console.log('✅ Fallback to input table successful');
         return { query: '', dynamicQuery: '', newTraces: {} } as any;
       }
+      console.log('❌ Fallback to input table failed');
       setLoading(false);
       return { query: '' } as any;
     }
@@ -148,6 +154,7 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
   }, []);
 
   const addInitialTrace = (newTraces: any) => {
+    console.log('🔍 Adding initial traces:', newTraces);
     // Guard against null plotly reference
     if (!plotly.current) {
       console.warn('⚠️ Plotly element not ready, skipping initial trace');
@@ -157,7 +164,7 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
     const traceArray: any = [];
     const layout: any = { ...plotly.current?.layout };
     Object.keys(newTraces).forEach((key: string, index: number) => {
-      newTraces[key].name = String(newTraces[key].name).toUpperCase();
+      newTraces[key].name = String(newTraces[key].name || key || `Trace ${index + 1}`).toUpperCase();
       if (index === 0) {
         layout['xaxis'] = {
           showline: false,

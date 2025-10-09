@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import { invoke } from '@tauri-apps/api/core';
 import { exists, mkdir, create } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
 import { Database, homeDirectory } from '@utils';
 import { safeTauriCall, isTauriEnvironment } from '@utils/tauri-utils';
+import { Database, homeDirectory, saveLargeJsonToFile } from '@utils';
 import { useTasks } from '@store';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
-import { CONFIGURATION_DB, COLLECTION_DIR } from '@constants';
+import { CONFIGURATION_DB, COLLECTION_DIR, CONFIG_FILE } from '@constants';
 import initialTables from './query';
+import initialConfig from './initial-config.json';
 
 export const useInitialConfig = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -17,12 +18,6 @@ export const useInitialConfig = () => {
   const { t } = useTranslation('dockLayout', { useSuspense: false }); // Change to false
 
   useEffect(() => {
-    // Close splash screen immediately, don't wait for config
-    safeTauriCall(
-      () => invoke('close_splashscreen'),
-      Promise.resolve()
-    );
-    
     // Run config setup in background
     seedInitialConfig();
     //To Print App Version
@@ -80,6 +75,13 @@ export const useInitialConfig = () => {
       console.warn('Error creating initial file:', error);
     }
   };
+  // Create config file for test hypothesis
+  const createInitialTestConfigFile = async (): Promise<void> => {
+    const homeDir = await homeDirectory();
+    const configFile = await join(homeDir, COLLECTION_DIR, CONFIG_FILE);
+    saveLargeJsonToFile(configFile, initialConfig)
+
+  };
 
   const seedInitialConfig = async () => {
     try {
@@ -96,6 +98,12 @@ export const useInitialConfig = () => {
       } else {
         console.log('Development mode: Skipping database initialization');
       }
+      await createInitialTestConfigFile();
+      const db = new Database(CONFIGURATION_DB);
+
+      await db.executeQuery(`${Object.values(initialTables).join(';')}`).catch((error) => {
+        throw error;
+      });
     } catch (e) {
       console.error('Error in Seeding Initial Configurations=>', e);
     } finally {

@@ -9,6 +9,7 @@ import { Fieldset } from '@libs';
 import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import { useMultipleLinear } from './use-multiple-linear-hook';
+import { useStartProStore } from '@store/main-store';
 import { useModelStyle } from '../forward-stepwise/styles-hook/use-model-style';
 
 export const Model: FC = () => {
@@ -99,7 +100,7 @@ const IndependentListRender: FC = () => {
 };
 
 const DependentListRender: FC = () => {
-  const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
+  const [, setSelectAll] = useState<boolean | string | undefined>(false);
   const { t } = useTranslation('regLinearMultipleLinear');
   const { availableList, dependentList, setModelBulk } = useMultipleLinear(
     useShallow((state) => ({
@@ -127,7 +128,7 @@ const DependentListRender: FC = () => {
     <div className="section-available">
       <SimpleListRender
         list={dependentList}
-        selectAll={selectAll}
+        selectAll={false}
         setSelectAll={setSelectAll}
         setModelBulk={setModelBulk}
         listName="dependentList"
@@ -157,12 +158,22 @@ const AvailableListRender: FC = () => {
     })),
   );
 
+  const { setBlockUI } = useStartProStore();
   const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
     const name = (e.currentTarget as HTMLButtonElement).dataset.name;
+    if (name === 'dependent') {
+      const selected = Array.from(availableList.entries()).filter(([, v]) => v).map(([k]) => k);
+      if (selected.length > 1) {
+        setBlockUI({ value: true, msg: 'Please select exactly one dependent variable.' });
+        return;
+      }
+    }
     availableList.forEach((value: boolean, key: string) => {
       if (value) {
         if (name === 'dependent') {
-          dependentList.set(key, false);
+          // enforce single dependent
+          dependentList.clear();
+          dependentList.set(key, true);
         } else {
           independentList.set(key, false);
         }
@@ -185,7 +196,7 @@ const AvailableListRender: FC = () => {
         selectAllText={t('selectAll')}
       />
       <div className="send-buttons">
-        <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler}>
+        <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler} disabled={dependentList.size >= 1}>
           {t('sendToDependent')}
         </Button>
         <Button
