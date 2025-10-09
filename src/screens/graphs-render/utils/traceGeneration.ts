@@ -23,6 +23,8 @@ export interface TraceConfig {
   errorBarVariableY?: string;
   errorBarDataX?: number[];
   errorBarDataY?: number[];
+  // Error bar color override
+  errorBarColor?: string;
   rows: any[];
 }
 
@@ -88,7 +90,7 @@ export const createScatterTrace = (config: TraceConfig): any => {
   const {
     xv, yv, label, color, symbol, subType, symbolValue,
     errorCalculationUpper, errorCalculationLower, errorBarVariable, errorBarData, 
-    errorBarVariableX, errorBarVariableY, errorBarDataX, errorBarDataY, rows
+    errorBarVariableX, errorBarVariableY, errorBarDataX, errorBarDataY, errorBarColor, rows
   } = config;
   
   const isErrorBar = subType.toLowerCase().includes('error bar');
@@ -96,17 +98,7 @@ export const createScatterTrace = (config: TraceConfig): any => {
   const isHorizontalErrorBar = subType.toLowerCase().includes('horizontal') && isErrorBar;
   const isAsymmetricErrorBar = (subType.toLowerCase().includes('asymmetric') || symbolValue === 'Asymmetric Error Bar') && isErrorBar;
   
-  // Debug asymmetric error bar detection
-  if (isErrorBar) {
-    console.log('🔍 Error Bar Detection Debug:', {
-      subType,
-      symbolValue,
-      isErrorBar,
-      isAsymmetricErrorBar,
-      containsAsymmetric: subType.toLowerCase().includes('asymmetric'),
-      isAsymmetricSymbolValue: symbolValue === 'Asymmetric Error Bar'
-    });
-  }
+  // Error bar detection logic
   const isBidirectionalErrorBar = subType.toLowerCase().includes('bidirectional') && isErrorBar;
   const isPointPlot = subType.toLowerCase().includes('point plot');
   const isDotPlot = subType.toLowerCase().includes('dot plot');
@@ -136,14 +128,12 @@ export const createScatterTrace = (config: TraceConfig): any => {
           const value = row[errorBarVariableX];
           return typeof value === 'number' ? value : parseFloat(value) || 0;
         });
-        console.log('📊 Bidirectional X Error Bar Data:', errorBarDataXForCalculation?.slice(0, 5), '...');
       }
       if (errorBarVariableY) {
         errorBarDataYForCalculation = rows.map((row: any) => {
           const value = row[errorBarVariableY];
           return typeof value === 'number' ? value : parseFloat(value) || 0;
         });
-        console.log('📊 Bidirectional Y Error Bar Data:', errorBarDataYForCalculation?.slice(0, 5), '...');
       }
     } else if (errorBarVariable) {
       // For regular error bars, use single error bar variable
@@ -152,7 +142,6 @@ export const createScatterTrace = (config: TraceConfig): any => {
           const value = row[errorBarVariable];
           return typeof value === 'number' ? value : parseFloat(value) || 0;
         });
-        console.log('📊 Asymmetric Error Bar Data:', errorBarDataForCalculation?.slice(0, 5), '...');
       }
       // For regular error bars with Symbol Value configuration
       else if (symbolValue && (symbolValue === 'Worksheet Columns' || symbolValue === 'Asymmetric Error Bar')) {
@@ -160,7 +149,6 @@ export const createScatterTrace = (config: TraceConfig): any => {
           const value = row[errorBarVariable];
           return typeof value === 'number' ? value : parseFloat(value) || 0;
         });
-        console.log('📊 Regular Error Bar Data:', errorBarDataForCalculation?.slice(0, 5), '...');
       }
     }
     
@@ -175,16 +163,6 @@ export const createScatterTrace = (config: TraceConfig): any => {
       errorBarDataY: errorBarDataYForCalculation
     });
     
-    console.log('🔍 Error Values Calculated:', {
-      symbolValue,
-      errorBarDataLength: errorBarDataForCalculation?.length,
-      errorValues: {
-        yUpper: errorValues.yUpper?.slice(0, 3),
-        yLower: errorValues.yLower?.slice(0, 3),
-        xUpper: errorValues.xUpper?.slice(0, 3),
-        xLower: errorValues.xLower?.slice(0, 3)
-      }
-    });
     
     // Enhanced error bar styling with SigmaPlot-style customization
     const errorBarStyle = {
@@ -197,28 +175,23 @@ export const createScatterTrace = (config: TraceConfig): any => {
     if (isVerticalErrorBar || (!isHorizontalErrorBar && !isBidirectionalErrorBar)) {
       // Vertical Error Bars with enhanced styling
       if (isAsymmetricErrorBar) {
-        console.log('🔍 Applying Asymmetric Y Error Bars:', {
-          yUpper: errorValues.yUpper?.slice(0, 3),
-          yLower: errorValues.yLower?.slice(0, 3),
-          symmetric: false
-        });
         traceConfig.error_y = {
           type: 'data',
           symmetric: false,
           array: errorValues.yUpper,
           arrayminus: errorValues.yLower,
-          color: color,
+          color: errorBarColor || color,
           thickness: errorBarStyle.thickness,
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
             size: errorBarStyle.capSize,
-            color: color
+            color: errorBarColor || color
           },
           visible: true,
           // SigmaPlot-style asymmetric error bar enhancements
           line: {
-            color: color,
+            color: errorBarColor || color,
             width: errorBarStyle.thickness,
             dash: 'solid'
           }
@@ -228,13 +201,13 @@ export const createScatterTrace = (config: TraceConfig): any => {
           type: 'data',
           symmetric: true,
           array: errorValues.ySymmetric,
-          color: color,
+          color: errorBarColor || color,
           thickness: errorBarStyle.thickness,
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
             size: errorBarStyle.capSize,
-            color: color
+            color: errorBarColor || color
           },
           visible: true
         };
@@ -242,23 +215,18 @@ export const createScatterTrace = (config: TraceConfig): any => {
     } else if (isHorizontalErrorBar) {
       // Horizontal Error Bars with enhanced styling
       if (isAsymmetricErrorBar) {
-        console.log('🔍 Applying Asymmetric X Error Bars:', {
-          xUpper: errorValues.xUpper?.slice(0, 3),
-          xLower: errorValues.xLower?.slice(0, 3),
-          symmetric: false
-        });
         traceConfig.error_x = {
           type: 'data',
           symmetric: false,
           array: errorValues.xUpper,
           arrayminus: errorValues.xLower,
-          color: color,
+          color: errorBarColor || color,
           thickness: errorBarStyle.thickness,
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
             size: errorBarStyle.capSize,
-            color: color
+            color: errorBarColor || color
           },
           visible: true
         };
@@ -267,13 +235,13 @@ export const createScatterTrace = (config: TraceConfig): any => {
           type: 'data',
           symmetric: true,
           array: errorValues.xSymmetric,
-          color: color,
+          color: errorBarColor || color,
           thickness: errorBarStyle.thickness,
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
             size: errorBarStyle.capSize,
-            color: color
+            color: errorBarColor || color
           },
           visible: true
         };
@@ -293,18 +261,18 @@ export const createScatterTrace = (config: TraceConfig): any => {
           symmetric: false,
           array: errorValues.yUpper,
           arrayminus: errorValues.yLower,
-          color: color,
+          color: errorBarColor || color,
           thickness: errorBarStyle.thickness,
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
             size: errorBarStyle.capSize,
-            color: color
+            color: errorBarColor || color
           },
           visible: true,
           // SigmaPlot-style asymmetric error bar enhancements
           line: {
-            color: color,
+            color: errorBarColor || color,
             width: errorBarStyle.thickness,
             dash: 'solid'
           }
@@ -314,18 +282,18 @@ export const createScatterTrace = (config: TraceConfig): any => {
           symmetric: false,
           array: errorValues.xUpper,
           arrayminus: errorValues.xLower,
-          color: color,
+          color: errorBarColor || color,
           thickness: errorBarStyle.thickness,
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
             size: errorBarStyle.capSize,
-            color: color
+            color: errorBarColor || color
           },
           visible: true,
           // SigmaPlot-style asymmetric error bar enhancements
           line: {
-            color: color,
+            color: errorBarColor || color,
             width: errorBarStyle.thickness,
             dash: 'solid'
           }
@@ -335,13 +303,13 @@ export const createScatterTrace = (config: TraceConfig): any => {
           type: 'data',
           symmetric: true,
           array: errorValues.ySymmetric,
-          color: color,
+          color: errorBarColor || color,
           thickness: errorBarStyle.thickness,
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
             size: errorBarStyle.capSize,
-            color: color
+            color: errorBarColor || color
           },
           visible: true
         };
@@ -349,13 +317,13 @@ export const createScatterTrace = (config: TraceConfig): any => {
           type: 'data',
           symmetric: true,
           array: errorValues.xSymmetric,
-          color: color,
+          color: errorBarColor || color,
           thickness: errorBarStyle.thickness,
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
             size: errorBarStyle.capSize,
-            color: color
+            color: errorBarColor || color
           },
           visible: true
         };
@@ -365,8 +333,18 @@ export const createScatterTrace = (config: TraceConfig): any => {
     // SigmaPlot-style point plots with professional markers
     traceConfig.type = 'scatter';
     traceConfig.mode = 'markers';
+    
+    const finalColor = color; // Point plots don't have error bars, use series color directly
+    console.log(`🎨 Point Plot Color Assignment:`, {
+      label,
+      originalColor: color,
+      errorBarColor,
+      finalColor,
+      isPointPlot
+    });
+    
     traceConfig.marker = { 
-      color: color,
+            color: finalColor,
       symbol: 'circle',
       size: 12, // Larger, more prominent markers
       line: { 
@@ -378,7 +356,7 @@ export const createScatterTrace = (config: TraceConfig): any => {
       // SigmaPlot-style gradient effect
       gradient: {
         type: 'radial',
-        color: [color, 'rgba(255,255,255,0.3)'],
+        color: [finalColor, 'rgba(255,255,255,0.3)'],
         size: [0.3, 1]
       }
     };
@@ -398,8 +376,17 @@ export const createScatterTrace = (config: TraceConfig): any => {
     const dataDensity = xv.length;
     const baseSize = Math.max(3, Math.min(8, 12 - Math.log10(dataDensity)));
     
+    const finalColor = color; // Dot plots don't have error bars, use series color directly
+    console.log(`🎨 Dot Plot Color Assignment:`, {
+      label,
+      originalColor: color,
+      errorBarColor,
+      finalColor,
+      isDotPlot
+    });
+    
     traceConfig.marker = { 
-      color: color,
+            color: finalColor,
       symbol: 'circle',
       size: baseSize,
       opacity: 0.8, // Higher opacity for better visibility
@@ -411,7 +398,7 @@ export const createScatterTrace = (config: TraceConfig): any => {
       // SigmaPlot-style subtle gradient
       gradient: {
         type: 'radial',
-        color: [color, 'rgba(255,255,255,0.2)'],
+        color: [finalColor, 'rgba(255,255,255,0.2)'],
         size: [0.4, 1]
       }
     };
@@ -447,7 +434,8 @@ export const createDotPlotDottedLines = (
   xv: number[],
   yv: number[],
   color: string,
-  subType: string
+  subType: string,
+  errorBarColor?: string
 ): any[] => {
   const isDotPlot = subType.toLowerCase().includes('dot plot');
   if (!isDotPlot) return [];
@@ -467,7 +455,7 @@ export const createDotPlotDottedLines = (
         type: 'scatter',
         mode: 'lines',
         line: {
-          color: color,
+          color: color, // Use series color directly for dot plot dotted lines
           width: 1,
           dash: 'dot',
           opacity: 0.3
@@ -485,7 +473,7 @@ export const createDotPlotDottedLines = (
         type: 'scatter',
         mode: 'lines',
         line: {
-          color: color,
+          color: color, // Use series color directly for dot plot dotted lines
           width: 1,
           dash: 'dot',
           opacity: 0.3
@@ -507,7 +495,9 @@ export const createRegressionTracesIfNeeded = (
   yv: number[], 
   label: string, 
   color: string, 
-  subType: string
+  subType: string,
+  showConfidenceInterval: boolean = true,
+  confidenceIntervalOpacity: number = 0.2
 ): any[] => {
   const isRegression = subType.toLowerCase().includes('regression');
   console.log(`🔍 createRegressionTracesIfNeeded for "${label}":`, {
@@ -530,7 +520,7 @@ export const createRegressionTracesIfNeeded = (
     return [];
   }
   
-  const traces = createRegressionTraces(xv, yv, label, color, subType, regressionResult);
+  const traces = createRegressionTraces(xv, yv, label, color, subType, regressionResult, showConfidenceInterval, confidenceIntervalOpacity);
   console.log(`✅ Created ${traces.length} regression traces for "${label}"`);
   return traces;
 };

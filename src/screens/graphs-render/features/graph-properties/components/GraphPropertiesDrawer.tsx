@@ -11,7 +11,7 @@ import {
   Button,
 } from '@fluentui/react-components';
 import { IoCloseOutline } from 'react-icons/io5';
-import { useGraphPropertiesClasses } from '../../styles-hook/use-graph-properties-style';
+import { useGraphPropertiesClasses } from '../../styles/use-graph-properties-style';
 import { GraphPropertiesProps } from '../types';
 import { GraphPropertiesAccordion } from './GraphPropertiesAccordion';
 

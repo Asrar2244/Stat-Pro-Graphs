@@ -66,8 +66,10 @@ export const ScatterPlotModal: FC<ScatterPlotModalProps> = ({
     const gCategory = (graphConfig as any)?.variables?.category as string[] | undefined;
     const gErrorBar = (graphConfig as any)?.variables?.errorBar as string[] | undefined;
     
-    const xVars: string[] = selectedXVariable ? [selectedXVariable] : (Array.isArray(gx) ? gx : []);
-    const yVars: string[] = selectedYVariable ? [selectedYVariable] : (Array.isArray(gy) ? gy : []);
+    // For X Many Y Replicates format, always use the full variable lists from graphConfig
+    // For other formats, fall back to single variables if no lists are available
+    const xVars: string[] = Array.isArray(gx) && gx.length > 0 ? gx : (selectedXVariable ? [selectedXVariable] : []);
+    const yVars: string[] = Array.isArray(gy) && gy.length > 0 ? gy : (selectedYVariable ? [selectedYVariable] : []);
     const categoryVars: string[] = Array.isArray(gCategory) ? gCategory : [];
     const errorBarVars: string[] = Array.isArray(gErrorBar) ? gErrorBar : [];
 
@@ -105,6 +107,7 @@ export const ScatterPlotModal: FC<ScatterPlotModalProps> = ({
       // User picked X only while selecting Single Y → honor X intent
       normalizedFormat = 'Single X';
     }
+
 
     const config = { 
       ...graphConfig, 

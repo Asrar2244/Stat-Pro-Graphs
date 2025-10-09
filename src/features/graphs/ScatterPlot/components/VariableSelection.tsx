@@ -3,6 +3,7 @@ import { Button, Text, tokens } from '@fluentui/react-components';
 import { MdCheckCircle, MdInfoOutline, MdOutlineRemove, MdKeyboardDoubleArrowRight, MdTrendingDown, MdTrendingUp } from 'react-icons/md';
 import { getRequiredErrorBarCount } from '../utils/formatRequirements';
 import { useScatterPlotStore } from '../scatterPlotSlice';
+import { useVariableSelectionStyles } from '../styles-hook';
 
 /**
  * Props for the VariableSelection component
@@ -49,6 +50,10 @@ interface VariableSelectionProps {
   canSendToY: boolean;
   canSendToErrorBar?: boolean;
   canSendToCategory?: boolean;
+  canSendToXForReplicates?: boolean;
+  canSendToYForReplicates?: boolean;
+  canSendToXForYReplicates?: boolean;
+  canSendToYForXReplicates?: boolean;
   xCount?: number;
   yCount?: number;
 }
@@ -99,12 +104,25 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
     canSendToY,
     canSendToErrorBar,
     canSendToCategory,
+    canSendToXForReplicates,
+    canSendToYForReplicates,
+    canSendToXForYReplicates,
+    canSendToYForXReplicates,
     xCount = 0,
     yCount = 0,
   } = props;
 
   // Wire variable assignment to the store so the modal always has X/Y at Create time
   const { setXVariable, setYVariable } = useScatterPlotStore();
+  
+  const {
+    variableSelectionContainerStyles,
+    columnStyles,
+    disabledSelectionStyles,
+    removeButtonStyles,
+    removeButtonHoverStyles,
+    removeButtonLeaveStyles
+  } = useVariableSelectionStyles();
   
   // Calculate max allowed error bars based on data format and X/Y counts
   const maxErrorBars = getRequiredErrorBarCount(xCount, yCount, dataFormat, subType);
@@ -153,14 +171,9 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
         </Text>
       </div>
 
-      <div style={{ 
-        display: 'flex', 
-        gap: tokens.spacingHorizontalM,
-        flexWrap: 'wrap',
-        alignItems: 'flex-start'
-      }}>
+      <div style={variableSelectionContainerStyles}>
         {/* Available Variables - Leftmost position */}
-        <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
+        <div className={classes.column} style={columnStyles}>
           <div className={classes.columnHeader}>
             <MdInfoOutline size={18} color={tokens.colorNeutralForeground2} />
             <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>Available Variables</Text>
@@ -181,10 +194,24 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
               <>
                 {(dataFormat === 'XY Pair' || dataFormat === 'XY Pairs' || dataFormat === 'XY Category' || dataFormat === 'X Many Y' || dataFormat === 'Y Many X' || dataFormat === 'X Many Y Replicates' || dataFormat === 'Y Many X Replicates' || dataFormat === 'Category Many Y' || dataFormat === 'Category Many X') && (
                   <>
-                    <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToX} className={classes.actionBtn} disabled={!canSendToX}>
+                    <Button 
+                      icon={<MdKeyboardDoubleArrowRight />} 
+                      iconPosition="after" 
+                      onClick={onSendToX} 
+                      className={classes.actionBtn} 
+                      disabled={['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '') ? !canSendToXForReplicates : 
+                                dataFormat === 'Y Many X Replicates' ? !canSendToXForYReplicates : !canSendToX}
+                    >
                       Send to X
                     </Button>
-                    <Button icon={<MdKeyboardDoubleArrowRight />} iconPosition="after" onClick={onSendToY} className={classes.actionBtn} disabled={!canSendToY}>
+                    <Button 
+                      icon={<MdKeyboardDoubleArrowRight />} 
+                      iconPosition="after" 
+                      onClick={onSendToY} 
+                      className={classes.actionBtn} 
+                      disabled={['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '') ? !canSendToYForReplicates : 
+                                dataFormat === 'Y Many X Replicates' ? !canSendToYForXReplicates : !canSendToY}
+                    >
                       Send to Y
                     </Button>
                     {requireErrorBar && (
@@ -225,7 +252,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                 )}
               </>
             ) : (
-              <div style={{ padding: tokens.spacingVerticalM, textAlign: 'center', color: tokens.colorNeutralForeground2, fontSize: '14px', fontStyle: 'italic', background: tokens.colorNeutralBackground1, borderRadius: tokens.borderRadiusSmall, border: `1px dashed ${tokens.colorNeutralStroke2}` }}>
+              <div style={disabledSelectionStyles}>
                 Select a Simple Scatter sub-type to enable variable selection
               </div>
             )}
@@ -234,7 +261,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
 
         {/* X Variables - Second position */}
         {requireX && (
-          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
+          <div className={classes.column} style={columnStyles}>
             <div className={classes.columnHeader}>
               <MdTrendingDown size={18} color={tokens.colorNeutralForeground2} />
               <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>
@@ -259,20 +286,12 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                 appearance="outline" 
                 onClick={onRemoveX} 
                 className={classes.removeBtn} 
-                style={{ 
-                  color: '#8a8886', 
-                  borderColor: '#8a8886',
-                  transition: 'all 0.2s ease'
-                }}
+                style={removeButtonStyles}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#d13438';
-                  e.currentTarget.style.borderColor = '#d13438';
-                  e.currentTarget.style.backgroundColor = '#fdf2f2';
+                  Object.assign(e.currentTarget.style, removeButtonHoverStyles);
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#8a8886';
-                  e.currentTarget.style.borderColor = '#8a8886';
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                  Object.assign(e.currentTarget.style, removeButtonLeaveStyles);
                 }}
               >
                 Remove from X
@@ -283,7 +302,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
 
         {/* Y Variables - Third position */}
         {requireY && (
-          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
+          <div className={classes.column} style={columnStyles}>
             <div className={classes.columnHeader}>
               <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
               <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>
@@ -308,20 +327,12 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                 appearance="outline" 
                 onClick={onRemoveY} 
                 className={classes.removeBtn} 
-                style={{ 
-                  color: '#8a8886', 
-                  borderColor: '#8a8886',
-                  transition: 'all 0.2s ease'
-                }}
+                style={removeButtonStyles}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#d13438';
-                  e.currentTarget.style.borderColor = '#d13438';
-                  e.currentTarget.style.backgroundColor = '#fdf2f2';
+                  Object.assign(e.currentTarget.style, removeButtonHoverStyles);
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#8a8886';
-                  e.currentTarget.style.borderColor = '#8a8886';
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                  Object.assign(e.currentTarget.style, removeButtonLeaveStyles);
                 }}
               >
                 Remove from Y
@@ -332,7 +343,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
 
         {/* Error Bar Variables - Fourth position (if available) */}
         {requireErrorBar && (
-          <div className={classes.column} style={{ flex: '1', minWidth: '200px' }}>
+          <div className={classes.column} style={columnStyles}>
             <div className={classes.columnHeader}>
               <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
               <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>Error Bar Variables</Text>
@@ -357,20 +368,12 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                 appearance="outline" 
                 onClick={handleRemoveFromErrorBar} 
                 className={classes.removeBtn} 
-                style={{ 
-                  color: '#8a8886', 
-                  borderColor: '#8a8886',
-                  transition: 'all 0.2s ease'
-                }}
+                style={removeButtonStyles}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#d13438';
-                  e.currentTarget.style.borderColor = '#d13438';
-                  e.currentTarget.style.backgroundColor = '#fdf2f2';
+                  Object.assign(e.currentTarget.style, removeButtonHoverStyles);
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#8a8886';
-                  e.currentTarget.style.borderColor = '#8a8886';
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                  Object.assign(e.currentTarget.style, removeButtonLeaveStyles);
                 }}
               >
                 Remove from Error Bar
@@ -381,7 +384,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
 
         {/* Category Variables - Last position (if needed) */}
         {requireCategory && (
-          <div className={classes.columnNoRightBorder} style={{ flex: '1', minWidth: '200px' }}>
+          <div className={classes.columnNoRightBorder} style={columnStyles}>
             <div className={classes.columnHeader}>
               <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
               <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>Category Variables</Text>
@@ -406,20 +409,12 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                 appearance="outline" 
                 onClick={handleRemoveFromCategory} 
                 className={classes.removeBtn} 
-                style={{ 
-                  color: '#8a8886', 
-                  borderColor: '#8a8886',
-                  transition: 'all 0.2s ease'
-                }}
+                style={removeButtonStyles}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#d13438';
-                  e.currentTarget.style.borderColor = '#d13438';
-                  e.currentTarget.style.backgroundColor = '#fdf2f2';
+                  Object.assign(e.currentTarget.style, removeButtonHoverStyles);
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#8a8886';
-                  e.currentTarget.style.borderColor = '#8a8886';
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                  Object.assign(e.currentTarget.style, removeButtonLeaveStyles);
                 }}
               >
                 Remove from Category

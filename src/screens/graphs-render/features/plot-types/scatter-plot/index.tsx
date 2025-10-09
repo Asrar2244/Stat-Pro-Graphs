@@ -1,6 +1,6 @@
 import { FC, useContext, useRef, useState, useEffect } from 'react';
-import { GraphsRenderContext } from '../../context';
-import { GraphCanvas, GraphCanvasRef } from '../../plotly-canvas';
+import { GraphsRenderContext } from '../../../context';
+import { GraphCanvas, GraphCanvasRef } from '../../../plotly-canvas';
 import { Card, CardFooter, CardPreview } from '@fluentui/react-components';
 import { GraphTools } from '@libs/graphs/tools';
 import { useFullScreenHandle } from 'react-full-screen';

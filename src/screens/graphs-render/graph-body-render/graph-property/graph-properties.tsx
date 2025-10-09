@@ -6,7 +6,7 @@ import {
   Text,
 } from '@fluentui/react-components';
 import { GraphAddTraces } from './graph-add-traces';
-import { useGraphPropertyLayout } from '../../styles-hook/use-graph-property';
+import { useGraphPropertyLayout } from '../../styles/use-graph-property';
 import { PlotPropertiesPanel } from '../../../graphs-render/components/PlotPropertiesPanel';
 import { PlotSpecificProperties, DEFAULT_PLOT_PROPERTIES } from '../../../graphs-render/utils/plotProperties';
 interface GraphPropertiesProps {

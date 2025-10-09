@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { Dropdown, Field, Option, tokens } from '@fluentui/react-components';
 import { useScatterPlotStore } from '../scatterPlotSlice';
 import type { SymbolValueOption, ErrorCalculationOption } from '../scatterPlotSlice';
+import { useErrorBarsConfigurationStyles } from '../styles-hook';
 
 /**
  * Props for the ErrorBarsConfiguration component
@@ -77,6 +78,8 @@ export const ErrorBarsConfiguration: FC<ErrorBarsConfigurationProps> = ({
     setErrorBarVariable
   } = useScatterPlotStore();
 
+  const { containerStyles, headerStyles } = useErrorBarsConfigurationStyles();
+
   // Determine if error bar variable selection should be shown
   const showErrorBarVariable = false; // Disabled error bar variable dropdown
 
@@ -86,21 +89,8 @@ export const ErrorBarsConfiguration: FC<ErrorBarsConfigurationProps> = ({
     symbolValue !== 'Asymmetric Error Bar';
 
   return (
-    <div style={{ 
-      marginBottom: tokens.spacingVerticalS,
-      border: `1px solid ${tokens.colorNeutralStroke1}`,
-      borderRadius: tokens.borderRadiusMedium,
-      padding: tokens.spacingVerticalS,
-      backgroundColor: tokens.colorNeutralBackground1,
-      boxShadow: tokens.shadow2
-    }}>
-      <h3 style={{ 
-        marginTop: 0, 
-        marginBottom: tokens.spacingVerticalS,
-        color: tokens.colorNeutralForeground1,
-        fontSize: tokens.fontSizeBase200,
-        fontWeight: tokens.fontWeightSemibold
-      }}>Error Bars Configuration</h3>
+    <div style={containerStyles}>
+      <h3 style={headerStyles}>Error Bars Configuration</h3>
       <Field label="Symbol Value (Main Dropdown)" required>
         <Dropdown
           placeholder="Select symbol value option"

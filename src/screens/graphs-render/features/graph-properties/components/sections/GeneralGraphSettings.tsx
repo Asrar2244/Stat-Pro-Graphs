@@ -15,7 +15,7 @@ import {
   Switch,
 } from '@fluentui/react-components';
 import { MdSettings } from 'react-icons/md';
-import { useGraphPropertiesClasses } from '../../../styles-hook/use-graph-properties-style';
+import { useGraphPropertiesClasses } from '../../../styles/use-graph-properties-style';
 import { GraphPropertiesProps } from '../../types';
 
 export const GeneralGraphSettings: FC<GraphPropertiesProps> = ({ properties }) => {

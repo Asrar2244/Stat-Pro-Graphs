@@ -19,12 +19,12 @@ import {
   AccordionPanel,
 } from '@fluentui/react-components';
 
-import { useGraphPropertiesClasses } from '../styles-hook/use-graph-properties-style';
+import { useGraphPropertiesClasses } from '../../styles/use-graph-properties-style';
 import { IoCloseOutline } from 'react-icons/io5';
 import { MdSettings, MdPalette, MdVisibility, MdScatterPlot, MdError, MdTrendingUp } from 'react-icons/md';
-import { GraphProperties as GraphPropertiesType, GlobalGraphProperties, PlotSpecificProperties } from '../hooks/use-tools';
-import { DataFormatPropertiesPanel } from '../components/DataFormatPropertiesPanel';
-import { DataFormatProperties, createDataFormatProperties, getSeriesLabels } from '../utils/dataFormatProperties';
+import { GraphProperties as GraphPropertiesType, GlobalGraphProperties, PlotSpecificProperties } from '../../hooks/use-tools';
+import { DataFormatPropertiesPanel } from '../../components/DataFormatPropertiesPanel';
+import { DataFormatProperties, createDataFormatProperties, getSeriesLabels } from '../../utils/dataFormatProperties';
 
 interface IGraphProperties {
   showGraphProperties: boolean;
@@ -643,6 +643,15 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                           />
                         </Field>
                         
+                        <Field label="Error Bar Color">
+                          <input
+                            type="color"
+                            value={plotProps.errorBar.errorBarColor || '#1f77b4'}
+                            onChange={(e) => updatePlotSpecificProperty('errorBar', 'errorBarColor', e.target.value)}
+                            style={{ width: '100%', height: 40, border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
+                          />
+                        </Field>
+                        
                         <Field label="Show Error Bars">
                           <Switch 
                             checked={plotProps.errorBar.showErrorBars}
@@ -1122,66 +1131,6 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
               </AccordionPanel>
             </AccordionItem>
 
-            {/* Minor Tick Labels */}
-            <AccordionItem value="minorTicks">
-              <AccordionHeader>
-                <div className={classes.accordionHeader}>
-                  <MdSettings size={20} />
-                  <Text weight="semibold">Minor Tick Labels</Text>
-                </div>
-              </AccordionHeader>
-              <AccordionPanel>
-                <div className={classes.propertyContent}>
-                  <Card>
-                    <CardHeader>
-                      <Text weight="semibold">Visibility</Text>
-                    </CardHeader>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <Button appearance={globalProps.minorTickShowLeft ? 'primary' : 'secondary'} onClick={() => updateGraphProperty('minorTickShowLeft', !globalProps.minorTickShowLeft)}>Left</Button>
-                      <Button appearance={globalProps.minorTickShowRight ? 'primary' : 'secondary'} onClick={() => updateGraphProperty('minorTickShowRight', !globalProps.minorTickShowRight)}>Right</Button>
-                    </div>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <Text weight="semibold">Formatting</Text>
-                    </CardHeader>
-                    <div style={{ display: 'grid', gap: 12 }}>
-                      <Field label="Prefix"><Input value={globalProps.minorTickPrefix} onChange={(_, d) => updateGraphProperty('minorTickPrefix', d.value)} /></Field>
-                      <Field label="Suffix"><Input value={globalProps.minorTickSuffix} onChange={(_, d) => updateGraphProperty('minorTickSuffix', d.value)} /></Field>
-                      <Field label="Numeric Type">
-                        <select value={globalProps.minorTickNumericType} onChange={(e) => updateGraphProperty('minorTickNumericType', e.target.value as any)} style={{ width: '100%', height: 36 }}>
-                          <option value="number">Number</option>
-                          <option value="percent">Percent</option>
-                          <option value="scientific">Scientific</option>
-                          <option value="engineering">Engineering</option>
-                        </select>
-                      </Field>
-                      <Field label="Notation">
-                        <select value={globalProps.minorTickExponentFormat} onChange={(e) => updateGraphProperty('minorTickExponentFormat', e.target.value as any)} style={{ width: '100%', height: 36 }}>
-                          <option value="e">Scientific (e)</option>
-                          <option value="SI">Engineering (SI)</option>
-                          <option value="power">Power</option>
-                        </select>
-                      </Field>
-                      <Field label="Precision">
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <Button appearance={globalProps.minorTickPrecisionMode === 'auto' ? 'primary' : 'secondary'} onClick={() => updateGraphProperty('minorTickPrecisionMode', 'auto')}>Automatic</Button>
-                          <Button appearance={globalProps.minorTickPrecisionMode === 'manual' ? 'primary' : 'secondary'} onClick={() => updateGraphProperty('minorTickPrecisionMode', 'manual')}>Manual</Button>
-                        </div>
-                        {globalProps.minorTickPrecisionMode === 'manual' && (
-                          <Slider min={0} max={15} value={globalProps.minorTickPrecision} onChange={(_, d) => updateGraphProperty('minorTickPrecision', d.value)} />
-                        )}
-                      </Field>
-                      <Field label="Factor Out">
-                        <select value={globalProps.minorTickFactor} onChange={(e) => updateGraphProperty('minorTickFactor', e.target.value as any)} style={{ width: '100%', height: 36 }}>
-                          {['1e-4','1e-3','0.1','1','10'].map(f => (<option key={f} value={f}>{f}</option>))}
-                        </select>
-                      </Field>
-                    </div>
-                  </Card>
-                </div>
-              </AccordionPanel>
-            </AccordionItem>
 
             {/* Major Tick Marks Section */}
             <AccordionItem value="majorTickMarks">

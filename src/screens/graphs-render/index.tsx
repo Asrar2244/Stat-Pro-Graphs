@@ -1,19 +1,19 @@
 import { FC, lazy, useEffect, useState } from 'react';
 import { SuspenseLoad } from '@libs';
-import { useGraphsRender } from './styles-hook/use-graphs-render-style';
+import { useGraphsRender } from './styles/use-graphs-render-style';
 import { useActiveNode } from '@hooks';
 import { useFetchGraphs } from './hooks/use-fetch-graphs';
 import { friendlyTitleForGraph } from './utils/title';
 import { useStartProStore } from '@store/main-store';
 
 const GraphSelection = lazy(() =>
-  import('./graph-selection').then((modules) => ({ default: modules.GraphSelection })),
+  import('./features/graph-selection/graph-selection').then((modules) => ({ default: modules.GraphSelection })),
 );
 const RunHistory = lazy(() =>
-  import('./run-history/run-history').then((modules) => ({ default: modules.RunHistory })),
+  import('./features/run-history/run-history').then((modules) => ({ default: modules.RunHistory })),
 );
 const GraphProperties = lazy(() =>
-  import('./graph-properties/graph-properties').then((modules) => ({ default: modules.GraphProperties })),
+  import('./features/graph-properties/graph-properties').then((modules) => ({ default: modules.GraphProperties })),
 );
 const ToolBar = lazy(() => import('./tool-bar').then((modules) => ({ default: modules.ToolBar })));
 
@@ -190,6 +190,7 @@ export const GraphsRender: FC = () => {
       if (!groups?.appearance) {
         delete next.global.backgroundColor;
         delete next.global.plotColor;
+        delete next.global.seriesColor;
         delete next.global.showGridLines;
         delete next.global.marginSize;
         delete next.global.padding;

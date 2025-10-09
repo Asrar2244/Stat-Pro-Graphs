@@ -1,6 +1,6 @@
 import { Field, Input, Button } from '@fluentui/react-components';
 import { VscAdd } from 'react-icons/vsc';
-import { useGraphPropertyLayout } from '../../styles-hook/use-graph-property';
+import { useGraphPropertyLayout } from '../../styles/use-graph-property';
 export const GraphAddTraces = () => {
   const classes = useGraphPropertyLayout();
   return (

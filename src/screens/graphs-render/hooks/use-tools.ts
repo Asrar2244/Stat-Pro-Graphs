@@ -5,6 +5,7 @@ export interface GlobalGraphProperties {
   // Appearance
   backgroundColor: string;
   plotColor?: string;
+  seriesColor?: string;
   backgroundTransparencyPct?: number; // 0-100
   plotTransparencyPct?: number; // 0-100
   showGridLines: boolean;
@@ -90,16 +91,6 @@ export interface GlobalGraphProperties {
   majorTickExponentFormat: 'e' | 'SI' | 'power';
   majorTickFactor: '1e-4' | '1e-3' | '0.1' | '1' | '10';
 
-  // Tick Labels - Minor
-  minorTickShowLeft: boolean;
-  minorTickShowRight: boolean;
-  minorTickPrefix: string;
-  minorTickSuffix: string;
-  minorTickNumericType: 'number' | 'percent' | 'scientific' | 'engineering';
-  minorTickPrecisionMode: 'auto' | 'manual';
-  minorTickPrecision: number; // 0-15
-  minorTickExponentFormat: 'e' | 'SI' | 'power';
-  minorTickFactor: '1e-4' | '1e-3' | '0.1' | '1' | '10';
 
   // Tick Marks - Major
   majorTickLength: number; // inches
@@ -149,6 +140,7 @@ export interface PlotSpecificProperties {
     errorBarOpacity: number;
     errorBarCapSize: number;
     showErrorBars: boolean;
+    errorBarColor?: string;
   };
   pointPlot?: {
     pointSize: number;
@@ -193,6 +185,7 @@ export const useTools = () => {
     global: {
       backgroundColor: '#ffffff',
       plotColor: '',
+      seriesColor: '',
       backgroundTransparencyPct: 0,
       plotTransparencyPct: 0,
       showGridLines: true,
@@ -270,17 +263,6 @@ export const useTools = () => {
       majorTickExponentFormat: 'e',
       majorTickFactor: '1',
 
-      // Tick Labels defaults - Minor
-      minorTickShowLeft: true,
-      minorTickShowRight: true,
-      minorTickPrefix: '',
-      minorTickSuffix: '',
-      minorTickNumericType: 'number',
-      minorTickPrecisionMode: 'auto',
-      minorTickPrecision: 1,
-      minorTickExponentFormat: 'e',
-      minorTickFactor: '1',
-
       // Tick Marks defaults - Major
       majorTickLength: 0.1, // inches
       majorTickThickness: 0.01, // inches
@@ -321,13 +303,14 @@ export const useTools = () => {
         pointBorderWidth: 1,
         pointColor: '',
       },
-      errorBar: {
-        errorBarThickness: 2,
-        errorBarWidth: 0.5,
-        errorBarOpacity: 0.7,
-        errorBarCapSize: 3,
-        showErrorBars: true,
-      },
+       errorBar: {
+         errorBarThickness: 2,
+         errorBarWidth: 0.5,
+         errorBarOpacity: 0.7,
+         errorBarCapSize: 3,
+         showErrorBars: true,
+         errorBarColor: '#1f77b4',
+       },
       pointPlot: {
         pointSize: 12,
         pointOpacity: 0.85,

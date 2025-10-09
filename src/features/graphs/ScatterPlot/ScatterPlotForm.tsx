@@ -9,6 +9,7 @@ import { ErrorBarsConfiguration } from './components/ErrorBarsConfiguration';
 import { VariableList as VariableListRender } from './VariableList';
 import { useScatterPlotStore } from './scatterPlotSlice';
 import { useScatterPlotStyles } from './styles-hook/use-scatter-plot-styles';
+import { useScatterPlotFormStyles } from './styles-hook';
 import { SUB_TYPES } from './constants';
 import { useProjectVariables, useVariableManagement, useAvailableFormats } from './hooks';
 import { requiresX, requiresY, requiresCategory, canSendToX, canSendToY, canSendToErrorBar, getRequiredErrorBarCount } from './utils';
@@ -19,6 +20,7 @@ import { getPlotTypeFlags, isAsymmetricErrorBar, needsErrorBarsConfiguration, is
  */
 export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ projects }) => {
   const classes = useScatterPlotStyles();
+  const { errorBarValidationStyles, errorBarValidationTextStyles } = useScatterPlotFormStyles();
   const isUpdatingDataFormat = useRef(false);
   
   // Store state
@@ -74,6 +76,10 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
     handleRemoveFromY,
     handleRemoveFromErrorBar,
     handleRemoveFromCategory,
+    canSendToXForReplicates,
+    canSendToYForReplicates,
+    canSendToXForYReplicates,
+    canSendToYForXReplicates,
   } = variableManagement;
 
   // Available formats based on subtype and symbol value
@@ -250,13 +256,8 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
 
       {/* Error Bar Validation Message */}
       {isErrorBarSubType(subType || '') && dataFormat && (xVariableList.size > 0 || yVariableList.size > 0) && (
-        <div style={{ 
-          padding: tokens.spacingVerticalS, 
-          backgroundColor: tokens.colorNeutralBackground3, 
-          borderRadius: tokens.borderRadiusMedium,
-          marginTop: tokens.spacingVerticalS
-        }}>
-          <Text size={300} style={{ color: tokens.colorNeutralForeground2 }}>
+        <div style={errorBarValidationStyles}>
+          <Text size={300} style={errorBarValidationTextStyles}>
             📊 Error Bar Requirement: {(() => {
               const required = getRequiredErrorBarCount(xVariableList.size, yVariableList.size, dataFormat);
               const current = errorBarVariableList.size;
@@ -338,6 +339,10 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
           canSendToY={canSendY}
           canSendToErrorBar={canSendErrorBar}
           canSendToCategory={canSendCategory}
+          canSendToXForReplicates={canSendToXForReplicates}
+          canSendToYForReplicates={canSendToYForReplicates}
+          canSendToXForYReplicates={canSendToXForYReplicates}
+          canSendToYForXReplicates={canSendToYForXReplicates}
           xCount={xCount}
           yCount={yCount}
         />

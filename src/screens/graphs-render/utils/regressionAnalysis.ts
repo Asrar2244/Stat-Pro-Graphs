@@ -101,7 +101,9 @@ export const createRegressionTraces = (
   label: string, 
   color: string,
   subType: string,
-  regressionResult: RegressionResult
+  regressionResult: RegressionResult,
+  showConfidenceInterval: boolean = true,
+  confidenceIntervalOpacity: number = 0.2
 ): any[] => {
   console.log(`🔍 createRegressionTraces called for "${label}":`, {
     xValsLength: xVals.length,
@@ -165,7 +167,7 @@ export const createRegressionTraces = (
   traces.push(lineConfig);
   
   // Add confidence intervals for error bar regression
-  if (isErrorBar && predictionIntervals) {
+  if (isErrorBar && predictionIntervals && showConfidenceInterval) {
     const confidenceX = lineX;
     const confidenceUpper = confidenceX.map(x => {
       const idx = Math.round((x - xMin) / (xMax - xMin) * (predictionIntervals.length - 1));
@@ -183,7 +185,7 @@ export const createRegressionTraces = (
       type: 'scatter',
       mode: 'lines',
       fill: 'tonexty',
-      fillcolor: color ? `${color}20` : 'rgba(200,0,0,0.1)',
+      fillcolor: color ? `${color}${Math.round(confidenceIntervalOpacity * 255).toString(16).padStart(2, '0')}` : `rgba(200,0,0,${confidenceIntervalOpacity})`,
       line: { color: 'transparent' },
       name: `${label} (95% CI)`,
       hoverinfo: 'skip',

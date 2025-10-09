@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { Field, Dropdown, Option, Text, tokens } from '@fluentui/react-components';
 import { MdCheckCircle } from 'react-icons/md';
 import type { DataFormat } from '../scatterPlotSlice';
+import { useDataFormatSectionStyles } from '../styles-hook';
 
 /**
  * Props for the DataFormatSection component
@@ -22,6 +23,7 @@ export const DataFormatSection: FC<DataFormatSectionProps> = ({
   setDataFormat,
   availableFormats,
 }) => {
+  const { optionDisplayStyles, descriptionTextStyles } = useDataFormatSectionStyles();
   return (
     <div className={classes.simpleCard}>
       <Field label="Data Format" required>
@@ -33,7 +35,7 @@ export const DataFormatSection: FC<DataFormatSectionProps> = ({
         >
           {availableFormats.map((format) => (
             <Option key={format} value={format} text={format}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalXS }}>
+              <div style={optionDisplayStyles}>
                 {format === 'XY Pair' && <MdCheckCircle size={16} color={tokens.colorBrandForeground1} />}
                 {format === 'Single Y' && <MdCheckCircle size={16} color={tokens.colorPaletteGreenForeground1} />}
                 {format === 'Single X' && <MdCheckCircle size={16} color={tokens.colorPaletteRedForeground1} />}
@@ -62,7 +64,7 @@ export const DataFormatSection: FC<DataFormatSectionProps> = ({
             </Option>
           ))}
         </Dropdown>
-        <div style={{ marginTop: tokens.spacingVerticalXS }}>
+        <div style={descriptionTextStyles}>
           <Text size={200} style={{ color: tokens.colorNeutralForeground2 }}>
             {(() => {
               switch (dataFormat) {

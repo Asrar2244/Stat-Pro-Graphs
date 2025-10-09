@@ -141,35 +141,79 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
   } else if (graphConfig.dataFormat === 'X Category' && xNames?.length) {
     // X Category: plot X values vs index with category-based color/shape styling
     if (categoryNames?.length > 0) {
-      // Group by category for color/shape differentiation
-      const categoryCol = categoryNames[0];
-      const categoryGroups = new Map<string, any[]>();
+      // Check if this is a point plot
+      const isPointPlot = graphConfig.subType?.toLowerCase().includes('point plot');
       
-      rows.forEach((row) => {
-        const category = row[categoryCol];
-        if (!categoryGroups.has(category)) {
-          categoryGroups.set(category, []);
-        }
-        categoryGroups.get(category)!.push(row);
-      });
-      
-      // Create series for each category with proper X vs index plotting
-      categoryGroups.forEach((groupRows, category) => {
-        xNames.forEach((x) => {
-          const xv = groupRows.map((r: any) => Number(r[x]));
-          const yv = groupRows.map((_: any, i: number) => i + 1); // Index-based Y values
+      if (isPointPlot && xNames.length === 1 && categoryNames.length === 1) {
+        // Special handling for point plots: X Category format
+        // Y-axis: Category names, X-axis: X values stacked at each category
+        const xCol = xNames[0];
+        const categoryCol = categoryNames[0];
+        const categoryGroups = new Map<string, number[]>();
+        
+        // Group X values by category
+        rows.forEach((row) => {
+          const category = row[categoryCol];
+          const xValue = Number(row[xCol]);
+          if (!isNaN(xValue)) {
+            if (!categoryGroups.has(category)) {
+              categoryGroups.set(category, []);
+            }
+            categoryGroups.get(category)!.push(xValue);
+          }
+        });
+        
+        // Create series for each category with stacked X values
+        const categories = Array.from(categoryGroups.keys());
+        categories.forEach((category, categoryIndex) => {
+          const xValues = categoryGroups.get(category)!;
+          // For point plots, use category index as Y position and stack X values
+          const xv = xValues; // All X values for this category
+          const yv = xValues.map(() => categoryIndex + 1); // Fixed Y position for this category
           const errorBarVar = errorBarVars[0]; // Use first error bar if available
           
-          console.log(`📊 X Category series data for "${x} (${category})":`, {
+          console.log(`📊 X Category Point Plot for "${category}":`, {
+            category,
+            categoryIndex,
             xvSample: xv.slice(0, 5),
             yvSample: yv.slice(0, 5),
             dataLength: xv.length,
             hasValidData: xv.length > 0 && yv.length > 0
           });
           
-          series.push({ xv, yv, label: `${x} (${category})`, errorBarVariable: errorBarVar });
+          series.push({ xv, yv, label: category, errorBarVariable: errorBarVar });
         });
-      });
+      } else {
+        // Standard X Category processing for non-point plots
+        const categoryCol = categoryNames[0];
+        const categoryGroups = new Map<string, any[]>();
+        
+        rows.forEach((row) => {
+          const category = row[categoryCol];
+          if (!categoryGroups.has(category)) {
+            categoryGroups.set(category, []);
+          }
+          categoryGroups.get(category)!.push(row);
+        });
+        
+        // Create series for each category with proper X vs index plotting
+        categoryGroups.forEach((groupRows, category) => {
+          xNames.forEach((x) => {
+            const xv = groupRows.map((r: any) => Number(r[x]));
+            const yv = groupRows.map((_: any, i: number) => i + 1); // Index-based Y values
+            const errorBarVar = errorBarVars[0]; // Use first error bar if available
+            
+            console.log(`📊 X Category series data for "${x} (${category})":`, {
+              xvSample: xv.slice(0, 5),
+              yvSample: yv.slice(0, 5),
+              dataLength: xv.length,
+              hasValidData: xv.length > 0 && yv.length > 0
+            });
+            
+            series.push({ xv, yv, label: `${x} (${category})`, errorBarVariable: errorBarVar });
+          });
+        });
+      }
     } else {
       // No category grouping - plot X vs index
       xNames.forEach((x) => {
@@ -182,35 +226,79 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
   } else if (graphConfig.dataFormat === 'Y Category' && yNames?.length) {
     // Y Category: plot Y values vs index with category-based color/shape styling
     if (categoryNames?.length > 0) {
-      // Group by category for color/shape differentiation
-      const categoryCol = categoryNames[0];
-      const categoryGroups = new Map<string, any[]>();
+      // Check if this is a point plot
+      const isPointPlot = graphConfig.subType?.toLowerCase().includes('point plot');
       
-      rows.forEach((row) => {
-        const category = row[categoryCol];
-        if (!categoryGroups.has(category)) {
-          categoryGroups.set(category, []);
-        }
-        categoryGroups.get(category)!.push(row);
-      });
-      
-      // Create series for each category with proper Y vs index plotting
-      categoryGroups.forEach((groupRows, category) => {
-        yNames.forEach((y) => {
-          const xv = groupRows.map((_: any, i: number) => i + 1); // Index-based X values
-          const yv = groupRows.map((r: any) => Number(r[y]));
+      if (isPointPlot && yNames.length === 1 && categoryNames.length === 1) {
+        // Special handling for point plots: Y Category format
+        // X-axis: Category names, Y-axis: Y values stacked at each category
+        const yCol = yNames[0];
+        const categoryCol = categoryNames[0];
+        const categoryGroups = new Map<string, number[]>();
+        
+        // Group Y values by category
+        rows.forEach((row) => {
+          const category = row[categoryCol];
+          const yValue = Number(row[yCol]);
+          if (!isNaN(yValue)) {
+            if (!categoryGroups.has(category)) {
+              categoryGroups.set(category, []);
+            }
+            categoryGroups.get(category)!.push(yValue);
+          }
+        });
+        
+        // Create series for each category with stacked Y values
+        const categories = Array.from(categoryGroups.keys());
+        categories.forEach((category, categoryIndex) => {
+          const yValues = categoryGroups.get(category)!;
+          // For point plots, use category index as X position and stack Y values
+          const xv = yValues.map(() => categoryIndex + 1); // Fixed X position for this category
+          const yv = yValues; // All Y values for this category
           const errorBarVar = errorBarVars[0]; // Use first error bar if available
           
-          console.log(`📊 Y Category series data for "${y} (${category})":`, {
+          console.log(`📊 Y Category Point Plot for "${category}":`, {
+            category,
+            categoryIndex,
             xvSample: xv.slice(0, 5),
             yvSample: yv.slice(0, 5),
             dataLength: xv.length,
             hasValidData: xv.length > 0 && yv.length > 0
           });
           
-          series.push({ xv, yv, label: `${y} (${category})`, errorBarVariable: errorBarVar });
+          series.push({ xv, yv, label: category, errorBarVariable: errorBarVar });
         });
-      });
+      } else {
+        // Standard Y Category processing for non-point plots
+        const categoryCol = categoryNames[0];
+        const categoryGroups = new Map<string, any[]>();
+        
+        rows.forEach((row) => {
+          const category = row[categoryCol];
+          if (!categoryGroups.has(category)) {
+            categoryGroups.set(category, []);
+          }
+          categoryGroups.get(category)!.push(row);
+        });
+        
+        // Create series for each category with proper Y vs index plotting
+        categoryGroups.forEach((groupRows, category) => {
+          yNames.forEach((y) => {
+            const xv = groupRows.map((_: any, i: number) => i + 1); // Index-based X values
+            const yv = groupRows.map((r: any) => Number(r[y]));
+            const errorBarVar = errorBarVars[0]; // Use first error bar if available
+            
+            console.log(`📊 Y Category series data for "${y} (${category})":`, {
+              xvSample: xv.slice(0, 5),
+              yvSample: yv.slice(0, 5),
+              dataLength: xv.length,
+              hasValidData: xv.length > 0 && yv.length > 0
+            });
+            
+            series.push({ xv, yv, label: `${y} (${category})`, errorBarVariable: errorBarVar });
+          });
+        });
+      }
     } else {
       // No category grouping - plot Y vs index
       yNames.forEach((y) => {
@@ -296,6 +384,151 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
       const yv = rows.map((r: any) => Number(r[y]));
       series.push({ xv, yv, label: `${y} vs ${xCol}` });
     });
+  } else if (['X Many Y Replicates', 'Many Y Replicates', 'Y Many X Replicates'].includes(graphConfig.dataFormat || '') && xNames?.length && yNames?.length) {
+    // X Many Y Replicates: Each X variable has multiple Y replicates
+    // For point plots: group Y replicates by X position
+    const isPointPlot = graphConfig.subType?.toLowerCase().includes('point plot');
+    
+    if (isPointPlot) {
+      if (graphConfig.dataFormat === 'Y Many X Replicates') {
+        // Special handling for Y Many X Replicates (horizontal point plots)
+        // Y variables are the main variables, X variables are replicates
+        yNames.forEach((yCol, yIndex) => {
+          // const yv = rows.map((r: any) => Number(r[yCol])); // Not used in this logic
+          
+          // Calculate how many X variables belong to this Y variable
+          // Assuming X variables are grouped: X1,X2 for Y1, X3,X4 for Y2, etc.
+          const xVarsPerY = Math.floor(xNames.length / yNames.length);
+          const startXIndex = yIndex * xVarsPerY;
+          const endXIndex = Math.min(startXIndex + xVarsPerY, xNames.length);
+          
+          // Get X variables for this Y variable
+          const xVarsForThisY = xNames.slice(startXIndex, endXIndex);
+          
+          console.log(`📊 Y Many X Replicates Point Plot - Y${yIndex + 1} (${yCol}):`, {
+            yCol,
+            yIndex,
+            xVarsForThisY,
+            xVarsPerY,
+            startXIndex,
+            endXIndex
+          });
+          
+          // Collect all X replicate values for this Y variable
+          const xvForThisY: number[] = [];
+          const yvForThisY: number[] = [];
+          
+          // For each X variable belonging to this Y variable
+          xVarsForThisY.forEach((xCol) => {
+            rows.forEach((row) => {
+              const xValue = Number(row[xCol]);
+              const yValue = Number(row[yCol]);
+              
+              if (!isNaN(xValue) && !isNaN(yValue)) {
+                xvForThisY.push(xValue);
+                yvForThisY.push(yValue);
+              }
+            });
+          });
+          
+          console.log(`📊 Y Many X Replicates Point Plot - Y${yIndex + 1} (${yCol}):`, {
+            yCol,
+            xvForThisY: xvForThisY.slice(0, 10),
+            yvForThisY: yvForThisY.slice(0, 10),
+            dataLength: xvForThisY.length,
+            xVarsForThisY
+          });
+          
+          if (xvForThisY.length > 0) {
+            const errorBarVar = errorBarVars[yIndex] || errorBarVars[0];
+            series.push({ 
+              xv: xvForThisY, 
+              yv: yvForThisY, 
+              label: `${yCol}`, 
+              errorBarVariable: errorBarVar 
+            });
+          }
+        });
+      } else {
+        // Special handling for X Many Y Replicates and Many Y Replicates (vertical point plots)
+        // Group Y replicates by X position
+        xNames.forEach((xCol, xIndex) => {
+          // const xv = rows.map((r: any) => Number(r[xCol])); // Not used in this logic
+          
+          // Calculate how many Y variables belong to this X variable
+          // Assuming Y variables are grouped: Y1,Y2 for X1, Y3,Y4 for X2, etc.
+          const yVarsPerX = Math.floor(yNames.length / xNames.length);
+          const startYIndex = xIndex * yVarsPerX;
+          const endYIndex = Math.min(startYIndex + yVarsPerX, yNames.length);
+          
+          // Get Y variables for this X variable
+          const yVarsForThisX = yNames.slice(startYIndex, endYIndex);
+          
+          console.log(`📊 X Many Y Replicates Point Plot - X${xIndex + 1} (${xCol}):`, {
+            xCol,
+            xIndex,
+            yVarsForThisX,
+            yVarsPerX,
+            startYIndex,
+            endYIndex
+          });
+          
+          // Collect all Y replicate values for this X variable at each X position
+          const xvForThisX: number[] = [];
+          const yvForThisX: number[] = [];
+          
+          // For each Y variable belonging to this X variable
+          yVarsForThisX.forEach((yCol) => {
+            rows.forEach((row) => {
+              const xValue = Number(row[xCol]);
+              const yValue = Number(row[yCol]);
+              
+              if (!isNaN(xValue) && !isNaN(yValue)) {
+                xvForThisX.push(xValue);
+                yvForThisX.push(yValue);
+              }
+            });
+          });
+          
+          console.log(`📊 X Many Y Replicates Point Plot - X${xIndex + 1} (${xCol}):`, {
+            xCol,
+            xvForThisX: xvForThisX.slice(0, 10),
+            yvForThisX: yvForThisX.slice(0, 10),
+            dataLength: xvForThisX.length,
+            yVarsForThisX
+          });
+          
+          if (xvForThisX.length > 0) {
+            const errorBarVar = errorBarVars[xIndex] || errorBarVars[0];
+            series.push({ 
+              xv: xvForThisX, 
+              yv: yvForThisX, 
+              label: `${xCol}`, 
+              errorBarVariable: errorBarVar 
+            });
+          }
+        });
+      }
+    } else {
+      // Standard processing for non-point plots
+      xNames.forEach((xCol, xIndex) => {
+        const xv = rows.map((r: any) => Number(r[xCol]));
+        
+        // Calculate how many Y variables belong to this X variable
+        const yVarsPerX = Math.floor(yNames.length / xNames.length);
+        const startYIndex = xIndex * yVarsPerX;
+        const endYIndex = Math.min(startYIndex + yVarsPerX, yNames.length);
+        
+        // Get Y variables for this X variable
+        const yVarsForThisX = yNames.slice(startYIndex, endYIndex);
+        
+        yVarsForThisX.forEach((yCol) => {
+          const yv = rows.map((r: any) => Number(r[yCol]));
+          const errorBarVar = errorBarVars[xIndex] || errorBarVars[0];
+          series.push({ xv, yv, label: `${yCol} vs ${xCol}`, errorBarVariable: errorBarVar });
+        });
+      });
+    }
   } else {
     // Fallback to old logic for backward compatibility
     if (xNames?.length && yNames?.length) {

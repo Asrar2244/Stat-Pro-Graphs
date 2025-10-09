@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { Checkbox, tokens } from '@fluentui/react-components';
+import { useVariableListStyles } from './styles-hook';
 
 /**
  * Props for the VariableList component
@@ -28,6 +29,17 @@ export const VariableList: FC<VariableListRenderProps> = ({
   maxSelected,
   disabled
 }) => {
+  const {
+    listHeaderStyles,
+    selectAllCheckboxStyles,
+    variableCountBadgeStyles,
+    listContainerStyles,
+    listItemStyles,
+    listItemSelectedStyles,
+    checkboxStyles,
+    checkboxSelectedStyles,
+    emptyListStyles
+  } = useVariableListStyles();
   const handleSelectAllChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = e.target;
     if (disabled) return;
@@ -50,7 +62,6 @@ export const VariableList: FC<VariableListRenderProps> = ({
 
   const handleItemChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
-    console.log(`🔍 VariableList handleItemChange: ${name} = ${checked}, disabled = ${disabled}`);
     if (disabled) return;
     const newList = new Map(list);
     newList.set(name, checked);
@@ -73,74 +84,35 @@ export const VariableList: FC<VariableListRenderProps> = ({
 
   return (
     <div>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: tokens.spacingVerticalS,
-        padding: tokens.spacingVerticalXS,
-        background: tokens.colorNeutralBackground1,
-        borderRadius: tokens.borderRadiusSmall,
-        border: `1px solid ${tokens.colorNeutralStroke2}`
-      }}>
+      <div style={listHeaderStyles}>
         <Checkbox
           label={selectAllText}
           checked={selectAll === true}
           onChange={handleSelectAllChange}
           disabled={disabled}
-          style={{ fontWeight: '500', color: tokens.colorNeutralForeground1 }}
+          style={selectAllCheckboxStyles}
         />
-        <span style={{
-          fontSize: '12px',
-          color: tokens.colorNeutralForeground2,
-          fontWeight: '600',
-          background: tokens.colorNeutralBackground2,
-          padding: '2px 8px',
-          borderRadius: tokens.borderRadiusCircular
-        }}>
+        <span style={variableCountBadgeStyles}>
           {list.size} variables
         </span>
       </div>
 
-      <div style={{
-        maxHeight: '280px',
-        overflowY: 'auto',
-        border: `1px solid ${tokens.colorNeutralStroke2}`,
-        borderRadius: tokens.borderRadiusSmall,
-        padding: tokens.spacingVerticalXS,
-        background: tokens.colorNeutralBackground1
-      }}>
+      <div style={listContainerStyles}>
         {Array.from(list.entries()).map(([key, checked]) => (
-          <div key={key} style={{
-            marginBottom: tokens.spacingVerticalXS,
-            padding: tokens.spacingVerticalXS,
-            borderRadius: tokens.borderRadiusSmall,
-            background: checked ? tokens.colorBrandBackground2 : 'transparent',
-            border: checked ? `1px solid ${tokens.colorBrandStroke1}` : `1px solid transparent`,
-            transition: 'all 0.2s ease'
-          }}>
+          <div key={key} style={checked ? listItemSelectedStyles : listItemStyles}>
             <Checkbox
               label={key}
               name={key}
               checked={checked}
               onChange={handleItemChange}
               disabled={disabled}
-              style={{
-                fontWeight: checked ? '600' : '400',
-                color: checked ? tokens.colorBrandForeground1 : tokens.colorNeutralForeground1
-              }}
+              style={checked ? checkboxSelectedStyles : checkboxStyles}
             />
           </div>
         ))}
 
         {list.size === 0 && (
-          <div style={{
-            textAlign: 'center',
-            padding: tokens.spacingVerticalM,
-            color: tokens.colorNeutralForeground2,
-            fontStyle: 'italic',
-            fontSize: '14px'
-          }}>
+          <div style={emptyListStyles}>
             No variables available
           </div>
         )}

@@ -189,12 +189,7 @@ export const SUB_TYPE_DATA_FORMATS: Record<ScatterSubType, DataFormat[]> = {
   
   // M) Bi-directional Asymmetric Error Bars
   'Bidirectional Asymmetric Error Bars': [
-    'XY Pair',
-    'XY Pairs',
-    'X Many Y',
-    'Y Many X',
-    'Many X',
-    'Many Y'
+    'XY Pairs'
   ],
   
   // N) Vertical Point Plot

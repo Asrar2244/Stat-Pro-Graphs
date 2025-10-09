@@ -1,6 +1,6 @@
 import { Button, Caption1, Tooltip } from '@fluentui/react-components';
 import { VscClose } from 'react-icons/vsc';
-import { useGraphTabLayout } from '../../styles-hook/use-graph-tabs';
+import { useGraphTabLayout } from '../../styles/use-graph-tabs';
 import { useRef } from 'react';
 export const GraphTabs = () => {
   const classes = useGraphTabLayout();

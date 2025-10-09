@@ -1,14 +1,14 @@
 import { FC, lazy } from 'react';
 import { SuspenseLoad } from '@libs';
 import { useActiveNode } from '@hooks';
-import { useSelectedRun } from './hooks/use-selected-run';
-import { useGraphSelection } from './styles-hook/use-graph-selection';
-import { GraphsRenderContext } from './context';
+import { useSelectedRun } from '../../hooks/use-selected-run';
+import { useGraphSelection } from '../../styles/use-graph-selection';
+import { GraphsRenderContext } from '../../context';
 import { IToolBar } from '@utils';
 import { useTranslation } from 'react-i18next';
 
 const ScatterPlotGraph = lazy(() =>
-  import('./graphs/scatter-plot/index'),
+  import('../plot-types/scatter-plot/index'),
 );
 
 interface IGraphSelection extends IToolBar {

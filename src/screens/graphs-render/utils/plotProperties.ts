@@ -40,6 +40,8 @@ export interface ErrorBarProperties {
   errorBarCapSize: number;
   /** Show error bars */
   showErrorBars: boolean;
+  /** Error bar color (optional override) */
+  errorBarColor?: string;
 }
 
 export interface PointPlotProperties {
@@ -81,6 +83,7 @@ export interface PlotSpecificProperties {
 export interface LiveProperties {
   /** Global properties */
   global?: {
+    seriesColor?: string;
     legendTextEntries?: Record<string, string>;
     legendSeriesColors?: Record<string, string>;
     xScaleType?: string;
@@ -113,7 +116,8 @@ export const DEFAULT_PLOT_PROPERTIES: PlotSpecificProperties = {
     errorBarWidth: 1,
     errorBarOpacity: 0.8,
     errorBarCapSize: 4,
-    showErrorBars: true
+    showErrorBars: true,
+    errorBarColor: '#1f77b4'
   },
   pointPlot: {
     pointSize: 8,

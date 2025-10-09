@@ -1,5 +1,5 @@
 import { Field, Combobox, Option } from '@fluentui/react-components';
-import { useGraphPropertyLayout } from '../../styles-hook/use-graph-property';
+import { useGraphPropertyLayout } from '../../styles/use-graph-property';
 import { GraphProperties } from './graph-properties';
 import { PlotSpecificProperties } from '../../../graphs-render/utils/plotProperties';
 

@@ -64,6 +64,52 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     [availableList]
   );
 
+  // Helper functions for replicate formats
+  const canSendToXForReplicates = useMemo(() => {
+    if (!['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) return true;
+    
+    const currentXCount = xVariableList.size;
+    const currentYCount = yVariableList.size;
+    const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
+    
+    // Can send to X if current X has its Y variables complete
+    return currentYCount >= expectedYCount;
+  }, [dataFormat, xVariableList.size, yVariableList.size]);
+
+  const canSendToYForReplicates = useMemo(() => {
+    if (!['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) return true;
+    
+    // Can send to Y if X is selected and Y count is not complete
+    const currentXCount = xVariableList.size;
+    const currentYCount = yVariableList.size;
+    const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
+    
+    return currentXCount > 0 && currentYCount < expectedYCount;
+  }, [dataFormat, xVariableList.size, yVariableList.size]);
+
+  // Helper functions for Y Many X Replicates format (horizontal)
+  const canSendToXForYReplicates = useMemo(() => {
+    if (dataFormat !== 'Y Many X Replicates') return true;
+    
+    const currentYCount = yVariableList.size;
+    const currentXCount = xVariableList.size;
+    const expectedXCount = currentYCount * 2; // Assuming 2 X variables per Y
+    
+    // Can send to X if current Y has its X variables complete
+    return currentXCount >= expectedXCount;
+  }, [dataFormat, xVariableList.size, yVariableList.size]);
+
+  const canSendToYForXReplicates = useMemo(() => {
+    if (dataFormat !== 'Y Many X Replicates') return true;
+    
+    // Can send to Y if Y is selected and X count is not complete
+    const currentYCount = yVariableList.size;
+    const currentXCount = xVariableList.size;
+    const expectedXCount = currentYCount * 2; // Assuming 2 X variables per Y
+    
+    return currentYCount > 0 && currentXCount < expectedXCount;
+  }, [dataFormat, xVariableList.size, yVariableList.size]);
+
   // Send to X handler
   const handleSendToX = useCallback(() => {
     const newXList = new Map(xVariableList);
@@ -71,6 +117,20 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     const maxX = getMaxXCount(dataFormat);
     const freeSlots = maxX ? Math.max(0, maxX - newXList.size) : Infinity;
     let moved = 0;
+    
+    // Special logic for replicate formats
+    if (['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) {
+      // For these formats, only allow one X variable at a time
+      // User must complete Y selection for current X before selecting next X
+      const currentXCount = newXList.size;
+      const currentYCount = yVariableList.size;
+      const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
+      
+      // If current X doesn't have its Y variables yet, don't allow more X
+      if (currentYCount < expectedYCount) {
+        return; // Don't allow more X variables until Y variables are complete
+      }
+    }
     
     for (const [variableName, checked] of availableList.entries()) {
       if (!checked) continue;
@@ -90,7 +150,7 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     // Update store
     const nextX = pickFirstVariable(newXList);
     setXVariable(nextX);
-  }, [availableList, xVariableList, dataFormat, pickFirstVariable, setXVariable, isValidForSlot]);
+  }, [availableList, xVariableList, dataFormat, pickFirstVariable, setXVariable, isValidForSlot, yVariableList.size]);
 
   // Send to Y handler
   const handleSendToY = useCallback(() => {
@@ -100,15 +160,88 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     const freeSlots = maxY ? Math.max(0, maxY - newYList.size) : Infinity;
     let moved = 0;
     
-    for (const [variableName, checked] of availableList.entries()) {
-      if (!checked) continue;
-      if (moved >= freeSlots) break;
-      // Only move numeric variables to Y
-      if (!isValidForSlot(variableName, 'y')) continue;
-      newYList.set(variableName, false);
-      // Keep variable in available list but uncheck it
-      newAvailableList.set(variableName, false);
-      moved++;
+    // Special logic for replicate formats
+    if (['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) {
+      // For these formats, require X variables to be selected first
+      if (xVariableList.size === 0) {
+        return; // Don't allow Y selection until X is selected
+      }
+      
+      // Calculate how many Y variables are needed for current X variables
+      const currentXCount = xVariableList.size;
+      const currentYCount = newYList.size;
+      const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
+      
+      // Only allow Y selection if we haven't reached the expected count
+      if (currentYCount >= expectedYCount) {
+        return; // Don't allow more Y variables until next X is selected
+      }
+      
+      // For these formats, only allow moving exactly 2 Y variables at a time
+      const availableCheckedCount = Array.from(availableList.values()).filter(Boolean).length;
+      const validVariables = Array.from(availableList.entries())
+        .filter(([variableName, checked]) => checked && isValidForSlot(variableName, 'y'));
+      
+      // Only move 2 Y variables at a time
+      const variablesToMove = Math.min(2, validVariables.length, expectedYCount - currentYCount);
+      
+      for (const [variableName, checked] of availableList.entries()) {
+        if (!checked) continue;
+        if (moved >= variablesToMove) break;
+        // Only move numeric variables to Y
+        if (!isValidForSlot(variableName, 'y')) continue;
+        newYList.set(variableName, false);
+        // Keep variable in available list but uncheck it
+        newAvailableList.set(variableName, false);
+        moved++;
+      }
+    } else if (dataFormat === 'Y Many X Replicates') {
+      // Special logic for Y Many X Replicates format (horizontal)
+      // For this format, require Y variables to be selected first
+      if (yVariableList.size === 0) {
+        return; // Don't allow Y selection until Y is selected
+      }
+      
+      // Calculate how many Y variables are needed for current Y variables
+      const currentYCount = yVariableList.size;
+      const currentXCount = xVariableList.size;
+      const expectedXCount = currentYCount * 2; // Assuming 2 X variables per Y
+      
+      // Only allow Y selection if we haven't reached the expected count
+      if (currentXCount >= expectedXCount) {
+        return; // Don't allow more Y variables until next Y is selected
+      }
+      
+      // For this format, only allow moving exactly 2 Y variables at a time
+      const availableCheckedCount = Array.from(availableList.values()).filter(Boolean).length;
+      const validVariables = Array.from(availableList.entries())
+        .filter(([variableName, checked]) => checked && isValidForSlot(variableName, 'y'));
+      
+      // Only move 2 Y variables at a time
+      const variablesToMove = Math.min(2, validVariables.length, expectedXCount - currentXCount);
+      
+      for (const [variableName, checked] of availableList.entries()) {
+        if (!checked) continue;
+        if (moved >= variablesToMove) break;
+        // Only move numeric variables to Y
+        if (!isValidForSlot(variableName, 'y')) continue;
+        newYList.set(variableName, false);
+        // Keep variable in available list but uncheck it
+        newAvailableList.set(variableName, false);
+        moved++;
+      }
+    } else {
+      // Standard logic for other formats
+      for (const [variableName, checked] of availableList.entries()) {
+        if (!checked) continue;
+        if (moved >= freeSlots) break;
+        // Only move numeric variables to Y
+        if (!isValidForSlot(variableName, 'y')) continue;
+        newYList.set(variableName, false);
+        // Keep variable in available list but uncheck it
+        newAvailableList.set(variableName, false);
+        moved++;
+      }
     }
     
     setYVariableList(newYList);
@@ -118,7 +251,7 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     // Update store
     const nextY = pickFirstVariable(newYList);
     setYVariable(nextY);
-  }, [availableList, yVariableList, dataFormat, pickFirstVariable, setYVariable, isValidForSlot]);
+  }, [availableList, yVariableList, dataFormat, pickFirstVariable, setYVariable, isValidForSlot, xVariableList.size]);
 
   // Send to ErrorBar handler - validates required count based on XY pairs
   const handleSendToErrorBar = useCallback(() => {
@@ -313,6 +446,12 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     handleRemoveFromY,
     handleRemoveFromErrorBar,
     handleRemoveFromCategory,
+    
+    // Helper functions for replicate formats
+    canSendToXForReplicates,
+    canSendToYForReplicates,
+    canSendToXForYReplicates,
+    canSendToYForXReplicates,
   };
 };
 

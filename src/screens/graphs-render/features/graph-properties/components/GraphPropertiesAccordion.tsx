@@ -9,9 +9,9 @@ import {
   AccordionHeader,
   AccordionPanel,
 } from '@fluentui/react-components';
-import { useGraphPropertiesClasses } from '../../styles-hook/use-graph-properties-style';
+import { useGraphPropertiesClasses } from '../../styles/use-graph-properties-style';
 import { GraphPropertiesProps } from '../types';
-import { DataFormatProperties, createDataFormatProperties, getSeriesLabels } from '../../utils/dataFormatProperties';
+import { DataFormatProperties, createDataFormatProperties, getSeriesLabels } from '../../../utils/dataFormatProperties';
 import { GeneralGraphSettings } from './sections/GeneralGraphSettings';
 import { DataFormatPropertiesSection } from './sections/DataFormatPropertiesSection';
 import { PlotSpecificPropertiesSection } from './sections/PlotSpecificPropertiesSection';

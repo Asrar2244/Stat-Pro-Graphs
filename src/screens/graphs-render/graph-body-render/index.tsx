@@ -1,4 +1,4 @@
-import { useGraphBodyLayout } from '../styles-hook/use-graph-body-render';
+import { useGraphBodyLayout } from '../styles/use-graph-body-render';
 import { GraphProperty } from './graph-property';
 import { GraphTabs } from './graph-tabs';
 import { FC, useState } from 'react';

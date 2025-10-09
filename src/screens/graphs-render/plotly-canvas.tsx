@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { usePlotly } from '@hooks/plotly';
 import { Database } from '@utils';
-import { ensureGraphFolderAndSave } from './plotly-save';
+import { ensureGraphFolderAndSave } from './services/plotly-save';
 import { EXCEL } from '@constants';
 
 // Import utility modules
@@ -81,6 +81,17 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       
       // Process data based on format (normalize Single X/Y to axis-anchored formats when both sides are provided)
       let normalizedFormat = graphConfig?.dataFormat;
+      
+      // Special handling for bidirectional asymmetric error bars - use XY Pairs format
+      const isBidirectionalAsymmetricErrorBar = graphConfig?.subType?.toLowerCase().includes('bidirectional') && 
+                                               graphConfig?.subType?.toLowerCase().includes('asymmetric') &&
+                                               graphConfig?.subType?.toLowerCase().includes('error bar');
+      
+      if (isBidirectionalAsymmetricErrorBar) {
+        normalizedFormat = 'XY Pairs';
+        console.log('🔍 Bidirectional Asymmetric Error Bar detected - using XY Pairs format');
+      }
+      
       // If Single X with both X and Y present → behave as X Many Y
       if (normalizedFormat === 'Single X' && xNames?.length > 0 && yNames?.length > 0) {
         normalizedFormat = 'X Many Y';
@@ -209,6 +220,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       // Check if this is a category-based plot and handle differently
       const isCategoryPlot = categoryNames && categoryNames.length > 0;
       const isCategoryFormat = normalizedFormat?.toLowerCase().includes('category');
+      const isPointPlot = graphConfig?.subType?.toLowerCase().includes('point plot');
       let categoryPlotResult: any = null;
       
       if (isCategoryPlot && isCategoryFormat) {
@@ -259,11 +271,38 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         
         // Performance warnings and recommendations handled silently
         
-        // Per-series color override: legendSeriesColors[label] > plot-specific color
+        // Per-series color override: legendSeriesColors[label] > plot-specific color > global seriesColor
         const perSeriesColor = liveProps?.global?.legendSeriesColors?.[label];
-        const colorOverride = perSeriesColor || (liveProps?.plotSpecific?.scatter?.pointColor);
-        const color = colorOverride || getSeriesColor(seriesIndex);
+        const plotSpecificColor = liveProps?.plotSpecific?.scatter?.pointColor;
+        const globalSeriesColor = liveProps?.global?.seriesColor;
+        
+        // For point plots and dot plots, prioritize per-series colors to maintain color differentiation
+        const isPointPlot = graphConfig?.subType?.toLowerCase().includes('point plot');
+        const isDotPlot = graphConfig?.subType?.toLowerCase().includes('dot plot');
+        
+        let color;
+        if (perSeriesColor) {
+          // Per-series color override (highest priority)
+          color = perSeriesColor;
+        } else if (isPointPlot || isDotPlot) {
+          // For point plots and dot plots, use series-specific colors to maintain differentiation
+          color = getSeriesColor(seriesIndex);
+        } else {
+          // For other plot types, use plot-specific or global color overrides
+          color = plotSpecificColor || globalSeriesColor || getSeriesColor(seriesIndex);
+        }
         const symbol = getSeriesSymbol(seriesIndex);
+        
+        // Debug logging for color assignment
+        console.log(`🎨 Color Assignment for "${label}" (Series ${seriesIndex}):`, {
+          isPointPlot,
+          isDotPlot,
+          perSeriesColor,
+          plotSpecificColor,
+          globalSeriesColor,
+          assignedColor: color,
+          seriesIndex
+        });
         
         // Apply axis transforms for special scales (keep axes type linear; data transformed)
         const xScale = liveProps?.global?.xScaleType;
@@ -355,14 +394,15 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
               });
               return errorDataY;
             })() : undefined,
+            errorBarColor: processedSeries.length > 1 ? undefined : plotProperties.errorBar?.errorBarColor, // Use series color for multiple variables, global color for single variable
             rows
           });
           
           // Optimize trace for large datasets
           const optimizedTrace = optimizeTraceForLargeData(scatterTrace, optimizedData.originalLength);
           
-          // Apply plot-specific scatter properties
-          const finalTrace = plotProperties.scatter ? applyScatterProperties(
+          // Apply plot-specific scatter properties (but not for point plots and dot plots to preserve color differentiation)
+          const finalTrace = (plotProperties.scatter && !isPointPlot && !isDotPlot) ? applyScatterProperties(
             optimizedTrace, 
             plotProperties.scatter!
           ) : optimizedTrace;
@@ -395,7 +435,9 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             customLabel, 
             // Use same per-series override for regression line if not explicitly set
             (liveProps?.plotSpecific?.regression?.lineColor) || perSeriesColor || color, 
-            subType
+            subType,
+            plotProperties.regression?.showConfidenceInterval ?? true,
+            plotProperties.regression?.confidenceIntervalOpacity ?? 0.2
           );
           
           if (regressionTraces.length > 0) {
@@ -417,7 +459,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
                 optimizedData.xv,
                 optimizedData.yv,
                 color,
-                graphConfig?.subType || ''
+                graphConfig?.subType || '',
+                processedSeries.length > 1 ? undefined : plotProperties.errorBar?.errorBarColor // Use series color for multiple variables, global color for single variable
               );
           traces.push(...dottedLines);
         } catch (error) {
@@ -542,11 +585,22 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         },
         xaxis: {
           ...getAxisConfig(subType, 'x'),
-          title: axisXTitle ? { ...axisXTitle, standoff: 12 } : undefined,
+          title: (() => {
+            // Special handling for X Category point plots
+            if (isPointPlot && normalizedFormat === 'X Category' && xNames?.length > 0) {
+              return { text: xNames[0], standoff: 12 };
+            }
+            return axisXTitle ? { ...axisXTitle, standoff: 12 } : undefined;
+          })(),
           showline: true,
           linecolor: axisLineColor,
           linewidth: axisLineWidthPx,
           type: ((): any => {
+            // Special handling for Y Category point plots
+            if (isPointPlot && normalizedFormat === 'Y Category' && categoryNames?.length > 0) {
+              return 'category';
+            }
+            
             switch (liveProps?.global?.xScaleType) {
               case 'linear': return 'linear';
               case 'log10': return 'log';
@@ -563,6 +617,19 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             : {}),
           ...(liveProps?.global?.xPad5 ? { rangepadding: 5 } : {}),
           ...(liveProps?.global?.xNearestTick ? { tickmode: 'auto' } : {}),
+          // Special category tick configuration for Y Category point plots
+          ...(isPointPlot && normalizedFormat === 'Y Category' && categoryNames?.length > 0 ? (() => {
+            // Get unique category values from the data
+            const categoryCol = categoryNames[0];
+            const uniqueCategories = [...new Set(rows.map((row: any) => row[categoryCol]))];
+            
+            return {
+              tickmode: 'array',
+              tickvals: uniqueCategories.map((_, index) => index + 1),
+              ticktext: uniqueCategories,
+              title: categoryCol
+            };
+          })() : {}),
           showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridXMajor),
           gridcolor: hexToRgba(liveProps?.global?.gridColor, gridOpacity),
           gridwidth: inchToPx(liveProps?.global?.gridThicknessInch || 0.01),
@@ -638,12 +705,27 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         },
         yaxis: {
           ...getAxisConfig(subType, 'y'),
-          title: axisYTitle ? { ...axisYTitle, standoff: 12 } : undefined,
+          title: (() => {
+            // Special handling for Y Category point plots
+            if (isPointPlot && normalizedFormat === 'Y Category' && yNames?.length > 0) {
+              return { text: yNames[0], standoff: 12 };
+            }
+            // Special handling for X Category point plots
+            if (isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0) {
+              return { text: categoryNames[0], standoff: 12 };
+            }
+            return axisYTitle ? { ...axisYTitle, standoff: 12 } : undefined;
+          })(),
           showline: true,
           linecolor: axisLineColor,
           linewidth: axisLineWidthPx,
           side: (liveProps?.global?.yAxisSide === 'right') ? 'right' : 'left',
           type: ((): any => {
+            // Special handling for X Category point plots
+            if (isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0) {
+              return 'category';
+            }
+            
             switch (liveProps?.global?.yScaleType) {
               case 'linear': return 'linear';
               case 'log10': return 'log';
@@ -658,6 +740,19 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             : {}),
           ...(liveProps?.global?.yPad5 ? { rangepadding: 5 } : {}),
           ...(liveProps?.global?.yNearestTick ? { tickmode: 'auto' } : {}),
+          // Special category tick configuration for X Category point plots
+          ...(isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0 ? (() => {
+            // Get unique category values from the data
+            const categoryCol = categoryNames[0];
+            const uniqueCategories = [...new Set(rows.map((row: any) => row[categoryCol]))];
+            
+            return {
+              tickmode: 'array',
+              tickvals: uniqueCategories.map((_, index) => index + 1),
+              ticktext: uniqueCategories,
+              title: categoryCol
+            };
+          })() : {}),
           showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridYMajor),
           gridcolor: hexToRgba(liveProps?.global?.gridColor, gridOpacity),
           gridwidth: inchToPx(liveProps?.global?.gridThicknessInch || 0.01),
