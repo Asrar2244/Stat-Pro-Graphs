@@ -891,7 +891,20 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       }
 
       const allowDragResize = (liveProps?.global?.legendAllowDragResize ?? true) && !(liveProps?.global?.legendLock);
-      const config = { responsive: true, edits: { legendPosition: allowDragResize, titleText: true, axisTitleText: true } } as any;
+      const config = { 
+        responsive: true, 
+        edits: { legendPosition: allowDragResize, titleText: true, axisTitleText: true },
+        // Replace Plotly logo with Stat Pro logo
+        displaylogo: false,  // Hide the default Plotly logo
+        watermark: false,    // Disable Plotly watermark
+        // Add custom watermark/logo (optional - you can add your own logo here)
+        // watermark: {
+        //   text: 'Stat Pro',
+        //   font: { color: 'rgba(0,0,0,0.3)', size: 12 },
+        //   xref: 'paper', yref: 'paper',
+        //   x: 0.02, y: 0.02, showarrow: false
+        // }
+      } as any;
       
       
       if (containerRef.current) {
