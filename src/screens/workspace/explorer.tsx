@@ -205,7 +205,7 @@ const ExplorerComp: FC = () => {
                 >
                   <TreeItemLayout
                     className={
-                      project?.isOpenedData === 1 || project?.isOpenedOutput === 1 ? 'selected' : ''
+                      project?.isOpenedData === 1 || project?.isOpenedOutput === 1 || project?.isOpenedGraphs === 1 ? 'selected' : ''
                     }
                   >
                     <div className={classes.treeItemLayout}>
@@ -248,6 +248,17 @@ const ExplorerComp: FC = () => {
                       <TreeItemLayout>
                         <Caption1>
                           <AiFillControl /> {t('output', { ns: 'workspace' })}
+                        </Caption1>
+                      </TreeItemLayout>
+                    </TreeItem>
+                    <TreeItem
+                      itemType="leaf"
+                      className={`leaf ${project?.isOpenedGraphs === 1 && 'selected'}`}
+                      onClick={onSelectedUpdate({ ...project, projectName }, GRAPHS)}
+                    >
+                      <TreeItemLayout>
+                        <Caption1>
+                          <MdBarChart /> {t('graphs', { ns: 'workspace' })}
                         </Caption1>
                       </TreeItemLayout>
                     </TreeItem>

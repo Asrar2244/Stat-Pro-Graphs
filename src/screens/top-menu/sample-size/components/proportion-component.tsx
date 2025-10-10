@@ -167,6 +167,7 @@ const ProportionComponentBase: FC<IProportionComponentProps> = ({ executeCalcula
 
         <div className={classes.calculateButtonContainer}>
           <Button
+            type="button"
             appearance="subtle"
             className={classes.calculateButton}
             onClick={handleCalculate}

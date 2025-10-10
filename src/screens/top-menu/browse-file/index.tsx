@@ -393,6 +393,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               onClick={onBrowseFileHandler}
               contentAfter={
                 <Button
+                  type="button"
                   disabled={loading}
                   className={classes.iconHover}
                   appearance="transparent"
@@ -433,6 +434,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
               value={newProject?.workspacePath ?? ''}
               contentAfter={
                 <Button
+                  type="button"
                   disabled={loading}
                   className={classes.iconHover}
                   appearance="transparent"

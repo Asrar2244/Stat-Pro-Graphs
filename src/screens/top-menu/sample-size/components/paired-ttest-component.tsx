@@ -175,6 +175,7 @@ const PairedTTestComponentBase: FC<IPairedTTestComponentProps> = ({ executeCalcu
 
         <div className={classes.calculateButtonContainer}>
           <Button
+            type="button"
             appearance="subtle"
             className={classes.calculateButton}
             onClick={handleCalculate}

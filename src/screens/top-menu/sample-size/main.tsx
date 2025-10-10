@@ -78,6 +78,7 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
       </div>
       <div className={classes.calculateButtonContainer}>
         <Button
+          type="button"
           appearance="subtle"
           className={classes.calculateButton}
           onClick={() => calculateSampleSize('ttest-sample-size', 'sample_size', 'sample_size', 'ttest_' + Date.now())}
@@ -153,6 +154,7 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
       </div>
       <div className={classes.calculateButtonContainer}>
         <Button
+          type="button"
           appearance="subtle"
           className={classes.calculateButton}
           onClick={() => calculateSampleSize('proportion-sample-size', 'sample_size', 'sample_size', 'proportion_' + Date.now())}
@@ -235,6 +237,7 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
       </div>
       <div className={classes.calculateButtonContainer}>
         <Button
+          type="button"
           appearance="subtle"
           className={classes.calculateButton}
           onClick={() => calculateSampleSize('paired-ttest-sample-size', 'sample_size', 'sample_size', 'paired_ttest_' + Date.now())}
@@ -316,6 +319,7 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
       </div>
       <div className={classes.calculateButtonContainer}>
         <Button
+          type="button"
           appearance="subtle"
           className={classes.calculateButton}
           onClick={() => calculateSampleSize('anova-sample-size', 'sample_size', 'sample_size', 'anova_' + Date.now())}
@@ -365,6 +369,7 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
       </div>
       <div className={classes.calculateButtonContainer}>
         <Button
+          type="button"
           appearance="subtle"
           className={classes.calculateButton}
           onClick={() => calculateSampleSize('chi-square-sample-size', 'sample_size', 'sample_size', 'chi_square_' + Date.now())}

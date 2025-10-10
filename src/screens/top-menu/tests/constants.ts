@@ -36,5 +36,15 @@ export const advancedOptions: TestOption[] = [
     value: 'descriptiveStat',
     execute: 'basic-statistics-column-wise',
   },
+  {
+    label: 'T-Test',
+    value: 'tTest',
+    execute: 'tests',
+  },
+  {
+    label: 'Paired T-Test',
+    value: 'pairedTTest',
+    execute: 'paired-t-test',
+  },
   // Add more advanced options here as needed
 ]; 

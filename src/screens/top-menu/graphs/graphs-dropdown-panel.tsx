@@ -70,6 +70,7 @@ export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClos
               return (
                 <Button
                   key={graphType.value}
+                  type="button"
                   appearance="outline"
                   onClick={() => {
                     if (graphType.execute) {

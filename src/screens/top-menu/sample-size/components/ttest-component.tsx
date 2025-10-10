@@ -154,6 +154,7 @@ const TTestComponentBase: FC<ITTestComponentProps> = ({ executeCalculation }) =>
 
         <div className={classes.calculateButtonContainer}>
           <Button
+            type="button"
             appearance="subtle"
             className={classes.calculateButton}
             onClick={handleCalculate}

@@ -107,7 +107,6 @@ const MenuSelector: FC<{
   if (isLicensed) {
     return <OpenDevTools {...modal} showCloseButton={true} />;
   }
-<<<<<<< HEAD
 
   // Scatter Plot wrapper with real data integration
   const ScatterWrapper: FC<IModal> = (m) => {
@@ -164,10 +163,7 @@ const MenuSelector: FC<{
     return <ScatterPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
-  const d = () => {
-=======
   const runSelector = () => {
->>>>>>> source-repo/feature/asrar-dev-fixes
     switch (selector) {
       case exporters.importBusinessObject:
         return <BrowseFile {...modal} t={t} />;
@@ -197,17 +193,14 @@ const MenuSelector: FC<{
         return <OpenDevTools {...modal} />;
       case exporters.pairwiseComparisonOfModule:
         return <PairwiseComparisonOfModule {...modal} />;
-<<<<<<< HEAD
       case 'open-scatter-plot-modal':
         return <ScatterWrapper {...modal} />;
-=======
       case exporters.tests:
         return <TestsAnalysis {...modal} />
       case exporters.options:
         return <Options {...modal} />
       case exporters.pairedTTest:
         return <PairedTestsAnalysis {...modal} />
->>>>>>> source-repo/feature/asrar-dev-fixes
       default:
         return null;
     }

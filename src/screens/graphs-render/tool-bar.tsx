@@ -3,6 +3,8 @@ import { Text, Toolbar, ToolbarButton } from '@fluentui/react-components';
 import { MdHistory, MdSettings } from 'react-icons/md';
 import { tokens } from '@fluentui/react-components';
 import { GraphProperties, GlobalGraphProperties, PlotSpecificProperties } from './hooks/use-tools';
+import { useThemeStore } from '@store';
+import { useShallow } from 'zustand/react/shallow';
 
 interface IToolBar {
   fontBold: boolean;
@@ -32,18 +34,32 @@ interface IToolBarProps {
 }
 
 export const ToolBar: FC<IToolBarProps> = ({ tools, title, subTitle }) => {
+  const { theme } = useThemeStore(useShallow((state) => ({ theme: state.theme })));
+  
+  // Theme-aware colors
+  const isDark = theme === 'dark';
+  const backgroundColor = isDark 
+    ? `linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%)`
+    : `linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)`;
+  const borderColor = isDark ? '#404040' : '#d0d0d0';
+  const boxShadow = isDark 
+    ? `0 2px 8px rgba(0, 0, 0, 0.3)`
+    : `0 2px 8px rgba(0, 0, 0, 0.1)`;
+  const titleColor = isDark ? '#ffffff' : '#000000';
+  const subtitleColor = isDark ? '#cccccc' : '#666666';
+
   return (
     <div style={{ 
-      background: `linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%)`,
+      background: backgroundColor,
       padding: tokens.spacingVerticalM,
-      borderBottom: `2px solid #404040`,
-      boxShadow: `0 2px 8px rgba(0, 0, 0, 0.3)`
+      borderBottom: `2px solid ${borderColor}`,
+      boxShadow: boxShadow
     }}>
       <Toolbar>
         <ToolbarButton>
           <Text style={{ 
             fontWeight: 'bold', 
-            color: '#ffffff',
+            color: titleColor,
             fontSize: tokens.fontSizeBase400
           }}>
             {title}
@@ -51,7 +67,7 @@ export const ToolBar: FC<IToolBarProps> = ({ tools, title, subTitle }) => {
           {subTitle && (
             <Text style={{ 
               fontSize: tokens.fontSizeBase200, 
-              color: '#cccccc', 
+              color: subtitleColor, 
               marginLeft: tokens.spacingHorizontalM 
             }}>
               {subTitle}

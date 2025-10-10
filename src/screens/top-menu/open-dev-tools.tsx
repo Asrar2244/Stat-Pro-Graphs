@@ -171,13 +171,14 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
                 <Text font="monospace" align="start" size={200} weight="regular">
                   {t(licenseStatus.state as string, { ns: 'common' })}
                 </Text>
-                <Button
-                  shape="square"
-                  appearance="primary"
-                  className={classes.activeBtn}
-                  onClick={onClickActivate}
-                  disabled={licenseKey === ''}
-                >
+            <Button
+              type="button"
+              shape="square"
+              appearance="primary"
+              className={classes.activeBtn}
+              onClick={onClickActivate}
+              disabled={licenseKey === ''}
+            >
                   {t('activate', { ns: 'common' })}
                 </Button>
               </div>
@@ -203,11 +204,11 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
             {t(status as string, { ns: 'common' })}
           </Text>
           {showCloseButton ? (
-            <Button appearance="secondary" onClick={modal.closeModal} shape="square">
+            <Button type="button" appearance="secondary" onClick={modal.closeModal} shape="square">
               {t('close', { ns: 'common' })}
             </Button>
           ) : (
-            <Button appearance="secondary" onClick={onHandleExitApp} shape="square">
+            <Button type="button" appearance="secondary" onClick={onHandleExitApp} shape="square">
               {t('exitApp', { ns: 'common' })}
             </Button>
           )}

@@ -91,6 +91,23 @@ export const topMenuConfig = {
     {
       id: 'tests',
       label: 'tests',
+      submenu: [
+        {
+          id: "options",
+          label: "options",
+          execute: exporters.options,
+        },
+        {
+          id: "t-test",
+          label: "t-test",
+          execute: exporters.options,
+        },
+        {
+          id: "paired-t-test",
+          label: "paired-t-test",
+          execute: exporters.options,
+        }
+      ]
     },
     {
       id: 'graphs',
@@ -100,38 +117,6 @@ export const topMenuConfig = {
           id: 'graphView',
           label: 'graphView',
           codeExecute: exporters.openNewTabForGraph,
-        },
-      ],
-    },
-    {
-      id: 'advanced',
-      label: 'advanced',
-      submenu: [
-        {
-          id: 'descriptiveStat',
-          label: 'descriptiveStat',
-          execute: exporters.descriptiveStat,
-        },
-        {
-          id: 'test',
-          label: 'test',
-          submenu: [
-            {
-              id: "options",
-              label: "options",
-              execute: exporters.options,
-            },
-            {
-              id: "t-test",
-              label: "t-test",
-              execute: exporters.tests,
-            },
-            // {
-            //   id: "paired-t-test",
-            //   label: "paired-t-test",
-            //   execute: exporters.pairedTTest,
-            // }
-          ]
         },
       ],
     },

@@ -48,7 +48,6 @@ fn main() {
 
         std::path::PathBuf::from(base).join("start-pro-logs")
     };
-    let child_process: Arc<Mutex<Option<Child>>> = Arc::new(Mutex::new(None));
     tauri::Builder::default()
         // .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
         //     let _ = app
@@ -102,34 +101,7 @@ fn main() {
                 }
             });
 
-<<<<<<< HEAD
             Ok(())
-=======
-                // Start the backend executable without canonicalizing the path
-                let child = Command::new(exe_path)
-                    .spawn()
-                    .expect("Failed to start backend executable");
-
-                // Store the child process in the shared state
-                *child_process.lock().unwrap() = Some(child);
-
-                // Window settings - show the main window and close splash screen
-                let main_window = _app.get_webview_window("main").unwrap();
-                
-                // Close splash screen first
-                if let Some(splashscreen) = _app.get_webview_window("splashscreen") {
-                    splashscreen.close().unwrap();
-                }
-                
-                #[cfg(not(target_os = "macos"))]
-                main_window.set_decorations(false).unwrap();
-                main_window.maximize().unwrap();
-                main_window.show().unwrap();
-                #[cfg(target_os = "macos")]
-                main_window.set_fullscreen(true).unwrap();
-
-                Ok(())
-            }
         })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
