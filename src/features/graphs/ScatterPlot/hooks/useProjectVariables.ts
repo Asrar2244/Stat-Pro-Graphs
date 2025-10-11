@@ -14,6 +14,8 @@ export const useProjectVariables = (selectedProject?: string) => {
   const [variables, setVariables] = useState<Variable[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
   
   const { projects: projectStore } = useStartProStore(
     useShallow((state) => ({ projects: state.projects }))
@@ -25,8 +27,12 @@ export const useProjectVariables = (selectedProject?: string) => {
       return;
     }
 
-    const loadVariables = async () => {
-      setIsLoading(true);
+    const loadVariables = async (isRetry = false) => {
+      if (isRetry) {
+        setIsRetrying(true);
+      } else {
+        setIsLoading(true);
+      }
       setError(null);
       
       try {
@@ -91,17 +97,43 @@ export const useProjectVariables = (selectedProject?: string) => {
         );
         
         setVariables(processedVariables);
+        setRetryCount(0); // Reset retry count on success
       } catch (err) {
-        setError(`Failed to load variables: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(`Failed to load variables: ${errorMessage}`);
         setVariables([]);
+        
+        // Log error for debugging
+        console.error('Failed to load project variables:', {
+          project: selectedProject,
+          error: err,
+          retryCount,
+          timestamp: new Date().toISOString()
+        });
       } finally {
         setIsLoading(false);
+        setIsRetrying(false);
       }
     };
 
     loadVariables();
   }, [selectedProject]); // Removed workspacePath dependency that was causing unnecessary reloads
 
-  return { variables, isLoading, error };
+  // Retry function for manual retry
+  const retry = () => {
+    if (retryCount < 3) { // Max 3 retries
+      setRetryCount(prev => prev + 1);
+      loadVariables(true);
+    }
+  };
+
+  return { 
+    variables, 
+    isLoading: isLoading || isRetrying, 
+    error, 
+    retry,
+    canRetry: retryCount < 3 && !!error,
+    retryCount
+  };
 };
 
