@@ -1,9 +1,13 @@
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { Modal } from '@libs';
 import { ScatterPlotForm } from './ScatterPlotForm';
 import { useScatterPlotStore } from './scatterPlotSlice';
 import { IModal } from '@hooks';
 import { useScatterPlotModalStyles } from './styles-hook/use-scatter-plot-modal-styles';
+import { ScatterPlotErrorBoundary } from './components/ErrorBoundary';
+import { AdvancedValidationModal } from './components/AdvancedValidationModal';
+import { validateScatterPlotRequirements, ScatterPlotValidationError } from './utils/validationUtils';
+import { isValidDataFormat } from './constants';
 
 /**
  * Props for the ScatterPlotModal component
@@ -34,6 +38,10 @@ export const ScatterPlotModal: FC<ScatterPlotModalProps> = ({
     selectedXVariable,
     selectedYVariable,
   } = useScatterPlotStore();
+  
+  // Validation state
+  const [validationErrors, setValidationErrors] = useState<any[]>([]);
+  const [showValidationErrorModal, setShowValidationErrorModal] = useState(false);
 
   const { modalContentStyles } = useScatterPlotModalStyles();
 
@@ -58,13 +66,53 @@ export const ScatterPlotModal: FC<ScatterPlotModalProps> = ({
   }, [subType]);
 
   const onCreate = () => {
-    if (!selectedProject || !subType) return;
-    // Build variables explicitly so downstream always receives clear mapping
-    // Prefer explicit selections; fall back to graphConfig.variables if provided by the form
-    const gx = (graphConfig as any)?.variables?.x as string[] | undefined;
-    const gy = (graphConfig as any)?.variables?.y as string[] | undefined;
-    const gCategory = (graphConfig as any)?.variables?.category as string[] | undefined;
-    const gErrorBar = (graphConfig as any)?.variables?.errorBar as string[] | undefined;
+    try {
+      // Validate requirements before creating graph
+      // Try to get variables from graphConfig first, fallback to individual variables
+      const graphConfigVars = (graphConfig as any)?.variables;
+      const selectedVariables = {
+        x: graphConfigVars?.x && Array.isArray(graphConfigVars.x) && graphConfigVars.x.length > 0 
+          ? graphConfigVars.x 
+          : (selectedXVariable ? [selectedXVariable] : undefined),
+        y: graphConfigVars?.y && Array.isArray(graphConfigVars.y) && graphConfigVars.y.length > 0 
+          ? graphConfigVars.y 
+          : (selectedYVariable ? [selectedYVariable] : undefined),
+        category: graphConfigVars?.category && Array.isArray(graphConfigVars.category) && graphConfigVars.category.length > 0 
+          ? graphConfigVars.category 
+          : undefined,
+        errorBar: graphConfigVars?.errorBar && Array.isArray(graphConfigVars.errorBar) && graphConfigVars.errorBar.length > 0 
+          ? graphConfigVars.errorBar 
+          : undefined
+      };
+
+      // Debug logging
+      console.log('Validation Debug:', {
+        subType,
+        dataFormat,
+        selectedVariables,
+        graphConfig: graphConfig,
+        selectedXVariable,
+        selectedYVariable,
+        isValidFormat: isValidDataFormat(subType, dataFormat)
+      });
+
+      const validation = validateScatterPlotRequirements(subType, dataFormat, selectedVariables);
+      
+      if (!validation.isValid) {
+        setValidationErrors(validation.errors);
+        setShowValidationErrorModal(true);
+        throw new ScatterPlotValidationError(validation.errors);
+      }
+
+      // Clear any previous validation errors
+      setValidationErrors([]);
+      setShowValidationErrorModal(false);
+
+      // Build variables explicitly so downstream always receives clear mapping
+      const gx = selectedVariables.x;
+      const gy = selectedVariables.y;
+      const gCategory = selectedVariables.category;
+      const gErrorBar = selectedVariables.errorBar;
     
     // For X Many Y Replicates format, always use the full variable lists from graphConfig
     // For other formats, fall back to single variables if no lists are available
@@ -123,14 +171,30 @@ export const ScatterPlotModal: FC<ScatterPlotModalProps> = ({
       }
     };
     
-    setGraphConfig(config);
-    onCreateGraph(config);
-    reset();
-    modalProps.closeModal();
+      setGraphConfig(config);
+      onCreateGraph(config);
+      reset();
+      modalProps.closeModal();
+    } catch (error) {
+      if (error instanceof ScatterPlotValidationError) {
+        // Validation errors are already handled above
+        console.warn('Graph creation blocked due to validation errors:', error.errors);
+      } else {
+        // Handle unexpected errors
+        console.error('Unexpected error during graph creation:', error);
+        setValidationErrors([{
+          field: 'general',
+          message: 'An unexpected error occurred while creating the graph',
+          severity: 'error'
+        }]);
+        setShowValidationErrorModal(true);
+      }
+    }
   };
 
   return (
-    <Modal
+    <>
+      <Modal
       {...modalProps}
       title="Scatter Plot"
       size={modalSize}
@@ -141,8 +205,29 @@ export const ScatterPlotModal: FC<ScatterPlotModalProps> = ({
       modalType="non-modal"
     >
       <div style={modalContentStyles}>
-        <ScatterPlotForm projects={projects} datasets={datasets} />
+        <ScatterPlotErrorBoundary
+          onError={(error, errorInfo) => {
+            console.error('ScatterPlot Modal Error:', error, errorInfo);
+            // In production, you might want to send this to an error reporting service
+          }}
+        >
+          <ScatterPlotForm projects={projects} datasets={datasets} />
+        </ScatterPlotErrorBoundary>
       </div>
     </Modal>
+    
+    {/* Advanced Validation Error Modal */}
+    <AdvancedValidationModal
+      isOpen={showValidationErrorModal}
+      onClose={() => setShowValidationErrorModal(false)}
+      errors={validationErrors}
+      onRetry={() => {
+        // Close the modal and let user try again
+        setShowValidationErrorModal(false);
+      }}
+      title="Cannot Create Scatter Plot"
+      showDetailedHelp={true}
+      />
+    </>
   );
 };

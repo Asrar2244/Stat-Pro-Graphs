@@ -13,6 +13,8 @@ import { useScatterPlotFormStyles } from './styles-hook';
 import { SUB_TYPES } from './constants';
 import { useProjectVariables, useVariableManagement, useAvailableFormats } from './hooks';
 import { requiresX, requiresY, requiresCategory, canSendToX, canSendToY, canSendToErrorBar, getRequiredErrorBarCount } from './utils';
+import { FieldValidationIndicator } from './components/ValidationErrors';
+import { validateScatterPlotRequirements } from './utils/validationUtils';
 import { getPlotTypeFlags, isAsymmetricErrorBar, needsErrorBarsConfiguration, isErrorBarSubType } from './utils';
 
 /**
@@ -42,7 +44,7 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
   } = useScatterPlotStore();
   
   // Load project variables
-  const { variables, isLoading: isLoadingVariables, error: loadError } = useProjectVariables(selectedProject);
+  const { variables, isLoading: isLoadingVariables, error: loadError, retry, canRetry, retryCount } = useProjectVariables(selectedProject);
 
   // Variable management - pass variables so we can filter by type
   const variableManagement = useVariableManagement(dataFormat, subType, variables);
@@ -289,9 +291,26 @@ export const ScatterPlotForm: FC<{ projects: string[]; datasets: string[] }> = (
 
       {/* Error State */}
       {loadError && (
-        <div className={classes.error}>
+        <div className={classes.error} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <MdWarning size={20} />
-          <Text>{loadError}</Text>
+          <div style={{ flex: 1 }}>
+            <Text>{loadError}</Text>
+            {retryCount > 0 && (
+              <Text size={200} style={{ opacity: 0.8 }}>
+                Retry attempt {retryCount} of 3
+              </Text>
+            )}
+          </div>
+          {canRetry && (
+            <Button
+              appearance="secondary"
+              size="small"
+              onClick={retry}
+              disabled={isLoadingVariables}
+            >
+              Retry
+            </Button>
+          )}
         </div>
       )}
 
