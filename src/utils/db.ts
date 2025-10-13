@@ -59,7 +59,7 @@ export class Database {
       try {
         // Use app-local data directory to store writable app data
         const appFolder = await appLocalDataDir();
-        const collectionsPath = await join(appFolder, 'collections');
+        const collectionsPath = await join(appFolder, 'start-pro', 'collections');
         dbLocation = await join(collectionsPath, `${dbName}.db`);
         
         if (MODE === 'development') {

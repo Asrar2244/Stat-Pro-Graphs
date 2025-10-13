@@ -32,6 +32,7 @@ interface IStartProStore {
     id: number;
     title: string;
     subTitle?: string;
+    config?: any;
   };
   setSelectedGraphRun: (id: number, title: string, subTitle?: string) => void;
   // Graph data cache for persistence

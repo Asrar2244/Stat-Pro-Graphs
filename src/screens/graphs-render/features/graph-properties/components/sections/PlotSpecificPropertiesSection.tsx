@@ -13,10 +13,9 @@ import {
   Field,
   Slider,
   Switch,
-  Input,
 } from '@fluentui/react-components';
 import { MdScatterPlot, MdError, MdVisibility, MdTrendingUp } from 'react-icons/md';
-import { useGraphPropertiesClasses } from '../../../styles/use-graph-properties-style';
+import { useGraphPropertiesClasses } from '../../../../styles/use-graph-properties-style';
 import { GraphPropertiesProps } from '../../types';
 
 export const PlotSpecificPropertiesSection: FC<GraphPropertiesProps> = ({ properties }) => {

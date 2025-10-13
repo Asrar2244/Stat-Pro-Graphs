@@ -49,7 +49,7 @@ export const PolynomialComponent: FC<IModal> = (props) => {
 
   return (
     <Modal
-      modalType="alert"
+      modalType="modal"
       {...props}
       cancelLabel={t('close', { ns: 'regLinearPolynomial' })}
       okLabel={t('ok', { ns: 'regLinearPolynomial' })}

@@ -8,7 +8,21 @@
     "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
+
   "app": {
+    "macOSPrivateApi": true,
+      "security": {
+        "assetProtocol": {
+          "enable": false,
+          "scope": []
+        },
+        "capabilities": [],
+        "dangerousDisableAssetCspModification": false,
+        "freezePrototype": false,
+        "pattern": {
+          "use": "brownfield"
+        }
+      },
     "windows": [
       {
         "title": "start-pro",
@@ -36,10 +50,7 @@
         "dragDropEnabled": false,
         "visible": true
       }
-    ],
-    "security": {
-      "csp": null
-    }
+    ]
   },
   "bundle": {
     "resources":["backend"],

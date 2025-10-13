@@ -15,4 +15,10 @@ export const useGraphBodyLayout = makeStyles({
   toolbar: {
     flexShrink: 0,
   },
+  // Additional missing classes
+  graphBodyLayout: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+  },
 });

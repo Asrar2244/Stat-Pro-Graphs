@@ -37,4 +37,23 @@ export const useGraphTabLayout = makeStyles({
     flex: 1,
     padding: '16px',
   },
+  // Additional missing classes
+  historyTab: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+  },
+  ul: {
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  docIndex: {
+    padding: '8px',
+    backgroundColor: '#f5f5f5',
+    borderRadius: '4px',
+  },
 });

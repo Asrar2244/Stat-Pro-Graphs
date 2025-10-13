@@ -88,101 +88,143 @@ describe("TopMenu Component - Enhanced", () => {
     });
 
     describe("Basic rendering", () => {
+        const mockProps = {
+            setMenuItem: jest.fn(),
+            toggleTests: jest.fn(),
+            toggleGraphs: jest.fn(),
+            closeAllDropdowns: jest.fn(),
+        };
+
         it("renders without crashing", () => {
-            const { container } = render(<TopMenu />);
+            const { container } = render(<TopMenu {...mockProps} />);
             expect(container).toBeInTheDocument();
         });
 
         it("renders CommonMessages component", () => {
-            render(<TopMenu />);
+            render(<TopMenu {...mockProps} />);
             expect(screen.getByTestId("common-messages")).toBeInTheDocument();
         });
 
         it("renders MinMaxClose component", () => {
-            render(<TopMenu />);
+            render(<TopMenu {...mockProps} />);
             expect(screen.getByTestId("min-max-close")).toBeInTheDocument();
         });
 
         it("applies data-tauri-drag-region attribute", () => {
-            const { container } = render(<TopMenu />);
+            const { container } = render(<TopMenu {...mockProps} />);
             const dragRegion = container.querySelector('[data-tauri-drag-region]');
             expect(dragRegion).toBeInTheDocument();
         });
     });
 
     describe("Menu structure", () => {
+        const mockProps = {
+            setMenuItem: jest.fn(),
+            toggleTests: jest.fn(),
+            toggleGraphs: jest.fn(),
+            closeAllDropdowns: jest.fn(),
+        };
+
         it("renders menu triggers", () => {
-            render(<TopMenu />);
+            render(<TopMenu {...mockProps} />);
             const triggers = screen.getAllByTestId("menu-trigger");
             expect(triggers.length).toBeGreaterThan(0);
         });
 
         it("renders menu items", () => {
-            render(<TopMenu />);
+            render(<TopMenu {...mockProps} />);
             const menus = screen.getAllByTestId("menu");
             expect(menus.length).toBeGreaterThan(0);
         });
 
         it("renders menu text elements", () => {
-            render(<TopMenu />);
+            render(<TopMenu {...mockProps} />);
             expect(screen.getByText("file")).toBeInTheDocument();
             expect(screen.getByText("edit")).toBeInTheDocument();
         });
     });
 
     describe("Menu interactions", () => {
+        const mockProps = {
+            setMenuItem: jest.fn(),
+            toggleTests: jest.fn(),
+            toggleGraphs: jest.fn(),
+            closeAllDropdowns: jest.fn(),
+        };
+
         it("renders menu popover structure", () => {
-            const { getAllByTestId } = render(<TopMenu />);
+            const { getAllByTestId } = render(<TopMenu {...mockProps} />);
             const popovers = getAllByTestId("menu-popover");
             expect(popovers.length).toBeGreaterThan(0);
         });
 
         it("renders menu dividers", () => {
-            render(<TopMenu />);
+            render(<TopMenu {...mockProps} />);
             const dividers = screen.queryAllByTestId("menu-divider");
             expect(dividers.length).toBeGreaterThanOrEqual(0);
         });
     });
 
     describe("Component layout", () => {
+        const mockProps = {
+            setMenuItem: jest.fn(),
+            toggleTests: jest.fn(),
+            toggleGraphs: jest.fn(),
+            closeAllDropdowns: jest.fn(),
+        };
+
         it("renders tools section", () => {
-            render(<TopMenu />);
+            render(<TopMenu {...mockProps} />);
             expect(screen.getByTestId("common-messages")).toBeInTheDocument();
             expect(screen.getByTestId("min-max-close")).toBeInTheDocument();
         });
 
         it("has drag region attribute", () => {
-            const { container } = render(<TopMenu />);
+            const { container } = render(<TopMenu {...mockProps} />);
             const dragRegion = container.querySelector('[data-tauri-drag-region]');
             expect(dragRegion).toBeInTheDocument();
         });
     });
 
     describe("Edge cases", () => {
+        const mockProps = {
+            setMenuItem: jest.fn(),
+            toggleTests: jest.fn(),
+            toggleGraphs: jest.fn(),
+            closeAllDropdowns: jest.fn(),
+        };
+
         it("handles empty submenu gracefully", () => {
-            const { container } = render(<TopMenu />);
+            const { container } = render(<TopMenu {...mockProps} />);
             expect(container).toBeInTheDocument();
         });
 
         it("renders consistently on multiple renders", () => {
-            const { rerender } = render(<TopMenu />);
+            const { rerender } = render(<TopMenu {...mockProps} />);
             expect(screen.getByTestId("common-messages")).toBeInTheDocument();
 
-            rerender(<TopMenu />);
+            rerender(<TopMenu {...mockProps} />);
             expect(screen.getByTestId("common-messages")).toBeInTheDocument();
             expect(screen.getByTestId("min-max-close")).toBeInTheDocument();
         });
     });
 
     describe("Accessibility", () => {
+        const mockProps = {
+            setMenuItem: jest.fn(),
+            toggleTests: jest.fn(),
+            toggleGraphs: jest.fn(),
+            closeAllDropdowns: jest.fn(),
+        };
+
         it("renders semantic HTML structure", () => {
-            const { container } = render(<TopMenu />);
+            const { container } = render(<TopMenu {...mockProps} />);
             const lists = container.querySelectorAll('ul');
             expect(lists.length).toBeGreaterThanOrEqual(0);
         });
 
         it("has clickable menu elements", () => {
-            render(<TopMenu />);
+            render(<TopMenu {...mockProps} />);
             const menuItems = screen.queryAllByTestId("menu-item");
             menuItems.forEach(item => {
                 expect(item).toBeInTheDocument();

@@ -5,11 +5,8 @@
 import { FC, useEffect, useState } from 'react';
 import {
   Accordion,
-  AccordionItem,
-  AccordionHeader,
-  AccordionPanel,
 } from '@fluentui/react-components';
-import { useGraphPropertiesClasses } from '../../styles/use-graph-properties-style';
+import { useGraphPropertiesClasses } from '../../../styles/use-graph-properties-style';
 import { GraphPropertiesProps } from '../types';
 import { DataFormatProperties, createDataFormatProperties, getSeriesLabels } from '../../../utils/dataFormatProperties';
 import { GeneralGraphSettings } from './sections/GeneralGraphSettings';
@@ -21,7 +18,6 @@ import { AxisPropertiesSection } from './sections/AxisPropertiesSection';
 import { ExportPropertiesSection } from './sections/ExportPropertiesSection';
 
 export const GraphPropertiesAccordion: FC<GraphPropertiesProps> = ({ properties }) => {
-  const classes = useGraphPropertiesClasses();
   
   // Data format properties state
   const [dataFormatProperties, setDataFormatProperties] = useState<DataFormatProperties | null>(null);

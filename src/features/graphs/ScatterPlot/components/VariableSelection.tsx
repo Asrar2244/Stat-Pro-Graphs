@@ -125,7 +125,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
   } = useVariableSelectionStyles();
   
   // Calculate max allowed error bars based on data format and X/Y counts
-  const maxErrorBars = getRequiredErrorBarCount(xCount, yCount, dataFormat, subType);
+  const maxErrorBars = getRequiredErrorBarCount(xCount, yCount, dataFormat as any, subType);
 
   const pickFirst = (list: Map<string, boolean>): string | undefined => {
     const selected = Array.from(list.entries()).find(([, v]) => v);
@@ -171,7 +171,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
         </Text>
       </div>
 
-      <div style={variableSelectionContainerStyles}>
+      <div style={variableSelectionContainerStyles as React.CSSProperties}>
         {/* Available Variables - Leftmost position */}
         <div className={classes.column} style={columnStyles}>
           <div className={classes.columnHeader}>
@@ -252,7 +252,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                 )}
               </>
             ) : (
-              <div style={disabledSelectionStyles}>
+              <div style={disabledSelectionStyles as React.CSSProperties}>
                 Select a Simple Scatter sub-type to enable variable selection
               </div>
             )}

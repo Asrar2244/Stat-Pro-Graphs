@@ -65,7 +65,7 @@ export const GraphOptions: FC<IGraphOptions> = ({ plotly, ...props }) => {
 
   return (
     <Modal
-      modalType="alert"
+      modalType="modal"
       size="medium"
       {...props}
       title={t('graphOptions')}

@@ -64,7 +64,7 @@ const PairedTestsAnalysisComponent: FC<IModal> = ({ ...props }) => {
     }
   }
 
-  return <Modal modalType="alert"
+  return <Modal modalType="modal"
     {...props}
     cancelLabel={t('close')}
     nextLabel={t("next")}

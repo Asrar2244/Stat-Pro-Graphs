@@ -11,14 +11,12 @@ import {
   Card,
   CardHeader,
   Field,
-  Switch,
-  Slider,
   Input,
   Dropdown,
   Option,
 } from '@fluentui/react-components';
 import { MdTune } from 'react-icons/md';
-import { useGraphPropertiesClasses } from '../../../styles/use-graph-properties-style';
+import { useGraphPropertiesClasses } from '../../../../styles/use-graph-properties-style';
 import { GraphPropertiesProps } from '../../types';
 
 export const ExportPropertiesSection: FC<GraphPropertiesProps> = ({ properties }) => {
@@ -43,21 +41,21 @@ export const ExportPropertiesSection: FC<GraphPropertiesProps> = ({ properties }
               <Field label="Graph Width (inches)">
                 <Input 
                   type="number"
-                  value={globalProps.graphWidthInch}
+                  value={globalProps.graphWidthInch.toString()}
                   onChange={(_, data) => properties.updateGraphProperty('graphWidthInch', parseFloat(data.value) || 0)}
                 />
               </Field>
               <Field label="Graph Height (inches)">
                 <Input 
                   type="number"
-                  value={globalProps.graphHeightInch}
+                  value={globalProps.graphHeightInch.toString()}
                   onChange={(_, data) => properties.updateGraphProperty('graphHeightInch', parseFloat(data.value) || 0)}
                 />
               </Field>
               <Field label="DPI">
                 <Input 
                   type="number"
-                  value={globalProps.dpi}
+                  value={globalProps.dpi.toString()}
                   onChange={(_, data) => properties.updateGraphProperty('dpi', parseInt(data.value) || 0)}
                 />
               </Field>

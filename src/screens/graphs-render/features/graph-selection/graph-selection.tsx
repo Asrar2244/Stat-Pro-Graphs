@@ -6,6 +6,7 @@ import { useGraphSelection } from '../../styles/use-graph-selection';
 import { GraphsRenderContext } from '../../context';
 import { IToolBar } from '@utils';
 import { useTranslation } from 'react-i18next';
+import { GlobalGraphProperties } from '../../hooks/use-tools';
 
 const ScatterPlotGraph = lazy(() =>
   import('../plot-types/scatter-plot/index'),
@@ -15,7 +16,7 @@ interface IGraphSelection extends IToolBar {
   id: number;
   showHistory: boolean;
   graphProperties?: any;
-  onUpdateGraphProperty?: <K extends keyof any>(key: K, value: any) => void;
+  onUpdateGraphProperty?: <K extends keyof GlobalGraphProperties>(key: K, value: GlobalGraphProperties[K]) => void;
 }
 
 const loadByType = (graphType?: string) => {

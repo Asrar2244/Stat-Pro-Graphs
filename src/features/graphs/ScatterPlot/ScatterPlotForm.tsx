@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useRef } from 'react';
-import { Spinner, Text, tokens } from '@fluentui/react-components';
+import { Spinner, Text, tokens, Button } from '@fluentui/react-components';
 import { MdWarning } from 'react-icons/md';
 import { ScatterHeader } from './components/Header';
 import { ProjectAndType } from './components/ProjectAndType';

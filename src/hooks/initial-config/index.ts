@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { exists, mkdir, create } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
-import { Database, homeDirectory } from '@utils';
 import { safeTauriCall, isTauriEnvironment } from '@utils/tauri-utils';
 import { Database, homeDirectory, saveLargeJsonToFile } from '@utils';
 import { useTasks } from '@store';

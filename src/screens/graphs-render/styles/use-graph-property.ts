@@ -27,4 +27,18 @@ export const useGraphPropertyLayout = makeStyles({
   addTraceField: {
     marginBottom: '12px',
   },
+  // Additional missing classes
+  propsLayout: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+  projectSelector: {
+    padding: '16px',
+    borderBottom: '1px solid #e1e1e1',
+  },
+  propertySelector: {
+    padding: '16px',
+    borderBottom: '1px solid #e1e1e1',
+  },
 });

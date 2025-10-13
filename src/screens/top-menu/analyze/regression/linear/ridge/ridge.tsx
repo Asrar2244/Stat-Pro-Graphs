@@ -120,7 +120,7 @@ export const Ridge: FC = () => {
   };
   const onChangeSelectAll = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, checked } = e.target;
-    //@ts-expect-error
+    // @ts-ignore
     const list: any = ridge[name];
     Object.keys(list).forEach((key) => {
       list[key] = checked;

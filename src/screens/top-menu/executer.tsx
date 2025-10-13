@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { useLicenseStore, useStartProStore } from '@store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMenuCodeExecutor } from '@hooks';
-import { useScatterPlotStore } from '@features/graphs/ScatterPlot/scatterPlotSlice';
 import { GRAPHS } from '@constants';
 import { LeastSquare } from './analyze/regression/linear/least-squares/least-squares';
 import { Bayesian } from './analyze/regression/linear/bayesian/bayesian';

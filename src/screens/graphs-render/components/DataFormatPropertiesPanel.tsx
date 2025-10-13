@@ -16,7 +16,6 @@ import {
   MdExpandMore, 
   MdExpandLess, 
   MdPalette, 
-  MdRefresh,
   MdAutoFixHigh
 } from 'react-icons/md';
 import { 
@@ -193,7 +192,7 @@ export const DataFormatPropertiesPanel: FC<DataFormatPropertiesPanelProps> = ({
 
               <Field label="Default Border Color" size="small">
                 <Input
-                  type="color"
+                  type="text"
                   value={properties.global.defaultBorderColor}
                   onChange={(_, data) => updateGlobalProperty('defaultBorderColor', data.value)}
                   style={{ width: '100%' }}
@@ -236,7 +235,7 @@ export const DataFormatPropertiesPanel: FC<DataFormatPropertiesPanelProps> = ({
 
         {expandedSections.series && (
           <div style={{ marginTop: tokens.spacingVerticalS }}>
-            {seriesLabels.map((label, index) => {
+            {seriesLabels.map((label) => {
               const seriesStyle = properties.seriesStyles[label];
               if (!seriesStyle) return null;
 
@@ -249,7 +248,7 @@ export const DataFormatPropertiesPanel: FC<DataFormatPropertiesPanelProps> = ({
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: tokens.spacingHorizontalM }}>
                       <Field label="Color" size="small">
                         <Input
-                          type="color"
+                          type="text"
                           value={seriesStyle.color}
                           onChange={(_, data) => updateSeriesProperty(label, 'color', data.value)}
                           style={{ width: '100%' }}
@@ -311,7 +310,7 @@ export const DataFormatPropertiesPanel: FC<DataFormatPropertiesPanelProps> = ({
 
                       <Field label="Border Color" size="small">
                         <Input
-                          type="color"
+                          type="text"
                           value={seriesStyle.borderColor}
                           onChange={(_, data) => updateSeriesProperty(label, 'borderColor', data.value)}
                           style={{ width: '100%' }}

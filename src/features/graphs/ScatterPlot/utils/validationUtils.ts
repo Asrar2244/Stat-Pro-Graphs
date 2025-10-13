@@ -292,7 +292,7 @@ export const validateScatterPlotRequirements = (
         } else if (hasXForManyY && selectedVariables.x.length !== 1) {
           errors.push({
             field: 'xVariables',
-            message: 'X Many Y format requires exactly one X variable (you have ' + selectedVariables.x.length + ')',
+            message: 'X Many Y format requires exactly one X variable (you have ' + (selectedVariables.x?.length || 0) + ')',
             severity: 'error'
           });
         } else if (!hasYForManyY) {
@@ -320,10 +320,10 @@ export const validateScatterPlotRequirements = (
             message: 'Please select one Y variable for Y Many X format',
             severity: 'error'
           });
-        } else if (hasYForManyX && selectedVariables.y.length !== 1) {
+        } else if (hasYForManyX && selectedVariables.y && selectedVariables.y.length !== 1) {
           errors.push({
             field: 'yVariables',
-            message: 'Y Many X format requires exactly one Y variable (you have ' + selectedVariables.y.length + ')',
+            message: 'Y Many X format requires exactly one Y variable (you have ' + (selectedVariables.y?.length || 0) + ')',
             severity: 'error'
           });
         } else if (!hasXForManyX) {

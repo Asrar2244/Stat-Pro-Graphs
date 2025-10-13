@@ -16,7 +16,7 @@ import {
   Input,
 } from '@fluentui/react-components';
 import { MdTune } from 'react-icons/md';
-import { useGraphPropertiesClasses } from '../../../styles/use-graph-properties-style';
+import { useGraphPropertiesClasses } from '../../../../styles/use-graph-properties-style';
 import { GraphPropertiesProps } from '../../types';
 
 export const GridSettingsSection: FC<GraphPropertiesProps> = ({ properties }) => {
@@ -45,29 +45,29 @@ export const GridSettingsSection: FC<GraphPropertiesProps> = ({ properties }) =>
                   onChange={(_, data) => properties.updateGraphProperty('showGridLines', data.checked)}
                 />
               </Field>
-              <Field label="X Major Grid" disabled={gridDisabled}>
+              <Field label="X Major Grid">
                 <Switch 
                   checked={globalProps.gridXMajor}
                   onChange={(_, data) => properties.updateGraphProperty('gridXMajor', data.checked)}
                   disabled={gridDisabled}
                 />
               </Field>
-              <Field label="Y Major Grid" disabled={gridDisabled}>
+              <Field label="Y Major Grid">
                 <Switch 
                   checked={globalProps.gridYMajor}
                   onChange={(_, data) => properties.updateGraphProperty('gridYMajor', data.checked)}
                   disabled={gridDisabled}
                 />
               </Field>
-              <Field label="Grid Color" disabled={gridDisabled}>
+              <Field label="Grid Color">
                 <Input
-                  type="color"
+                  type="text"
                   value={globalProps.gridColor}
                   onChange={(_, data) => properties.updateGraphProperty('gridColor', data.value)}
                   disabled={gridDisabled}
                 />
               </Field>
-              <Field label={`Grid Thickness: ${globalProps.gridThicknessInch}"`} disabled={gridDisabled}>
+              <Field label={`Grid Thickness: ${globalProps.gridThicknessInch}"`}>
                 <Slider 
                   min={0.001} 
                   max={0.1} 

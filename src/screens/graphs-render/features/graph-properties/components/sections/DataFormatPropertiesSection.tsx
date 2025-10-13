@@ -10,7 +10,7 @@ import {
   Text,
 } from '@fluentui/react-components';
 import { MdPalette } from 'react-icons/md';
-import { useGraphPropertiesClasses } from '../../../styles/use-graph-properties-style';
+import { useGraphPropertiesClasses } from '../../../../styles/use-graph-properties-style';
 import { GraphPropertiesProps } from '../../types';
 import { DataFormatProperties } from '../../../../utils/dataFormatProperties';
 import { DataFormatPropertiesPanel } from '../../../../components/DataFormatPropertiesPanel';

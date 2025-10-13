@@ -93,10 +93,10 @@ export const ScatterPlotModal: FC<ScatterPlotModalProps> = ({
         graphConfig: graphConfig,
         selectedXVariable,
         selectedYVariable,
-        isValidFormat: isValidDataFormat(subType, dataFormat)
+        isValidFormat: isValidDataFormat(subType as any, dataFormat)
       });
 
-      const validation = validateScatterPlotRequirements(subType, dataFormat, selectedVariables);
+      const validation = validateScatterPlotRequirements(subType as any, dataFormat as any, selectedVariables);
       
       if (!validation.isValid) {
         setValidationErrors(validation.errors);

@@ -52,4 +52,47 @@ export const useGraphPropertiesClasses = makeStyles({
     borderRadius: tokens.borderRadiusSmall,
     border: `1px solid ${tokens.colorNeutralStroke2}`,
   },
+  // Additional missing classes
+  propsLayout: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalM,
+  },
+  projectSelector: {
+    padding: tokens.spacingVerticalM,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+  },
+  propertySelector: {
+    padding: tokens.spacingVerticalM,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+  },
+  historyTab: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+  },
+  ul: {
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
+  },
+  docIndex: {
+    padding: tokens.spacingVerticalS,
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRadius: tokens.borderRadiusSmall,
+  },
+  graphBodyLayout: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: '8px',
+    right: '8px',
+    zIndex: 1,
+  },
 });

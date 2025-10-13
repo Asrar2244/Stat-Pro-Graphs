@@ -18,7 +18,7 @@ export const AnnotationModal: FC<IGraphAnnotation> = ({ plotly }) => {
     <Modal
       {...modal}
       open={!!Object.keys(plotly?.points as IPoints).length}
-      modalType="alert"
+      modalType="modal"
       size="small"
       title={t('annotations')}
       okLabel={t('apply')}

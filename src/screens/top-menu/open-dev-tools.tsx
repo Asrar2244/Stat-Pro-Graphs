@@ -93,7 +93,7 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
 
   return (
     <Modal
-      modalType="alert"
+      modalType="modal"
       showTitle={false}
       okLabel={t('yes', { ns: 'common' })}
       cancelLabel={t('no', { ns: 'common' })}

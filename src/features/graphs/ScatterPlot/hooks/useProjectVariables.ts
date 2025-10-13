@@ -123,7 +123,8 @@ export const useProjectVariables = (selectedProject?: string) => {
   const retry = () => {
     if (retryCount < 3) { // Max 3 retries
       setRetryCount(prev => prev + 1);
-      loadVariables(true);
+      // Force reload by updating a dependency
+      window.location.reload();
     }
   };
 

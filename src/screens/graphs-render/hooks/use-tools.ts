@@ -15,6 +15,7 @@ export interface GlobalGraphProperties {
 
   // General Graph Settings
   graphName: string;
+  tabName: string;
   axisXData?: string;
   axisYData?: string;
   showTitle: boolean;
@@ -44,6 +45,9 @@ export interface GlobalGraphProperties {
   imageQuality: number;
   imageFormat: string;
   dpi: number;
+  graphWidthInch: number;
+  graphHeightInch: number;
+  exportFormat: string;
 
   // Grid Settings
   gridPlane: 'xy2d';
@@ -177,6 +181,7 @@ export const useTools = () => {
   const [fontSize, setFontSize] = useState(12);
   const [fontColor, setFontColor] = useState('#000000');
   const [showRunHistory, setShowRunHistory] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [showGraphProperties, setShowGraphProperties] = useState(false);
   const [totalRuns, setTotalRuns] = useState(0);
   
@@ -194,6 +199,7 @@ export const useTools = () => {
       padding: 10,
       // General Graph Settings defaults
       graphName: 'Untitled Graph',
+      tabName: 'Graph Tab',
       axisXData: 'X axis',
       axisYData: 'Y axis',
       showTitle: true,
@@ -220,6 +226,9 @@ export const useTools = () => {
       imageQuality: 150,
       imageFormat: 'PNG',
       dpi: 300,
+      graphWidthInch: 8,
+      graphHeightInch: 6,
+      exportFormat: 'PNG',
 
       // Grid Settings defaults
       gridPlane: 'xy2d',
@@ -469,6 +478,7 @@ export const useTools = () => {
     fontSize,
     fontColor,
     showRunHistory,
+    showHistory,
     showGraphProperties,
     totalRuns,
     graphProperties,

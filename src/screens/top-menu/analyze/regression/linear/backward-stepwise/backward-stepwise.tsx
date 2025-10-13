@@ -63,7 +63,7 @@ const BackwardStepwiseComponent: FC<IModal> = ({ ...props }) => {
   return (
     <Modal
       key={id}
-      modalType="alert"
+      modalType="modal"
       {...props}
       cancelLabel={t('close', { ns: 'regLinearBackwardStepwise' })}
       okLabel={t('ok', { ns: 'regLinearBackwardStepwise' })}

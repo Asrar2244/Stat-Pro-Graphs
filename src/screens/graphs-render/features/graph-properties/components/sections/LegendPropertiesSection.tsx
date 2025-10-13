@@ -16,7 +16,7 @@ import {
   Input,
 } from '@fluentui/react-components';
 import { MdPalette } from 'react-icons/md';
-import { useGraphPropertiesClasses } from '../../../styles/use-graph-properties-style';
+import { useGraphPropertiesClasses } from '../../../../styles/use-graph-properties-style';
 import { GraphPropertiesProps } from '../../types';
 
 export const LegendPropertiesSection: FC<GraphPropertiesProps> = ({ properties }) => {

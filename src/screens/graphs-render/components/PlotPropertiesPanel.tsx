@@ -148,7 +148,7 @@ export const PlotPropertiesPanel: FC<PlotPropertiesPanelProps> = ({
 
             <Field label="Border Color" size="small">
               <Input
-                type="color"
+                type="text"
                 value={properties.scatter.pointBorderColor}
                 onChange={(_, data) => updateScatterProperties({ pointBorderColor: data.value })}
                 style={{ width: '100%' }}
@@ -171,7 +171,7 @@ export const PlotPropertiesPanel: FC<PlotPropertiesPanelProps> = ({
                 <Checkbox
                   label="Use multi-color for categories"
                   checked={properties.scatter.useMultiColor}
-                  onChange={(_, data) => updateScatterProperties({ useMultiColor: data.checked })}
+                  onChange={(_, data) => updateScatterProperties({ useMultiColor: Boolean(data.checked) })}
                 />
               </Field>
             )}
@@ -179,7 +179,7 @@ export const PlotPropertiesPanel: FC<PlotPropertiesPanelProps> = ({
             {(!isCategoryPlot || !properties.scatter.useMultiColor) && (
               <Field label="Point Color" size="small">
                 <Input
-                  type="color"
+                  type="text"
                   value={properties.scatter.singleColor}
                   onChange={(_, data) => updateScatterProperties({ singleColor: data.value })}
                   style={{ width: '100%' }}
@@ -216,7 +216,7 @@ export const PlotPropertiesPanel: FC<PlotPropertiesPanelProps> = ({
             }}>
               <Field label="Line Color" size="small">
                 <Input
-                  type="color"
+                  type="text"
                   value={properties.regression.lineColor}
                   onChange={(_, data) => updateRegressionProperties({ lineColor: data.value })}
                   style={{ width: '100%' }}
@@ -261,7 +261,7 @@ export const PlotPropertiesPanel: FC<PlotPropertiesPanelProps> = ({
                 <Checkbox
                   label="Show R² in legend"
                   checked={properties.regression.showRSquared}
-                  onChange={(_, data) => updateRegressionProperties({ showRSquared: data.checked })}
+                  onChange={(_, data) => updateRegressionProperties({ showRSquared: Boolean(data.checked) })}
                 />
               </Field>
             </div>
@@ -295,7 +295,7 @@ export const PlotPropertiesPanel: FC<PlotPropertiesPanelProps> = ({
             }}>
               <Field label="Error Bar Color" size="small">
                 <Input
-                  type="color"
+                  type="text"
                   value={properties.errorBar.errorBarColor}
                   onChange={(_, data) => updateErrorBarProperties({ errorBarColor: data.value })}
                   style={{ width: '100%' }}
@@ -339,7 +339,7 @@ export const PlotPropertiesPanel: FC<PlotPropertiesPanelProps> = ({
                 <Checkbox
                   label="Show in legend"
                   checked={properties.errorBar.showInLegend}
-                  onChange={(_, data) => updateErrorBarProperties({ showInLegend: data.checked })}
+                  onChange={(_, data) => updateErrorBarProperties({ showInLegend: Boolean(data.checked) })}
                 />
               </Field>
             </div>

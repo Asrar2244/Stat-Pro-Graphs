@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Checkbox, tokens } from '@fluentui/react-components';
+import { Checkbox } from '@fluentui/react-components';
 import { useVariableListStyles } from './styles-hook';
 
 /**
@@ -24,7 +24,6 @@ export const VariableList: FC<VariableListRenderProps> = ({
   selectAll,
   setSelectAll,
   setList,
-  listName,
   selectAllText,
   maxSelected,
   disabled
@@ -97,7 +96,7 @@ export const VariableList: FC<VariableListRenderProps> = ({
         </span>
       </div>
 
-      <div style={listContainerStyles}>
+      <div style={listContainerStyles as React.CSSProperties}>
         {Array.from(list.entries()).map(([key, checked]) => (
           <div key={key} style={checked ? listItemSelectedStyles : listItemStyles}>
             <Checkbox
@@ -112,7 +111,7 @@ export const VariableList: FC<VariableListRenderProps> = ({
         ))}
 
         {list.size === 0 && (
-          <div style={emptyListStyles}>
+          <div style={emptyListStyles as React.CSSProperties}>
             No variables available
           </div>
         )}

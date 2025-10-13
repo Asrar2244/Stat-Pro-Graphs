@@ -70,6 +70,13 @@ export const BaseComponent: FC = () => {
     
     // Make this non-blocking - don't wait for backend response to show the app
     const attemptLicenseCheck = () => {
+      // Skip license check in production if no API is configured
+      if (!import.meta.env.VITE_API) {
+        console.log('No API configured, skipping license check');
+        setLicenseState({ state: '30Days', type: 'xa' });
+        return;
+      }
+
       // Add a race condition with timeout
       const licensePromise = getSystemData();
       const timeoutPromise = new Promise((_, reject) => 

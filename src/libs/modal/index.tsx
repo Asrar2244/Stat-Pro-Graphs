@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren, ReactElement, useState, useRef, useEffect } from 'react';
+import { FC, PropsWithChildren, ReactElement, ReactNode, useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogTrigger,
@@ -52,7 +52,7 @@ const sizeConversion = (size: 'small' | 'medium' | 'large' | 'extra-large' | und
 
 // Floating Modal Component with drag functionality and position persistence
 const FloatingModal: FC<{
-  children: ReactElement;
+  children: ReactNode;
   title?: ReactElement | string;
   showTitle?: boolean;
   okLabel?: ReactElement | string;

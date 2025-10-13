@@ -314,7 +314,7 @@ export const BrowseFile: FC<IModal & ITranslate> = ({ t, ...props }) => {
   const okDisabled = !!file && newProject?.name && newProject?.name !== '';
   return (
     <Modal
-      modalType="alert"
+      modalType="modal"
       {...props}
       showCancel
       cancelLabel={t('close', { ns: 'common' })}

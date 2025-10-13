@@ -18,7 +18,7 @@ import {
   Option,
 } from '@fluentui/react-components';
 import { MdTune } from 'react-icons/md';
-import { useGraphPropertiesClasses } from '../../../styles/use-graph-properties-style';
+import { useGraphPropertiesClasses } from '../../../../styles/use-graph-properties-style';
 import { GraphPropertiesProps } from '../../types';
 
 export const AxisPropertiesSection: FC<GraphPropertiesProps> = ({ properties }) => {
@@ -49,7 +49,7 @@ export const AxisPropertiesSection: FC<GraphPropertiesProps> = ({ properties }) 
               <Field label="Y Axis Side">
                 <Dropdown
                   value={globalProps.yAxisSide}
-                  onOptionSelect={(_, data) => properties.updateGraphProperty('yAxisSide', data.optionValue)}
+                  onOptionSelect={(_, data) => properties.updateGraphProperty('yAxisSide', data.optionValue as 'left' | 'right')}
                 >
                   <Option value="left">Left</Option>
                   <Option value="right">Right</Option>
@@ -57,7 +57,7 @@ export const AxisPropertiesSection: FC<GraphPropertiesProps> = ({ properties }) 
               </Field>
               <Field label="Axis Line Color">
                 <Input
-                  type="color"
+                  type="text"
                   value={globalProps.axisLineColor}
                   onChange={(_, data) => properties.updateGraphProperty('axisLineColor', data.value)}
                 />

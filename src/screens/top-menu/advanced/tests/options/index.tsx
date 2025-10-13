@@ -56,7 +56,7 @@ const OptionsComponent: FC<IModal> = ({ ...props }) => {
   }
 
   return <Modal
-    modalType="alert"
+    modalType="modal"
     {...props}
     cancelLabel={t('close')}
     okLabel={t('ok')}

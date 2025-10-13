@@ -1,4 +1,5 @@
 import type { ScatterSubType, DataFormat } from './scatterPlotSlice';
+import type { ScatterPlotSubType } from './types';
 
 /**
  * Available scatter plot sub-types
@@ -241,7 +242,7 @@ export const getValidDataFormats = (subType?: ScatterSubType): DataFormat[] => {
  * @param dataFormat - The data format to validate
  * @returns True if the data format is valid for the sub-type
  */
-export const isValidDataFormat = (subType?: ScatterSubType, dataFormat?: DataFormat): boolean => {
+export const isValidDataFormat = (subType?: ScatterPlotSubType, dataFormat?: DataFormat): boolean => {
   if (!subType || !dataFormat) return false;
   return getValidDataFormats(subType).includes(dataFormat);
 };

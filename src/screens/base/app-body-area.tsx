@@ -17,7 +17,7 @@ import { updateDataProjectClose, updateOutputProjectClose, updateGraphsProjectCl
 import { Database } from '@utils/db';
 import { WelcomePage } from '../welcome';
 import 'flexlayout-react/style/light.css';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle, DialogActions, Checkbox, Button } from '@fluentui/react-components';
 
 const AppBody: FC = () => {

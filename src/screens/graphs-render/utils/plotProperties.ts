@@ -12,6 +12,12 @@ export interface ScatterPointProperties {
   pointOpacity: number;
   /** Point border width in pixels */
   pointBorderWidth: number;
+  /** Point border color */
+  pointBorderColor: string;
+  /** Use multi-color for points */
+  useMultiColor: boolean;
+  /** Single color for points */
+  singleColor: string;
   /** Point color (optional override) */
   pointColor?: string;
 }
@@ -23,10 +29,14 @@ export interface RegressionLineProperties {
   lineOpacity: number;
   /** Line color */
   lineColor: string;
+  /** Line style */
+  lineStyle: string;
   /** Show confidence interval */
   showConfidenceInterval: boolean;
   /** Confidence interval opacity (0-1) */
   confidenceIntervalOpacity: number;
+  /** Show R-squared value */
+  showRSquared: boolean;
 }
 
 export interface ErrorBarProperties {
@@ -40,6 +50,8 @@ export interface ErrorBarProperties {
   errorBarCapSize: number;
   /** Show error bars */
   showErrorBars: boolean;
+  /** Show in legend */
+  showInLegend: boolean;
   /** Error bar color (optional override) */
   errorBarColor?: string;
 }
@@ -102,14 +114,19 @@ export const DEFAULT_PLOT_PROPERTIES: PlotSpecificProperties = {
     showDataPoints: true,
     pointOpacity: 1,
     pointBorderWidth: 1,
+    pointBorderColor: 'rgba(0,0,0,0.3)',
+    useMultiColor: false,
+    singleColor: '#1f77b4',
     pointColor: '#1f77b4'
   },
   regression: {
     lineWidth: 2,
     lineOpacity: 0.85,
     lineColor: '#d62728',
+    lineStyle: 'solid',
     showConfidenceInterval: false,
-    confidenceIntervalOpacity: 0.3
+    confidenceIntervalOpacity: 0.3,
+    showRSquared: false
   },
   errorBar: {
     errorBarThickness: 1,
@@ -117,6 +134,7 @@ export const DEFAULT_PLOT_PROPERTIES: PlotSpecificProperties = {
     errorBarOpacity: 0.8,
     errorBarCapSize: 4,
     showErrorBars: true,
+    showInLegend: true,
     errorBarColor: '#1f77b4'
   },
   pointPlot: {
