@@ -41,15 +41,6 @@ export interface CategoryTrace {
 export const createCategoryScatterTraces = (config: CategoryPlotConfig): CategoryTrace[] => {
   const { rows, xCol, yCol, categoryCol, subType = 'Scatter Plot' } = config;
   
-  console.log(`🎯 Creating Category Scatter Traces:`, {
-    xCol,
-    yCol,
-    categoryCol,
-    subType,
-    hasRows: rows && rows.length > 0,
-    rowCount: rows?.length || 0
-  });
-  
   if (!rows || rows.length === 0) {
     console.warn('No data rows provided');
     return [];
@@ -212,37 +203,15 @@ const createXCategoryTraces = (
   categoryCol: string,
   colors: string[],
   symbols: string[],
-  subType: string
+  _subType: string // Prefix with underscore to indicate intentionally unused
 ): CategoryTrace[] => {
   // Group data by category
   const categoryData = groupByCategory(rows, categoryCol);
   const traces: CategoryTrace[] = [];
   const categories = Object.keys(categoryData);
   
-  // Determine if this is a line plot based on subType
-  const lowerSubType = subType.toLowerCase();
-  const isLinePlot = lowerSubType.includes('straight line') || 
-                     lowerSubType.includes('spline curve') || 
-                     lowerSubType.includes('step plot') || 
-                     lowerSubType.includes('mid point') ||
-                     lowerSubType.includes('vertical step') ||
-                     lowerSubType.includes('horizontal step') ||
-                     lowerSubType.includes('multiple straight') ||
-                     lowerSubType.includes('multiple spline') ||
-                     lowerSubType.includes('multiple vertical') ||
-                     lowerSubType.includes('multiple horizontal') ||
-                     lowerSubType.includes('area');
-  
   let colorIndex = 0;
   let symbolIndex = 0;
-  
-  console.log(`📈 X Category Traces:`, {
-    subType,
-    lowerSubType,
-    isLinePlot,
-    categoryCount: categories.length,
-    categories: categories.slice(0, 3) // Show first 3 categories
-  });
 
   // Create a trace for each category
   categories.forEach((category, categoryIndex) => {
@@ -255,64 +224,33 @@ const createXCategoryTraces = (
       
       if (xVal !== null) {
         xValues.push(xVal);
-        
-        if (isLinePlot) {
-          // For line plots, use discrete category positions starting from 1
-          yValues.push(categoryIndex + 1);
-        } else {
-          // For scatter plots, use jittered positions to avoid overlapping
-          const jitter = (Math.random() - 0.5) * 0.2; // ±0.1 jitter
-          yValues.push(categoryIndex + 1 + jitter);
-        }
+        // Use category index as Y position (with small jitter to avoid overlapping)
+        const jitter = (Math.random() - 0.5) * 0.2; // ±0.1 jitter
+        yValues.push(categoryIndex + jitter);
       }
     });
 
     if (xValues.length > 0) {
-      const traceColor = colors[colorIndex % colors.length];
-      
-      if (isLinePlot) {
-        // For line plots, use lines mode with proper line configuration
-        traces.push({
-          x: xValues,
-          y: yValues,
-          type: 'scatter',
-          mode: 'lines',
-          name: String(category),
+      traces.push({
+        x: xValues,
+        y: yValues,
+        type: 'scatter',
+        mode: 'markers',
+        name: String(category),
+        marker: {
+          color: colors[colorIndex % colors.length],
+          symbol: symbols[symbolIndex % symbols.length],
+          size: 8,
           line: {
-            color: traceColor,
-            width: 2,
-            shape: 'linear'
-          },
-          marker: {
-            size: 0, // Hide markers for clean line plots
-            opacity: 0
-          },
-          showlegend: true
-        });
-      } else {
-        // For scatter plots, use markers mode
-        traces.push({
-          x: xValues,
-          y: yValues,
-          type: 'scatter',
-          mode: 'markers',
-          name: String(category),
-          marker: {
-            color: traceColor,
-            symbol: symbols[symbolIndex % symbols.length],
-            size: 8,
-            line: {
-              width: 1,
-              color: 'rgba(0,0,0,0.3)'
-            }
-          },
-          showlegend: true
-        });
-        
-        symbolIndex++;
-      }
+            width: 1,
+            color: 'rgba(0,0,0,0.3)'
+          }
+        },
+        showlegend: true
+      });
 
       colorIndex++;
+      symbolIndex++;
     }
   });
 
@@ -329,37 +267,15 @@ const createYCategoryTraces = (
   categoryCol: string,
   colors: string[],
   symbols: string[],
-  subType: string
+  _subType: string // Prefix with underscore to indicate intentionally unused
 ): CategoryTrace[] => {
   // Group data by category
   const categoryData = groupByCategory(rows, categoryCol);
   const traces: CategoryTrace[] = [];
   const categories = Object.keys(categoryData);
   
-  // Determine if this is a line plot based on subType
-  const lowerSubType = subType.toLowerCase();
-  const isLinePlot = lowerSubType.includes('straight line') || 
-                     lowerSubType.includes('spline curve') || 
-                     lowerSubType.includes('step plot') || 
-                     lowerSubType.includes('mid point') ||
-                     lowerSubType.includes('vertical step') ||
-                     lowerSubType.includes('horizontal step') ||
-                     lowerSubType.includes('multiple straight') ||
-                     lowerSubType.includes('multiple spline') ||
-                     lowerSubType.includes('multiple vertical') ||
-                     lowerSubType.includes('multiple horizontal') ||
-                     lowerSubType.includes('area');
-  
   let colorIndex = 0;
   let symbolIndex = 0;
-  
-  console.log(`📊 Y Category Traces:`, {
-    subType,
-    lowerSubType,
-    isLinePlot,
-    categoryCount: categories.length,
-    categories: categories.slice(0, 3) // Show first 3 categories
-  });
 
   // Create a trace for each category
   categories.forEach((category, categoryIndex) => {
@@ -371,64 +287,34 @@ const createYCategoryTraces = (
       const yVal = parseValue(row[yCol]);
       
       if (yVal !== null) {
-        if (isLinePlot) {
-          // For line plots, use discrete category positions starting from 1
-          xValues.push(categoryIndex + 1);
-        } else {
-          // For scatter plots, use jittered positions to avoid overlapping
-          const jitter = (Math.random() - 0.5) * 0.2; // ±0.1 jitter
-          xValues.push(categoryIndex + 1 + jitter);
-        }
+        // Use category index as X position (with small jitter to avoid overlapping)
+        const jitter = (Math.random() - 0.5) * 0.2; // ±0.1 jitter
+        xValues.push(categoryIndex + jitter);
         yValues.push(yVal);
       }
     });
 
     if (yValues.length > 0) {
-      const traceColor = colors[colorIndex % colors.length];
-      
-      if (isLinePlot) {
-        // For line plots, use lines mode with proper line configuration
-        traces.push({
-          x: xValues,
-          y: yValues,
-          type: 'scatter',
-          mode: 'lines',
-          name: String(category),
+      traces.push({
+        x: xValues,
+        y: yValues,
+        type: 'scatter',
+        mode: 'markers',
+        name: String(category),
+        marker: {
+          color: colors[colorIndex % colors.length],
+          symbol: symbols[symbolIndex % symbols.length],
+          size: 8,
           line: {
-            color: traceColor,
-            width: 2,
-            shape: 'linear'
-          },
-          marker: {
-            size: 0, // Hide markers for clean line plots
-            opacity: 0
-          },
-          showlegend: true
-        });
-      } else {
-        // For scatter plots, use markers mode
-        traces.push({
-          x: xValues,
-          y: yValues,
-          type: 'scatter',
-          mode: 'markers',
-          name: String(category),
-          marker: {
-            color: traceColor,
-            symbol: symbols[symbolIndex % symbols.length],
-            size: 8,
-            line: {
-              width: 1,
-              color: 'rgba(0,0,0,0.3)'
-            }
-          },
-          showlegend: true
-        });
-        
-        symbolIndex++;
-      }
+            width: 1,
+            color: 'rgba(0,0,0,0.3)'
+          }
+        },
+        showlegend: true
+      });
 
       colorIndex++;
+      symbolIndex++;
     }
   });
 
@@ -457,7 +343,7 @@ export const getCategoryPlotLayout = (
     layout.yaxis = {
       ...layout.yaxis,
       tickmode: 'array',
-      tickvals: categories.map((_, index) => index + 1), // Start from 1 instead of 0
+      tickvals: categories.map((_, index) => index),
       ticktext: categories,
       title: categoryCol
     };
@@ -472,7 +358,7 @@ export const getCategoryPlotLayout = (
     layout.xaxis = {
       ...layout.xaxis,
       tickmode: 'array',
-      tickvals: categories.map((_, index) => index + 1), // Start from 1 instead of 0
+      tickvals: categories.map((_, index) => index),
       ticktext: categories,
       title: categoryCol
     };

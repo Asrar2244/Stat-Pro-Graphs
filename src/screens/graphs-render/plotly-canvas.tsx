@@ -225,7 +225,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       
       if (isCategoryPlot && isCategoryFormat) {
         
-        // For all category formats, use the specialized category plot utility
+        // For XY Category format, use the specialized category plot utility
         if (normalizedFormat === 'XY Category') {
           categoryPlotResult = plotWithCategory({
             rows,
@@ -235,36 +235,19 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             subType: graphConfig?.subType || 'Scatter Plot',
             liveProps
           });
-        } else if (normalizedFormat === 'X Category') {
-          categoryPlotResult = plotWithCategory({
-            rows,
-            xCol: xNames?.[0],
-            yCol: undefined, // No Y column for X Category format
-            categoryCol: categoryNames?.[0],
-            subType: graphConfig?.subType || 'Scatter Plot',
-            liveProps
-          });
-        } else if (normalizedFormat === 'Y Category') {
-          categoryPlotResult = plotWithCategory({
-            rows,
-            xCol: undefined, // No X column for Y Category format
-            yCol: yNames?.[0],
-            categoryCol: categoryNames?.[0],
-            subType: graphConfig?.subType || 'Scatter Plot',
-            liveProps
-          });
-        }
-        
-        // Add category traces if we have results
-        if (categoryPlotResult && categoryPlotResult.traces) {
+          
+          // Add category traces
           traces.push(...categoryPlotResult.traces);
+        } else {
+          // For X Category and Y Category formats, use standard scatter with category styling
+          // The processedSeries already contains the correct data with category grouping
         }
       }
 
       // Create traces for each series with performance optimization
-      // Skip this if we already have category traces from category plot utility
-      // Category formats use specialized category plot functions
-      if (!(isCategoryPlot && isCategoryFormat)) {
+      // Skip this only if we already have category traces from XY Category format
+      // X Category and Y Category formats need standard processing for regression lines
+      if (!(isCategoryPlot && isCategoryFormat && normalizedFormat === 'XY Category')) {
         console.log(`🔍 Processing ${processedSeries.length} series for graph type: ${graphConfig?.subType}`);
         processedSeries.forEach(({ xv, yv, label, errorBarVariable }, seriesIndex) => {
         const startTime = performance.now();
