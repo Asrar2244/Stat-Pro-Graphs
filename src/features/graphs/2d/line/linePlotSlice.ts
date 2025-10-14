@@ -42,7 +42,11 @@ export type DataFormat =
   | 'Many X'
   | 'Many Y'
   | 'X Many Y'
-  | 'Y Many X';
+  | 'Y Many X'
+  // Category formats
+  | 'XY Category'
+  | 'X Category'
+  | 'Y Category';
 
 /**
  * Variable interface

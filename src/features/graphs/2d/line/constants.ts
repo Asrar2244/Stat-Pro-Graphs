@@ -44,6 +44,10 @@ export const DATA_FORMATS: DataFormat[] = [
   'Many Y',
   'X Many Y',
   'Y Many X',
+  // Category formats
+  'XY Category',
+  'X Category',
+  'Y Category',
 ];
 
 /**
@@ -54,13 +58,13 @@ export const SUB_TYPE_DATA_FORMATS: Record<LineSubType, DataFormat[]> = {
   'Simple Straight Line': ['XY Pairs', 'Single X', 'Single Y'],
   
   // B) Multiple Straight Lines
-  'Multiple Straight Lines': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X'],
+  'Multiple Straight Lines': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X', 'XY Category', 'X Category', 'Y Category'],
   
   // C) Simple Spline Curve
   'Simple Spline Curve': ['XY Pairs', 'Single X', 'Single Y'],
   
   // D) Multiple Spline Curves
-  'Multiple Spline Curves': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X'],
+  'Multiple Spline Curves': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X', 'XY Category', 'X Category', 'Y Category'],
   
   // E) Simple Vertical Mid Point Step Plot
   'Simple Vertical Mid Point Step Plot': ['XY Pairs', 'Single X', 'Single Y'],
@@ -69,13 +73,13 @@ export const SUB_TYPE_DATA_FORMATS: Record<LineSubType, DataFormat[]> = {
   'Simple Vertical Step Plot': ['XY Pairs', 'Single X', 'Single Y'],
   
   // G) Multiple Vertical Step Plot
-  'Multiple Vertical Step Plot': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X'],
+  'Multiple Vertical Step Plot': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X', 'XY Category', 'X Category', 'Y Category'],
   
   // H) Multiple Horizontal Step Plot
-  'Multiple Horizontal Step Plot': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X'],
+  'Multiple Horizontal Step Plot': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X', 'XY Category', 'X Category', 'Y Category'],
   
   // I) Multiple Vertical Mid Point Step Plot
-  'Multiple Vertical Mid Point Step Plot': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X'],
+  'Multiple Vertical Mid Point Step Plot': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X', 'XY Category', 'X Category', 'Y Category'],
   
   // J) Simple Horizontal Mid Point Step Plot
   'Simple Horizontal Mid Point Step Plot': ['XY Pairs', 'Single X', 'Single Y'],
@@ -84,7 +88,7 @@ export const SUB_TYPE_DATA_FORMATS: Record<LineSubType, DataFormat[]> = {
   'Simple Horizontal Step Plot': ['XY Pairs', 'Single X', 'Single Y'],
   
   // L) Multiple Horizontal Mid Point Step Plot
-  'Multiple Horizontal Mid Point Step Plot': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X'],
+  'Multiple Horizontal Mid Point Step Plot': ['XY Pairs', 'Many X', 'Many Y', 'X Many Y', 'Y Many X', 'XY Category', 'X Category', 'Y Category'],
 };
 
 /**

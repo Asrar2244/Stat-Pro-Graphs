@@ -8,7 +8,7 @@ import { tokens } from '@fluentui/react-components';
 export const useVariableSelectionStyles = () => {
   const variableSelectionContainerStyles = useMemo(() => ({
     display: 'grid', // Changed from flex to grid like line plot
-    gridTemplateColumns: '1fr 1fr 1fr', // Three-column layout like line plot
+    gridTemplateColumns: '1fr 1fr 1fr 1fr', // Four-column layout for Category/Error Bar
     gap: 0, // Changed from tokens.spacingHorizontalM to 0 like line plot
     minHeight: '300px'
   }), []);

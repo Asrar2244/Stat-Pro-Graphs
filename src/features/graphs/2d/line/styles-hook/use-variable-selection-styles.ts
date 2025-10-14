@@ -8,7 +8,7 @@ import { tokens } from '@fluentui/react-components';
 export const useVariableSelectionStyles = () => {
   const variableSelectionContainerStyles = useMemo(() => ({
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr',
+    gridTemplateColumns: '1fr 1fr 1fr 1fr', // Support 4 columns for Category/Error Bar
     gap: 0,
     minHeight: '300px'
   }), []);

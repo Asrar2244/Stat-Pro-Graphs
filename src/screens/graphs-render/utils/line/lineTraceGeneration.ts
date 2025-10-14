@@ -30,11 +30,15 @@ export const createLineTrace = (config: LineTraceConfig): any => {
   // Specific step plot types
   const isVerticalStepPlot = lowerSubType.includes('vertical step');
   const isHorizontalStepPlot = lowerSubType.includes('horizontal step');
-  const isMidPointStepPlot = lowerSubType.includes('mid point');
+  const isMidPointStepPlot = lowerSubType.includes('mid point') || lowerSubType.includes('midpoint');
 
   // Multiple vs Simple
   const isMultipleSeries = lowerSubType.includes('multiple');
   const isSimpleSeries = lowerSubType.includes('simple');
+
+  // Use original data (midpoint logic removed for now)
+  let processedX = xv;
+  let processedY = yv;
 
   // Determine line shape based on subType
   let lineShape = 'linear';
@@ -45,8 +49,6 @@ export const createLineTrace = (config: LineTraceConfig): any => {
       lineShape = 'hv'; // Horizontal then vertical steps
     } else if (isHorizontalStepPlot) {
       lineShape = 'vh'; // Vertical then horizontal steps
-    } else if (isMidPointStepPlot) {
-      lineShape = 'hvh'; // Horizontal-vertical-horizontal steps for mid-point
     } else {
       lineShape = 'hv'; // Default to hv for step plots
     }
@@ -58,13 +60,16 @@ export const createLineTrace = (config: LineTraceConfig): any => {
     mode = 'lines+markers';
   } else if (isMarkersOnly) {
     mode = 'markers';
+  } else if (isStepPlot) {
+    // Step plots typically show markers at data points like SigmaPlot
+    mode = 'lines+markers';
   } else if (isLinePlot && !isLineMarkers) {
     mode = 'lines'; // Lines only, no markers
   }
 
   let traceConfig: any = {
-    x: xv,
-    y: yv,
+    x: processedX, // Use processed data for midpoint plots
+    y: processedY, // Use processed data for midpoint plots
     name: label,
     type: 'scatter',
     mode: mode,
@@ -76,8 +81,8 @@ export const createLineTrace = (config: LineTraceConfig): any => {
     }
   };
 
-  // Configure markers only when explicitly requested
-  if (showMarkers && (mode.includes('markers') || mode === 'lines+markers')) {
+  // Configure markers for step plots or when explicitly requested
+  if (isStepPlot || (showMarkers && (mode.includes('markers') || mode === 'lines+markers'))) {
     traceConfig.marker = {
       color: color,
       symbol: symbol,
@@ -103,7 +108,7 @@ export const createLineTrace = (config: LineTraceConfig): any => {
     if (isAsymmetricErrorBar) {
       // For asymmetric error bars, we need separate upper and lower values
       if (errorCalculationUpper && errorCalculationLower) {
-        // Use the calculation methods to get error values
+        // Use the calculation methods to get error values (use original data, not processed)
         const upperValues = getErrorBarValues(xv, yv, errorBarData, errorCalculationUpper, rows);
         const lowerValues = getErrorBarValues(xv, yv, errorBarData, errorCalculationLower, rows);
         
@@ -165,6 +170,7 @@ export const createLineTrace = (config: LineTraceConfig): any => {
 
   console.log(`🎨 Line Plot Trace Created:`, {
     label,
+    subType,
     color,
     lineStyle,
     lineWidth,
@@ -172,8 +178,12 @@ export const createLineTrace = (config: LineTraceConfig): any => {
     showMarkers,
     mode,
     lineShape,
+    isStepPlot,
+    isVerticalStepPlot,
+    isHorizontalStepPlot,
     hasErrorBars: isErrorBar,
-    markersConfigured: showMarkers && (mode.includes('markers') || mode === 'lines+markers')
+    markersConfigured: showMarkers && (mode.includes('markers') || mode === 'lines+markers'),
+    dataPoints: xv.length
   });
 
   return traceConfig;

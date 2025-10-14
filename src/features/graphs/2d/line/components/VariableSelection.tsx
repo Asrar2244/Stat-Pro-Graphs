@@ -378,7 +378,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
           </div>
         )}
 
-        {/* Category Variables - Last position (if needed) */}
+        {/* Category Variables - Fourth position (if needed) */}
         {requireCategory && (
           <div className={classes.columnNoRightBorder} style={columnStyles}>
             <div className={classes.columnHeader}>
