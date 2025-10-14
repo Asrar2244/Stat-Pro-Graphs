@@ -1,14 +1,11 @@
 /**
- * Trace generation utilities for plotly graphs
- * Handles creation of different types of traces based on plot configuration
+ * Scatter plot specific trace generation utilities
+ * Handles creation of scatter plot traces with error bars, point plots, and dot plots
  */
 
-import { calculateErrorValues } from './errorCalculations';
-import { computeLinearRegression, createRegressionTraces } from './regressionAnalysis';
-import { createLineTrace, LineTraceConfig } from './line/lineTraceGeneration';
-import { parseLinePlotSubType, getLinePlotMode, getLineShape } from './line/linePlotProperties';
+import { calculateErrorValues } from '../errorCalculations';
 
-export interface TraceConfig {
+export interface ScatterTraceConfig {
   xv: number[];
   yv: number[];
   label: string;
@@ -30,116 +27,10 @@ export interface TraceConfig {
   rows: any[];
 }
 
-export interface SeriesConfig {
-  colors: string[];
-  symbols: string[];
-}
-
 /**
- * Get series color and symbol
+ * Create scatter plot trace with scatter-specific configurations
  */
-export const getSeriesConfig = (): SeriesConfig => {
-  // SigmaPlot-style professional color palette
-  const SERIES_COLORS = [
-    '#1f77b4', // Professional blue
-    '#ff7f0e', // Professional orange  
-    '#2ca02c', // Professional green
-    '#d62728', // Professional red
-    '#9467bd', // Professional purple
-    '#8c564b', // Professional brown
-    '#e377c2', // Professional pink
-    '#7f7f7f', // Professional gray
-    '#bcbd22', // Professional olive
-    '#17becf', // Professional cyan
-    '#ff9896', // Light red
-    '#98df8a', // Light green
-    '#ffbb78', // Light orange
-    '#c5b0d5', // Light purple
-    '#c49c94', // Light brown
-    '#f7b6d3', // Light pink
-    '#c7c7c7', // Light gray
-    '#dbdb8d', // Light olive
-    '#9edae5', // Light cyan
-    '#aec7e8'  // Light blue
-  ];
-  
-  // SigmaPlot-style marker symbols
-  const SERIES_SYMBOLS = [
-    'circle',      // Standard circle
-    'square',      // Square
-    'diamond',     // Diamond
-    'triangle-up', // Triangle up
-    'triangle-down', // Triangle down
-    'triangle-left', // Triangle left
-    'triangle-right', // Triangle right
-    'pentagon',    // Pentagon
-    'hexagon',     // Hexagon
-    'star',        // Star
-    'cross',       // Cross
-    'x'            // X mark
-  ];
-  
-  return {
-    colors: SERIES_COLORS,
-    symbols: SERIES_SYMBOLS
-  };
-};
-
-/**
- * Create line series trace with various line plot configurations
- */
-export const createLinePlotTrace = (config: TraceConfig): any => {
-  const {
-    xv, yv, label, color, symbol, subType, symbolValue,
-    errorCalculationUpper, errorCalculationLower, errorBarVariable, errorBarData, 
-    errorBarVariableX, errorBarVariableY, errorBarDataX, errorBarDataY, errorBarColor, rows
-  } = config;
-  
-  // Parse line plot specific configuration from subType
-  const lineStyle = parseLinePlotSubType(subType);
-  
-  // Create line trace configuration
-  const lineConfig: LineTraceConfig = {
-    xv,
-    yv,
-    label,
-    color,
-    symbol,
-    subType,
-    symbolValue,
-    errorCalculationUpper,
-    errorCalculationLower,
-    errorBarVariable,
-    errorBarData,
-    errorBarVariableX,
-    errorBarVariableY,
-    errorBarDataX,
-    errorBarDataY,
-    errorBarColor,
-    rows,
-    lineStyle: lineStyle.lineStyle || 'solid',
-    lineWidth: lineStyle.lineWidth || 2,
-    markerSize: lineStyle.markerSize || 8,
-    showMarkers: lineStyle.showMarkers === true // Only show markers if explicitly set to true
-  };
-  
-  console.log(`📊 Creating Line Plot Trace:`, {
-    label,
-    subType,
-    lineStyle: lineConfig.lineStyle,
-    lineWidth: lineConfig.lineWidth,
-    markerSize: lineConfig.markerSize,
-    showMarkers: lineConfig.showMarkers,
-    parsedStyle: lineStyle
-  });
-  
-  return createLineTrace(lineConfig);
-};
-
-/**
- * Create scatter series trace with error bars
- */
-export const createScatterTrace = (config: TraceConfig): any => {
+export const createScatterTrace = (config: ScatterTraceConfig): any => {
   const {
     xv, yv, label, color, symbol, subType, symbolValue,
     errorCalculationUpper, errorCalculationLower, errorBarVariable, errorBarData, 
@@ -481,142 +372,34 @@ export const createScatterTrace = (config: TraceConfig): any => {
 };
 
 /**
- * Create dotted lines from dots to axes for dot plots
+ * Create dot plot dotted lines for reference lines
  */
 export const createDotPlotDottedLines = (
-  xv: number[],
-  yv: number[],
-  color: string,
-  subType: string,
-  errorBarColor?: string
+  xData: number[], 
+  yData: number[], 
+  color: string = '#888888'
 ): any[] => {
-  const isDotPlot = subType.toLowerCase().includes('dot plot');
-  if (!isDotPlot) return [];
+  const lines: any[] = [];
   
-  const traces: any[] = [];
+  // Create horizontal reference lines at each unique Y value
+  const uniqueYValues = [...new Set(yData)].sort((a, b) => a - b);
   
-  // Determine which axis to draw lines to based on dot plot type
-  const isVerticalDotPlot = subType.toLowerCase().includes('vertical');
-  const isHorizontalDotPlot = subType.toLowerCase().includes('horizontal');
-  
-  if (isVerticalDotPlot || (!isHorizontalDotPlot && !isVerticalDotPlot)) {
-    // Vertical dot plot - draw lines to X axis (y=0)
-    xv.forEach((x, i) => {
-      traces.push({
-        x: [x, x],
-        y: [0, yv[i]],
-        type: 'scatter',
-        mode: 'lines',
-        line: {
-          color: color, // Use series color directly for dot plot dotted lines
-          width: 1,
-          dash: 'dot',
-          opacity: 0.3
-        },
-        showlegend: false,
-        hoverinfo: 'skip'
-      });
+  uniqueYValues.forEach((yValue, index) => {
+    lines.push({
+      type: 'scatter',
+      mode: 'lines',
+      x: [Math.min(...xData), Math.max(...xData)],
+      y: [yValue, yValue],
+      line: {
+        color: color,
+        width: 1,
+        dash: 'dot'
+      },
+      showlegend: false,
+      hoverinfo: 'skip',
+      name: `Reference Line ${index + 1}`
     });
-  } else if (isHorizontalDotPlot) {
-    // Horizontal dot plot - draw lines to Y axis (x=0)
-    yv.forEach((y, i) => {
-      traces.push({
-        x: [0, xv[i]],
-        y: [y, y],
-        type: 'scatter',
-        mode: 'lines',
-        line: {
-          color: color, // Use series color directly for dot plot dotted lines
-          width: 1,
-          dash: 'dot',
-          opacity: 0.3
-        },
-        showlegend: false,
-        hoverinfo: 'skip'
-      });
-    });
-  }
-  
-  return traces;
-};
-
-/**
- * Create trace based on plot type - automatically determines line vs scatter
- */
-export const createTrace = (config: TraceConfig): any => {
-  const { subType } = config;
-  const lowerSubType = subType.toLowerCase();
-  
-  // Check if this is a line plot based on specific line plot subTypes
-  const isLinePlot = lowerSubType.includes('straight line') || 
-                     lowerSubType.includes('spline curve') || 
-                     lowerSubType.includes('step plot') || 
-                     lowerSubType.includes('mid point') ||
-                     lowerSubType.includes('vertical step') ||
-                     lowerSubType.includes('horizontal step') ||
-                     lowerSubType.includes('multiple straight') ||
-                     lowerSubType.includes('multiple spline') ||
-                     lowerSubType.includes('multiple vertical') ||
-                     lowerSubType.includes('multiple horizontal');
-  
-  if (isLinePlot) {
-    console.log(`📈 Creating Line Plot Trace for: ${config.label}`, {
-      subType,
-      lowerSubType,
-      isLinePlot
-    });
-    return createLinePlotTrace(config);
-  } else {
-    console.log(`📊 Creating Scatter Plot Trace for: ${config.label}`, {
-      subType,
-      lowerSubType,
-      isLinePlot
-    });
-    return createScatterTrace(config);
-  }
-};
-
-/**
- * Create multiple traces for different plot types
- */
-export const createTraces = (configs: TraceConfig[]): any[] => {
-  return configs.map(config => createTrace(config));
-};
-
-/**
- * Create regression traces if needed
- */
-export const createRegressionTracesIfNeeded = (
-  xv: number[], 
-  yv: number[], 
-  label: string, 
-  color: string, 
-  subType: string,
-  showConfidenceInterval: boolean = true,
-  confidenceIntervalOpacity: number = 0.2
-): any[] => {
-  const isRegression = subType.toLowerCase().includes('regression');
-  console.log(`🔍 createRegressionTracesIfNeeded for "${label}":`, {
-    subType,
-    isRegression,
-    dataLength: xv.length,
-    hasValidData: xv.length > 0 && yv.length > 0
   });
   
-  if (!isRegression) {
-    console.log(`❌ Not a regression subType: ${subType}`);
-    return [];
-  }
-  
-  const regressionResult = computeLinearRegression(xv, yv);
-  console.log(`📊 Regression result for "${label}":`, regressionResult ? 'SUCCESS' : 'FAILED');
-  
-  if (!regressionResult) {
-    console.log(`❌ No regression result for "${label}" - insufficient data or invalid values`);
-    return [];
-  }
-  
-  const traces = createRegressionTraces(xv, yv, label, color, subType, regressionResult, showConfidenceInterval, confidenceIntervalOpacity);
-  console.log(`✅ Created ${traces.length} regression traces for "${label}"`);
-  return traces;
+  return lines;
 };

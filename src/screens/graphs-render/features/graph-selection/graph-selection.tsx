@@ -12,6 +12,10 @@ const ScatterPlotGraph = lazy(() =>
   import('../plot-types/scatter-plot/index'),
 );
 
+const LinePlotGraph = lazy(() =>
+  import('../plot-types/line-plot/index'),
+);
+
 interface IGraphSelection extends IToolBar {
   id: number;
   showHistory: boolean;
@@ -22,6 +26,7 @@ interface IGraphSelection extends IToolBar {
 const loadByType = (graphType?: string) => {
   const t = (graphType || '').toLowerCase();
   if (t.includes('scatter')) return <ScatterPlotGraph />;
+  if (t.includes('line')) return <LinePlotGraph />;
   return <></>;
 };
 

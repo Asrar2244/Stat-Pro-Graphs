@@ -55,7 +55,12 @@ const PairedTestsAnalysis = lazy(() => import('./advanced').then((module) => ({ 
 
 // Scatter Plot Modal
 const ScatterPlotModal = lazy(() =>
-  import('../../features/graphs/ScatterPlot').then((m) => ({ default: m.ScatterPlotModal })),
+  import('../../features/graphs/2d/scatter').then((m) => ({ default: m.ScatterPlotModal })),
+);
+
+// Line Plot Modal
+const LinePlotModal = lazy(() =>
+  import('../../features/graphs/2d/line').then((m) => ({ default: m.LinePlotModal })),
 );
 
 export const withMenuEvents = <P extends object>(
@@ -162,6 +167,61 @@ const MenuSelector: FC<{
     return <ScatterPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
+  // Line Plot wrapper with real data integration
+  const LineWrapper: FC<IModal> = (m) => {
+    const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+    const projectNames = Object.keys(projects);
+    const { openNewTabAction } = useMenuCodeExecutor();
+    const { setRenderLatestRun } = useStartProStore();
+    const { t } = useTranslation('common');
+    
+    // For now, use empty datasets array - this would be populated based on selected project
+    const datasets: string[] = [];
+    
+    const onCreateGraph = async (config: any) => {
+      console.log('Creating Line Plot with config:', config);
+      try {
+        const workspacePath = projects[config.selectedProject]?.workspacePath;
+        // Persist a run immediately so history shows up
+        const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
+        await insertGraphRun(workspacePath, {
+          name: config?.subType || 'Line Plot',
+          createdAt: new Date().toISOString(),
+          config: { graphConfig: config, workspacePath },
+          tabName: config?.selectedProject || '',
+          graphType: config?.graphType || 'Line Plot',
+          properties: {},
+        });
+        
+        // Open the Graphs output screen under Explorer for the selected project
+        openNewTabAction({ 
+          id: GRAPHS, // Use GRAPHS constant
+          isEmptyDataView: false,
+          extraConfig: {
+            tabName: projects[config.selectedProject]?.workspacePath, // Pass workspacePath as tabName
+            name: config.selectedProject, // Pass project name
+            type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }), // Pass type
+            bareType: GRAPHS, // Pass bareType
+            id: projects[config.selectedProject]?.id, // Pass project ID
+            lastModified: new Date().toISOString(), // Current timestamp
+            isActive: 1, // Set as active
+            workspacePath: projects[config.selectedProject]?.workspacePath, // Pass workspacePath
+          }
+        });
+        setRenderLatestRun(true);
+        
+        // TODO: Pass the line plot configuration to the graph tab
+        // This would typically involve setting some state or context
+        // that the graphs-render component can access to configure the plot
+        
+      } catch (error) {
+        console.error('Error creating Line Plot:', error);
+      }
+    };
+
+    return <LinePlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
+  };
+
   const runSelector = () => {
     switch (selector) {
       case exporters.importBusinessObject:
@@ -194,6 +254,8 @@ const MenuSelector: FC<{
         return <PairwiseComparisonOfModule {...modal} />;
       case 'open-scatter-plot-modal':
         return <ScatterWrapper {...modal} />;
+      case 'open-line-plot-modal':
+        return <LineWrapper {...modal} />;
       case exporters.tests:
         return <TestsAnalysis {...modal} />
       case exporters.options:

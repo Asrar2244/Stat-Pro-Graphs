@@ -2,7 +2,7 @@ import { FC } from 'react';
 import { Button, Text, tokens } from '@fluentui/react-components';
 import { MdCheckCircle, MdInfoOutline, MdOutlineRemove, MdKeyboardDoubleArrowRight, MdTrendingDown, MdTrendingUp } from 'react-icons/md';
 import { getRequiredErrorBarCount } from '../utils/formatRequirements';
-import { useScatterPlotStore } from '../scatterPlotSlice';
+import { useLinePlotStore } from '../linePlotSlice';
 import { useVariableSelectionStyles } from '../styles-hook';
 
 /**
@@ -113,7 +113,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
   } = props;
 
   // Wire variable assignment to the store so the modal always has X/Y at Create time
-  const { setXVariable, setYVariable } = useScatterPlotStore();
+  const { setXVariable, setYVariable } = useLinePlotStore();
   
   const {
     variableSelectionContainerStyles,
@@ -167,7 +167,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
           <Text size={400} weight="semibold" className={classes.variableHeaderTitle}>Variable Assignment</Text>
         </div>
         <Text size={200} className={classes.variableHeaderSubtitle}>
-          Select variables for your scatter plot. Use the arrows to assign variables to X and Y axes.
+          Select variables for your line plot. Use the arrows to assign variables to X and Y axes.
         </Text>
       </div>
 
@@ -175,7 +175,6 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
         {/* Available Variables - Leftmost position */}
         <div className={classes.column} style={columnStyles}>
           <div className={classes.columnHeader}>
-            <MdInfoOutline size={18} color={tokens.colorNeutralForeground2} />
             <Text size={300} weight="bold" className={classes.columnHeaderTitle}>AVAILABLE VARIABLE(S)</Text>
             <div className={classes.columnHeaderBadge}>{availableList.size}</div>
           </div>
@@ -263,7 +262,6 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
         {requireX && (
           <div className={classes.column} style={columnStyles}>
             <div className={classes.columnHeader}>
-              <MdTrendingDown size={18} color={tokens.colorNeutralForeground2} />
               <Text size={300} weight="bold" className={classes.columnHeaderTitle}>
                 {showVariableSelection && dataFormat === 'Single Y' ? 'AVAILABLE VARIABLE(S)' : 'X VARIABLE(S)'}
               </Text>
@@ -304,7 +302,6 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
         {requireY && (
           <div className={classes.column} style={columnStyles}>
             <div className={classes.columnHeader}>
-              <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
               <Text size={300} weight="bold" className={classes.columnHeaderTitle}>
                 {showVariableSelection && dataFormat === 'Single X' ? 'AVAILABLE VARIABLE(S)' : 'Y VARIABLE(S)'}
               </Text>
@@ -345,7 +342,6 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
         {requireErrorBar && (
           <div className={classes.column} style={columnStyles}>
             <div className={classes.columnHeader}>
-              <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
               <Text size={300} weight="bold" className={classes.columnHeaderTitle}>ERROR BAR VARIABLE(S)</Text>
               <div className={classes.columnHeaderBadge}>{errorBarVariableList?.size || 0}</div>
             </div>
@@ -387,7 +383,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
           <div className={classes.columnNoRightBorder} style={columnStyles}>
             <div className={classes.columnHeader}>
               <MdTrendingUp size={18} color={tokens.colorNeutralForeground2} />
-              <Text size={300} weight="bold" className={classes.columnHeaderTitle}>CATEGORY VARIABLE(S)</Text>
+              <Text size={300} weight="semibold" className={classes.columnHeaderTitle}>Category Variables</Text>
               <div className={classes.columnHeaderBadge}>{categoryVariableList?.size || 0}</div>
             </div>
 

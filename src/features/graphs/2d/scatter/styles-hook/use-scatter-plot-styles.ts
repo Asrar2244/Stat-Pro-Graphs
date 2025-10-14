@@ -6,10 +6,8 @@ export const useScatterPlotStyles = makeStyles({
     flexDirection: 'column',
     gap: tokens.spacingVerticalS,
     backgroundColor: tokens.colorNeutralBackground1,
-    borderRadius: tokens.borderRadiusLarge,
-    boxShadow: tokens.shadow8,
-    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke1),
-    ...shorthands.padding(tokens.spacingVerticalM),
+    borderRadius: tokens.borderRadiusMedium,
+    ...shorthands.padding(0), // Changed from tokens.spacingVerticalM to match line plot
   },
   header: {
     backgroundColor: tokens.colorBrandBackground,
@@ -36,7 +34,7 @@ export const useScatterPlotStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackground2,
     borderRadius: tokens.borderRadiusMedium,
     boxShadow: tokens.shadow2,
-    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
+    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2), // Added border like line plot
     ...shorthands.padding(tokens.spacingVerticalS),
   },
   dropdown: {
@@ -115,9 +113,9 @@ export const useScatterPlotStyles = makeStyles({
   columnHeader: {
     display: 'flex',
     alignItems: 'center',
-    gap: tokens.spacingHorizontalXS,
-    marginBottom: tokens.spacingVerticalM,
-    ...shorthands.padding(0, 0, tokens.spacingVerticalS),
+    justifyContent: 'space-between',
+    marginBottom: tokens.spacingVerticalS,
+    paddingBottom: tokens.spacingVerticalXS, // Fixed from shorthands.paddingBottom like line plot
     ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
   },
   columnHeaderTitle: {

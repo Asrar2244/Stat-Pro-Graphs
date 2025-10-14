@@ -6,7 +6,7 @@ export const graph2DOptions: GraphOption[] = [
     label: 'Basic',
     children: [
       { label: 'Scatter Plot', value: 'scatter', execute: 'open-scatter-plot-modal', icon: MdScatterPlot },
-      { label: 'Line Chart', value: 'line', execute: 'line-chart', icon: MdShowChart },
+      { label: 'Line Chart', value: 'line', execute: 'open-line-plot-modal', icon: MdShowChart },
       { label: 'Bar Chart', value: 'bar', execute: 'bar-chart', icon: MdBarChart },
       { label: 'Area Chart', value: 'area', execute: 'area-chart', icon: MdAreaChart },
     ]

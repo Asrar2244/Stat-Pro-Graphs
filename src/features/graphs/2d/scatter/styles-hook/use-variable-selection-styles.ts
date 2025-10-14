@@ -7,15 +7,18 @@ import { tokens } from '@fluentui/react-components';
  */
 export const useVariableSelectionStyles = () => {
   const variableSelectionContainerStyles = useMemo(() => ({
-    display: 'flex',
-    gap: tokens.spacingHorizontalM,
-    flexWrap: 'wrap',
-    alignItems: 'flex-start'
+    display: 'grid', // Changed from flex to grid like line plot
+    gridTemplateColumns: '1fr 1fr 1fr', // Three-column layout like line plot
+    gap: 0, // Changed from tokens.spacingHorizontalM to 0 like line plot
+    minHeight: '300px'
   }), []);
 
   const columnStyles = useMemo(() => ({
-    flex: '1',
-    minWidth: '200px'
+    backgroundColor: tokens.colorNeutralBackground3, // Added background color like line plot
+    padding: tokens.spacingVerticalM, // Added padding like line plot
+    borderRight: `1px solid ${tokens.colorNeutralStroke2}`, // Added border like line plot
+    display: 'flex', // Added display flex like line plot
+    flexDirection: 'column' // Added flex direction like line plot
   }), []);
 
   const disabledSelectionStyles = useMemo(() => ({
@@ -30,21 +33,22 @@ export const useVariableSelectionStyles = () => {
   }), []);
 
   const removeButtonStyles = useMemo(() => ({
-    color: '#8a8886',
-    borderColor: '#8a8886',
+    color: tokens.colorPaletteRedForeground1, // Updated to use Fluent UI tokens like line plot
+    borderColor: tokens.colorPaletteRedBorder1, // Updated to use Fluent UI tokens like line plot
+    backgroundColor: tokens.colorPaletteRedBackground1, // Updated to use Fluent UI tokens like line plot
     transition: 'all 0.2s ease'
   }), []);
 
   const removeButtonHoverStyles = useMemo(() => ({
-    color: '#d13438',
-    borderColor: '#d13438',
-    backgroundColor: '#fdf2f2'
+    color: tokens.colorPaletteRedForeground1, // Updated to use Fluent UI tokens like line plot
+    borderColor: tokens.colorPaletteRedBorder1, // Updated to use Fluent UI tokens like line plot
+    backgroundColor: tokens.colorPaletteRedBackground2 // Updated to use Fluent UI tokens like line plot
   }), []);
 
   const removeButtonLeaveStyles = useMemo(() => ({
-    color: '#8a8886',
-    borderColor: '#8a8886',
-    backgroundColor: 'transparent'
+    color: tokens.colorPaletteRedForeground1, // Updated to use Fluent UI tokens like line plot
+    borderColor: tokens.colorPaletteRedBorder1, // Updated to use Fluent UI tokens like line plot
+    backgroundColor: tokens.colorPaletteRedBackground1 // Updated to use Fluent UI tokens like line plot
   }), []);
 
   return {

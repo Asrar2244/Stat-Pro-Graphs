@@ -7,7 +7,7 @@ import { EXCEL } from '@constants';
 // Import utility modules
 import { getLegendConfig, getTitleText, getAxisConfig, getAnnotations } from './utils/layoutConfig';
 import { getSeriesConfig } from './utils/traceGeneration';
-import { createScatterTrace, createRegressionTracesIfNeeded, createDotPlotDottedLines } from './utils/traceGeneration';
+import { createTrace, createRegressionTracesIfNeeded, createDotPlotDottedLines } from './utils/traceGeneration';
 import { processDataByFormat } from './utils/dataProcessing';
 import { assessDataQuality } from './utils/dataValidation';
 import { optimizeDataForPerformance, measurePerformance, optimizeTraceForLargeData, getPerformanceRecommendations } from './utils/performanceOptimization';
@@ -248,8 +248,15 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       // Skip this only if we already have category traces from XY Category format
       // X Category and Y Category formats need standard processing for regression lines
       if (!(isCategoryPlot && isCategoryFormat && normalizedFormat === 'XY Category')) {
+        console.log(`🔍 Processing ${processedSeries.length} series for graph type: ${graphConfig?.subType}`);
         processedSeries.forEach(({ xv, yv, label, errorBarVariable }, seriesIndex) => {
         const startTime = performance.now();
+        
+        console.log(`📊 Series ${seriesIndex}: ${label}`, {
+          subType: graphConfig?.subType,
+          dataLength: xv.length,
+          sampleData: { x: xv.slice(0, 3), y: yv.slice(0, 3) }
+        });
         
         
         // Optimize data for large datasets with better configuration for very large datasets
@@ -342,7 +349,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             });
           }
           
-          const scatterTrace = createScatterTrace({
+          const trace = createTrace({
             xv: tx as any,
             yv: ty as any,
             label: optimizedData.optimizationMethod !== 'none' 
@@ -399,13 +406,21 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
           });
           
           // Optimize trace for large datasets
-          const optimizedTrace = optimizeTraceForLargeData(scatterTrace, optimizedData.originalLength);
+          const optimizedTrace = optimizeTraceForLargeData(trace, optimizedData.originalLength);
           
           // Apply plot-specific scatter properties (but not for point plots and dot plots to preserve color differentiation)
           const finalTrace = (plotProperties.scatter && !isPointPlot && !isDotPlot) ? applyScatterProperties(
             optimizedTrace, 
             plotProperties.scatter!
           ) : optimizedTrace;
+          
+          console.log(`✅ Final trace created for ${label}:`, {
+            type: finalTrace.type,
+            mode: finalTrace.mode,
+            dataLength: finalTrace.x?.length || 0,
+            hasLine: !!finalTrace.line,
+            hasMarker: !!finalTrace.marker
+          });
           
           traces.push(finalTrace);
           
@@ -910,6 +925,19 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       if (containerRef.current) {
         (plot as any).graph.current = containerRef.current;
         const payload = { data: traces, layout, config } as any;
+        
+        console.log(`🎨 Rendering plot with ${traces.length} traces:`, {
+          subType: graphConfig?.subType,
+          traceTypes: traces.map(t => ({ 
+            type: t.type, 
+            mode: t.mode, 
+            name: t.name,
+            hasLine: !!t.line,
+            hasMarker: !!t.marker,
+            dataLength: t.x?.length || 0
+          }))
+        });
+        
         lastPlotRef.current = payload;
         plot.redraw(payload);
         // Attach inline editing listeners after initial draw
