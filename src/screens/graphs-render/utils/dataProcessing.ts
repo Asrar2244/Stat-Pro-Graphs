@@ -59,19 +59,41 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
     const xCol = xNames[0];
     const xv = rows.map((r: any) => Number(r[xCol]));
     
-    yNames.forEach((y, yIndex) => {
-      // Get the X value for this Y column (each Y column corresponds to one X position)
-      const xValueForThisY = xv[yIndex]; // Use the Y column index to get corresponding X value
-      
-      // Get all replicate values from this Y column
-      const yv = rows.map((r: any) => Number(r[y]));
-      
-      // Create points: (xValueForThisY, y1), (xValueForThisY, y2), (xValueForThisY, y3), ...
-      const replicateXv = yv.map(() => xValueForThisY);
-      
-      const errorBarVar = errorBarVars[yIndex] || errorBarVars[0];
-      series.push({ xv: replicateXv, yv, label: `${y} at X=${xValueForThisY}`, errorBarVariable: errorBarVar });
-    });
+    // Check if this is a line plot
+    const isLinePlot = graphConfig.subType?.toLowerCase().includes('straight line') || 
+                       graphConfig.subType?.toLowerCase().includes('spline curve') || 
+                       graphConfig.subType?.toLowerCase().includes('step plot') || 
+                       graphConfig.subType?.toLowerCase().includes('vertical step') ||
+                       graphConfig.subType?.toLowerCase().includes('horizontal step') ||
+                       graphConfig.subType?.toLowerCase().includes('multiple straight') ||
+                       graphConfig.subType?.toLowerCase().includes('multiple spline') ||
+                       graphConfig.subType?.toLowerCase().includes('multiple vertical') ||
+                       graphConfig.subType?.toLowerCase().includes('multiple horizontal') ||
+                       graphConfig.subType?.toLowerCase().includes('area');
+    
+    if (isLinePlot) {
+      // For line plots: create one series per Y column, connecting values across X positions
+      yNames.forEach((y, yIndex) => {
+        const yv = rows.map((r: any) => Number(r[y]));
+        const errorBarVar = errorBarVars[yIndex] || errorBarVars[0];
+        series.push({ xv, yv, label: `${y}`, errorBarVariable: errorBarVar });
+      });
+    } else {
+      // For scatter plots: create replicate points at each X position
+      yNames.forEach((y, yIndex) => {
+        // Get the X value for this Y column (each Y column corresponds to one X position)
+        const xValueForThisY = xv[yIndex]; // Use the Y column index to get corresponding X value
+        
+        // Get all replicate values from this Y column
+        const yv = rows.map((r: any) => Number(r[y]));
+        
+        // Create points: (xValueForThisY, y1), (xValueForThisY, y2), (xValueForThisY, y3), ...
+        const replicateXv = yv.map(() => xValueForThisY);
+        
+        const errorBarVar = errorBarVars[yIndex] || errorBarVars[0];
+        series.push({ xv: replicateXv, yv, label: `${y} at X=${xValueForThisY}`, errorBarVariable: errorBarVar });
+      });
+    }
   } else if ((graphConfig.dataFormat === 'Y Many X') && xNames?.length && yNames?.length) {
     // Many X vs one Y (invert typical pairing): plot each X against the single Y
     const yCol = yNames[0];
@@ -91,18 +113,42 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
     });
   } else if (graphConfig.dataFormat === 'Many Y' && yNames?.length) {
     // Many Y: Multiple Y columns representing replicates at sequential X positions
-    yNames.forEach((y, yIndex) => {
-      const xValueForThisY = yIndex + 1; // Sequential X positions: 1, 2, 3, ...
-      
-      // Get all replicate values from this Y column
-      const yv = rows.map((r: any) => Number(r[y]));
-      
-      // Create points: (xValueForThisY, y1), (xValueForThisY, y2), (xValueForThisY, y3), ...
-      const replicateXv = yv.map(() => xValueForThisY);
-      
-      const errorBarVar = errorBarVars[yIndex] || errorBarVars[0];
-      series.push({ xv: replicateXv, yv, label: `${y} at X=${xValueForThisY}`, errorBarVariable: errorBarVar });
-    });
+    // Check if this is a line plot
+    const isLinePlot = graphConfig.subType?.toLowerCase().includes('straight line') || 
+                       graphConfig.subType?.toLowerCase().includes('spline curve') || 
+                       graphConfig.subType?.toLowerCase().includes('step plot') || 
+                       graphConfig.subType?.toLowerCase().includes('vertical step') ||
+                       graphConfig.subType?.toLowerCase().includes('horizontal step') ||
+                       graphConfig.subType?.toLowerCase().includes('multiple straight') ||
+                       graphConfig.subType?.toLowerCase().includes('multiple spline') ||
+                       graphConfig.subType?.toLowerCase().includes('multiple vertical') ||
+                       graphConfig.subType?.toLowerCase().includes('multiple horizontal') ||
+                       graphConfig.subType?.toLowerCase().includes('area');
+    
+    if (isLinePlot) {
+      // For line plots: create one series per Y column with sequential X positions (like Many X but for Y)
+      yNames.forEach((y, yIndex) => {
+        const yv = rows.map((r: any) => Number(r[y]));
+        const xv = rows.map((_: any, i: number) => i + 1); // Sequential X positions: 1, 2, 3, ...
+        
+        const errorBarVar = errorBarVars[yIndex] || errorBarVars[0];
+        series.push({ xv, yv, label: `${y}`, errorBarVariable: errorBarVar });
+      });
+    } else {
+      // For scatter plots: create replicate points at each X position
+      yNames.forEach((y, yIndex) => {
+        const xValueForThisY = yIndex + 1; // Sequential X positions: 1, 2, 3, ...
+        
+        // Get all replicate values from this Y column
+        const yv = rows.map((r: any) => Number(r[y]));
+        
+        // Create points: (xValueForThisY, y1), (xValueForThisY, y2), (xValueForThisY, y3), ...
+        const replicateXv = yv.map(() => xValueForThisY);
+        
+        const errorBarVar = errorBarVars[yIndex] || errorBarVars[0];
+        series.push({ xv: replicateXv, yv, label: `${y} at X=${xValueForThisY}`, errorBarVariable: errorBarVar });
+      });
+    }
   } else if (graphConfig.dataFormat === 'XY Category' && xNames?.length && yNames?.length) {
     // XY Category: plot Y vs X with category grouping
     if (categoryNames?.length > 0) {

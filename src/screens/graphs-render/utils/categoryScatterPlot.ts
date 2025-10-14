@@ -107,9 +107,9 @@ const createXYCategoryTraces = (
     if (lowerSubType.includes('spline')) {
       lineShape = 'spline';
     } else if (lowerSubType.includes('vertical step')) {
-      lineShape = 'hv';
+      lineShape = 'vh'; // Vertical then horizontal steps (for vertical step plots)
     } else if (lowerSubType.includes('horizontal step')) {
-      lineShape = 'vh';
+      lineShape = 'hv'; // Horizontal then vertical steps (for horizontal step plots)
     } else if (lowerSubType.includes('step')) {
       lineShape = 'hv';
     }

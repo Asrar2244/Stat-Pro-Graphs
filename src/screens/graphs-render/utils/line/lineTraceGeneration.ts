@@ -46,9 +46,9 @@ export const createLineTrace = (config: LineTraceConfig): any => {
     lineShape = 'spline';
   } else if (isStepPlot) {
     if (isVerticalStepPlot) {
-      lineShape = 'hv'; // Horizontal then vertical steps
+      lineShape = 'vh'; // Vertical then horizontal steps (for vertical step plots)
     } else if (isHorizontalStepPlot) {
-      lineShape = 'vh'; // Vertical then horizontal steps
+      lineShape = 'hv'; // Horizontal then vertical steps (for horizontal step plots)
     } else {
       lineShape = 'hv'; // Default to hv for step plots
     }
@@ -60,9 +60,9 @@ export const createLineTrace = (config: LineTraceConfig): any => {
     mode = 'lines+markers';
   } else if (isMarkersOnly) {
     mode = 'markers';
-  } else if (isStepPlot) {
-    // Step plots typically show markers at data points like SigmaPlot
-    mode = 'lines+markers';
+  } else if (isStepPlot || isMidPointStepPlot) {
+    // Step plots and midpoint plots: lines only, no markers
+    mode = 'lines';
   } else if (isLinePlot && !isLineMarkers) {
     mode = 'lines'; // Lines only, no markers
   }
@@ -81,8 +81,8 @@ export const createLineTrace = (config: LineTraceConfig): any => {
     }
   };
 
-  // Configure markers for step plots or when explicitly requested
-  if (isStepPlot || (showMarkers && (mode.includes('markers') || mode === 'lines+markers'))) {
+  // Configure markers only when explicitly requested
+  if (showMarkers && (mode.includes('markers') || mode === 'lines+markers')) {
     traceConfig.marker = {
       color: color,
       symbol: symbol,
@@ -93,7 +93,7 @@ export const createLineTrace = (config: LineTraceConfig): any => {
       }
     };
   } else {
-    // Explicitly set no markers for clean line plots
+    // Explicitly set no markers for clean line plots (including step plots and midpoint plots)
     traceConfig.marker = {
       size: 0,
       opacity: 0
@@ -179,6 +179,7 @@ export const createLineTrace = (config: LineTraceConfig): any => {
     mode,
     lineShape,
     isStepPlot,
+    isMidPointStepPlot,
     isVerticalStepPlot,
     isHorizontalStepPlot,
     hasErrorBars: isErrorBar,
