@@ -31,6 +31,218 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
     plotly: plot
   }), [plot]);
 
+  // Add scatter point toggle functionality for line plots
+  const addScatterPointToggle = () => {
+    const root = containerRef.current as HTMLElement | null;
+    if (!root || !plot) return;
+
+    // Check if this is a line plot
+    const isLinePlot = graphConfig?.subType?.toLowerCase().includes('line') || 
+                      graphConfig?.subType?.toLowerCase().includes('step') ||
+                      graphConfig?.subType?.toLowerCase().includes('spline');
+    
+    if (!isLinePlot) return;
+
+    // State to track if scatter points are visible
+    let scatterPointsVisible = false;
+
+    // Add click event listener to the plot container
+    const handleCanvasClick = (event: MouseEvent) => {
+      console.log('🎯 Canvas clicked!', {
+        target: event.target,
+        targetClass: (event.target as HTMLElement)?.className,
+        targetTag: (event.target as HTMLElement)?.tagName
+      });
+
+      // More flexible click detection - check if click is within the plot container
+      const target = event.target as HTMLElement;
+      if (!target) return;
+
+      // Check if click is on plotly elements (more flexible detection)
+      const isPlotlyElement = target.closest('.plotly') || 
+                             target.classList.contains('plotly') ||
+                             target.closest('[class*="plotly"]') ||
+                             target.closest('.js-plotly-plot');
+
+      if (!isPlotlyElement) {
+        console.log('🎯 Click not on plotly element, ignoring');
+        return;
+      }
+
+      // Toggle scatter points visibility
+      scatterPointsVisible = !scatterPointsVisible;
+      
+      console.log(`🎯 Toggling scatter points: ${scatterPointsVisible ? 'SHOW' : 'HIDE'}`);
+
+      // Update all line traces to show/hide markers
+      if (lastPlotRef.current) {
+        const updatedData = lastPlotRef.current.data.map((trace: any) => {
+          if (trace.type === 'scatter' && trace.mode?.includes('lines')) {
+            const newMarker = scatterPointsVisible ? {
+              size: 8,
+              color: trace.line?.color || trace.marker?.color || '#1f77b4', // Match line color
+              opacity: 0.9,
+              line: {
+                color: 'white',
+                width: 2
+              },
+              symbol: 'circle',
+              showscale: false
+            } : {
+              size: 0,
+              opacity: 0,
+              color: 'transparent'
+            };
+            
+            // Force mode change to include markers
+            const newMode = scatterPointsVisible ? 'lines+markers' : 'lines';
+            
+            console.log(`🎯 Updating trace "${trace.name || 'unnamed'}" marker:`, {
+              visible: scatterPointsVisible,
+              marker: newMarker,
+              originalMode: trace.mode
+            });
+            
+            return {
+              ...trace,
+              mode: newMode,
+              marker: newMarker
+            };
+          }
+          return trace;
+        });
+
+        // Force complete re-rendering with Plotly global methods
+        const updatedPayload = {
+          ...lastPlotRef.current,
+          data: updatedData
+        };
+        lastPlotRef.current = updatedPayload;
+        
+        // Use Plotly global methods for better marker rendering
+        try {
+          // Import Plotly dynamically and use global methods
+          const Plotly = (window as any).Plotly;
+          if (Plotly && containerRef.current) {
+            // Try restyle first for better performance
+            const markerUpdates = updatedData.map((trace, index) => ({
+              mode: trace.mode,
+              marker: trace.marker
+            }));
+            
+            try {
+              Plotly.restyle(containerRef.current, markerUpdates);
+              console.log('✅ Markers updated using Plotly.restyle');
+            } catch (restyleError) {
+              console.log('⚠️ Plotly.restyle failed, using newPlot:', restyleError);
+              Plotly.newPlot(containerRef.current, updatedData, updatedPayload.layout, updatedPayload.config);
+              console.log('✅ Markers updated using Plotly.newPlot');
+            }
+          } else {
+            throw new Error('Plotly global not available');
+          }
+        } catch (error) {
+          console.log('⚠️ Plotly methods failed, using hook redraw:', error);
+          // Fallback to hook redraw
+          plot.redraw(updatedPayload);
+          console.log('✅ Markers updated using hook redraw');
+        }
+        
+        console.log(`✅ Scatter points ${scatterPointsVisible ? 'shown' : 'hidden'} on line plot`);
+      }
+    };
+
+    // Remove existing listener if any
+    root.removeEventListener('click', handleCanvasClick);
+    
+    // Add new listener
+    root.addEventListener('click', handleCanvasClick);
+    
+    // Also try using Plotly's built-in click events as backup
+    try {
+      if (plot && plot.graph) {
+        plot.graph.on('plotly_click', (event: any) => {
+          console.log('🎯 Plotly click event detected!', event);
+          
+          // Toggle scatter points visibility
+          scatterPointsVisible = !scatterPointsVisible;
+          
+          console.log(`🎯 Plotly click - Toggling scatter points: ${scatterPointsVisible ? 'SHOW' : 'HIDE'}`);
+
+          // Update all line traces to show/hide markers
+          if (lastPlotRef.current) {
+            const updatedData = lastPlotRef.current.data.map((trace: any) => {
+              if (trace.type === 'scatter' && trace.mode?.includes('lines')) {
+                return {
+                  ...trace,
+                  mode: scatterPointsVisible ? 'lines+markers' : 'lines',
+                  marker: scatterPointsVisible ? {
+                    size: 8,
+                    color: trace.line?.color || trace.marker?.color || '#1f77b4', // Match line color
+                    opacity: 0.9,
+                    line: {
+                      color: 'white',
+                      width: 2
+                    },
+                    symbol: 'circle',
+                    showscale: false
+                  } : {
+                    size: 0,
+                    opacity: 0,
+                    color: 'transparent'
+                  }
+                };
+              }
+              return trace;
+            });
+
+            // Force complete re-rendering with Plotly global methods
+            const updatedPayload = {
+              ...lastPlotRef.current,
+              data: updatedData
+            };
+            lastPlotRef.current = updatedPayload;
+            
+            // Use Plotly global methods for better marker rendering
+            try {
+              // Import Plotly dynamically and use global methods
+              const Plotly = (window as any).Plotly;
+              if (Plotly && containerRef.current) {
+                // Try restyle first for better performance
+                const markerUpdates = updatedData.map((trace, index) => ({
+                  mode: trace.mode,
+                  marker: trace.marker
+                }));
+                
+                try {
+                  Plotly.restyle(containerRef.current, markerUpdates);
+                  console.log('✅ Plotly click - Markers updated using Plotly.restyle');
+                } catch (restyleError) {
+                  console.log('⚠️ Plotly click - Plotly.restyle failed, using newPlot:', restyleError);
+                  Plotly.newPlot(containerRef.current, updatedData, updatedPayload.layout, updatedPayload.config);
+                  console.log('✅ Plotly click - Markers updated using Plotly.newPlot');
+                }
+              } else {
+                throw new Error('Plotly global not available');
+              }
+            } catch (error) {
+              console.log('⚠️ Plotly click - Plotly methods failed, using hook redraw:', error);
+              // Fallback to hook redraw
+              plot.redraw(updatedPayload);
+              console.log('✅ Plotly click - Markers updated using hook redraw');
+            }
+            
+            console.log(`✅ Plotly click - Scatter points ${scatterPointsVisible ? 'shown' : 'hidden'} on line plot`);
+          }
+        });
+      }
+    } catch (error) {
+      console.log('⚠️ Plotly click event not available:', error);
+    }
+    
+    console.log('🎯 Scatter point toggle enabled for line plots (both DOM and Plotly events)');
+  };
+
   // Build data arrays from project DB based on selected variables
   useEffect(() => {
     const run = async () => {
@@ -940,6 +1152,14 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         
         lastPlotRef.current = payload;
         plot.redraw(payload);
+        
+        // Add click event handling for showing/hiding scatter points on line plots
+        try {
+          addScatterPointToggle();
+        } catch (error) {
+          console.log('⚠️ Scatter point toggle not available:', error);
+        }
+        
         // Attach inline editing listeners after initial draw
         try {
           applyInlineEditing();

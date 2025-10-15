@@ -31,26 +31,119 @@ export const createLineTrace = (config: LineTraceConfig): any => {
   const isVerticalStepPlot = lowerSubType.includes('vertical step');
   const isHorizontalStepPlot = lowerSubType.includes('horizontal step');
   const isMidPointStepPlot = lowerSubType.includes('mid point') || lowerSubType.includes('midpoint');
+  
+  // Enhanced detection for all vertical step plot variants
+  const isAnyVerticalStepPlot = isVerticalStepPlot || 
+                                isMidPointStepPlot || 
+                                lowerSubType.includes('vertical') ||
+                                (lowerSubType.includes('step') && lowerSubType.includes('vertical'));
 
   // Multiple vs Simple
   const isMultipleSeries = lowerSubType.includes('multiple');
   const isSimpleSeries = lowerSubType.includes('simple');
 
-  // Use original data (midpoint logic removed for now)
+  // Process data for midpoint step plots
   let processedX = xv;
   let processedY = yv;
+  
+  // For midpoint step plots, create midpoint data
+  if (isMidPointStepPlot && xv.length > 1) {
+    const midX: number[] = [];
+    const midY: number[] = [];
+    
+    // Check if this is a vertical midpoint step plot
+    const isVerticalMidPointStepPlot = isMidPointStepPlot && lowerSubType.includes('vertical');
+    
+    if (isVerticalMidPointStepPlot) {
+      // For Vertical Mid Point Step Plot: start vertical, then create midpoints
+      // Add first point
+      midX.push(xv[0]);
+      midY.push(yv[0]);
+      
+      // Create midpoint data: each segment becomes vertical then horizontal
+      for (let i = 0; i < xv.length - 1; i++) {
+        // Add vertical segment: go up to next Y value at current X
+        midX.push(xv[i]);
+        midY.push(yv[i + 1]); // Next Y value at current X (vertical step)
+        
+        // Add horizontal segment: go to midpoint X at next Y value
+        const midPointX = (xv[i] + xv[i + 1]) / 2;
+        midX.push(midPointX);
+        midY.push(yv[i + 1]); // Keep next Y value for horizontal step
+      }
+      
+      // Add the last point
+      midX.push(xv[xv.length - 1]);
+      midY.push(yv[yv.length - 1]);
+      
+      console.log('📊 Vertical Mid Point Step Plot Data Processing:', {
+        originalLength: xv.length,
+        processedLength: midX.length,
+        originalX: xv.slice(0, 3),
+        processedX: midX.slice(0, 6),
+        originalY: yv.slice(0, 3),
+        processedY: midY.slice(0, 6),
+        note: 'Starts vertical, then creates midpoints'
+      });
+    } else {
+      // For Horizontal Mid Point Step Plot: keep original behavior (horizontal first)
+      // Add first point
+      midX.push(xv[0]);
+      midY.push(yv[0]);
+      
+      // Create midpoint data: each point becomes the midpoint between current and next
+      for (let i = 0; i < xv.length - 1; i++) {
+        // Add current point
+        midX.push(xv[i]);
+        midY.push(yv[i]);
+        
+        // Add midpoint between current and next
+        const midPointX = (xv[i] + xv[i + 1]) / 2;
+        const midPointY = yv[i]; // Keep current Y value for horizontal step
+        midX.push(midPointX);
+        midY.push(midPointY);
+      }
+      
+      // Add the last point
+      midX.push(xv[xv.length - 1]);
+      midY.push(yv[yv.length - 1]);
+      
+      console.log('📊 Horizontal Mid Point Step Plot Data Processing:', {
+        originalLength: xv.length,
+        processedLength: midX.length,
+        originalX: xv.slice(0, 3),
+        processedX: midX.slice(0, 6),
+        originalY: yv.slice(0, 3),
+        processedY: midY.slice(0, 6),
+        note: 'Keeps original horizontal-first behavior'
+      });
+    }
+    
+    processedX = midX;
+    processedY = midY;
+  }
 
   // Determine line shape based on subType
   let lineShape = 'linear';
   if (isSplinePlot) {
     lineShape = 'spline';
-  } else if (isStepPlot) {
-    if (isVerticalStepPlot) {
-      lineShape = 'vh'; // Vertical then horizontal steps (for vertical step plots)
+  } else if (isStepPlot || isMidPointStepPlot) {
+    // ALL vertical step plots should start vertical (like Simple Vertical Step Plot)
+    if (isAnyVerticalStepPlot) {
+      // For ALL Vertical Step Plots (Simple, Multiple, Mid Point): start vertical
+      lineShape = 'vh'; // Vertical then horizontal steps (starts vertical)
+      console.log('📈 Vertical Step Plot: Using vh shape (starts vertical)', {
+        subType,
+        isVerticalStepPlot,
+        isMidPointStepPlot,
+        isAnyVerticalStepPlot
+      });
     } else if (isHorizontalStepPlot) {
       lineShape = 'hv'; // Horizontal then vertical steps (for horizontal step plots)
+      console.log('📈 Horizontal Step Plot: Using hv shape (starts horizontal)');
     } else {
-      lineShape = 'hv'; // Default to hv for step plots
+      lineShape = 'vh'; // Default to vh for step plots (starts vertical)
+      console.log('📈 Default Step Plot: Using vh shape (starts vertical)');
     }
   }
   
