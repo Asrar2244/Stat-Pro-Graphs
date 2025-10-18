@@ -63,6 +63,11 @@ const LinePlotModal = lazy(() =>
   import('../../features/graphs/2d/line').then((m) => ({ default: m.LinePlotModal })),
 );
 
+// Line-Scatter Plot Modal
+const LineScatterPlotModal = lazy(() =>
+  import('../../features/graphs/2d/line-scatter').then((m) => ({ default: m.LineScatterPlotModal })),
+);
+
 // 3D Mesh Plot Modal
 const MeshPlotModal = lazy(() =>
   import('../../features/graphs/3d/mesh').then((m) => ({ default: m.MeshPlotModal })),
@@ -227,6 +232,65 @@ const MenuSelector: FC<{
     return <LinePlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
+  // Line-Scatter Plot wrapper with real data integration
+  const LineScatterWrapper: FC<IModal> = (m) => {
+    const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+    const projectNames = Object.keys(projects);
+    const { openNewTabAction } = useMenuCodeExecutor();
+    const { setRenderLatestRun } = useStartProStore();
+    const { t } = useTranslation('common');
+    
+    // For now, use empty datasets array - this would be populated based on selected project
+    const datasets: string[] = [];
+    
+    const onCreateGraph = async (config: any) => {
+      console.log('Creating Line-Scatter Plot with config:', config);
+      try {
+        const workspacePath = projects[config.selectedProject]?.workspacePath;
+        
+        // Persist a run immediately so history shows up
+        const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
+        await insertGraphRun(workspacePath, {
+          name: config?.subType || 'Line-Scatter Plot',
+          createdAt: new Date().toISOString(),
+          config: { graphConfig: config, workspacePath },
+          tabName: config?.selectedProject || '',
+          graphType: config?.graphType || 'Line-Scatter Plot',
+          properties: {},
+        });
+        
+        // Set flag to auto-select the latest run when Graphs tab opens
+        setRenderLatestRun(true);
+        
+      } catch (error) {
+        console.error('Error creating Line-Scatter Plot:', error);
+      }
+
+      // Open the Graphs output screen under Explorer for the selected project
+      openNewTabAction({ 
+        id: GRAPHS, // Use GRAPHS constant
+        isEmptyDataView: false,
+        extraConfig: {
+          tabName: projects[config.selectedProject]?.workspacePath, // Pass workspacePath as tabName
+          name: config.selectedProject, // Pass project name
+          type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }), // Pass type
+          bareType: GRAPHS, // Pass bareType
+          id: projects[config.selectedProject]?.id, // Pass project ID
+          lastModified: new Date().toISOString(), // Current timestamp
+          isActive: 1, // Set as active
+          workspacePath: projects[config.selectedProject]?.workspacePath, // Pass workspacePath
+        }
+      });
+      
+      // TODO: Pass the line-scatter plot configuration to the graph tab
+      // This would typically involve setting some state or context
+      // that the graphs-render component can access to configure the plot
+      
+    };
+
+    return <LineScatterPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
+  };
+
   // 3D Mesh Plot wrapper with real data integration
   const MeshWrapper: FC<IModal> = (m) => {
     const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
@@ -357,6 +421,8 @@ const MenuSelector: FC<{
         return <ScatterWrapper {...modal} />;
       case 'open-line-plot-modal':
         return <LineWrapper {...modal} />;
+      case 'open-line-scatter-plot-modal':
+        return <LineScatterWrapper {...modal} />;
       case '3d-mesh':
         return <MeshWrapper {...modal} />;
       case exporters.tests:

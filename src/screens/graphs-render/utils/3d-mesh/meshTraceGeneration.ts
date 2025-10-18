@@ -6,6 +6,57 @@ import { TraceConfig } from '../common/types';
 import { akimaInterpolation, rawDataInterpolation } from './meshInterpolation';
 
 /**
+ * Get properly formatted colorscale for Plotly
+ */
+const getPlotlyColorScale = (colorScaleName: string): any => {
+  // Plotly colorscale definitions - use actual color arrays instead of strings
+  const colorscaleDefinitions: { [key: string]: any } = {
+    'jet': [
+      [0, 'rgb(0,0,131)'], [0.125, 'rgb(0,60,170)'], [0.25, 'rgb(5,255,255)'],
+      [0.375, 'rgb(255,255,0)'], [0.5, 'rgb(255,0,0)'], [0.625, 'rgb(200,0,0)'],
+      [0.75, 'rgb(180,0,0)'], [0.875, 'rgb(160,0,0)'], [1, 'rgb(139,0,0)']
+    ],
+    'viridis': [
+      [0, 'rgb(68,1,84)'], [0.111, 'rgb(72,40,120)'], [0.222, 'rgb(62,74,137)'],
+      [0.333, 'rgb(49,104,142)'], [0.444, 'rgb(38,130,142)'], [0.556, 'rgb(31,158,137)'],
+      [0.667, 'rgb(53,183,121)'], [0.778, 'rgb(109,205,89)'], [0.889, 'rgb(180,222,44)'],
+      [1, 'rgb(253,231,37)']
+    ],
+    'plasma': [
+      [0, 'rgb(13,8,135)'], [0.111, 'rgb(75,3,161)'], [0.222, 'rgb(125,3,168)'],
+      [0.333, 'rgb(168,34,150)'], [0.444, 'rgb(203,70,121)'], [0.556, 'rgb(225,97,97)'],
+      [0.667, 'rgb(243,131,77)'], [0.778, 'rgb(252,164,69)'], [0.889, 'rgb(254,202,99)'],
+      [1, 'rgb(240,249,33)']
+    ],
+    'magma': [
+      [0, 'rgb(0,0,4)'], [0.111, 'rgb(28,16,68)'], [0.222, 'rgb(79,18,123)'],
+      [0.333, 'rgb(129,37,129)'], [0.444, 'rgb(181,54,122)'], [0.556, 'rgb(229,80,100)'],
+      [0.667, 'rgb(251,135,97)'], [0.778, 'rgb(254,194,135)'], [0.889, 'rgb(255,253,164)'],
+      [1, 'rgb(252,255,164)']
+    ],
+    'cividis': [
+      [0, 'rgb(0,32,76)'], [0.111, 'rgb(0,42,102)'], [0.222, 'rgb(0,52,110)'],
+      [0.333, 'rgb(39,63,108)'], [0.444, 'rgb(72,73,103)'], [0.556, 'rgb(99,86,99)'],
+      [0.667, 'rgb(125,96,95)'], [0.778, 'rgb(151,108,95)'], [0.889, 'rgb(177,119,96)'],
+      [1, 'rgb(255,233,69)']
+    ]
+  };
+  
+  // Ensure the colorscale name is valid
+  const normalizedName = colorScaleName.toLowerCase();
+  const colorscale = colorscaleDefinitions[normalizedName];
+  
+  console.log(`🎨 Colorscale Formatting:`, {
+    originalName: colorScaleName,
+    normalizedName,
+    hasDefinition: !!colorscale,
+    finalScale: colorscale ? 'custom definition' : 'viridis fallback'
+  });
+  
+  return colorscale || colorscaleDefinitions['viridis'];
+};
+
+/**
  * Check if data is already on a regular grid
  */
 const isRegularGrid = (x: number[], y: number[], tolerance: number = 1e-10): boolean => {
@@ -225,6 +276,9 @@ export const create3DMeshTrace = (config: TraceConfig): any => {
   const isValidColorScale = validColorScales.includes(selectedColorScale.toLowerCase());
   const finalColorScale = isValidColorScale ? selectedColorScale : 'viridis';
   
+  // Use the validated colorscale
+  const validatedColorScale = finalColorScale;
+  
   console.log(`🎨 Color Scale Validation:`, {
     selectedColorScale,
     isValidColorScale,
@@ -308,13 +362,13 @@ export const create3DMeshTrace = (config: TraceConfig): any => {
   
   if (dataFormat === 'XYZ Triplets' || dataFormat === 'xyz-columns') {
     // XY Z triplet: Create natural mesh surface with preserved topology
-    return createNaturalXYZMesh(xv, yv, rows, graphConfig, color, label, zv, selectedColorScale, meshConfig, needsSmoothing);
+    return createNaturalXYZMesh(xv, yv, rows, graphConfig, color, label, zv, finalColorScale, meshConfig, needsSmoothing);
   } else if (dataFormat === 'Many Z' || dataFormat === 'z-matrix') {
     // Many Z: Create mesh surface from Z matrix data
-    return createZMatrixMesh(xv, yv, rows, graphConfig, color, label, zv, selectedColorScale, meshConfig, needsSmoothing);
+    return createZMatrixMesh(xv, yv, rows, graphConfig, color, label, zv, finalColorScale, meshConfig, needsSmoothing);
   } else if (dataFormat === 'XY Many Z' || dataFormat === 'xy-z-columns') {
     // XY Many Z: Create mesh surface from XY + multiple Z columns
-    return createXYManyZMesh(xv, yv, rows, graphConfig, color, label, zv, selectedColorScale, meshConfig, needsSmoothing);
+    return createXYManyZMesh(xv, yv, rows, graphConfig, color, label, zv, finalColorScale, meshConfig, needsSmoothing);
   } else {
     console.warn(`❌ Unknown 3D mesh data format: ${dataFormat}, using fallback`);
     return createFallbackScatter(xv, yv, label, color);
@@ -333,8 +387,15 @@ const createNaturalXYZMesh = (xv: number[], yv: number[], rows: any[], graphConf
   console.log('🎨 createNaturalXYZMesh - meshConfig:', meshConfig);
   console.log('🎨 createNaturalXYZMesh - graphConfig:', graphConfig);
   
-  // Apply showSurface configuration - if false, don't show the surface
+  // Apply showSurface configuration - default to true if not specified
   const shouldShowSurface = meshConfig.showSurface !== false;
+  
+  console.log(`🔍 Surface Visibility Debug:`, {
+    meshConfigShowSurface: meshConfig.showSurface,
+    shouldShowSurface,
+    meshConfig,
+    willShowSurface: shouldShowSurface
+  });
   
   try {
   // Use the provided Z values if available, otherwise extract from data
@@ -505,9 +566,8 @@ const createNaturalXYZMesh = (xv: number[], yv: number[], rows: any[], graphConf
     z: enhancedMatrix,
     type: traceType,
     name: label,
-    colorscale: selectedColorScale,
-    // Add intensity for colorscale to work properly
-    intensity: enhancedMatrix.flat(),
+    colorscale: getPlotlyColorScale(selectedColorScale),
+    // Remove intensity - not needed for surface plots and causes white rendering
     // Apply interpolation from database configuration
     smoothing: meshConfig.interpolation === 'linear' ? true : false,
     // Apply showSurface configuration
@@ -572,7 +632,7 @@ const createNaturalXYZMesh = (xv: number[], yv: number[], rows: any[], graphConf
   console.log(`🎨 Final trace configuration:`, {
     surfaceType: surfaceType,
     traceType: traceType,
-    colorscale: selectedColorScale,
+    colorscale: getPlotlyColorScale(selectedColorScale),
     traceColorscale: trace.colorscale,
     selectedColorScale,
     smoothing: trace.smoothing,
@@ -624,8 +684,8 @@ const createNaturalXYZMesh = (xv: number[], yv: number[], rows: any[], graphConf
   console.log(`🔍 FINAL TRACE DEBUG:`, {
     type: trace.type,
     colorscale: trace.colorscale,
-    intensity: trace.intensity ? `${trace.intensity.length} values` : 'undefined',
-    intensityRange: trace.intensity ? `[${Math.min(...trace.intensity).toFixed(2)}, ${Math.max(...trace.intensity).toFixed(2)}]` : 'undefined',
+    zMatrixShape: trace.z ? `${trace.z.length}x${trace.z[0]?.length}` : 'undefined',
+    zRange: trace.z ? `[${Math.min(...trace.z.flat()).toFixed(2)}, ${Math.max(...trace.z.flat()).toFixed(2)}]` : 'undefined',
     opacity: trace.opacity,
     flatshading: trace.flatshading,
     lighting: trace.lighting,
@@ -642,9 +702,9 @@ const createNaturalXYZMesh = (xv: number[], yv: number[], rows: any[], graphConf
   });
   
   console.log(`✅ MESH TRACE COMPLETED - ${new Date().toISOString()}`);
-  console.log(`🎨 INTENSITY CHECK:`, {
-    hasIntensity: !!trace.intensity,
-    intensityLength: trace.intensity?.length,
+  console.log(`🎨 Z MATRIX CHECK:`, {
+    hasZMatrix: !!trace.z,
+    zMatrixShape: trace.z ? `${trace.z.length}x${trace.z[0]?.length}` : 'undefined',
     colorscale: trace.colorscale
   });
   return trace;
@@ -790,25 +850,21 @@ const createZMatrixMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
     willApplyColorScale: selectedColorScale
   });
   
-  // Test intensity values for color scale effectiveness
+  // Test Z values for color scale effectiveness
   const flatMatrix = enhancedMatrix.flat();
-  const intensityMin = Math.min(...flatMatrix);
-  const intensityMax = Math.max(...flatMatrix);
-  const intensityRange = intensityMax - intensityMin;
-  const intensityVariation = intensityRange / intensityMax;
+  const zMin = Math.min(...flatMatrix);
+  const zMax = Math.max(...flatMatrix);
+  const zRange = zMax - zMin;
+  const zVariation = zRange / zMax;
   
-  console.log(`🎨 INTENSITY ANALYSIS:`, {
-    intensityMin: intensityMin.toFixed(3),
-    intensityMax: intensityMax.toFixed(3),
-    intensityRange: intensityRange.toFixed(3),
-    intensityVariation: (intensityVariation * 100).toFixed(1) + '%',
+  console.log(`🎨 Z VALUE ANALYSIS:`, {
+    zMin: zMin.toFixed(3),
+    zMax: zMax.toFixed(3),
+    zRange: zRange.toFixed(3),
+    zVariation: (zVariation * 100).toFixed(1) + '%',
     sampleValues: flatMatrix.slice(0, 10).map(v => v.toFixed(3)),
-    willShowColorVariation: intensityVariation > 0.1 ? 'YES' : 'NO - TOO SIMILAR'
+    willShowColorVariation: zVariation > 0.1 ? 'YES' : 'NO - TOO SIMILAR'
   });
-  
-  // Test with a very obvious color scale to verify it's working
-  const testColorScale = selectedColorScale === 'turbo' ? 'rainbow' : 'turbo';
-  console.log(`🧪 COLOR SCALE TEST: Using ${testColorScale} instead of ${selectedColorScale} for testing`);
   
   const finalTrace = {
     x: finalXGrid,
@@ -816,9 +872,8 @@ const createZMatrixMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
     z: enhancedMatrix,
     type: 'surface', // Force surface type for color scale support
     name: label,
-    colorscale: testColorScale, // Use test color scale for debugging
-    // Add intensity for colorscale to work properly
-    intensity: enhancedMatrix.flat(),
+    colorscale: getPlotlyColorScale(selectedColorScale), // Use the actual meshConfig colorscale with proper format
+    // Remove intensity - not needed for surface plots and causes white rendering
     // Apply interpolation from database configuration
     smoothing: meshConfig.interpolation === 'linear' ? true : false,
     // Apply showSurface configuration
@@ -883,28 +938,33 @@ const createZMatrixMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
   console.log(`🎯 Z MATRIX - RETURNING TRACE:`, {
     type: finalTrace.type,
     colorscale: finalTrace.colorscale,
-    hasIntensity: !!finalTrace.intensity,
-    intensityLength: finalTrace.intensity?.length,
+    hasZMatrix: !!finalTrace.z,
+    zMatrixShape: finalTrace.z ? `${finalTrace.z.length}x${finalTrace.z[0]?.length}` : 'undefined',
     opacity: finalTrace.opacity,
     flatshading: finalTrace.flatshading,
     meshConfigColorScale: meshConfig.colorScale,
     selectedColorScale,
-    // Debug intensity values
-    intensityMin: finalTrace.intensity ? Math.min(...finalTrace.intensity) : 'N/A',
-    intensityMax: finalTrace.intensity ? Math.max(...finalTrace.intensity) : 'N/A',
-    intensityRange: finalTrace.intensity ? `${Math.min(...finalTrace.intensity).toFixed(2)} to ${Math.max(...finalTrace.intensity).toFixed(2)}` : 'N/A',
+    // Debug Z values
     zMin: finalTrace.zmin,
     zMax: finalTrace.zmax,
+    zRange: finalTrace.z ? `${Math.min(...finalTrace.z.flat()).toFixed(2)} to ${Math.max(...finalTrace.z.flat()).toFixed(2)}` : 'N/A',
+    // Debug colorscale application
+    colorscaleType: typeof finalTrace.colorscale,
+    colorscaleLength: finalTrace.colorscale?.length,
+    fullTraceColorscale: finalTrace.colorscale,
+    // Debug Z matrix for colorscale
+    zMatrixSample: finalTrace.z ? finalTrace.z.slice(0, 3).map(row => row.slice(0, 3)) : 'N/A',
+    // Debug colorscale structure
+    colorscaleIsArray: Array.isArray(finalTrace.colorscale),
+    colorscaleFirstElement: finalTrace.colorscale?.[0],
+    colorscaleLastElement: finalTrace.colorscale?.[finalTrace.colorscale?.length - 1],
     // Debug Z matrix
     zMatrixLength: finalTrace.z?.length,
     zMatrixFirstRowLength: finalTrace.z?.[0]?.length,
     sampleZValues: finalTrace.z?.slice(0, 2).map(row => row.slice(0, 3)),
     // Debug color scale application
     hasColorscale: !!finalTrace.colorscale,
-    colorscaleValue: finalTrace.colorscale,
-    // Debug if intensity and Z values are consistent
-    intensityZConsistency: finalTrace.intensity && finalTrace.z ? 
-      `Intensity: ${finalTrace.intensity.length} values, Z: ${finalTrace.z.length}x${finalTrace.z[0]?.length} matrix` : 'N/A'
+    colorscaleValue: finalTrace.colorscale
   });
   
   return finalTrace;
@@ -957,68 +1017,65 @@ const createXYManyZMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
     zValues = rows.map((row: any) => Number(row[zColumn]));
   }
   
-  // For xy-z-columns format, always create optimized grid from the selected X/Y variables
-  // This format should never use default scales - it always uses explicitly selected variables
-  const dataDensity = Math.sqrt(xv.length);
-  const gridSize = Math.min(Math.max(Math.floor(dataDensity * 0.8), 15), 30);
+  // SigmaPlot approach for XY Many Z: Use actual X and Y data directly (like Many Z uses default scales)
+  // This is the key difference - XY Many Z should use the actual selected X,Y variables as-is
+  let xGrid, yGrid;
   
-  const xMin = Math.min(...xv);
-  const xMax = Math.max(...xv);
-  const yMin = Math.min(...yv);
-  const yMax = Math.max(...yv);
-  
-  // Create regular grid from the actual X and Y data ranges
-  const xGrid = Array.from({ length: gridSize }, (_, i) => 
-    xMin + (xMax - xMin) * i / (gridSize - 1)
-  );
-  const yGrid = Array.from({ length: gridSize }, (_, i) => 
-    yMin + (yMax - yMin) * i / (gridSize - 1)
-  );
-  
-  // Sort grids to ensure low-to-high ordering
-  xGrid.sort((a, b) => a - b);
-  yGrid.sort((a, b) => a - b);
+  // For XY Many Z format, use the actual X and Y data directly (SigmaPlot approach)
+  // This is equivalent to how Many Z format preserves default scales (10,20,30... and 1,2,3...)
+  console.log(`🎯 XY Many Z SigmaPlot approach: Using actual X and Y variables directly`);
+  xGrid = [...xv];  // Use actual X data directly
+  yGrid = [...yv];  // Use actual Y data directly
   
   // Create professional mesh surface from XYZ data
   const dataPoints = xv.map((x, i) => ({ x, y: yv[i], z: zValues[i] }));
   
-  // Create Z matrix using professional interpolation
+  // Create Z matrix using the actual data points (SigmaPlot approach)
   let zMatrix: number[][] = [];
   let finalXGrid = xGrid;
   let finalYGrid = yGrid;
   
   if (needsSmoothing) {
-    console.log(`🔄 Applying smooth surface interpolation for scattered XY Many Z data`);
+    console.log(`🔄 Applying smooth surface interpolation for XY Many Z data using actual X,Y points`);
     try {
-      const smoothResult = createSmoothSurface(xv, yv, zValues, gridSize, 'cubic');
+      // Use the actual data length as grid size for better resolution
+      const actualGridSize = Math.min(xv.length, 50); // Limit to 50 for performance
+      const smoothResult = createSmoothSurface(xv, yv, zValues, actualGridSize, 'cubic');
       zMatrix = smoothResult.zGrid;
       finalXGrid = smoothResult.xGrid[0]; // Take first row for X grid
       finalYGrid = smoothResult.yGrid.map(row => row[0]); // Take first column for Y grid
       console.log(`✅ Smooth surface interpolation completed for XY Many Z data`);
     } catch (error) {
-      console.warn(`⚠️ Smooth interpolation failed for XY Many Z, falling back to regular grid:`, error);
-      // Fallback to regular grid
-      const actualGridSize = xGrid.length;
-      for (let i = 0; i < actualGridSize; i++) {
-        zMatrix[i] = [];
-        for (let j = 0; j < actualGridSize; j++) {
-          const gridX = xGrid[j];
-          const gridY = yGrid[i];
-          zMatrix[i][j] = akimaInterpolation({ xv, yv, zv: zValues, targetX: gridX, targetY: gridY });
-        }
-      }
+      console.warn(`⚠️ Smooth interpolation failed for XY Many Z, using direct data mapping:`, error);
+      // Fallback: Create Z matrix directly from actual data points
+      const uniqueX = [...new Set(xv)].sort((a, b) => a - b);
+      const uniqueY = [...new Set(yv)].sort((a, b) => a - b);
+      
+      zMatrix = uniqueY.map(y => 
+        uniqueX.map(x => {
+          const index = xv.findIndex((val, i) => val === x && yv[i] === y);
+          return index >= 0 ? zValues[index] : 0;
+        })
+      );
+      
+      finalXGrid = uniqueX;
+      finalYGrid = uniqueY;
     }
   } else {
-    console.log(`📊 Using regular grid for gridded XY Many Z data`);
-    const actualGridSize = xGrid.length;
-    for (let i = 0; i < actualGridSize; i++) {
-      zMatrix[i] = [];
-      for (let j = 0; j < actualGridSize; j++) {
-        const gridX = xGrid[j];
-        const gridY = yGrid[i];
-        zMatrix[i][j] = akimaInterpolation({ xv, yv, zv: zValues, targetX: gridX, targetY: gridY });
-      }
-    }
+    console.log(`📊 Using direct data mapping for XY Many Z (SigmaPlot approach)`);
+    // Create Z matrix directly from actual data points
+    const uniqueX = [...new Set(xv)].sort((a, b) => a - b);
+    const uniqueY = [...new Set(yv)].sort((a, b) => a - b);
+    
+    zMatrix = uniqueY.map(y => 
+      uniqueX.map(x => {
+        const index = xv.findIndex((val, i) => val === x && yv[i] === y);
+        return index >= 0 ? zValues[index] : 0;
+      })
+    );
+    
+    finalXGrid = uniqueX;
+    finalYGrid = uniqueY;
   }
   
   // No smoothing - preserve all sharp features and natural variations
@@ -1028,15 +1085,13 @@ const createXYManyZMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
   const surfaceType = meshConfig.surfaceType || 'surface';
   const traceType = surfaceType === 'wireframe' ? 'scatter3d' : 'surface';
   
-  return {
+  const finalTrace = {
     x: finalXGrid,
     y: finalYGrid,
     z: smoothedMatrix,
     type: traceType,
     name: label,
-    colorscale: selectedColorScale,
-    // Add intensity for colorscale to work properly
-    intensity: smoothedMatrix.flat(),
+    colorscale: getPlotlyColorScale(selectedColorScale),
     // Apply interpolation from database configuration
     smoothing: meshConfig.interpolation === 'linear' ? true : false,
     // Apply showSurface configuration
@@ -1097,6 +1152,25 @@ const createXYManyZMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
       }
     }
   };
+  
+  console.log(`🎯 FINAL 3D MESH TRACE DEBUG:`, {
+    traceType: finalTrace.type,
+    visible: finalTrace.visible,
+    shouldShowSurface,
+    xLength: finalTrace.x.length,
+    yLength: finalTrace.y.length,
+    zMatrixShape: finalTrace.z.length + 'x' + (finalTrace.z[0]?.length || 0),
+    colorscale: finalTrace.colorscale,
+    opacity: finalTrace.opacity,
+    zmin: finalTrace.zmin,
+    zmax: finalTrace.zmax,
+    sampleX: finalTrace.x.slice(0, 3),
+    sampleY: finalTrace.y.slice(0, 3),
+    sampleZ: finalTrace.z.slice(0, 2).map(row => row.slice(0, 3)),
+    fullTrace: finalTrace
+  });
+  
+  return finalTrace;
 };
 
 /**

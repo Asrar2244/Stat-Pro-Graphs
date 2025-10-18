@@ -1,5 +1,5 @@
 import type { GraphOption } from './types';
-import { MdScatterPlot, MdShowChart, MdBarChart, MdAreaChart, MdHistory, MdBolt, MdHeatPump, MdDashboard, MdMap, MdVolumeUp, MdRadar, MdAccountTree, MdBubbleChart } from 'react-icons/md';
+import { MdScatterPlot, MdShowChart, MdBarChart, MdAreaChart, MdHistory, MdBolt, MdHeatPump, MdDashboard, MdMap, MdVolumeUp, MdRadar, MdAccountTree, MdBubbleChart, MdTimeline } from 'react-icons/md';
 
 export const graph2DOptions: GraphOption[] = [
   {
@@ -7,6 +7,7 @@ export const graph2DOptions: GraphOption[] = [
     children: [
       { label: 'Scatter Plot', value: 'scatter', execute: 'open-scatter-plot-modal', icon: MdScatterPlot },
       { label: 'Line Chart', value: 'line', execute: 'open-line-plot-modal', icon: MdShowChart },
+      { label: 'Line/Scatter', value: 'line-scatter', execute: 'open-line-scatter-plot-modal', icon: MdTimeline },
       { label: 'Bar Chart', value: 'bar', execute: 'bar-chart', icon: MdBarChart },
       { label: 'Area Chart', value: 'area', execute: 'area-chart', icon: MdAreaChart },
     ]

@@ -86,8 +86,9 @@ const createXYCategoryTraces = (
   const traces: CategoryTrace[] = [];
   
   // Determine if this is a line plot based on subType
+  // IMPORTANT: Scatter plots with error bars should NOT be treated as line plots
   const lowerSubType = subType.toLowerCase();
-  const isLinePlot = lowerSubType.includes('straight line') || 
+  const isLinePlot = (lowerSubType.includes('straight line') || 
                      lowerSubType.includes('spline curve') || 
                      lowerSubType.includes('step plot') || 
                      lowerSubType.includes('mid point') ||
@@ -97,7 +98,9 @@ const createXYCategoryTraces = (
                      lowerSubType.includes('multiple spline') ||
                      lowerSubType.includes('multiple vertical') ||
                      lowerSubType.includes('multiple horizontal') ||
-                     lowerSubType.includes('area');
+                     lowerSubType.includes('area')) &&
+                     !lowerSubType.includes('scatter') && // Exclude scatter plots
+                     !lowerSubType.includes('error bar'); // Exclude error bar plots
   
   // Determine line shape and area configuration for line plots
   let lineShape = 'linear';
@@ -107,13 +110,15 @@ const createXYCategoryTraces = (
     if (lowerSubType.includes('spline')) {
       lineShape = 'spline';
     } else if (lowerSubType.includes('vertical step')) {
-      lineShape = 'vh'; // Vertical then horizontal steps (starts vertically)
+      lineShape = 'vh'; // Vertical then horizontal steps (correct for vertical step plots)
     } else if (lowerSubType.includes('horizontal step')) {
-      lineShape = 'hv'; // Horizontal then vertical steps (starts horizontally)
+      lineShape = 'hv'; // Horizontal then vertical steps (correct for horizontal step plots)
     } else if (lowerSubType.includes('vertical mid point') || lowerSubType.includes('vertical midpoint')) {
       lineShape = 'vhv'; // Vertical-horizontal-vertical steps for vertical mid-point
+    } else if (lowerSubType.includes('horizontal mid point') || lowerSubType.includes('horizontal midpoint')) {
+      lineShape = 'hvh'; // Horizontal-vertical-horizontal steps for horizontal mid-point
     } else if (lowerSubType.includes('mid point')) {
-      lineShape = 'hvh'; // Horizontal-vertical-horizontal steps for mid-point
+      lineShape = 'hvh'; // Default mid-point behavior (horizontal-vertical-horizontal)
     } else if (lowerSubType.includes('step')) {
       lineShape = 'hv';
     }

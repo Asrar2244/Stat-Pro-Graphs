@@ -199,11 +199,15 @@ export const getLineShape = (subType: string): string => {
   if (lowerSubType.includes('spline curve') || lowerSubType.includes('spline')) {
     return 'spline';
   } else if (lowerSubType.includes('vertical step')) {
-    return 'hv'; // Horizontal then vertical steps
+    return 'vh'; // Vertical then horizontal steps (correct for vertical step plots)
   } else if (lowerSubType.includes('horizontal step')) {
-    return 'vh'; // Vertical then horizontal steps
+    return 'hv'; // Horizontal then vertical steps (correct for horizontal step plots)
+  } else if (lowerSubType.includes('vertical mid point') || lowerSubType.includes('vertical midpoint')) {
+    return 'vhv'; // Vertical-horizontal-vertical steps for vertical mid-point
+  } else if (lowerSubType.includes('horizontal mid point') || lowerSubType.includes('horizontal midpoint')) {
+    return 'hvh'; // Horizontal-vertical-horizontal steps for horizontal mid-point
   } else if (lowerSubType.includes('mid point')) {
-    return 'hvh'; // Horizontal-vertical-horizontal steps for mid-point
+    return 'hvh'; // Default mid-point behavior (horizontal-vertical-horizontal)
   } else if (lowerSubType.includes('step')) {
     return 'hv'; // Default step behavior
   } else {

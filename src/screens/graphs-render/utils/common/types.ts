@@ -42,10 +42,30 @@ export interface ProcessedSeries {
   yv: number[];
   zv?: number[];
   label: string;
+  color?: string;
+  symbol?: string;
+  subType?: string;
+  dataFormat?: string;
+  errorBarData?: number[];
+  categoryData?: string[];
+  rows?: any[];
+  isLinePlot?: boolean;
+  isScatterPlot?: boolean;
+  showMarkers?: boolean;
+  showLines?: boolean;
+  markerSize?: number;
+  lineWidth?: number;
+  // Legacy properties for backward compatibility
   errorBarVariable?: string;
   // Category information for point plots
   categoryName?: string;
   categoryIndex?: number;
+  // New properties for line-scatter plots
+  x?: number[];
+  y?: number[];
+  // Bidirectional error bar properties
+  errorBarDataX?: number[];
+  errorBarDataY?: number[];
 }
 
 export interface DataProcessingConfig {
@@ -55,10 +75,11 @@ export interface DataProcessingConfig {
   yNames: string[];
   zNames?: string[];
   categoryNames?: string[];
+  errorBarNames?: string[];
 }
 
 export interface PlotType {
-  type: 'scatter' | 'line' | '3d-mesh';
+  type: 'scatter' | 'line' | 'line-scatter' | '3d-mesh';
   dataFormat: string;
   subType: string;
 }

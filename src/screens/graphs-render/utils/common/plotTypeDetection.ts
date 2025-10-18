@@ -35,8 +35,22 @@ export const determinePlotType = (graphConfig: any): PlotType['type'] => {
     return '3d-mesh';
   }
 
+  // Check if this is a line-scatter plot
+  const isLineScatterPlot = graphType === 'Line-Scatter Plot' ||
+                           (lowerSubType.includes('line') && lowerSubType.includes('scatter')) ||
+                           lowerSubType.includes('straight line & scatter') ||
+                           lowerSubType.includes('spline curve line & scatter') ||
+                           lowerSubType.includes('step plot & scatter') ||
+                           lowerSubType.includes('error bars') && (lowerSubType.includes('line') || lowerSubType.includes('scatter'));
+
+  if (isLineScatterPlot) {
+    console.log(`📊📈 Detected Line-Scatter Plot:`, { graphType, subType, dataFormat });
+    return 'line-scatter';
+  }
+
   // Check if this is a line plot based on specific line plot subTypes
-  const isLinePlot = lowerSubType.includes('straight line') || 
+  // IMPORTANT: Scatter plots with error bars should NOT be treated as line plots
+  const isLinePlot = (lowerSubType.includes('straight line') || 
                      lowerSubType.includes('spline curve') || 
                      lowerSubType.includes('step plot') || 
                      lowerSubType.includes('mid point step') ||
@@ -49,7 +63,9 @@ export const determinePlotType = (graphConfig: any): PlotType['type'] => {
                      lowerSubType.includes('multiple step plot') ||
                      lowerSubType.includes('multiple mid point step plot') ||
                      lowerSubType.includes('area') ||
-                     lowerSubType.includes('multiple area');
+                     lowerSubType.includes('multiple area')) &&
+                     !lowerSubType.includes('scatter') && // Exclude scatter plots
+                     !lowerSubType.includes('error bar'); // Exclude error bar plots
 
   if (isLinePlot) {
     return 'line';

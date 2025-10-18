@@ -130,8 +130,8 @@ const detectOutliersGrubbs = (values: number[]): number[] => {
  * Comprehensive data quality assessment
  */
 export const assessDataQuality = (
-  xValues: number[],
-  yValues: number[],
+  xValues: number[] | undefined,
+  yValues: number[] | undefined,
   options: Partial<ValidationOptions> = {}
 ): DataQualityReport => {
   const defaultOptions: ValidationOptions = {
@@ -144,6 +144,19 @@ export const assessDataQuality = (
   
   const warnings: string[] = [];
   const recommendations: string[] = [];
+  
+  // Handle undefined values
+  if (!xValues || !yValues) {
+    warnings.push('Data validation skipped: missing X or Y values');
+    return {
+      isValid: false,
+      warnings,
+      recommendations,
+      outliers: [],
+      missingValues: 0,
+      qualityScore: 0
+    };
+  }
   
   // Check sample size
   if (xValues.length < defaultOptions.minSampleSize) {

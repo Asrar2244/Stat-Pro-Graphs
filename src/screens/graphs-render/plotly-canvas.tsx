@@ -162,7 +162,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         xNames,
         yNames,
         zNames,
-        categoryNames
+        categoryNames,
+        errorBarNames: graphConfig.variables?.errorBar || []
       });
 
       // Collect legend labels for editing
@@ -186,7 +187,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       }
 
       // Assess data quality and provide recommendations
-      processedSeries.forEach(({ xv, yv, label }) => {
+      processedSeries.forEach((series) => {
+        // Handle both legacy (xv, yv) and new (x, y) data formats
+        const xv = series.xv || (series as any).x;
+        const yv = series.yv || (series as any).y;
+        const label = series.label;
+        
         const qualityReport = assessDataQuality(xv, yv, {
           outlierMethod: 'iqr',
           outlierThreshold: 1.5,
@@ -299,7 +305,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       // X Category and Y Category formats need standard processing for regression lines
       if (!(isCategoryPlot && isCategoryFormat && normalizedFormat === 'XY Category')) {
         console.log(`🔍 Processing ${processedSeries.length} series for graph type: ${graphConfig?.subType}`);
-        processedSeries.forEach(({ xv, yv, label, errorBarVariable }, seriesIndex) => {
+        processedSeries.forEach((series, seriesIndex) => {
+          // Handle both legacy (xv, yv) and new (x, y) data formats
+          const xv = series.xv || (series as any).x;
+          const yv = series.yv || (series as any).y;
+          const label = series.label;
+          const errorBarVariable = series.errorBarVariable;
         const startTime = performance.now();
         
         console.log(`📊 Series ${seriesIndex}: ${label}`, {
@@ -414,7 +425,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             errorCalculationUpper: graphConfig?.errorCalculationUpper,
             errorCalculationLower: graphConfig?.errorCalculationLower,
             errorBarVariable: optimizedData.errorBarVariable || graphConfig?.errorBarVariable, // Use series-specific error bar variable
-            errorBarData: optimizedData.errorBarVariable ? (() => {
+            errorBarData: (series as any).errorBarData || (optimizedData.errorBarVariable ? (() => {
               const errorData = rows.map((row: any) => {
                 const value = row[optimizedData.errorBarVariable];
                 return typeof value === 'number' ? value : parseFloat(value) || 0;
@@ -425,11 +436,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
                 sampleData: errorData.slice(0, 3)
               });
               return errorData;
-            })() : undefined, // Calculate error bar data from rows
+            })() : undefined), // Use processed error bar data or calculate from rows
             // For bidirectional error bars, pass separate X and Y error bar variables
             errorBarVariableX: isBidirectionalErrorBar ? errorBarVarX : undefined,
             errorBarVariableY: isBidirectionalErrorBar ? errorBarVarY : undefined,
-            errorBarDataX: isBidirectionalErrorBar && errorBarVarX ? (() => {
+            // Use processed error bar data from series if available, otherwise calculate from rows
+            errorBarDataX: (series as any).errorBarDataX || (isBidirectionalErrorBar && errorBarVarX ? (() => {
               const errorDataX = rows.map((row: any) => {
                 const value = row[errorBarVarX];
                 return typeof value === 'number' ? value : parseFloat(value) || 0;
@@ -440,8 +452,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
                 sampleData: errorDataX.slice(0, 3)
               });
               return errorDataX;
-            })() : undefined,
-            errorBarDataY: isBidirectionalErrorBar && errorBarVarY ? (() => {
+            })() : undefined),
+            errorBarDataY: (series as any).errorBarDataY || (isBidirectionalErrorBar && errorBarVarY ? (() => {
               const errorDataY = rows.map((row: any) => {
                 const value = row[errorBarVarY];
                 return typeof value === 'number' ? value : parseFloat(value) || 0;
@@ -452,16 +464,17 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
                 sampleData: errorDataY.slice(0, 3)
               });
               return errorDataY;
-            })() : undefined,
+            })() : undefined),
             errorBarColor: processedSeries.length > 1 ? undefined : plotProperties.errorBar?.errorBarColor, // Use series color for multiple variables, global color for single variable
             rows
           });
           
-          // Optimize trace for large datasets
-          const optimizedTrace = optimizeTraceForLargeData(trace, optimizedData.originalLength);
+          // Optimize trace for large datasets (skip for 3D mesh traces to preserve surface properties)
+          const is3DMeshTrace = trace.type === 'surface' || trace.type === 'mesh3d' || trace.type === 'scatter3d';
+          const optimizedTrace = is3DMeshTrace ? trace : optimizeTraceForLargeData(trace, optimizedData.originalLength);
           
-          // Apply plot-specific scatter properties (but not for point plots and dot plots to preserve color differentiation)
-          const finalTrace = (plotProperties.scatter && !isPointPlot && !isDotPlot) ? applyScatterProperties(
+          // Apply plot-specific scatter properties (but not for point plots, dot plots, or 3D mesh traces to preserve color differentiation)
+          const finalTrace = (plotProperties.scatter && !isPointPlot && !isDotPlot && !is3DMeshTrace) ? applyScatterProperties(
             optimizedTrace, 
             plotProperties.scatter!
           ) : optimizedTrace;

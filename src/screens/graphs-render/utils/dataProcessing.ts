@@ -10,6 +10,7 @@ import { determinePlotType } from './common/plotTypeDetection';
 import { processScatterData } from './scatter/scatterDataProcessing';
 import { processLineData } from './line/lineDataProcessing';
 import { process3DMeshData } from './3d-mesh/meshDataProcessing';
+import { processLineScatterData } from './line-scatter/lineScatterDataProcessing';
 
 /**
  * Main data processing function that routes to appropriate plot type
@@ -31,6 +32,8 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
       return processScatterData(config);
     case 'line':
       return processLineData(config);
+    case 'line-scatter':
+      return processLineScatterData(config);
     case '3d-mesh':
       return process3DMeshData(config);
     default:
