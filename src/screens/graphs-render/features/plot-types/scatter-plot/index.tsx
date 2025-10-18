@@ -20,6 +20,13 @@ export const ScatterPlotGraph: FC = () => {
   }
 
   const { graphConfig, workspacePath } = selectedRun.config;
+  
+  console.log('🎨 ScatterPlotGraph - Props Debug:', {
+    graphProperties,
+    canvasMode: graphProperties?.global?.canvasMode,
+    hasGraphProperties: !!graphProperties,
+    selectedRunId: selectedRun.id
+  });
   // Fallback: if workspacePath missing (older runs), resolve from projects by selectedProject/tabName
   const resolvedWorkspacePath =
     workspacePath ||

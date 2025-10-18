@@ -66,81 +66,152 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
 
   // Helper functions for replicate formats
   const canSendToXForReplicates = useMemo(() => {
-    if (!['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) return true;
+    if (dataFormat === 'X Many Y Replicates') {
+      const currentXCount = xVariableList.size;
+      
+      // For X Many Y Replicates format, only allow one X variable
+      // Once X is selected, no more X variables can be added
+      return currentXCount === 0;
+    } else if (dataFormat === 'Many Y Replicates') {
+      // For Many Y Replicates format, no X variables needed
+      return false;
+    }
     
-    const currentXCount = xVariableList.size;
-    const currentYCount = yVariableList.size;
-    const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
-    
-    // Can send to X if current X has its Y variables complete
-    return currentYCount >= expectedYCount;
-  }, [dataFormat, xVariableList.size, yVariableList.size]);
+    return true;
+  }, [dataFormat, xVariableList.size]);
 
   const canSendToYForReplicates = useMemo(() => {
-    if (!['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) return true;
+    if (dataFormat === 'X Many Y Replicates') {
+      // For X Many Y Replicates format, require X to be selected first
+      const currentXCount = xVariableList.size;
+      
+      // Can send to Y if X is selected (no limit on Y variables)
+      return currentXCount > 0;
+    } else if (dataFormat === 'Many Y Replicates') {
+      // For Many Y Replicates format, allow Y selection freely (no X requirement)
+      // This format is for vertical point plots where Y variables are grouped
+      return true;
+    }
     
-    // Can send to Y if X is selected and Y count is not complete
-    const currentXCount = xVariableList.size;
-    const currentYCount = yVariableList.size;
-    const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
-    
-    return currentXCount > 0 && currentYCount < expectedYCount;
-  }, [dataFormat, xVariableList.size, yVariableList.size]);
+    return true;
+  }, [dataFormat, xVariableList.size]);
 
   // Helper functions for Y Many X Replicates format (horizontal)
   const canSendToXForYReplicates = useMemo(() => {
-    if (dataFormat !== 'Y Many X Replicates') return true;
+    if (dataFormat === 'Y Many X Replicates') {
+      // For Y Many X Replicates format, require Y to be selected first
+      const currentYCount = yVariableList.size;
+      
+      console.log('canSendToXForYReplicates - Y Many X Replicates:', {
+        currentYCount,
+        canSend: currentYCount > 0,
+        dataFormat
+      });
+      
+      // Can send to X if Y is selected (no limit on X variables)
+      return currentYCount > 0;
+    } else if (dataFormat === 'Many X Replicates') {
+      // For Many X Replicates format, allow X selection freely (no Y requirement)
+      // This format is for horizontal point plots where X variables are grouped
+      console.log('canSendToXForYReplicates - Many X Replicates: true');
+      return true;
+    }
     
-    const currentYCount = yVariableList.size;
-    const currentXCount = xVariableList.size;
-    const expectedXCount = currentYCount * 2; // Assuming 2 X variables per Y
-    
-    // Can send to X if current Y has its X variables complete
-    return currentXCount >= expectedXCount;
-  }, [dataFormat, xVariableList.size, yVariableList.size]);
+    return true;
+  }, [dataFormat, yVariableList.size]);
 
   const canSendToYForXReplicates = useMemo(() => {
-    if (dataFormat !== 'Y Many X Replicates') return true;
+    if (dataFormat === 'Y Many X Replicates') {
+      // For Y Many X Replicates format, only allow one Y variable total
+      // Once Y is selected, no more Y variables can be added
+      return yVariableList.size === 0;
+    } else if (dataFormat === 'Many X Replicates') {
+      // For Many X Replicates format, no Y variables needed
+      return false;
+    }
     
-    // Can send to Y if Y is selected and X count is not complete
-    const currentYCount = yVariableList.size;
-    const currentXCount = xVariableList.size;
-    const expectedXCount = currentYCount * 2; // Assuming 2 X variables per Y
-    
-    return currentYCount > 0 && currentXCount < expectedXCount;
-  }, [dataFormat, xVariableList.size, yVariableList.size]);
+    return true;
+  }, [dataFormat, yVariableList.size]);
 
   // Send to X handler
   const handleSendToX = useCallback(() => {
     const newXList = new Map(xVariableList);
     const newAvailableList = new Map(availableList);
     const maxX = getMaxXCount(dataFormat);
-    const freeSlots = maxX ? Math.max(0, maxX - newXList.size) : Infinity;
+    let freeSlots = maxX ? Math.max(0, maxX - newXList.size) : Infinity;
     let moved = 0;
     
     // Special logic for replicate formats
-    if (['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) {
-      // For these formats, only allow one X variable at a time
-      // User must complete Y selection for current X before selecting next X
+    if (dataFormat === 'X Many Y Replicates') {
+      // For X Many Y Replicates format, only allow one X variable total
       const currentXCount = newXList.size;
-      const currentYCount = yVariableList.size;
-      const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
       
-      // If current X doesn't have its Y variables yet, don't allow more X
-      if (currentYCount < expectedYCount) {
-        return; // Don't allow more X variables until Y variables are complete
+      // Only allow one X variable total
+      if (currentXCount >= 1) {
+        console.warn('Cannot select more X variables: Only one X variable allowed for this format');
+        return; // Don't allow more than one X variable
       }
+      
+      // Limit to only one X variable even if multiple are selected
+      freeSlots = 1;
+    } else if (dataFormat === 'Many Y Replicates') {
+      // For Many Y Replicates format, no X variables needed
+      console.warn('Cannot select X variables: Many Y Replicates format does not require X variables');
+      return; // Don't allow X selection for this format
+    } else if (dataFormat === 'Y Many X Replicates') {
+      // For Y Many X Replicates format, require Y variables to be selected first
+      console.log('handleSendToX - Y Many X Replicates:', {
+        yVariableListSize: yVariableList.size,
+        dataFormat
+      });
+      
+      if (yVariableList.size === 0) {
+        console.warn('Cannot select X variables: Y variable must be selected first');
+        return; // Don't allow X selection until Y is selected
+      }
+      
+      // For this format, allow multiple sets of X variables for the same Y
+      // No limit on X variables for this format
+    } else if (dataFormat === 'Many X Replicates') {
+      // For Many X Replicates format, allow X selection freely (no Y requirement)
+      // This format is for horizontal point plots where X variables are grouped
+      console.log('handleSendToX - Many X Replicates: allowing X selection');
+      // No limit on X variables for this format
     }
     
+    // Check if there are any selected variables
+    const selectedVariables = Array.from(availableList.entries()).filter(([, checked]) => checked);
+    if (selectedVariables.length === 0) {
+      console.warn('No variables selected to send to X');
+      return;
+    }
+    
+    // Check if any selected variables are valid for X
+    const validVariables = selectedVariables.filter(([variableName]) => isValidForSlot(variableName, 'x'));
+    if (validVariables.length === 0) {
+      console.warn('No valid variables selected for X slot');
+      return;
+    }
+    
+    // Move variables
     for (const [variableName, checked] of availableList.entries()) {
       if (!checked) continue;
       if (moved >= freeSlots) break;
       // Only move numeric variables to X
-      if (!isValidForSlot(variableName, 'x')) continue;
+      if (!isValidForSlot(variableName, 'x')) {
+        console.warn(`Skipping ${variableName}: not valid for X slot`);
+        continue;
+      }
+      
       newXList.set(variableName, false);
       // Keep variable in available list but uncheck it
       newAvailableList.set(variableName, false);
       moved++;
+    }
+    
+    if (moved === 0) {
+      console.warn('No variables were moved to X list');
+      return;
     }
     
     setXVariableList(newXList);
@@ -157,39 +228,64 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     const newYList = new Map(yVariableList);
     const newAvailableList = new Map(availableList);
     const maxY = getMaxYCount(dataFormat);
-    const freeSlots = maxY ? Math.max(0, maxY - newYList.size) : Infinity;
+    let freeSlots = maxY ? Math.max(0, maxY - newYList.size) : Infinity;
     let moved = 0;
     
+    // Check if there are any selected variables
+    const selectedVariables = Array.from(availableList.entries()).filter(([, checked]) => checked);
+    if (selectedVariables.length === 0) {
+      console.warn('No variables selected to send to Y');
+      return;
+    }
+    
+    // Check if any selected variables are valid for Y
+    const validVariables = selectedVariables.filter(([variableName]) => isValidForSlot(variableName, 'y'));
+    if (validVariables.length === 0) {
+      console.warn('No valid variables selected for Y slot');
+      return;
+    }
+    
     // Special logic for replicate formats
-    if (['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) {
-      // For these formats, require X variables to be selected first
+    if (dataFormat === 'X Many Y Replicates') {
+      // For X Many Y Replicates format, require X variables to be selected first
       if (xVariableList.size === 0) {
+        console.warn('Cannot select Y variables: X variable must be selected first');
         return; // Don't allow Y selection until X is selected
       }
       
-      // Calculate how many Y variables are needed for current X variables
-      const currentXCount = xVariableList.size;
-      const currentYCount = newYList.size;
-      const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
-      
-      // Only allow Y selection if we haven't reached the expected count
-      if (currentYCount >= expectedYCount) {
-        return; // Don't allow more Y variables until next X is selected
-      }
-      
-      // For these formats, only allow moving exactly 2 Y variables at a time
-      const availableCheckedCount = Array.from(availableList.values()).filter(Boolean).length;
-      const validVariables = Array.from(availableList.entries())
-        .filter(([variableName, checked]) => checked && isValidForSlot(variableName, 'y'));
-      
-      // Only move 2 Y variables at a time
-      const variablesToMove = Math.min(2, validVariables.length, expectedYCount - currentYCount);
+      // For this format, allow multiple sets of Y variables for the same X
+      // Move all selected Y variables (no limit)
+      const variablesToMove = Math.min(validVariables.length, freeSlots);
       
       for (const [variableName, checked] of availableList.entries()) {
         if (!checked) continue;
         if (moved >= variablesToMove) break;
         // Only move numeric variables to Y
-        if (!isValidForSlot(variableName, 'y')) continue;
+        if (!isValidForSlot(variableName, 'y')) {
+          console.warn(`Skipping ${variableName}: not valid for Y slot`);
+          continue;
+        }
+        newYList.set(variableName, false);
+        // Keep variable in available list but uncheck it
+        newAvailableList.set(variableName, false);
+        moved++;
+      }
+    } else if (dataFormat === 'Many Y Replicates') {
+      // Special logic for Many Y Replicates format (vertical point plots)
+      // For this format, we can select Y variables freely (no X requirement)
+      // This format is for vertical point plots where Y variables are grouped
+      
+      // Move all selected Y variables
+      const variablesToMove = Math.min(validVariables.length, freeSlots);
+      
+      for (const [variableName, checked] of availableList.entries()) {
+        if (!checked) continue;
+        if (moved >= variablesToMove) break;
+        // Only move numeric variables to Y
+        if (!isValidForSlot(variableName, 'y')) {
+          console.warn(`Skipping ${variableName}: not valid for Y slot`);
+          continue;
+        }
         newYList.set(variableName, false);
         // Keep variable in available list but uncheck it
         newAvailableList.set(variableName, false);
@@ -197,51 +293,42 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
       }
     } else if (dataFormat === 'Y Many X Replicates') {
       // Special logic for Y Many X Replicates format (horizontal)
-      // For this format, require Y variables to be selected first
-      if (yVariableList.size === 0) {
-        return; // Don't allow Y selection until Y is selected
+      // For this format, only allow one Y variable total
+      const currentYCount = newYList.size;
+      
+      // Only allow one Y variable total
+      if (currentYCount >= 1) {
+        console.warn('Cannot select more Y variables: Only one Y variable allowed for this format');
+        return; // Don't allow more than one Y variable
       }
       
-      // Calculate how many Y variables are needed for current Y variables
-      const currentYCount = yVariableList.size;
-      const currentXCount = xVariableList.size;
-      const expectedXCount = currentYCount * 2; // Assuming 2 X variables per Y
-      
-      // Only allow Y selection if we haven't reached the expected count
-      if (currentXCount >= expectedXCount) {
-        return; // Don't allow more Y variables until next Y is selected
-      }
-      
-      // For this format, only allow moving exactly 2 Y variables at a time
-      const availableCheckedCount = Array.from(availableList.values()).filter(Boolean).length;
-      const validVariables = Array.from(availableList.entries())
-        .filter(([variableName, checked]) => checked && isValidForSlot(variableName, 'y'));
-      
-      // Only move 2 Y variables at a time
-      const variablesToMove = Math.min(2, validVariables.length, expectedXCount - currentXCount);
-      
-      for (const [variableName, checked] of availableList.entries()) {
-        if (!checked) continue;
-        if (moved >= variablesToMove) break;
-        // Only move numeric variables to Y
-        if (!isValidForSlot(variableName, 'y')) continue;
-        newYList.set(variableName, false);
-        // Keep variable in available list but uncheck it
-        newAvailableList.set(variableName, false);
-        moved++;
-      }
+      // Limit to only one Y variable even if multiple are selected
+      freeSlots = 1;
+    } else if (dataFormat === 'Many X Replicates') {
+      // Special logic for Many X Replicates format (horizontal point plots)
+      // For this format, Y is assumed as index, so no Y variables should be selected
+      console.warn('Cannot select Y variables: Many X Replicates format assumes Y as index');
+      return; // Don't allow Y selection for this format
     } else {
       // Standard logic for other formats
       for (const [variableName, checked] of availableList.entries()) {
         if (!checked) continue;
         if (moved >= freeSlots) break;
         // Only move numeric variables to Y
-        if (!isValidForSlot(variableName, 'y')) continue;
+        if (!isValidForSlot(variableName, 'y')) {
+          console.warn(`Skipping ${variableName}: not valid for Y slot`);
+          continue;
+        }
         newYList.set(variableName, false);
         // Keep variable in available list but uncheck it
         newAvailableList.set(variableName, false);
         moved++;
       }
+    }
+    
+    if (moved === 0) {
+      console.warn('No variables were moved to Y list');
+      return;
     }
     
     setYVariableList(newYList);

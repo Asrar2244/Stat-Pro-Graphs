@@ -192,7 +192,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
           <div className={classes.actions}>
             {showVariableSelection ? (
               <>
-                {(dataFormat === 'XY Pair' || dataFormat === 'XY Pairs' || dataFormat === 'XY Category' || dataFormat === 'X Many Y' || dataFormat === 'Y Many X' || dataFormat === 'X Many Y Replicates' || dataFormat === 'Y Many X Replicates' || dataFormat === 'Category Many Y' || dataFormat === 'Category Many X') && (
+                {(dataFormat === 'XY Pair' || dataFormat === 'XY Pairs' || dataFormat === 'XY Category' || dataFormat === 'X Many Y' || dataFormat === 'Y Many X' || dataFormat === 'X Many Y Replicates' || dataFormat === 'Y Many X Replicates' || dataFormat === 'Many Y Replicates' || dataFormat === 'Category Many Y' || dataFormat === 'Category Many X') && (
                   <>
                     <Button 
                       icon={<MdKeyboardDoubleArrowRight />} 

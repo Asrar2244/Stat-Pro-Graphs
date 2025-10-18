@@ -1,12 +1,14 @@
 /**
- * Trace generation utilities for plotly graphs
- * Handles creation of different types of traces based on plot configuration
+ * Simplified trace generation utilities for plotly graphs
+ * Based on the old working implementation
  */
 
 import { calculateErrorValues } from './errorCalculations';
 import { computeLinearRegression, createRegressionTraces } from './regressionAnalysis';
-import { createLineTrace, LineTraceConfig } from './line/lineTraceGeneration';
+import { createLinePlotTrace as createLineTrace } from './line/lineTraceGeneration';
+import { LineTraceConfig } from './line/types';
 import { parseLinePlotSubType, getLinePlotMode, getLineShape } from './line/linePlotProperties';
+import { create3DMeshTrace } from './3d-mesh/meshTraceGeneration';
 
 export interface TraceConfig {
   xv: number[];
@@ -28,6 +30,9 @@ export interface TraceConfig {
   // Error bar color override
   errorBarColor?: string;
   rows: any[];
+  // For 3D mesh plots
+  zv?: number[];
+  graphConfig?: any;
 }
 
 export interface SeriesConfig {
@@ -146,6 +151,13 @@ export const createScatterTrace = (config: TraceConfig): any => {
     errorBarVariableX, errorBarVariableY, errorBarDataX, errorBarDataY, errorBarColor, rows
   } = config;
   
+  console.log(`🔍 createScatterTrace called for: ${label}`, {
+    subType,
+    dataLength: xv?.length || 0,
+    color,
+    symbol
+  });
+  
   const isErrorBar = subType.toLowerCase().includes('error bar');
   const isVerticalErrorBar = subType.toLowerCase().includes('vertical') && isErrorBar;
   const isHorizontalErrorBar = subType.toLowerCase().includes('horizontal') && isErrorBar;
@@ -216,7 +228,6 @@ export const createScatterTrace = (config: TraceConfig): any => {
       errorBarDataY: errorBarDataYForCalculation
     });
     
-    
     // Enhanced error bar styling with SigmaPlot-style customization
     const errorBarStyle = {
       thickness: isAsymmetricErrorBar ? 1.5 : 2,  // Thinner for asymmetric (SigmaPlot style)
@@ -241,13 +252,7 @@ export const createScatterTrace = (config: TraceConfig): any => {
             size: errorBarStyle.capSize,
             color: errorBarColor || color
           },
-          visible: true,
-          // SigmaPlot-style asymmetric error bar enhancements
-          line: {
-            color: errorBarColor || color,
-            width: errorBarStyle.thickness,
-            dash: 'solid'
-          }
+          visible: true
         };
       } else {
         traceConfig.error_y = {
@@ -322,13 +327,7 @@ export const createScatterTrace = (config: TraceConfig): any => {
             size: errorBarStyle.capSize,
             color: errorBarColor || color
           },
-          visible: true,
-          // SigmaPlot-style asymmetric error bar enhancements
-          line: {
-            color: errorBarColor || color,
-            width: errorBarStyle.thickness,
-            dash: 'solid'
-          }
+          visible: true
         };
         traceConfig.error_x = {
           type: 'data',
@@ -343,13 +342,7 @@ export const createScatterTrace = (config: TraceConfig): any => {
             size: errorBarStyle.capSize,
             color: errorBarColor || color
           },
-          visible: true,
-          // SigmaPlot-style asymmetric error bar enhancements
-          line: {
-            color: errorBarColor || color,
-            width: errorBarStyle.thickness,
-            dash: 'solid'
-          }
+          visible: true
         };
       } else {
         traceConfig.error_y = {
@@ -397,7 +390,7 @@ export const createScatterTrace = (config: TraceConfig): any => {
     });
     
     traceConfig.marker = { 
-            color: finalColor,
+      color: finalColor,
       symbol: 'circle',
       size: 12, // Larger, more prominent markers
       line: { 
@@ -439,7 +432,7 @@ export const createScatterTrace = (config: TraceConfig): any => {
     });
     
     traceConfig.marker = { 
-            color: finalColor,
+      color: finalColor,
       symbol: 'circle',
       size: baseSize,
       opacity: 0.8, // Higher opacity for better visibility
@@ -476,6 +469,15 @@ export const createScatterTrace = (config: TraceConfig): any => {
     traceConfig.mode = 'markers';
     traceConfig.marker = { color, symbol };
   }
+
+  console.log(`✅ Final scatter trace for ${label}:`, {
+    type: traceConfig.type,
+    mode: traceConfig.mode,
+    name: traceConfig.name,
+    dataLength: traceConfig.x?.length || 0,
+    hasErrorBars: !!traceConfig.error_y || !!traceConfig.error_x,
+    markerColor: traceConfig.marker?.color
+  });
 
   return traceConfig;
 };
@@ -544,8 +546,30 @@ export const createDotPlotDottedLines = (
  * Create trace based on plot type - automatically determines line vs scatter
  */
 export const createTrace = (config: TraceConfig): any => {
-  const { subType } = config;
+  const { subType, label } = config;
   const lowerSubType = subType.toLowerCase();
+  
+  console.log(`🔍 createTrace called for: ${label}`, {
+    subType,
+    lowerSubType,
+    dataLength: config.xv?.length || 0
+  });
+  
+  // Check if this is a 3D mesh plot
+  const is3DMeshPlot = lowerSubType.includes('3d mesh') || 
+                       lowerSubType.includes('3d-mesh') ||
+                       subType === '3D Mesh Plot' ||
+                       config.graphConfig?.graphType === '3D Mesh Plot';
+  
+  if (is3DMeshPlot) {
+    console.log(`🌐 Creating 3D Mesh Trace for: ${label}`, {
+      subType,
+      lowerSubType,
+      graphType: config.graphConfig?.graphType,
+      is3DMeshPlot
+    });
+    return create3DMeshTrace(config);
+  }
   
   // Check if this is a line plot based on specific line plot subTypes
   const isLinePlot = lowerSubType.includes('straight line') || 
@@ -560,14 +584,14 @@ export const createTrace = (config: TraceConfig): any => {
                      lowerSubType.includes('multiple horizontal');
   
   if (isLinePlot) {
-    console.log(`📈 Creating Line Plot Trace for: ${config.label}`, {
+    console.log(`📈 Creating Line Plot Trace for: ${label}`, {
       subType,
       lowerSubType,
       isLinePlot
     });
     return createLinePlotTrace(config);
   } else {
-    console.log(`📊 Creating Scatter Plot Trace for: ${config.label}`, {
+    console.log(`📊 Creating Scatter Plot Trace for: ${label}`, {
       subType,
       lowerSubType,
       isLinePlot
@@ -584,7 +608,7 @@ export const createTraces = (configs: TraceConfig[]): any[] => {
 };
 
 /**
- * Create regression traces if needed
+ * Create regression traces if needed - SIMPLIFIED VERSION
  */
 export const createRegressionTracesIfNeeded = (
   xv: number[], 
@@ -596,7 +620,7 @@ export const createRegressionTracesIfNeeded = (
   confidenceIntervalOpacity: number = 0.2
 ): any[] => {
   const isRegression = subType.toLowerCase().includes('regression');
-  console.log(`🔍 createRegressionTracesIfNeeded for "${label}":`, {
+  console.log(`🔍 SIMPLIFIED createRegressionTracesIfNeeded for "${label}":`, {
     subType,
     isRegression,
     dataLength: xv.length,

@@ -163,7 +163,7 @@ export const assessDataQuality = (
   // Detect outliers
   const xOutliers = detectOutliers(xValues, defaultOptions.outlierMethod, defaultOptions.outlierThreshold);
   const yOutliers = detectOutliers(yValues, defaultOptions.outlierMethod, defaultOptions.outlierThreshold);
-  const allOutliers = [...new Set([...xOutliers, ...yOutliers])];
+  const allOutliers = Array.from(new Set([...xOutliers, ...yOutliers]));
   
   if (allOutliers.length > 0) {
     warnings.push(`${allOutliers.length} potential outliers detected.`);

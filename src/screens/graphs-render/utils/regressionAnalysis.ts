@@ -20,14 +20,22 @@ export interface RegressionResult {
  * Enhanced linear regression with comprehensive statistics
  */
 export const computeLinearRegression = (xs: number[], ys: number[]): RegressionResult | null => {
+  console.log(`🔍 computeLinearRegression called with:`, {
+    xsLength: xs.length,
+    ysLength: ys.length,
+    xsSample: xs.slice(0, 5),
+    ysSample: ys.slice(0, 5)
+  });
   
   const pairs = xs
     .map((x, i) => [x, ys[i]] as [number, number])
     .filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
   const n = pairs.length;
   
+  console.log(`📊 Filtered data pairs: ${n} valid pairs out of ${xs.length} total`);
   
   if (n < 2) {
+    console.log(`❌ Insufficient data for regression: ${n} valid pairs`);
     return null;
   }
   
@@ -86,7 +94,7 @@ export const computeLinearRegression = (xs: number[], ys: number[]): RegressionR
     slope: m,
     intercept: b,
     rSquared: rSquared,
-    n: n
+    dataPoints: n
   });
   
   return result;
@@ -138,6 +146,14 @@ export const createRegressionTraces = (
   const lineX = Array.from({ length: numPoints }, (_, i) => xMin + (xMax - xMin) * i / (numPoints - 1));
   const lineY = lineX.map(x => m * x + b);
   
+  console.log(`📊 Regression line data:`, {
+    xMin, xMax,
+    lineXLength: lineX.length,
+    lineYLength: lineY.length,
+    lineXSample: lineX.slice(0, 3),
+    lineYSample: lineY.slice(0, 3)
+  });
+  
   // Configure regression line based on sub-type
   let lineConfig: any = {
     x: lineX,
@@ -145,15 +161,37 @@ export const createRegressionTraces = (
     type: 'scatter',
     mode: 'lines',
     name: `${label} (fit, R²=${rSquared.toFixed(3)})`,
-    line: { color: color || 'rgba(200,0,0,0.85)', width: 2 },
+    line: { 
+      color: color || '#ff0000', // Use bright red for better visibility
+      width: 4, // Make even thicker for better visibility
+      dash: 'solid' // Ensure solid line
+    },
     hoverinfo: 'skip',
+    showlegend: true, // Ensure it shows in legend
+    visible: true, // Ensure it's visible
+    opacity: 1.0 // Ensure full opacity
   };
+  
+  console.log(`🎨 Creating regression line trace:`, {
+    name: lineConfig.name,
+    color: lineConfig.line.color,
+    width: lineConfig.line.width,
+    dataPoints: lineX.length,
+    xRange: [Math.min(...lineX), Math.max(...lineX)],
+    yRange: [Math.min(...lineY), Math.max(...lineY)]
+  });
 
   // Different regression line styles based on sub-type
   if (subType.toLowerCase().includes('multiple')) {
-    // Multiple regression - dashed line
-    lineConfig.line.dash = 'dash';
-    lineConfig.line.width = 1.5;
+    // Multiple regression - enhanced styling for better visibility
+    lineConfig.line.dash = 'solid'; // Use solid line for better visibility
+    lineConfig.line.width = 2.5; // Thicker line for better visibility
+    lineConfig.line.color = color || 'rgba(200,0,0,0.9)'; // Ensure good contrast
+    console.log(`🎨 Multiple regression line styling:`, {
+      color: lineConfig.line.color,
+      width: lineConfig.line.width,
+      dash: lineConfig.line.dash
+    });
   } else if (isErrorBar) {
     // Error bar regression - thicker line with enhanced styling
     lineConfig.line.width = 3;
@@ -165,6 +203,15 @@ export const createRegressionTraces = (
   }
 
   traces.push(lineConfig);
+  
+  console.log(`📈 Regression line trace created:`, {
+    label: lineConfig.name,
+    color: lineConfig.line.color,
+    width: lineConfig.line.width,
+    dash: lineConfig.line.dash,
+    dataPoints: lineX.length,
+    subType
+  });
   
   // Add confidence intervals for error bar regression
   if (isErrorBar && predictionIntervals && showConfidenceInterval) {

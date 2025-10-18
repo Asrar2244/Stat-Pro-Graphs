@@ -152,7 +152,9 @@ const AppBody: FC = () => {
         if (query === '') return;
         const db = new Database(CONFIGURATION_DB);
         db.executeQuery(query, [id]).catch((error) => {
-          setBlockUI({ value: true, msg: error.message });
+          console.error('❌ Error closing tab:', error);
+          // Don't show error dialog for tab closing errors - just log them
+          // setBlockUI({ value: true, msg: error.message });
         });
       }
     }

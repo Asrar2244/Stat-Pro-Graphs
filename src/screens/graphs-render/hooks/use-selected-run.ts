@@ -30,7 +30,9 @@ export const useSelectedRun = (dbName: string, id: number): ISelectedRun | undef
           setSelectedRun(result);
         })
         .catch((e) => {
-          setBlockUI({ value: true, msg: e.message });
+          console.error('❌ Error fetching single graph:', e);
+          // Don't show error dialog for graph fetching errors - just log them
+          // setBlockUI({ value: true, msg: e.message });
         })
         .finally(() => {
           setLoading(false);

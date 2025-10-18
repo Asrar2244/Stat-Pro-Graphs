@@ -454,6 +454,130 @@ export const validateScatterPlotRequirements = (
           });
         }
         break;
+
+      case 'X Many Y Replicates':
+        const hasXForReplicates = selectedVariables.x && selectedVariables.x.length > 0;
+        const hasYForReplicates = selectedVariables.y && selectedVariables.y.length > 0;
+        
+        if (!hasXForReplicates && !hasYForReplicates) {
+          errors.push({
+            field: 'variables',
+            message: 'X Many Y Replicates format requires one X variable and multiple Y variables in sets of 2',
+            severity: 'error'
+          });
+        } else if (!hasXForReplicates) {
+          errors.push({
+            field: 'xVariables',
+            message: 'Please select one X variable for X Many Y Replicates format',
+            severity: 'error'
+          });
+        } else if (hasXForReplicates && selectedVariables.x.length !== 1) {
+          errors.push({
+            field: 'xVariables',
+            message: 'X Many Y Replicates format requires exactly one X variable (you have ' + (selectedVariables.x?.length || 0) + ')',
+            severity: 'error'
+          });
+        } else if (!hasYForReplicates) {
+          errors.push({
+            field: 'yVariables',
+            message: 'Please select Y variables for X Many Y Replicates format',
+            severity: 'error'
+          });
+        } else if (hasYForReplicates && selectedVariables.y && selectedVariables.y.length % 2 !== 0) {
+          errors.push({
+            field: 'yVariables',
+            message: `X Many Y Replicates format requires Y variables in complete sets of 2. You have ${selectedVariables.y.length} Y variables (${Math.floor(selectedVariables.y.length / 2)} complete sets + 1 incomplete). Please select one more Y variable to complete the set.`,
+            severity: 'error'
+          });
+        }
+        break;
+
+      case 'Many Y Replicates':
+        const hasYForManyReplicates = selectedVariables.y && selectedVariables.y.length > 0;
+        
+        if (!hasYForManyReplicates) {
+          errors.push({
+            field: 'yVariables',
+            message: 'Please select Y variables for Many Y Replicates format',
+            severity: 'error'
+          });
+        } else if (hasYForManyReplicates && selectedVariables.y && selectedVariables.y.length % 2 !== 0) {
+          errors.push({
+            field: 'yVariables',
+            message: `Many Y Replicates format requires Y variables in complete sets of 2. You have ${selectedVariables.y.length} Y variables (${Math.floor(selectedVariables.y.length / 2)} complete sets + 1 incomplete). Please select one more Y variable to complete the set.`,
+            severity: 'error'
+          });
+        }
+        if (selectedVariables.x && selectedVariables.x.length > 0) {
+          errors.push({
+            field: 'xVariables',
+            message: 'Many Y Replicates format should not have X variables (X is assumed as index)',
+            severity: 'warning'
+          });
+        }
+        break;
+
+      case 'Y Many X Replicates':
+        const hasYForYReplicates = selectedVariables.y && selectedVariables.y.length > 0;
+        const hasXForYReplicates = selectedVariables.x && selectedVariables.x.length > 0;
+        
+        if (!hasYForYReplicates && !hasXForYReplicates) {
+          errors.push({
+            field: 'variables',
+            message: 'Y Many X Replicates format requires one Y variable and multiple X variables in sets of 2',
+            severity: 'error'
+          });
+        } else if (!hasYForYReplicates) {
+          errors.push({
+            field: 'yVariables',
+            message: 'Please select one Y variable for Y Many X Replicates format',
+            severity: 'error'
+          });
+        } else if (hasYForYReplicates && selectedVariables.y.length !== 1) {
+          errors.push({
+            field: 'yVariables',
+            message: 'Y Many X Replicates format requires exactly one Y variable (you have ' + (selectedVariables.y?.length || 0) + ')',
+            severity: 'error'
+          });
+        } else if (!hasXForYReplicates) {
+          errors.push({
+            field: 'xVariables',
+            message: 'Please select X variables for Y Many X Replicates format',
+            severity: 'error'
+          });
+        } else if (hasXForYReplicates && selectedVariables.x && selectedVariables.x.length % 2 !== 0) {
+          errors.push({
+            field: 'xVariables',
+            message: `Y Many X Replicates format requires X variables in complete sets of 2. You have ${selectedVariables.x.length} X variables (${Math.floor(selectedVariables.x.length / 2)} complete sets + 1 incomplete). Please select one more X variable to complete the set.`,
+            severity: 'error'
+          });
+        }
+        break;
+
+      case 'Many X Replicates':
+        const hasXForManyXReplicates = selectedVariables.x && selectedVariables.x.length > 0;
+        
+        if (!hasXForManyXReplicates) {
+          errors.push({
+            field: 'xVariables',
+            message: 'Please select X variables for Many X Replicates format',
+            severity: 'error'
+          });
+        } else if (hasXForManyXReplicates && selectedVariables.x && selectedVariables.x.length % 2 !== 0) {
+          errors.push({
+            field: 'xVariables',
+            message: `Many X Replicates format requires X variables in complete sets of 2. You have ${selectedVariables.x.length} X variables (${Math.floor(selectedVariables.x.length / 2)} complete sets + 1 incomplete). Please select one more X variable to complete the set.`,
+            severity: 'error'
+          });
+        }
+        if (selectedVariables.y && selectedVariables.y.length > 0) {
+          errors.push({
+            field: 'yVariables',
+            message: 'Many X Replicates format should not have Y variables (Y is assumed as index)',
+            severity: 'warning'
+          });
+        }
+        break;
     }
   }
 

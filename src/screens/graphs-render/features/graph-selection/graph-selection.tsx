@@ -27,6 +27,7 @@ const loadByType = (graphType?: string) => {
   const t = (graphType || '').toLowerCase();
   if (t.includes('scatter')) return <ScatterPlotGraph />;
   if (t.includes('line')) return <LinePlotGraph />;
+  if (t.includes('3d mesh') || t.includes('3d-mesh')) return <ScatterPlotGraph />; // Use ScatterPlotGraph for 3D mesh
   return <></>;
 };
 

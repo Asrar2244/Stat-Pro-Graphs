@@ -1,4 +1,4 @@
-import { FC, ReactNode, memo, useEffect } from 'react';
+import { FC, ReactNode, memo, useEffect, useState, useMemo } from 'react';
 import {
   Button,
   Text,
@@ -36,6 +36,24 @@ const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
   const { config } = useActiveNode([]);
   const { t } = useTranslation('outputToolBar');
   const { data, isLoading } = useFetchGraphs(config.tabName);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Filter data based on search query
+  const filteredData = useMemo(() => {
+    if (!data || !Array.isArray(data)) return [];
+    if (!searchQuery.trim()) return data;
+    
+    return data.filter((item) => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        item.title?.toLowerCase().includes(searchLower) ||
+        item.subTitle?.toLowerCase().includes(searchLower) ||
+        item.id?.toString().includes(searchLower) ||
+        item.createdAt?.toLowerCase().includes(searchLower) ||
+        item.updatedAt?.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [data, searchQuery]);
   
   useEffect(() => {
     if (Array.isArray(data)) {
@@ -63,6 +81,8 @@ const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
           <Input
             appearance="filled-lighter"
             placeholder={t('searchQuery')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             contentAfter={<Button appearance="transparent" icon={<CiSearch />} size="small" />}
           />
         </Field>
@@ -81,7 +101,7 @@ const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
                 {isLoading ? (
                   <ListSkeleton skeletonCount={20} />
                 ) : (
-                  data?.map((dtl, index) => (
+                  filteredData?.map((dtl, index) => (
                     <HistoryListRender
                       key={index}
                       {...dtl}

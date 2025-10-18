@@ -38,6 +38,16 @@ export const insertGraphRun = async (workspacePath: string, run: GraphRunInput) 
   const sql = `INSERT INTO ${GRAPHS}(name, createdAt, config, tabName, graphType, modifiedDateTime, properties) VALUES(?, ?, ?, ?, ?, ?, ?);`;
   const params = [run.name, run.createdAt, JSON.stringify(run.config), run.tabName, run.graphType, new Date().toISOString(), JSON.stringify(run.properties || {})];
   await db.executeQueryWithParams(sql, params as any);
+  
+  // Automatically set flag to display the latest graph
+  try {
+    const { useStartProStore } = await import('@store/main-store');
+    const { setRenderLatestRun } = useStartProStore.getState();
+    setRenderLatestRun(true);
+    console.log('🎯 Auto-selecting latest graph after creation');
+  } catch (error) {
+    console.warn('Could not set renderLatestRun flag:', error);
+  }
 };
 
 export const listGraphRuns = async (workspacePath: string): Promise<GraphRunRow[]> => {

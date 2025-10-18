@@ -32,7 +32,8 @@ export const useFetchGraphs = (tabName: string): IFetch => {
       return result;
     } catch (e: any) {
       console.error('❌ Error fetching graphs:', e);
-      setBlockUI({ value: true, msg: e.message });
+      // Don't show error dialog for graph fetching errors - just log them
+      // setBlockUI({ value: true, msg: e.message });
     } finally {
       setLoading(false);
     }

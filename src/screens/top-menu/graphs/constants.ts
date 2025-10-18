@@ -26,6 +26,7 @@ export const graph3DOptions: GraphOption[] = [
   {
     label: 'Surface',
     children: [
+      { label: '3D Mesh', value: 'mesh', execute: '3d-mesh', icon: MdDashboard },
       { label: '3D Surface', value: 'surface', execute: '3d-surface', icon: MdDashboard },
       { label: '3D Scatter', value: 'scatter3d', execute: '3d-scatter', icon: MdScatterPlot },
       { label: '3D Bar', value: 'bar3d', execute: '3d-bar', icon: MdBarChart },
@@ -35,7 +36,6 @@ export const graph3DOptions: GraphOption[] = [
   {
     label: 'Advanced 3D',
     children: [
-      { label: '3D Mesh', value: 'mesh', execute: '3d-mesh', icon: MdDashboard },
       { label: '3D Contour', value: 'contour3d', execute: '3d-contour', icon: MdMap },
       { label: '3D Volume', value: 'volume', execute: '3d-volume', icon: MdVolumeUp },
     ]

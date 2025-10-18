@@ -1,6 +1,6 @@
 import { FC } from 'react';
-import { Text, Toolbar, ToolbarButton } from '@fluentui/react-components';
-import { MdHistory, MdSettings } from 'react-icons/md';
+import { Text, Toolbar, ToolbarButton, Switch, Tooltip } from '@fluentui/react-components';
+import { MdHistory, MdSettings, MdLightMode, MdDarkMode } from 'react-icons/md';
 import { tokens } from '@fluentui/react-components';
 import { GraphProperties, GlobalGraphProperties, PlotSpecificProperties } from './hooks/use-tools';
 import { useThemeStore } from '@store';
@@ -15,12 +15,14 @@ interface IToolBar {
   showGraphProperties: boolean;
   totalRuns: number;
   graphProperties: GraphProperties;
+  canvasMode: 'light' | 'dark';
   setFontBold: (value: boolean) => void;
   setFontItalic: (value: boolean) => void;
   setFontSize: (value: number) => void;
   setFontColor: (value: string) => void;
   toggleShowHistory: () => void;
   toggleGraphProperties: () => void;
+  toggleCanvasMode: () => void;
   updateGraphProperty: <K extends keyof GlobalGraphProperties>(key: K, value: GlobalGraphProperties[K]) => void;
   updatePlotSpecificProperty: <T extends keyof PlotSpecificProperties>(plotType: T, key: keyof NonNullable<PlotSpecificProperties[T]>, value: any) => void;
   getCurrentPlotType: (subType?: string) => keyof PlotSpecificProperties | null;
@@ -75,23 +77,126 @@ export const ToolBar: FC<IToolBarProps> = ({ tools, title, subTitle }) => {
           )}
         </ToolbarButton>
         
-        <ToolbarButton
-          icon={<MdSettings />}
-          onClick={tools.toggleGraphProperties}
-          appearance={tools.showGraphProperties ? 'primary' : 'subtle'}
-          style={{ marginLeft: 'auto' }}
+        <div 
+          style={{ 
+            marginLeft: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: tokens.spacingHorizontalM
+          }}
         >
-          Properties
-        </ToolbarButton>
-        
-        <ToolbarButton
-          icon={<MdHistory />}
-          onClick={tools.toggleShowHistory}
-          appearance={tools.showHistory ? 'primary' : 'subtle'}
-          style={{ marginLeft: tokens.spacingHorizontalM }}
-        >
-          History ({tools.totalRuns})
-        </ToolbarButton>
+          <Tooltip content="Properties" relationship="label" withArrow>
+            <ToolbarButton
+              icon={<MdSettings />}
+              onClick={tools.toggleGraphProperties}
+              appearance={tools.showGraphProperties ? 'primary' : 'subtle'}
+              style={{ 
+                minWidth: 'auto',
+                padding: '8px 12px'
+              }}
+            />
+          </Tooltip>
+          
+          <Tooltip content={`History (${tools.totalRuns})`} relationship="label" withArrow>
+            <ToolbarButton
+              icon={<MdHistory />}
+              onClick={tools.toggleShowHistory}
+              appearance={tools.showHistory ? 'primary' : 'subtle'}
+              style={{ 
+                minWidth: 'auto',
+                padding: '8px 12px'
+              }}
+            />
+          </Tooltip>
+          
+          <Tooltip content={`${tools.canvasMode === 'light' ? 'Switch to Dark' : 'Switch to Light'} Mode`} relationship="label" withArrow>
+            <div 
+              style={{ 
+                position: 'relative'
+              }}
+            >
+              <Switch
+                checked={tools.canvasMode === 'dark'}
+                onChange={() => {
+                  console.log('🎨 Canvas Mode Toggle Clicked:', {
+                    currentMode: tools.canvasMode,
+                    newMode: tools.canvasMode === 'light' ? 'dark' : 'light'
+                  });
+                  tools.toggleCanvasMode();
+                }}
+                style={{
+                  '--switch-thumb-size': '32px',
+                  '--switch-track-width': '64px',
+                  '--switch-track-height': '32px',
+                  '--switch-thumb-transition': 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '--switch-track-transition': 'background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '--switch-track-checked-background': '#0078d4',
+                  '--switch-track-unchecked-background': '#e1dfdd',
+                  '--switch-thumb-checked-background': '#ffffff',
+                  '--switch-thumb-unchecked-background': '#ffffff',
+                  '--switch-track-border-radius': '16px',
+                  '--switch-thumb-border-radius': '16px'
+                } as React.CSSProperties}
+              />
+          {/* Light icon inside switch track (left side) */}
+          <div
+            style={{
+              position: 'absolute',
+              left: '10px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              zIndex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '16px',
+              height: '16px',
+              transition: 'all 0.3s ease-in-out'
+            }}
+          >
+            <MdLightMode 
+              style={{ 
+                color: tools.canvasMode === 'light' ? '#ffffff' : '#666666',
+                fontSize: '12px',
+                transition: 'color 0.3s ease-in-out',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }} 
+            />
+          </div>
+          {/* Dark icon inside switch track (right side) */}
+          <div
+            style={{
+              position: 'absolute',
+              right: '10px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              zIndex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '16px',
+              height: '16px',
+              transition: 'all 0.3s ease-in-out'
+            }}
+          >
+            <MdDarkMode 
+              style={{ 
+                color: tools.canvasMode === 'dark' ? '#ffffff' : '#666666',
+                fontSize: '12px',
+                transition: 'color 0.3s ease-in-out',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }} 
+            />
+          </div>
+            </div>
+          </Tooltip>
+        </div>
       </Toolbar>
     </div>
   );

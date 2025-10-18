@@ -1,10 +1,10 @@
 import { useGraphBodyLayout } from '../styles/use-graph-body-render';
 import { GraphProperty } from './graph-property';
 import { GraphTabs } from './graph-tabs';
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { GraphCanvas } from '../../graphs-render/plotly-canvas';
-import { ToolBar as OutputToolBar } from '../../output-render/tool-bar';
-import { useTools } from '../../output-render/hooks/use-tools';
+import { ToolBar } from '../tool-bar';
+import { useTools } from '../hooks/use-tools';
 import { PlotSpecificProperties, DEFAULT_PLOT_PROPERTIES } from '../../graphs-render/utils/plotProperties';
 export const GraphBodyRender: FC<any> = (props) => {
   const classes = useGraphBodyLayout();
@@ -17,15 +17,30 @@ export const GraphBodyRender: FC<any> = (props) => {
     setPlotProperties(newProperties);
   };
 
-  // Create liveProps with plot properties
+  // Create liveProps with plot properties and canvas mode
   const liveProps = {
     ...props.liveProps,
-    plotSpecific: plotProperties
+    plotSpecific: plotProperties,
+    canvasMode: tools.canvasMode
   };
+  
+  console.log('🎨 Graph Body Render - Canvas Mode:', {
+    toolsCanvasMode: tools.canvasMode,
+    livePropsCanvasMode: liveProps.canvasMode,
+    hasTools: !!tools
+  });
+  
+  // Track canvas mode changes
+  useEffect(() => {
+    console.log('🎨 Graph Body Render - Canvas Mode Changed:', {
+      canvasMode: tools.canvasMode,
+      timestamp: new Date().toISOString()
+    });
+  }, [tools.canvasMode]);
 
   return (
     <div className={classes.graphBodyLayout}>
-      <OutputToolBar 
+      <ToolBar 
         tools={tools} 
         title={props?.graphConfig?.subType || ''} 
         subTitle={props?.graphConfig?.dataFormat || ''} 
@@ -36,7 +51,11 @@ export const GraphBodyRender: FC<any> = (props) => {
         plotProperties={plotProperties}
         onPlotPropertiesChange={handlePlotPropertiesChange}
       />
-      <GraphCanvas {...props} liveProps={liveProps} />
+      <GraphCanvas 
+        {...props} 
+        liveProps={liveProps} 
+        key={`canvas-${tools.canvasMode}`} // Force re-render when canvas mode changes
+      />
     </div>
   );
 }; 

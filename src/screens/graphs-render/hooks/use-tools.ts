@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Global properties that apply to all graphs
 export interface GlobalGraphProperties {
@@ -19,6 +19,7 @@ export interface GlobalGraphProperties {
   axisXData?: string;
   axisYData?: string;
   showTitle: boolean;
+  canvasMode?: 'light' | 'dark';
 
   // Legends
   showLegend: boolean;
@@ -180,10 +181,11 @@ export const useTools = () => {
   const [fontItalic, setFontItalic] = useState(false);
   const [fontSize, setFontSize] = useState(12);
   const [fontColor, setFontColor] = useState('#000000');
-  const [showRunHistory, setShowRunHistory] = useState(false);
+  const [showRunHistory, setShowRunHistory] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [showGraphProperties, setShowGraphProperties] = useState(false);
   const [totalRuns, setTotalRuns] = useState(0);
+  const [canvasMode, setCanvasMode] = useState<'light' | 'dark'>('light');
   
   // Graph properties state
   const [graphProperties, setGraphProperties] = useState<GraphProperties>({
@@ -203,6 +205,7 @@ export const useTools = () => {
       axisXData: 'X axis',
       axisYData: 'Y axis',
       showTitle: true,
+      canvasMode: 'light',
       // Legends defaults
       showLegend: true,
       legendTitle: '',
@@ -361,6 +364,17 @@ export const useTools = () => {
     }
   };
 
+  const toggleCanvasMode = () => {
+    setCanvasMode(prev => {
+      const newMode = prev === 'light' ? 'dark' : 'light';
+      console.log('🎨 Canvas Mode Toggle in use-tools:', {
+        previousMode: prev,
+        newMode: newMode
+      });
+      return newMode;
+    });
+  };
+
   // Update global graph properties
   const updateGraphProperty = <K extends keyof GlobalGraphProperties>(
     key: K,
@@ -481,6 +495,7 @@ export const useTools = () => {
     showHistory,
     showGraphProperties,
     totalRuns,
+    canvasMode,
     graphProperties,
     setFontBold,
     setFontItalic,
@@ -488,6 +503,7 @@ export const useTools = () => {
     setFontColor,
     toggleShowHistory,
     toggleGraphProperties,
+    toggleCanvasMode,
     updateGraphProperty,
     updatePlotSpecificProperty,
     updateLegendTextEntry,

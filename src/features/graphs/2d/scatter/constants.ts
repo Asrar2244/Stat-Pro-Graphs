@@ -68,7 +68,6 @@ export const DATA_FORMATS: DataFormat[] = [
   'Many X Replicates',
   'X Replicates',
   'Y Single X Replicates',
-  'Y Many X Replicates',
   // Special formats
   'YX Pairs',
   'Category Many Y',

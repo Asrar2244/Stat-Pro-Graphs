@@ -124,7 +124,8 @@ export const parseLinePlotSubType = (subType: string): Partial<LinePlotStyle> =>
     style.showMarkers = false;
     style.showLines = true;
   } else {
-    // Default for line plots: show lines only, no markers (clean line plots)
+    // Default for ALL line plots: show lines only, no markers (clean line plots)
+    // This includes step plots, spline curves, straight lines, etc.
     style.showMarkers = false;
     style.showLines = true;
   }
@@ -169,25 +170,23 @@ export const parseLinePlotSubType = (subType: string): Partial<LinePlotStyle> =>
 export const getLinePlotMode = (subType: string, style: Partial<LinePlotStyle>): string => {
   const lowerSubType = subType.toLowerCase();
   
-  // Special cases for specific line plot types
-  if (lowerSubType.includes('spline')) {
-    return 'lines+markers';
-  } else if (lowerSubType.includes('step')) {
-    return 'lines+markers';
-  } else if (lowerSubType.includes('area')) {
-    return 'lines+markers';
-  }
-  
-  // Determine mode based on style configuration
+  // Determine mode based on style configuration first
   if (style.showMarkers && style.showLines) {
     return 'lines+markers';
   } else if (style.showMarkers && !style.showLines) {
     return 'markers';
   } else if (!style.showMarkers && style.showLines) {
-    return 'lines';
-  } else {
-    // Default fallback
+    return 'lines';  // This is the default for clean line plots
+  }
+  
+  // Fallback based on subType if style is not clear
+  if (lowerSubType.includes('markers only') || lowerSubType.includes('markers-only')) {
+    return 'markers';
+  } else if (lowerSubType.includes('line+markers') || lowerSubType.includes('line with markers')) {
     return 'lines+markers';
+  } else {
+    // Default for all line plots: lines only (no markers)
+    return 'lines';
   }
 };
 

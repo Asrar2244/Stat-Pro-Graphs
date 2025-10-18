@@ -63,6 +63,11 @@ const LinePlotModal = lazy(() =>
   import('../../features/graphs/2d/line').then((m) => ({ default: m.LinePlotModal })),
 );
 
+// 3D Mesh Plot Modal
+const MeshPlotModal = lazy(() =>
+  import('../../features/graphs/3d/mesh').then((m) => ({ default: m.MeshPlotModal })),
+);
+
 export const withMenuEvents = <P extends object>(
   translationNs: string,
   WrappedComponent: React.ComponentType<P>,
@@ -222,6 +227,102 @@ const MenuSelector: FC<{
     return <LinePlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
+  // 3D Mesh Plot wrapper with real data integration
+  const MeshWrapper: FC<IModal> = (m) => {
+    const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+    const projectNames = Object.keys(projects);
+    const { openNewTabAction } = useMenuCodeExecutor();
+    const { setRenderLatestRun } = useStartProStore();
+    const { t } = useTranslation('common');
+    
+    // For now, use empty datasets array - this would be populated based on selected project
+    const datasets: string[] = [];
+    
+    const onCreateGraph = async (config: any) => {
+      console.log('Creating 3D Mesh Plot with config:', config);
+      try {
+        const workspacePath = projects[config.selectedProject]?.workspacePath;
+        
+        // Ensure 3D mesh configuration is properly structured with meshConfig in graphConfig
+        const meshConfig = {
+          ...config,
+          graphType: '3D Mesh Plot',
+          subType: '3D Mesh Plot', // Ensure subType is set for 3D mesh detection
+          dataFormat: config.dataFormat || 'XYZ Triplets', // Ensure dataFormat is set
+          // Store mesh configuration directly in graphConfig under meshConfig property
+          meshConfig: {
+            surfaceType: config.surfaceType || 'surface',
+            interpolation: config.interpolation || 'linear',
+            colorScale: config.colorScale || 'Viridis',
+            showContours: config.showContours !== false,
+            showSurface: config.showSurface !== false,
+            opacity: config.opacity || 0.8,
+            lighting: config.lighting !== false,
+            contourOpacity: config.contourOpacity || 0.5,
+            smoothShading: config.smoothShading !== false,
+            showGrid: config.showGrid !== false,
+            gridOpacity: config.gridOpacity || 0.3,
+            // Add any other mesh-specific settings from the modal
+            ...config.meshSettings // Include any additional mesh settings from the modal
+          }
+        };
+        
+        console.log('🎨 3D Mesh Executer - Received config:', {
+          originalConfig: config,
+          surfaceType: config.surfaceType,
+          colorScale: config.colorScale,
+          opacity: config.opacity,
+          showContours: config.showContours,
+          lighting: config.lighting,
+          smoothShading: config.smoothShading,
+          showGrid: config.showGrid,
+          selectedColorScale: config.colorScale,
+          colorScaleType: typeof config.colorScale,
+          colorScaleLength: config.colorScale?.length
+        });
+        
+        console.log('Enhanced 3D Mesh Config with meshConfig:', meshConfig);
+        
+        // Persist a run immediately so history shows up
+        const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
+        await insertGraphRun(workspacePath, {
+          name: meshConfig?.subType || '3D Mesh Plot',
+          createdAt: new Date().toISOString(),
+          config: { graphConfig: meshConfig, workspacePath },
+          tabName: meshConfig?.selectedProject || '',
+          graphType: meshConfig?.graphType || '3D Mesh Plot',
+          properties: {}, // Keep properties empty, store everything in graphConfig
+        });
+        
+        // Set flag to auto-select the latest run when Graphs tab opens
+        setRenderLatestRun(true);
+        
+        // Open the Graphs output screen under Explorer for the selected project
+        openNewTabAction({ 
+          id: GRAPHS, // Use GRAPHS constant
+          isEmptyDataView: false,
+          extraConfig: {
+            tabName: projects[config.selectedProject]?.workspacePath, // Pass workspacePath as tabName
+            name: config.selectedProject, // Pass project name
+            type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }), // Pass type
+            bareType: GRAPHS, // Pass bareType
+            id: projects[config.selectedProject]?.id, // Pass project ID
+            lastModified: new Date().toISOString(), // Current timestamp
+            isActive: 1, // Set as active
+            workspacePath: projects[config.selectedProject]?.workspacePath, // Pass workspacePath
+          }
+        });
+        
+        console.log('3D Mesh Plot tab created. Enhanced config to be passed:', meshConfig);
+        
+      } catch (error) {
+        console.error('Error creating 3D Mesh Plot:', error);
+      }
+    };
+
+    return <MeshPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
+  };
+
   const runSelector = () => {
     switch (selector) {
       case exporters.importBusinessObject:
@@ -256,6 +357,8 @@ const MenuSelector: FC<{
         return <ScatterWrapper {...modal} />;
       case 'open-line-plot-modal':
         return <LineWrapper {...modal} />;
+      case '3d-mesh':
+        return <MeshWrapper {...modal} />;
       case exporters.tests:
         return <TestsAnalysis {...modal} />
       case exporters.options:

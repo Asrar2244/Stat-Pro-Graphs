@@ -80,7 +80,20 @@ export const GraphsRender: FC = () => {
   }, [selectedGraphRun.id, config.tabName]);
 
   // Accessors for per-run properties
-  const currentProps = propertiesByRun[selectedGraphRun.id] || tools.graphProperties;
+  const currentProps = {
+    ...(propertiesByRun[selectedGraphRun.id] || tools.graphProperties),
+    global: {
+      ...(propertiesByRun[selectedGraphRun.id]?.global || tools.graphProperties.global),
+      canvasMode: tools.canvasMode
+    }
+  };
+  
+  console.log('🎨 GraphsRender - currentProps Debug:', {
+    toolsCanvasMode: tools.canvasMode,
+    currentPropsCanvasMode: currentProps.global.canvasMode,
+    selectedRunId: selectedGraphRun.id,
+    hasPropertiesByRun: !!propertiesByRun[selectedGraphRun.id]
+  });
 
   const updateGraphPropertyPerRun = <K extends keyof typeof tools.graphProperties.global>(
     key: K,

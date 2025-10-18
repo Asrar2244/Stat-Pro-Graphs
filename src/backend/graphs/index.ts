@@ -82,12 +82,34 @@ export const generateIDGraphTable = `INSERT INTO ${GRAPHS}
 export const graphGenerateIDTable = async (dbName: string, parameters: any[]): Promise<number> => {
   const db = new Database(dbName);
   const record = await db.executeQuery(`${createGraphTable};${generateIDGraphTable}`, parameters);
+  
+  // Automatically set flag to display the latest graph
+  try {
+    const { useStartProStore } = await import('@store/main-store');
+    const { setRenderLatestRun } = useStartProStore.getState();
+    setRenderLatestRun(true);
+    console.log('🎯 Auto-selecting latest graph after backend ID generation');
+  } catch (error) {
+    console.warn('Could not set renderLatestRun flag:', error);
+  }
+  
   return record.lastInsertId;
 };
 
 export const graphTable = async (dbName: string, parameters: any[]): Promise<number> => {
   const db = new Database(dbName);
   const record = await db.executeQuery(`${createGraphTable};${insertToGraphTable}`, parameters);
+  
+  // Automatically set flag to display the latest graph
+  try {
+    const { useStartProStore } = await import('@store/main-store');
+    const { setRenderLatestRun } = useStartProStore.getState();
+    setRenderLatestRun(true);
+    console.log('🎯 Auto-selecting latest graph after backend creation');
+  } catch (error) {
+    console.warn('Could not set renderLatestRun flag:', error);
+  }
+  
   return record.lastInsertId;
 };
 

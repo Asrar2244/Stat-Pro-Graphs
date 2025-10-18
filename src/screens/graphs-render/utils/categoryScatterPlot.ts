@@ -107,9 +107,13 @@ const createXYCategoryTraces = (
     if (lowerSubType.includes('spline')) {
       lineShape = 'spline';
     } else if (lowerSubType.includes('vertical step')) {
-      lineShape = 'vh'; // Vertical then horizontal steps (for vertical step plots)
+      lineShape = 'vh'; // Vertical then horizontal steps (starts vertically)
     } else if (lowerSubType.includes('horizontal step')) {
-      lineShape = 'hv'; // Horizontal then vertical steps (for horizontal step plots)
+      lineShape = 'hv'; // Horizontal then vertical steps (starts horizontally)
+    } else if (lowerSubType.includes('vertical mid point') || lowerSubType.includes('vertical midpoint')) {
+      lineShape = 'vhv'; // Vertical-horizontal-vertical steps for vertical mid-point
+    } else if (lowerSubType.includes('mid point')) {
+      lineShape = 'hvh'; // Horizontal-vertical-horizontal steps for mid-point
     } else if (lowerSubType.includes('step')) {
       lineShape = 'hv';
     }
