@@ -795,7 +795,8 @@ const createNaturalXYZMesh = (xv: number[], yv: number[], rows: any[], graphConf
     ...(meshConfig.showGrid && {
       wireframe: {
         show: true,
-        opacity: meshConfig.gridOpacity || 0.3
+        opacity: meshConfig.gridOpacity || 0.6, // Increased opacity for better visibility
+        color: 'white' // Default Plotly 3D grid color
       }
     }),
     // Position colorbar on the left side
@@ -1101,7 +1102,8 @@ const createZMatrixMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
     ...(meshConfig.showGrid && {
       wireframe: {
         show: true,
-        opacity: meshConfig.gridOpacity || 0.3
+        opacity: meshConfig.gridOpacity || 0.6, // Increased opacity for better visibility
+        color: 'white' // Default Plotly 3D grid color
       }
     }),
     // Position colorbar on the left side
@@ -1319,7 +1321,8 @@ const createXYManyZMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
     ...(meshConfig.showGrid && {
       wireframe: {
         show: true,
-        opacity: meshConfig.gridOpacity || 0.3
+        opacity: meshConfig.gridOpacity || 0.6, // Increased opacity for better visibility
+        color: 'white' // Default Plotly 3D grid color
       }
     }),
     // Position colorbar on the left side

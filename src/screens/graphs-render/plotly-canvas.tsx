@@ -659,7 +659,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         plotBg: '#ffffff',
         textColor: '#111111',
         axisTextColor: '#111111',
-        gridColor: '#e5e5e5',
+        gridColor: 'white', // Default Plotly 3D grid color
         axisColor: '#444444'
       };
       
@@ -1100,11 +1100,14 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             zeroline: false,
             // Ensure proper orientation: low values on left, high on right
             tickmode: 'auto',
-            nticks: 8,
+            nticks: 12, // Extra scale - more tick marks
             // Professional canvas mode colors
             gridcolor: modeColors.gridColor,
             color: modeColors.axisTextColor,
-            titlefont: { color: modeColors.axisTextColor }
+            titlefont: { color: modeColors.axisTextColor },
+            // Default Plotly 3D background
+            backgroundcolor: 'rgb(230, 230, 250)',
+            showbackground: true
           },
           yaxis: { 
             title: yNames[0] || 'Y',
@@ -1114,11 +1117,14 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             zeroline: false,
             // Ensure proper orientation: low values in front, high in back
             tickmode: 'auto',
-            nticks: 8,
+            nticks: 12, // Extra scale - more tick marks
             // Professional canvas mode colors
             gridcolor: modeColors.gridColor,
             color: modeColors.axisTextColor,
-            titlefont: { color: modeColors.axisTextColor }
+            titlefont: { color: modeColors.axisTextColor },
+            // Default Plotly 3D background
+            backgroundcolor: 'rgb(230, 230, 250)',
+            showbackground: true
           },
           zaxis: { 
             title: 'Z',
@@ -1128,11 +1134,14 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             zeroline: false,
             // Ensure proper Z-axis scaling with single range
             tickmode: 'auto',
-            nticks: 8,
+            nticks: 12, // Extra scale - more tick marks
             // Professional canvas mode colors
             gridcolor: modeColors.gridColor,
             color: modeColors.axisTextColor,
-            titlefont: { color: modeColors.axisTextColor }
+            titlefont: { color: modeColors.axisTextColor },
+            // Default Plotly 3D background
+            backgroundcolor: 'rgb(230, 230, 250)',
+            showbackground: true
           },
           camera: {
             // Front view with X-axis on right, Y-axis on left - positioned to show proper axis orientation
