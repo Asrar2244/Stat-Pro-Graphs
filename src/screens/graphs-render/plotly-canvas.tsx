@@ -664,12 +664,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       };
       
       const darkModeColors = {
-        paperBg: '#1a1a1a',        // Dark gray background (lighter than black)
-        plotBg: '#1a1a1a',         // Dark gray plot area (lighter than black)
-        textColor: '#e0e0e0',      // Light gray text (softer than pure white)
-        axisTextColor: '#e0e0e0',  // Light gray axis text (softer than pure white)
-        gridColor: '#404040',      // Medium gray grid (more visible)
-        axisColor: '#666666'       // Lighter gray axes (more visible)
+        paperBg: '#000000',        // Pitch black background
+        plotBg: '#000000',         // Pitch black plot area
+        textColor: '#ffffff',      // Pure white text
+        axisTextColor: '#ffffff',  // Pure white axis text
+        gridColor: '#333333',      // Dark gray grid
+        axisColor: '#555555'       // Medium gray axes
       };
       
       const modeColors = canvasMode === 'dark' ? darkModeColors : lightModeColors;

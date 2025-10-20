@@ -5,7 +5,8 @@
 
 import { calculateErrorValues } from './errorCalculations';
 import { computeLinearRegression, createRegressionTraces } from './regressionAnalysis';
-import { createLineTrace, LineTraceConfig } from './line/lineTraceGeneration';
+import { createLinePlotTrace as createLineTrace } from './line/lineTraceGeneration';
+import { LineTraceConfig } from './line/types';
 import { parseLinePlotSubType, getLinePlotMode, getLineShape } from './line/linePlotProperties';
 
 export interface TraceConfig {
@@ -601,6 +602,7 @@ export const createRegressionTracesIfNeeded = (
   console.log(`✅ Created ${traces.length} regression traces for "${label}"`);
   return traces;
 };
+
 
 
 
