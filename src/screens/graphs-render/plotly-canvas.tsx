@@ -659,7 +659,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         plotBg: '#ffffff',
         textColor: '#111111',
         axisTextColor: '#111111',
-        gridColor: 'white', // Default Plotly 3D grid color
+        gridColor: '#e5e5e5', // 2D grid color (light gray)
         axisColor: '#444444'
       };
       
@@ -1101,12 +1101,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             // Ensure proper orientation: low values on left, high on right
             tickmode: 'auto',
             nticks: 12, // Extra scale - more tick marks
-            // Professional canvas mode colors
-            gridcolor: modeColors.gridColor,
+            // Professional canvas mode colors - 3D grid color based on mode
+            gridcolor: canvasMode === 'dark' ? '#333333' : 'white',
             color: modeColors.axisTextColor,
             titlefont: { color: modeColors.axisTextColor },
-            // Default Plotly 3D background
-            backgroundcolor: 'rgb(230, 230, 250)',
+            // Default Plotly 3D background - different for light/dark mode
+            backgroundcolor: canvasMode === 'dark' ? 'rgb(30, 30, 30)' : 'rgb(230, 230, 250)',
             showbackground: true
           },
           yaxis: { 
@@ -1118,12 +1118,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             // Ensure proper orientation: low values in front, high in back
             tickmode: 'auto',
             nticks: 12, // Extra scale - more tick marks
-            // Professional canvas mode colors
-            gridcolor: modeColors.gridColor,
+            // Professional canvas mode colors - 3D grid color based on mode
+            gridcolor: canvasMode === 'dark' ? '#333333' : 'white',
             color: modeColors.axisTextColor,
             titlefont: { color: modeColors.axisTextColor },
-            // Default Plotly 3D background
-            backgroundcolor: 'rgb(230, 230, 250)',
+            // Default Plotly 3D background - different for light/dark mode
+            backgroundcolor: canvasMode === 'dark' ? 'rgb(30, 30, 30)' : 'rgb(230, 230, 250)',
             showbackground: true
           },
           zaxis: { 
@@ -1135,12 +1135,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             // Ensure proper Z-axis scaling with single range
             tickmode: 'auto',
             nticks: 12, // Extra scale - more tick marks
-            // Professional canvas mode colors
-            gridcolor: modeColors.gridColor,
+            // Professional canvas mode colors - 3D grid color based on mode
+            gridcolor: canvasMode === 'dark' ? '#333333' : 'white',
             color: modeColors.axisTextColor,
             titlefont: { color: modeColors.axisTextColor },
-            // Default Plotly 3D background
-            backgroundcolor: 'rgb(230, 230, 250)',
+            // Default Plotly 3D background - different for light/dark mode
+            backgroundcolor: canvasMode === 'dark' ? 'rgb(30, 30, 30)' : 'rgb(230, 230, 250)',
             showbackground: true
           },
           camera: {

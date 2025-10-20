@@ -796,7 +796,7 @@ const createNaturalXYZMesh = (xv: number[], yv: number[], rows: any[], graphConf
       wireframe: {
         show: true,
         opacity: meshConfig.gridOpacity || 0.6, // Increased opacity for better visibility
-        color: 'white' // Default Plotly 3D grid color
+        color: 'white' // Default Plotly 3D grid color (will be overridden by scene gridcolor)
       }
     }),
     // Position colorbar on the left side
@@ -1103,7 +1103,7 @@ const createZMatrixMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
       wireframe: {
         show: true,
         opacity: meshConfig.gridOpacity || 0.6, // Increased opacity for better visibility
-        color: 'white' // Default Plotly 3D grid color
+        color: 'white' // Default Plotly 3D grid color (will be overridden by scene gridcolor)
       }
     }),
     // Position colorbar on the left side
@@ -1322,7 +1322,7 @@ const createXYManyZMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
       wireframe: {
         show: true,
         opacity: meshConfig.gridOpacity || 0.6, // Increased opacity for better visibility
-        color: 'white' // Default Plotly 3D grid color
+        color: 'white' // Default Plotly 3D grid color (will be overridden by scene gridcolor)
       }
     }),
     // Position colorbar on the left side

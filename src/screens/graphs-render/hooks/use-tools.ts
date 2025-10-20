@@ -241,7 +241,7 @@ export const useTools = () => {
       gridYMinor: false,
       gridLineStyle: 'solid',
       gridThicknessInch: 0.01,
-      gridColor: 'white', // Default Plotly 3D grid color
+      gridColor: '#e5e5e5', // 2D grid color (light gray)
       gridGapColor: '#ffffff',
       gridTransparencyPct: 0,
       gridLayering: 'plotFront',
