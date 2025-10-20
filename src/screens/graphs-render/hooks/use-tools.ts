@@ -169,6 +169,17 @@ export interface PlotSpecificProperties {
     showConfidenceInterval: boolean;
     confidenceIntervalOpacity: number;
   };
+  mesh3d?: {
+    opacity: number;
+    surfaceType: 'surface' | 'wireframe' | 'mesh';
+    colorScale: string;
+    showContours: boolean;
+    contourOpacity: number;
+    lighting: boolean;
+    smoothShading: boolean;
+    showGrid: boolean;
+    gridOpacity: number;
+  };
 }
 
 export interface GraphProperties {
@@ -319,7 +330,7 @@ export const useTools = () => {
          errorBarThickness: 2,
          errorBarWidth: 0.5,
          errorBarOpacity: 0.7,
-         errorBarCapSize: 3,
+         errorBarCapSize: 10,  // Increased from 3 to 10 for better visibility
          showErrorBars: true,
          errorBarColor: '#1f77b4',
        },
@@ -344,6 +355,17 @@ export const useTools = () => {
         lineColor: '#ff0000',
         showConfidenceInterval: true,
         confidenceIntervalOpacity: 0.2,
+      },
+      mesh3d: {
+        opacity: 1.0,
+        surfaceType: 'mesh',
+        colorScale: 'viridis',
+        showContours: true,
+        contourOpacity: 0.6,
+        lighting: true,
+        smoothShading: true,
+        showGrid: true,
+        gridOpacity: 0.5,
       },
     },
   });
@@ -443,6 +465,11 @@ export const useTools = () => {
     
     const subTypeLower = subType.toLowerCase();
     
+    // Check for 3D mesh first - it's completely different from 2D plots
+    if (subTypeLower.includes('3d mesh') || subTypeLower === '3d mesh plot') {
+      return null; // 3D mesh has no plot-specific properties in the 2D property system
+    }
+    
     // Priority order: regression first, then others
     if (subTypeLower.includes('regression') || subTypeLower.includes('fit')) {
       return 'regression';
@@ -471,18 +498,36 @@ export const useTools = () => {
     hasErrorBars: boolean;
     hasPointPlot: boolean;
     hasDotPlot: boolean;
+    is3DMesh: boolean;
   } => {
     if (!subType) {
-      return { hasScatter: false, hasRegression: false, hasErrorBars: false, hasPointPlot: false, hasDotPlot: false };
+      return { hasScatter: false, hasRegression: false, hasErrorBars: false, hasPointPlot: false, hasDotPlot: false, is3DMesh: false };
     }
     
     const subTypeLower = subType.toLowerCase();
+    
+    // Check for 3D mesh
+    const is3DMesh = subTypeLower.includes('3d mesh') || subTypeLower === '3d mesh plot';
+    
+    // If it's a 3D mesh, don't show any 2D plot features
+    if (is3DMesh) {
+      return {
+        hasScatter: false,
+        hasRegression: false,
+        hasErrorBars: false,
+        hasPointPlot: false,
+        hasDotPlot: false,
+        is3DMesh: true
+      };
+    }
+    
     return {
       hasScatter: subTypeLower.includes('scatter') || subTypeLower.includes('xy'),
       hasRegression: subTypeLower.includes('regression') || subTypeLower.includes('fit'),
       hasErrorBars: subTypeLower.includes('error') || subTypeLower.includes('bar'),
       hasPointPlot: subTypeLower.includes('point'),
-      hasDotPlot: subTypeLower.includes('dot')
+      hasDotPlot: subTypeLower.includes('dot'),
+      is3DMesh: false
     };
   };
 

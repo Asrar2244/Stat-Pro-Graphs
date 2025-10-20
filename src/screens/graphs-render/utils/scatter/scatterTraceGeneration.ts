@@ -150,7 +150,9 @@ const createErrorBarTrace = (baseTrace: any, config: ScatterTraceConfig, errorCo
         width: errorBarStyle.width,
         opacity: errorBarStyle.opacity,
         cap: {
+          visible: true,
           size: errorBarStyle.capSize,
+          thickness: errorBarStyle.thickness,
           color: errorBarColor || color
         },
         visible: true,
@@ -171,7 +173,9 @@ const createErrorBarTrace = (baseTrace: any, config: ScatterTraceConfig, errorCo
         width: errorBarStyle.width,
         opacity: errorBarStyle.opacity,
         cap: {
+          visible: true,
           size: errorBarStyle.capSize,
+          thickness: errorBarStyle.thickness,
           color: errorBarColor || color
         },
         visible: true
@@ -190,7 +194,9 @@ const createErrorBarTrace = (baseTrace: any, config: ScatterTraceConfig, errorCo
         width: errorBarStyle.width,
         opacity: errorBarStyle.opacity,
         cap: {
+          visible: true,
           size: errorBarStyle.capSize,
+          thickness: errorBarStyle.thickness,
           color: errorBarColor || color
         },
         visible: true
@@ -205,7 +211,9 @@ const createErrorBarTrace = (baseTrace: any, config: ScatterTraceConfig, errorCo
         width: errorBarStyle.width,
         opacity: errorBarStyle.opacity,
         cap: {
+          visible: true,
           size: errorBarStyle.capSize,
+          thickness: errorBarStyle.thickness,
           color: errorBarColor || color
         },
         visible: true
@@ -231,7 +239,9 @@ const createErrorBarTrace = (baseTrace: any, config: ScatterTraceConfig, errorCo
         width: errorBarStyle.width,
         opacity: errorBarStyle.opacity,
         cap: {
+          visible: true,
           size: errorBarStyle.capSize,
+          thickness: errorBarStyle.thickness,
           color: errorBarColor || color
         },
         visible: true,
@@ -252,7 +262,9 @@ const createErrorBarTrace = (baseTrace: any, config: ScatterTraceConfig, errorCo
         width: errorBarStyle.width,
         opacity: errorBarStyle.opacity,
         cap: {
+          visible: true,
           size: errorBarStyle.capSize,
+          thickness: errorBarStyle.thickness,
           color: errorBarColor || color
         },
         visible: true,
@@ -273,7 +285,9 @@ const createErrorBarTrace = (baseTrace: any, config: ScatterTraceConfig, errorCo
         width: errorBarStyle.width,
         opacity: errorBarStyle.opacity,
         cap: {
+          visible: true,
           size: errorBarStyle.capSize,
+          thickness: errorBarStyle.thickness,
           color: errorBarColor || color
         },
         visible: true
@@ -287,7 +301,9 @@ const createErrorBarTrace = (baseTrace: any, config: ScatterTraceConfig, errorCo
         width: errorBarStyle.width,
         opacity: errorBarStyle.opacity,
         cap: {
+          visible: true,
           size: errorBarStyle.capSize,
+          thickness: errorBarStyle.thickness,
           color: errorBarColor || color
         },
         visible: true

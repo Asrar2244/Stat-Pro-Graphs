@@ -1,4 +1,4 @@
-import { FC, lazy, useEffect, useState } from 'react';
+import { FC, lazy, useEffect, useState, useMemo } from 'react';
 import { SuspenseLoad } from '@libs';
 import { useGraphsRender } from './styles/use-graphs-render-style';
 import { useActiveNode } from '@hooks';
@@ -80,17 +80,24 @@ export const GraphsRender: FC = () => {
   }, [selectedGraphRun.id, config.tabName]);
 
   // Accessors for per-run properties
-  const currentProps = {
-    ...(propertiesByRun[selectedGraphRun.id] || tools.graphProperties),
-    global: {
-      ...(propertiesByRun[selectedGraphRun.id]?.global || tools.graphProperties.global),
-      canvasMode: tools.canvasMode
-    }
-  };
+  const currentProps = useMemo(() => {
+    const baseProps = propertiesByRun[selectedGraphRun.id] || tools.graphProperties;
+    return {
+      ...baseProps,
+      global: {
+        ...baseProps.global,
+        canvasMode: tools.canvasMode
+      },
+      plotSpecific: {
+        ...baseProps.plotSpecific
+      }
+    };
+  }, [propertiesByRun, selectedGraphRun.id, tools.canvasMode, tools.graphProperties]);
   
   console.log('🎨 GraphsRender - currentProps Debug:', {
     toolsCanvasMode: tools.canvasMode,
     currentPropsCanvasMode: currentProps.global.canvasMode,
+    plotSpecific: currentProps.plotSpecific,
     selectedRunId: selectedGraphRun.id,
     hasPropertiesByRun: !!propertiesByRun[selectedGraphRun.id]
   });

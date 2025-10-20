@@ -9,11 +9,11 @@ import { useTranslation } from 'react-i18next';
 import { GlobalGraphProperties } from '../../hooks/use-tools';
 
 const ScatterPlotGraph = lazy(() =>
-  import('../plot-types/scatter-plot/index'),
+  import('../plot-types/scatter-plot/index').then(module => ({ default: module.ScatterPlotGraph })),
 );
 
 const LinePlotGraph = lazy(() =>
-  import('../plot-types/line-plot/index'),
+  import('../plot-types/line-plot/index').then(module => ({ default: module.LinePlotGraph })),
 );
 
 interface IGraphSelection extends IToolBar {

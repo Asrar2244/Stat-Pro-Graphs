@@ -17,6 +17,8 @@ import {
   AccordionItem,
   AccordionHeader,
   AccordionPanel,
+  Dropdown,
+  Option,
 } from '@fluentui/react-components';
 
 import { useGraphPropertiesClasses } from '../../styles/use-graph-properties-style';
@@ -42,6 +44,7 @@ interface IGraphProperties {
     hasErrorBars: boolean;
     hasPointPlot: boolean;
     hasDotPlot: boolean;
+    is3DMesh: boolean;
   };
   currentSubType?: string;
   currentLegendLabels?: string[]; // Current legend labels from the graph
@@ -523,7 +526,141 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
               </AccordionItem>
             )}
 
+            {/* 3D Mesh Properties Section */}
+            {detectedFeatures.is3DMesh && plotProps.mesh3d && (
+              <AccordionItem value="mesh3d">
+                <AccordionHeader>
+                  <div className={classes.accordionHeader}>
+                    <MdScatterPlot size={20} />
+                    <Text weight="semibold">3D Mesh Properties</Text>
+                    <Text size={200} style={{ marginLeft: 'auto', color: 'rgba(0,0,0,0.6)' }}>
+                      (3D Visualization Settings)
+                    </Text>
+                  </div>
+                </AccordionHeader>
+                <AccordionPanel>
+                  <div className={classes.propertyContent}>
+                    <Card style={{ marginBottom: '16px' }}>
+                      <CardHeader>
+                        <Text weight="semibold">Surface Configuration</Text>
+                      </CardHeader>
+                      <div style={{ padding: '12px', display: 'grid', gap: '12px' }}>
+                        
+                        {/* Surface Type */}
+                        <Field label="Surface Type">
+                          <Dropdown
+                            value={plotProps.mesh3d.surfaceType}
+                            onOptionSelect={(_, data) => updatePlotSpecificProperty('mesh3d', 'surfaceType', data.optionValue)}
+                          >
+                            <Option value="mesh">Mesh</Option>
+                            <Option value="surface">Surface</Option>
+                            <Option value="wireframe">Wireframe</Option>
+                          </Dropdown>
+                        </Field>
+
+                        {/* Opacity */}
+                        <Field label={`Opacity: ${Math.round(plotProps.mesh3d.opacity * 100)}%`}>
+                          <Slider
+                            min={0}
+                            max={1}
+                            step={0.1}
+                            value={plotProps.mesh3d.opacity}
+                            onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'opacity', data.value)}
+                          />
+                        </Field>
+
+                        {/* Color Scale */}
+                        <Field label="Color Scale">
+                          <Dropdown
+                            value={plotProps.mesh3d.colorScale}
+                            onOptionSelect={(_, data) => updatePlotSpecificProperty('mesh3d', 'colorScale', data.optionValue)}
+                          >
+                            <Option value="viridis">Viridis</Option>
+                            <Option value="plasma">Plasma</Option>
+                            <Option value="inferno">Inferno</Option>
+                            <Option value="magma">Magma</Option>
+                            <Option value="cividis">Cividis</Option>
+                            <Option value="turbo">Turbo</Option>
+                            <Option value="hot">Hot</Option>
+                            <Option value="cool">Cool</Option>
+                            <Option value="rainbow">Rainbow</Option>
+                            <Option value="jet">Jet</Option>
+                            <Option value="blues">Blues</Option>
+                            <Option value="greens">Greens</Option>
+                            <Option value="reds">Reds</Option>
+                            <Option value="oranges">Oranges</Option>
+                            <Option value="purples">Purples</Option>
+                            <Option value="greys">Greys</Option>
+                          </Dropdown>
+                        </Field>
+
+                        {/* Show Contours */}
+                        <Field label="Show Contours">
+                          <Switch
+                            checked={plotProps.mesh3d.showContours}
+                            onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'showContours', data.checked)}
+                          />
+                        </Field>
+
+                        {/* Contour Opacity */}
+                        {plotProps.mesh3d.showContours && (
+                          <Field label={`Contour Opacity: ${Math.round(plotProps.mesh3d.contourOpacity * 100)}%`}>
+                            <Slider
+                              min={0}
+                              max={1}
+                              step={0.1}
+                              value={plotProps.mesh3d.contourOpacity}
+                              onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'contourOpacity', data.value)}
+                            />
+                          </Field>
+                        )}
+
+                        {/* Lighting */}
+                        <Field label="Lighting">
+                          <Switch
+                            checked={plotProps.mesh3d.lighting}
+                            onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'lighting', data.checked)}
+                          />
+                        </Field>
+
+                        {/* Smooth Shading */}
+                        <Field label="Smooth Shading">
+                          <Switch
+                            checked={plotProps.mesh3d.smoothShading}
+                            onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'smoothShading', data.checked)}
+                          />
+                        </Field>
+
+                        {/* Show Grid */}
+                        <Field label="Show 3D Grid">
+                          <Switch
+                            checked={plotProps.mesh3d.showGrid}
+                            onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'showGrid', data.checked)}
+                          />
+                        </Field>
+
+                        {/* Grid Opacity */}
+                        {plotProps.mesh3d.showGrid && (
+                          <Field label={`Grid Opacity: ${Math.round(plotProps.mesh3d.gridOpacity * 100)}%`}>
+                            <Slider
+                              min={0}
+                              max={1}
+                              step={0.1}
+                              value={plotProps.mesh3d.gridOpacity}
+                              onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'gridOpacity', data.value)}
+                            />
+                          </Field>
+                        )}
+
+                      </div>
+                    </Card>
+                  </div>
+                </AccordionPanel>
+              </AccordionItem>
+            )}
+
             {/* Plot-Specific Properties Section */}
+            {!detectedFeatures.is3DMesh && (
             <AccordionItem value="plotSpecific">
                 <AccordionHeader>
                   <div className={classes.accordionHeader}>
@@ -605,25 +742,6 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                     {/* Error Bar Properties */}
                     {(detectedFeatures.hasErrorBars || currentPlotType === 'errorBar') && plotProps.errorBar && (
                       <>
-                        <Field label={`Error Bar Thickness: ${plotProps.errorBar.errorBarThickness}`}>
-                          <Slider 
-                            min={1} 
-                            max={10} 
-                            value={plotProps.errorBar.errorBarThickness}
-                            onChange={(_, data) => updatePlotSpecificProperty('errorBar', 'errorBarThickness', data.value)}
-                          />
-                        </Field>
-                        
-                        <Field label={`Error Bar Width: ${plotProps.errorBar.errorBarWidth}`}>
-                          <Slider 
-                            min={0.1} 
-                            max={2} 
-                            step={0.1}
-                            value={plotProps.errorBar.errorBarWidth}
-                            onChange={(_, data) => updatePlotSpecificProperty('errorBar', 'errorBarWidth', data.value)}
-                          />
-                        </Field>
-                        
                         <Field label={`Error Bar Opacity: ${(plotProps.errorBar.errorBarOpacity * 100).toFixed(0)}%`}>
                           <Slider 
                             min={0.1} 
@@ -631,15 +749,6 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                             step={0.1}
                             value={plotProps.errorBar.errorBarOpacity}
                             onChange={(_, data) => updatePlotSpecificProperty('errorBar', 'errorBarOpacity', data.value)}
-                          />
-                        </Field>
-                        
-                        <Field label={`Cap Size: ${plotProps.errorBar.errorBarCapSize}`}>
-                          <Slider 
-                            min={0} 
-                            max={10} 
-                            value={plotProps.errorBar.errorBarCapSize}
-                            onChange={(_, data) => updatePlotSpecificProperty('errorBar', 'errorBarCapSize', data.value)}
                           />
                         </Field>
                         
@@ -837,6 +946,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                   </div>
                 </AccordionPanel>
               </AccordionItem>
+            )}
 
             {/* Grid Settings */}
             <AccordionItem value="gridSettings">

@@ -132,7 +132,7 @@ export const DEFAULT_PLOT_PROPERTIES: PlotSpecificProperties = {
     errorBarThickness: 1,
     errorBarWidth: 1,
     errorBarOpacity: 0.8,
-    errorBarCapSize: 4,
+    errorBarCapSize: 10,  // Increased from 4 to 10 for better visibility
     showErrorBars: true,
     showInLegend: true,
     errorBarColor: '#1f77b4'
@@ -216,13 +216,54 @@ export const applyRegressionProperties = (
 ): any => {
   const updatedTrace = { ...trace };
 
-  if (updatedTrace.line) {
-    updatedTrace.line = {
-      ...updatedTrace.line,
-      color: properties.lineColor,
-      width: properties.lineWidth,
-      opacity: properties.lineOpacity
-    };
+  // Check if this is a confidence interval trace (has "CI" in name or has fillcolor)
+  const isConfidenceInterval = 
+    updatedTrace.name?.includes('CI') || 
+    updatedTrace.name?.includes('Confidence') ||
+    updatedTrace.fillcolor;
+
+  if (isConfidenceInterval) {
+    // Apply confidence interval properties
+    if (!properties.showConfidenceInterval) {
+      // Hide confidence interval by setting visible to false
+      updatedTrace.visible = false;
+    } else {
+      updatedTrace.visible = true;
+      
+      // Update fill opacity for confidence interval fill
+      if (updatedTrace.fillcolor) {
+        // Extract the base color and apply new opacity
+        const baseColor = properties.lineColor;
+        const opacity = properties.confidenceIntervalOpacity;
+        // Convert hex to rgba
+        const hexToRgba = (hex: string, alpha: number) => {
+          const r = parseInt(hex.slice(1, 3), 16);
+          const g = parseInt(hex.slice(3, 5), 16);
+          const b = parseInt(hex.slice(5, 7), 16);
+          return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        };
+        updatedTrace.fillcolor = hexToRgba(baseColor, opacity);
+      }
+      
+      // Update line color for confidence interval boundary lines
+      if (updatedTrace.line && updatedTrace.line.dash === 'dot') {
+        updatedTrace.line = {
+          ...updatedTrace.line,
+          color: properties.lineColor,
+          opacity: properties.confidenceIntervalOpacity
+        };
+      }
+    }
+  } else {
+    // Apply regular regression line properties
+    if (updatedTrace.line) {
+      updatedTrace.line = {
+        ...updatedTrace.line,
+        color: properties.lineColor,
+        width: properties.lineWidth,
+        opacity: properties.lineOpacity
+      };
+    }
   }
 
   return updatedTrace;
@@ -238,17 +279,82 @@ export const applyErrorBarProperties = (
   const updatedTrace = { ...trace };
 
   if (updatedTrace.error_y || updatedTrace.error_x) {
-    const errorConfig = {
-      width: properties.errorBarWidth,
-      thickness: properties.errorBarThickness,
-      capsize: properties.errorBarCapSize
-    };
-
+    // Apply to Y error bars
     if (updatedTrace.error_y) {
-      updatedTrace.error_y = { ...updatedTrace.error_y, ...errorConfig };
+      // Only update the properties we want to change, preserve everything else
+      updatedTrace.error_y.width = properties.errorBarWidth;
+      updatedTrace.error_y.thickness = properties.errorBarThickness;
+      
+      // Apply opacity and visibility
+      if (typeof properties.errorBarOpacity !== 'undefined') {
+        updatedTrace.error_y.opacity = properties.errorBarOpacity;
+      }
+      if (typeof properties.showErrorBars !== 'undefined') {
+        updatedTrace.error_y.visible = properties.showErrorBars;
+      }
+      
+      // Update cap properties if cap exists, preserve all other cap properties
+      if (updatedTrace.error_y.cap) {
+        console.log('📍 Before cap update:', JSON.parse(JSON.stringify(updatedTrace.error_y.cap)));
+        
+        // Preserve existing cap properties and only update what we need
+        if (typeof properties.errorBarCapSize !== 'undefined') {
+          updatedTrace.error_y.cap.size = properties.errorBarCapSize;
+        }
+        // Explicitly ensure visible is true
+        if (!updatedTrace.error_y.cap.hasOwnProperty('visible')) {
+          updatedTrace.error_y.cap.visible = true;
+        }
+        
+        // Only apply color if explicitly provided
+        if (properties.errorBarColor) {
+          updatedTrace.error_y.color = properties.errorBarColor;
+          updatedTrace.error_y.cap.color = properties.errorBarColor;
+        }
+        
+        console.log('📍 After cap update:', JSON.parse(JSON.stringify(updatedTrace.error_y.cap)));
+      } else {
+        console.log('⚠️ No cap object found on error_y!');
+      }
     }
+    
+    // Apply to X error bars
     if (updatedTrace.error_x) {
-      updatedTrace.error_x = { ...updatedTrace.error_x, ...errorConfig };
+      // Only update the properties we want to change, preserve everything else
+      updatedTrace.error_x.width = properties.errorBarWidth;
+      updatedTrace.error_x.thickness = properties.errorBarThickness;
+      
+      // Apply opacity and visibility
+      if (typeof properties.errorBarOpacity !== 'undefined') {
+        updatedTrace.error_x.opacity = properties.errorBarOpacity;
+      }
+      if (typeof properties.showErrorBars !== 'undefined') {
+        updatedTrace.error_x.visible = properties.showErrorBars;
+      }
+      
+      // Update cap properties if cap exists, preserve all other cap properties
+      if (updatedTrace.error_x.cap) {
+        console.log('📍 Before cap update (X):', JSON.parse(JSON.stringify(updatedTrace.error_x.cap)));
+        
+        // Preserve existing cap properties and only update what we need
+        if (typeof properties.errorBarCapSize !== 'undefined') {
+          updatedTrace.error_x.cap.size = properties.errorBarCapSize;
+        }
+        // Explicitly ensure visible is true
+        if (!updatedTrace.error_x.cap.hasOwnProperty('visible')) {
+          updatedTrace.error_x.cap.visible = true;
+        }
+        
+        // Only apply color if explicitly provided
+        if (properties.errorBarColor) {
+          updatedTrace.error_x.color = properties.errorBarColor;
+          updatedTrace.error_x.cap.color = properties.errorBarColor;
+        }
+        
+        console.log('📍 After cap update (X):', JSON.parse(JSON.stringify(updatedTrace.error_x.cap)));
+      } else {
+        console.log('⚠️ No cap object found on error_x!');
+      }
     }
   }
 

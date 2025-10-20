@@ -1,4 +1,4 @@
-import { FC, useContext, useRef, useState, useEffect } from 'react';
+import React, { FC, useContext, useRef, useState, useEffect } from 'react';
 import { GraphsRenderContext } from '../../../context';
 import { GraphCanvas, GraphCanvasRef } from '../../../plotly-canvas';
 import { Card, CardFooter, CardPreview } from '@fluentui/react-components';
@@ -24,9 +24,20 @@ export const ScatterPlotGraph: FC = () => {
   console.log('🎨 ScatterPlotGraph - Props Debug:', {
     graphProperties,
     canvasMode: graphProperties?.global?.canvasMode,
+    plotSpecific: graphProperties?.plotSpecific,
     hasGraphProperties: !!graphProperties,
     selectedRunId: selectedRun.id
   });
+  
+  // Track graphProperties changes
+  useEffect(() => {
+    console.log('🔄 ScatterPlotGraph - graphProperties changed:', {
+      timestamp: new Date().toISOString(),
+      graphProperties,
+      plotSpecific: graphProperties?.plotSpecific,
+      global: graphProperties?.global
+    });
+  }, [graphProperties]);
   // Fallback: if workspacePath missing (older runs), resolve from projects by selectedProject/tabName
   const resolvedWorkspacePath =
     workspacePath ||

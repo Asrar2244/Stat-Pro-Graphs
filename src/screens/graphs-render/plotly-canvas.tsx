@@ -26,6 +26,10 @@ import { processDataByFormat } from './utils/dataProcessing';
 import { createDotPlotDottedLines } from './utils/scatter';
 import { plotWithCategory, getCategoryPlotLayout } from './utils/categoryScatterPlot';
 
+// ✅ PHASE 2: Import extracted services for data fetching and trace orchestration
+import { fetchGraphData } from './utils/core/data-processing/dataFetchingService';
+import { orchestrateTraceGeneration } from './utils/orchestration/traceOrchestrator';
+
 export interface GraphCanvasRef {
   current: HTMLDivElement | null;
   plotly: any;
@@ -80,84 +84,29 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         setIsLoading(true);
       }, 1500);
       
-      const db = new Database(workspacePath || graphConfig.selectedProject);
-      const cols = [...(graphConfig.variables?.x || []), ...(graphConfig.variables?.y || []), ...(graphConfig.variables?.z || []), ...(graphConfig.variables?.category || [])];
+      // ✅ STEP 2: Fetch data using extracted service
+      let fetchResult;
+      try {
+        fetchResult = await fetchGraphData({ graphConfig, workspacePath });
+      } catch (error) {
+        console.error('❌ Data fetching failed:', error);
+        return;
+      }
+
+      const { rows, xNames, yNames, zNames, categoryNames, normalizedFormat } = fetchResult;
       
-      // Add error bar variables if needed
-      const errorBarVars = graphConfig.variables?.errorBar || [];
-      errorBarVars.forEach((errorBarVar: string) => {
-        if (!cols.includes(errorBarVar)) {
-          cols.push(errorBarVar);
+      // Merge mesh3d properties from liveProps into graphConfig
+      const enhancedGraphConfig = {
+        ...graphConfig,
+        meshConfig: {
+          ...(graphConfig.meshConfig || {}),
+          ...(liveProps?.plotSpecific?.mesh3d || {})
         }
-      });
-      
-      // Legacy support: add single errorBarVariable if it exists and not already added
-      if (graphConfig?.errorBarVariable && !cols.includes(graphConfig.errorBarVariable)) {
-        cols.push(graphConfig.errorBarVariable);
-      }
-      
-      if (cols.length === 0) {
-        console.warn('⚠️ No columns selected for graph rendering');
-        return;
-      }
-      const colList = cols.map((c: string) => `"${c}"`).join(',');
-      if (!colList.trim()) {
-        console.error('❌ Empty column list generated for query');
-        return;
-      }
-      const rows = await db.selectQuery(`SELECT ${colList} FROM ${EXCEL};`);
+      };
 
-
-      // Selected columns by role
-      const xNames = (graphConfig.variables?.x as string[]) || [];
-      const yNames = (graphConfig.variables?.y as string[]) || [];
-      const categoryNames = (graphConfig.variables?.category as string[]) || [];
-
-      // Plotly traces accumulator
-      const traces: any[] = [];
-      
-      // Get series configuration
-      const seriesConfig = getSeriesConfig();
-      const getSeriesColor = (i: number) => seriesConfig.colors[i % seriesConfig.colors.length];
-      const getSeriesSymbol = (i: number) => seriesConfig.symbols[i % seriesConfig.symbols.length];
-
-      // Get plot properties for live customization
-      const plotProperties = getPlotProperties(liveProps);
-
-      let seriesIndex = 0;
-      
-      // Process data based on format (normalize Single X/Y to axis-anchored formats when both sides are provided)
-      let normalizedFormat = graphConfig?.dataFormat;
-      
-      // Special handling for bidirectional asymmetric error bars - use XY Pairs format
-      const isBidirectionalAsymmetricErrorBar = graphConfig?.subType?.toLowerCase().includes('bidirectional') && 
-                                               graphConfig?.subType?.toLowerCase().includes('asymmetric') &&
-                                               graphConfig?.subType?.toLowerCase().includes('error bar');
-      
-      if (isBidirectionalAsymmetricErrorBar) {
-        normalizedFormat = 'XY Pairs';
-        console.log('🔍 Bidirectional Asymmetric Error Bar detected - using XY Pairs format');
-      }
-      
-      // If Single X with both X and Y present → behave as X Many Y
-      if (normalizedFormat === 'Single X' && xNames?.length > 0 && yNames?.length > 0) {
-        normalizedFormat = 'X Many Y';
-      } else if (normalizedFormat === 'Single Y' && xNames?.length > 0 && yNames?.length > 0) {
-        normalizedFormat = 'Y Many X';
-      }
-      // Respect whichever variables the user passed:
-      // - If Single X but only Y provided → treat as Single Y (plot Y vs index)
-      // - If Single Y but only X provided → treat as Single X (plot X vs index)
-      if (normalizedFormat === 'Single X' && (!xNames || xNames.length === 0) && (yNames && yNames.length > 0)) {
-        normalizedFormat = 'Single Y';
-      } else if (normalizedFormat === 'Single Y' && (!yNames || yNames.length === 0) && (xNames && xNames.length > 0)) {
-        normalizedFormat = 'Single X';
-      }
-
-      const zNames = (graphConfig.variables?.z as string[]) || [];
-      
+      // Process data by format
       const processedSeries = processDataByFormat({
-        graphConfig: { ...graphConfig, dataFormat: normalizedFormat },
+        graphConfig: { ...enhancedGraphConfig, dataFormat: normalizedFormat },
         rows,
         xNames,
         yNames,
@@ -166,408 +115,39 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         errorBarNames: graphConfig.variables?.errorBar || []
       });
 
-      // Collect legend labels for editing
-      const legendLabels = processedSeries.map(s => s.label);
-      
-      // Store legend labels in the graph config for the properties panel
-      if (legendLabels.length > 0) {
-        graphConfig.legendLabels = legendLabels;
-        
-        // Save legend labels back to the database
-        try {
-          const { updateGraphRunConfig } = await import('@backend/graphs');
-          const currentRunId = graphConfig.runId || graphConfig.id;
-          if (currentRunId) {
-            await updateGraphRunConfig(workspacePath, currentRunId, { 
-              graphConfig: { ...graphConfig, legendLabels } 
-            });
-          }
-        } catch (error) {
-        }
+      // ✅ STEP 3: Generate traces using extracted orchestrator
+      let orchestrationResult;
+      try {
+        orchestrationResult = await orchestrateTraceGeneration({
+          graphConfig: enhancedGraphConfig,
+          processedSeries,
+          rows,
+          xNames,
+          yNames,
+          categoryNames,
+          normalizedFormat,
+          liveProps
+        });
+      } catch (error) {
+        console.error('❌ Trace orchestration failed:', error);
+        return;
       }
 
-      // Assess data quality and provide recommendations
-      processedSeries.forEach((series) => {
-        // Handle both legacy (xv, yv) and new (x, y) data formats
-        const xv = series.xv || (series as any).x;
-        const yv = series.yv || (series as any).y;
-        const label = series.label;
-        
-        const qualityReport = assessDataQuality(xv, yv, {
-          outlierMethod: 'iqr',
-          outlierThreshold: 1.5,
-          missingValueThreshold: 0.1,
-          minSampleSize: 3
-        });
-        
-        if (!qualityReport.isValid) {
-          // Data quality issues detected - handled silently
-        }
-      });
+      const { traces, legendLabels, categoryPlotResult } = orchestrationResult;
 
-      // Helper: axis transforms for special scales
-      const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
-      const probEps = 1e-12;
-      const invNormApprox = (p: number) => {
-        // Acklam's approximation for inverse normal CDF (probit)
-        // Reference: https://web.archive.org/web/20150910044740/http://home.online.no/~pjacklam/notes/invnorm/
-        const a1 = -3.969683028665376e+01;
-        const a2 =  2.209460984245205e+02;
-        const a3 = -2.759285104469687e+02;
-        const a4 =  1.383577518672690e+02;
-        const a5 = -3.066479806614716e+01;
-        const a6 =  2.506628277459239e+00;
-        const b1 = -5.447609879822406e+01;
-        const b2 =  1.615858368580409e+02;
-        const b3 = -1.556989798598866e+02;
-        const b4 =  6.680131188771972e+01;
-        const b5 = -1.328068155288572e+01;
-        const c1 = -7.784894002430293e-03;
-        const c2 = -3.223964580411365e-01;
-        const c3 = -2.400758277161838e+00;
-        const c4 = -2.549732539343734e+00;
-        const c5 =  4.374664141464968e+00;
-        const c6 =  2.938163982698783e+00;
-        const d1 =  7.784695709041462e-03;
-        const d2 =  3.224671290700398e-01;
-        const d3 =  2.445134137142996e+00;
-        const d4 =  3.754408661907416e+00;
-        const plow  = 0.02425;
-        const phigh = 1 - plow;
-        let q: number, r: number;
-        if (p < plow) {
-          q = Math.sqrt(-2 * Math.log(p));
-          return (((((c1*q + c2)*q + c3)*q + c4)*q + c5)*q + c6)/((((d1*q + d2)*q + d3)*q + d4)*q + 1);
-        }
-        if (phigh < p) {
-          q = Math.sqrt(-2 * Math.log(1 - p));
-          return -(((((c1*q + c2)*q + c3)*q + c4)*q + c5)*q + c6)/((((d1*q + d2)*q + d3)*q + d4)*q + 1);
-        }
-        q = p - 0.5;
-        r = q * q;
-        return (((((a1*r + a2)*r + a3)*r + a4)*r + a5)*r + a6)*q/(((((b1*r + b2)*r + b3)*r + b4)*r + b5)*r + 1);
-      };
-      const transformAxisValue = (v: number, scale?: string): number => {
-        if (v == null || Number.isNaN(v)) return v as any;
-        switch (scale) {
-          case 'reciprocal': {
-            return v === 0 ? NaN : 1 / v;
-          }
-          case 'logit': {
-            const p = clamp(v, probEps, 1 - probEps);
-            return Math.log(p / (1 - p));
-          }
-          case 'probit': {
-            const p = clamp(v, probEps, 1 - probEps);
-            return invNormApprox(p);
-          }
-          case 'weibull': {
-            // y = ln(-ln(1 - p)) on a Weibull probability plot
-            const p = clamp(v, probEps, 1 - probEps);
-            return Math.log(-Math.log(1 - p));
-          }
-          case 'probability':
-          default:
-            return v;
-        }
-      };
-      const transformArrayForScale = (arr: number[], scale?: string) => (Array.isArray(arr) ? arr.map((v) => transformAxisValue(v as any, scale)) : arr);
+      // NOTE: All trace generation (quality assessment, optimization, transformations,
+      // category plots, regression lines, dot plot lines) is now handled by the orchestrator
 
-      // Check if this is a category-based plot and handle differently
+      // Helper flags for layout configuration
       const isCategoryPlot = categoryNames && categoryNames.length > 0;
       const isCategoryFormat = normalizedFormat?.toLowerCase().includes('category');
       const isPointPlot = graphConfig?.subType?.toLowerCase().includes('point plot');
-      let categoryPlotResult: any = null;
-      
-      if (isCategoryPlot && isCategoryFormat) {
-        
-        // For XY Category format, use the specialized category plot utility
-        if (normalizedFormat === 'XY Category') {
-          categoryPlotResult = plotWithCategory({
-            rows,
-            xCol: xNames?.[0],
-            yCol: yNames?.[0],
-            categoryCol: categoryNames?.[0],
-            subType: graphConfig?.subType || 'Scatter Plot',
-            liveProps
-          });
-          
-          // Add category traces
-          traces.push(...categoryPlotResult.traces);
-        } else {
-          // For X Category and Y Category formats, use standard scatter with category styling
-          // The processedSeries already contains the correct data with category grouping
-        }
-      }
-
-      // Create traces for each series with performance optimization
-      // Skip this only if we already have category traces from XY Category format
-      // X Category and Y Category formats need standard processing for regression lines
-      if (!(isCategoryPlot && isCategoryFormat && normalizedFormat === 'XY Category')) {
-        console.log(`🔍 Processing ${processedSeries.length} series for graph type: ${graphConfig?.subType}`);
-        processedSeries.forEach((series, seriesIndex) => {
-          // Handle both legacy (xv, yv) and new (x, y) data formats
-          const xv = series.xv || (series as any).x;
-          const yv = series.yv || (series as any).y;
-          const label = series.label;
-          const errorBarVariable = series.errorBarVariable;
-        const startTime = performance.now();
-        
-        console.log(`📊 Series ${seriesIndex}: ${label}`, {
-          subType: graphConfig?.subType,
-          dataLength: xv.length,
-          sampleData: { x: xv.slice(0, 3), y: yv.slice(0, 3) }
-        });
-        
-        
-        // Optimize data for large datasets with better configuration for very large datasets
-        const optimizedData = optimizeDataForPerformance(xv, yv, {
-          maxPointsPerTrace: 15000, // Increased for better visualization
-          enableSampling: true,
-          enableDecimation: true,
-          enableProgressiveRendering: true,
-          samplingThreshold: 5000,
-          decimationFactor: 2,
-          performanceWarningThreshold: 50000
-        }, errorBarVariable);
-        
-        
-        // Log performance metrics
-        const processingTime = performance.now() - startTime;
-        const performanceMetrics = measurePerformance(optimizedData.originalLength, processingTime);
-        
-        
-        // Performance warnings and recommendations handled silently
-        
-        // Per-series color override: legendSeriesColors[label] > plot-specific color > global seriesColor
-        const perSeriesColor = liveProps?.global?.legendSeriesColors?.[label];
-        const plotSpecificColor = liveProps?.plotSpecific?.scatter?.pointColor;
-        const globalSeriesColor = liveProps?.global?.seriesColor;
-        
-        // For point plots and dot plots, prioritize per-series colors to maintain color differentiation
-        const isPointPlot = graphConfig?.subType?.toLowerCase().includes('point plot');
-        const isDotPlot = graphConfig?.subType?.toLowerCase().includes('dot plot');
-        
-        let color;
-        if (perSeriesColor) {
-          // Per-series color override (highest priority)
-          color = perSeriesColor;
-        } else if (isPointPlot || isDotPlot) {
-          // For point plots and dot plots, use series-specific colors to maintain differentiation
-          color = getSeriesColor(seriesIndex);
-        } else {
-          // For other plot types, use plot-specific or global color overrides
-          color = plotSpecificColor || globalSeriesColor || getSeriesColor(seriesIndex);
-        }
-        const symbol = getSeriesSymbol(seriesIndex);
-        
-        // Debug logging for color assignment
-        console.log(`🎨 Color Assignment for "${label}" (Series ${seriesIndex}):`, {
-          isPointPlot,
-          isDotPlot,
-          perSeriesColor,
-          plotSpecificColor,
-          globalSeriesColor,
-          assignedColor: color,
-          seriesIndex
-        });
-        
-        // Apply axis transforms for special scales (keep axes type linear; data transformed)
-        const xScale = liveProps?.global?.xScaleType;
-        const yScale = liveProps?.global?.yScaleType;
-        const tx = transformArrayForScale(optimizedData.xv as any, xScale);
-        const ty = transformArrayForScale(optimizedData.yv as any, yScale);
-        try {
-          // Create scatter trace with optimized data
-          const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
-          // Check if this is a bidirectional error bar
-          const isBidirectionalErrorBar = graphConfig?.subType?.toLowerCase().includes('bidirectional') && 
-                                        graphConfig?.subType?.toLowerCase().includes('error bar');
-          
-          // Get error bar variables for bidirectional error bars
-          const errorBarVars = graphConfig?.variables?.errorBar || [];
-          
-          // For bidirectional error bars, we need to find the correct X and Y error bar variables
-          // based on the current series index
-          let errorBarVarX: string | undefined;
-          let errorBarVarY: string | undefined;
-          
-          if (isBidirectionalErrorBar && errorBarVars.length >= 2) {
-            // Calculate which error bar variables to use for this series
-            // Each series gets 2 error bar variables: one for X, one for Y
-            const xErrorBarIndex = seriesIndex * 2;     // X error bar index (0, 2, 4, ...)
-            const yErrorBarIndex = seriesIndex * 2 + 1; // Y error bar index (1, 3, 5, ...)
-            
-            errorBarVarX = errorBarVars[xErrorBarIndex];
-            errorBarVarY = errorBarVars[yErrorBarIndex];
-            
-            console.log('🔍 Bidirectional Error Bar Variables for Series', seriesIndex, ':', {
-              xErrorBarIndex,
-              yErrorBarIndex,
-              errorBarVarX,
-              errorBarVarY,
-              totalErrorBarVars: errorBarVars.length
-            });
-          }
-          
-          const trace = createTrace({
-            xv: tx as any,
-            yv: ty as any,
-            zv: processedSeries[seriesIndex]?.zv, // Pass Z values for 3D mesh plots
-            label: optimizedData.optimizationMethod !== 'none' 
-              ? `${customLabel} (${optimizedData.optimizationMethod}, ${optimizedData.optimizedLength}/${optimizedData.originalLength})`
-              : customLabel,
-            color,
-            symbol,
-            subType: graphConfig?.subType || '',
-            graphConfig: graphConfig, // Pass graphConfig for 3D mesh color scale
-            symbolValue: graphConfig?.symbolValue,
-            errorCalculationUpper: graphConfig?.errorCalculationUpper,
-            errorCalculationLower: graphConfig?.errorCalculationLower,
-            errorBarVariable: optimizedData.errorBarVariable || graphConfig?.errorBarVariable, // Use series-specific error bar variable
-            errorBarData: (series as any).errorBarData || (optimizedData.errorBarVariable ? (() => {
-              const errorData = rows.map((row: any) => {
-                const value = row[optimizedData.errorBarVariable];
-                return typeof value === 'number' ? value : parseFloat(value) || 0;
-              });
-              console.log('🔍 Error Bar Data Calculated:', {
-                errorBarVariable: optimizedData.errorBarVariable,
-                dataLength: errorData.length,
-                sampleData: errorData.slice(0, 3)
-              });
-              return errorData;
-            })() : undefined), // Use processed error bar data or calculate from rows
-            // For bidirectional error bars, pass separate X and Y error bar variables
-            errorBarVariableX: isBidirectionalErrorBar ? errorBarVarX : undefined,
-            errorBarVariableY: isBidirectionalErrorBar ? errorBarVarY : undefined,
-            // Use processed error bar data from series if available, otherwise calculate from rows
-            errorBarDataX: (series as any).errorBarDataX || (isBidirectionalErrorBar && errorBarVarX ? (() => {
-              const errorDataX = rows.map((row: any) => {
-                const value = row[errorBarVarX];
-                return typeof value === 'number' ? value : parseFloat(value) || 0;
-              });
-              console.log('🔍 Bidirectional X Error Bar Data:', {
-                errorBarVariableX: errorBarVarX,
-                dataLength: errorDataX.length,
-                sampleData: errorDataX.slice(0, 3)
-              });
-              return errorDataX;
-            })() : undefined),
-            errorBarDataY: (series as any).errorBarDataY || (isBidirectionalErrorBar && errorBarVarY ? (() => {
-              const errorDataY = rows.map((row: any) => {
-                const value = row[errorBarVarY];
-                return typeof value === 'number' ? value : parseFloat(value) || 0;
-              });
-              console.log('🔍 Bidirectional Y Error Bar Data:', {
-                errorBarVariableY: errorBarVarY,
-                dataLength: errorDataY.length,
-                sampleData: errorDataY.slice(0, 3)
-              });
-              return errorDataY;
-            })() : undefined),
-            errorBarColor: processedSeries.length > 1 ? undefined : plotProperties.errorBar?.errorBarColor, // Use series color for multiple variables, global color for single variable
-            rows
-          });
-          
-          // Optimize trace for large datasets (skip for 3D mesh traces to preserve surface properties)
-          const is3DMeshTrace = trace.type === 'surface' || trace.type === 'mesh3d' || trace.type === 'scatter3d';
-          const optimizedTrace = is3DMeshTrace ? trace : optimizeTraceForLargeData(trace, optimizedData.originalLength);
-          
-          // Apply plot-specific scatter properties (but not for point plots, dot plots, or 3D mesh traces to preserve color differentiation)
-          const finalTrace = (plotProperties.scatter && !isPointPlot && !isDotPlot && !is3DMeshTrace) ? applyScatterProperties(
-            optimizedTrace, 
-            plotProperties.scatter!
-          ) : optimizedTrace;
-          
-          console.log(`✅ Final trace created for ${label}:`, {
-            type: finalTrace.type,
-            mode: finalTrace.mode,
-            dataLength: finalTrace.x?.length || 0,
-            hasLine: !!finalTrace.line,
-            hasMarker: !!finalTrace.marker
-          });
-          
-          traces.push(finalTrace);
-          
-        } catch (error) {
-          // Create a fallback trace with minimal data
-          const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
-          const fallbackTrace = {
-            x: optimizedData.xv.slice(0, 1000), // Limit to 1000 points
-            y: optimizedData.yv.slice(0, 1000),
-            type: 'scatter',
-            mode: 'markers',
-            name: `${customLabel} (fallback)`,
-            marker: { color, size: 4, opacity: 0.6 },
-            showlegend: true
-          };
-          traces.push(fallbackTrace);
-        }
-        
-        // Add regression traces if needed (use optimized data for better performance)
-        try {
-          const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
-          const subType = graphConfig?.subType || '';
-          
-          const regressionTraces = createRegressionTracesIfNeeded(
-            tx as any,
-            ty as any,
-            customLabel, 
-            // Use same per-series override for regression line if not explicitly set
-            (liveProps?.plotSpecific?.regression?.lineColor) || perSeriesColor || color, 
-            subType,
-            plotProperties.regression?.showConfidenceInterval ?? true,
-            plotProperties.regression?.confidenceIntervalOpacity ?? 0.2
-          );
-          
-          if (regressionTraces.length > 0) {
-            console.log(`📈 Adding ${regressionTraces.length} regression traces for "${customLabel}"`);
-            console.log(`📊 Regression trace details:`, regressionTraces.map(trace => ({
-              name: trace.name,
-              type: trace.type,
-              mode: trace.mode,
-              lineColor: trace.line?.color,
-              lineWidth: trace.line?.width,
-              dataPoints: trace.x?.length || 0
-            })));
-            
-            // Apply plot-specific regression properties
-            const finalRegressionTraces = plotProperties.regression ? regressionTraces.map(trace => 
-              applyRegressionProperties(trace, plotProperties.regression!)
-            ) : regressionTraces;
-            traces.push(...finalRegressionTraces);
-            console.log(`✅ Total traces after adding regression: ${traces.length}`);
-          } else {
-            console.log(`❌ No regression traces created for "${customLabel}"`);
-          }
-        } catch (error) {
-          console.error(`❌ Error creating regression traces for "${label}":`, error);
-        }
-        
-        // Add dotted lines for dot plots (limit for large datasets)
-        try {
-          const dottedLines = optimizedData.originalLength > 10000 
-            ? [] // Skip dotted lines for very large datasets
-            : createDotPlotDottedLines(
-                optimizedData.xv,
-                optimizedData.yv,
-                color,
-                graphConfig?.subType || '',
-                processedSeries.length > 1 ? undefined : plotProperties.errorBar?.errorBarColor // Use series color for multiple variables, global color for single variable
-              );
-          traces.push(...dottedLines);
-        } catch (error) {
-        }
-        
-        seriesIndex += 1;
-      });
-      }
 
       // Check if we have any traces to plot
       if (traces.length === 0) {
+        console.warn('⚠️ No traces generated');
         return;
       }
-      
 
       // Create layout based on sub-type
       const subType = graphConfig?.subType || '';

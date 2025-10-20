@@ -457,6 +457,12 @@ export const plotWithCategory = (config: CategoryPlotConfig): {
     
     const { colors } = getSeriesConfig();
     
+    // Get user's confidence interval preferences
+    const showCI = plotProperties.regression?.showConfidenceInterval ?? true;
+    const ciOpacity = plotProperties.regression?.confidenceIntervalOpacity ?? 0.2;
+    
+    console.log(`📊 Category regression settings:`, { showCI, ciOpacity });
+    
     // Add regression traces for each category trace
     finalTraces.forEach((trace, index) => {
       if (trace.x && trace.y && trace.x.length > 1 && trace.y.length > 1) {
@@ -476,7 +482,9 @@ export const plotWithCategory = (config: CategoryPlotConfig): {
             trace.name,
             colors[index % colors.length],
             config.subType || '',
-            regressionResult
+            regressionResult,
+            showCI,
+            ciOpacity
           );
           
           // Apply regression properties

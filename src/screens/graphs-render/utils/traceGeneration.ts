@@ -251,7 +251,9 @@ export const createScatterTrace = (config: TraceConfig): any => {
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
+            visible: true,
             size: errorBarStyle.capSize,
+            thickness: errorBarStyle.thickness,
             color: errorBarColor || color
           },
           visible: true
@@ -266,7 +268,9 @@ export const createScatterTrace = (config: TraceConfig): any => {
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
+            visible: true,
             size: errorBarStyle.capSize,
+            thickness: errorBarStyle.thickness,
             color: errorBarColor || color
           },
           visible: true
@@ -285,7 +289,9 @@ export const createScatterTrace = (config: TraceConfig): any => {
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
+            visible: true,
             size: errorBarStyle.capSize,
+            thickness: errorBarStyle.thickness,
             color: errorBarColor || color
           },
           visible: true
@@ -300,7 +306,9 @@ export const createScatterTrace = (config: TraceConfig): any => {
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
+            visible: true,
             size: errorBarStyle.capSize,
+            thickness: errorBarStyle.thickness,
             color: errorBarColor || color
           },
           visible: true
@@ -326,7 +334,9 @@ export const createScatterTrace = (config: TraceConfig): any => {
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
+            visible: true,
             size: errorBarStyle.capSize,
+            thickness: errorBarStyle.thickness,
             color: errorBarColor || color
           },
           visible: true
@@ -341,7 +351,9 @@ export const createScatterTrace = (config: TraceConfig): any => {
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
+            visible: true,
             size: errorBarStyle.capSize,
+            thickness: errorBarStyle.thickness,
             color: errorBarColor || color
           },
           visible: true
@@ -356,7 +368,9 @@ export const createScatterTrace = (config: TraceConfig): any => {
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
+            visible: true,
             size: errorBarStyle.capSize,
+            thickness: errorBarStyle.thickness,
             color: errorBarColor || color
           },
           visible: true
@@ -370,7 +384,9 @@ export const createScatterTrace = (config: TraceConfig): any => {
           width: errorBarStyle.width,
           opacity: errorBarStyle.opacity,
           cap: {
+            visible: true,
             size: errorBarStyle.capSize,
+            thickness: errorBarStyle.thickness,
             color: errorBarColor || color
           },
           visible: true

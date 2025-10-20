@@ -23,4 +23,4 @@ export {
 export { assessDataQuality } from '../dataValidation';
 export { optimizeDataForPerformance, measurePerformance, optimizeTraceForLargeData, getPerformanceRecommendations } from '../performanceOptimization';
 export { getLegendConfig, getTitleText, getAxisConfig, getAnnotations } from '../layoutConfig';
-export { getPlotProperties, applyScatterProperties, applyRegressionProperties } from '../plotProperties';
+export { getPlotProperties, applyScatterProperties, applyRegressionProperties, applyErrorBarProperties } from '../plotProperties';
