@@ -197,6 +197,15 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                           onChange={(_, data) => updateGraphProperty('axisYData', data.value)}
                         />
                       </Field>
+                      {/* Show Z axis input for 3D graphs */}
+                      {detectedFeatures.is3DMesh && (
+                        <Field label="Axis (Z data)">
+                          <Input 
+                            value={globalProps.axisZData || ''}
+                            onChange={(_, data) => updateGraphProperty('axisZData', data.value)}
+                          />
+                        </Field>
+                      )}
                       <Field label="Title Visibility">
                         <Switch 
                           checked={globalProps.showTitle}
@@ -527,7 +536,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
             )}
 
             {/* 3D Mesh Properties Section */}
-            {detectedFeatures.is3DMesh && plotProps.mesh3d && (
+            {detectedFeatures.is3DMesh && (
               <AccordionItem value="mesh3d">
                 <AccordionHeader>
                   <div className={classes.accordionHeader}>
@@ -549,7 +558,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                         {/* Surface Type */}
                         <Field label="Surface Type">
                           <Dropdown
-                            value={plotProps.mesh3d.surfaceType}
+                            value={plotProps.mesh3d?.surfaceType || 'mesh'}
                             onOptionSelect={(_, data) => updatePlotSpecificProperty('mesh3d', 'surfaceType', data.optionValue)}
                           >
                             <Option value="mesh">Mesh</Option>
@@ -559,12 +568,12 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                         </Field>
 
                         {/* Opacity */}
-                        <Field label={`Opacity: ${Math.round(plotProps.mesh3d.opacity * 100)}%`}>
+                        <Field label={`Opacity: ${Math.round((plotProps.mesh3d?.opacity || 1.0) * 100)}%`}>
                           <Slider
                             min={0}
                             max={1}
                             step={0.1}
-                            value={plotProps.mesh3d.opacity}
+                            value={plotProps.mesh3d?.opacity || 1.0}
                             onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'opacity', data.value)}
                           />
                         </Field>
@@ -572,7 +581,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                         {/* Color Scale */}
                         <Field label="Color Scale">
                           <Dropdown
-                            value={plotProps.mesh3d.colorScale}
+                            value={plotProps.mesh3d?.colorScale || 'viridis'}
                             onOptionSelect={(_, data) => updatePlotSpecificProperty('mesh3d', 'colorScale', data.optionValue)}
                           >
                             <Option value="viridis">Viridis</Option>
@@ -597,19 +606,19 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                         {/* Show Contours */}
                         <Field label="Show Contours">
                           <Switch
-                            checked={plotProps.mesh3d.showContours}
+                            checked={plotProps.mesh3d?.showContours ?? true}
                             onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'showContours', data.checked)}
                           />
                         </Field>
 
                         {/* Contour Opacity */}
-                        {plotProps.mesh3d.showContours && (
-                          <Field label={`Contour Opacity: ${Math.round(plotProps.mesh3d.contourOpacity * 100)}%`}>
+                        {(plotProps.mesh3d?.showContours ?? true) && (
+                          <Field label={`Contour Opacity: ${Math.round((plotProps.mesh3d?.contourOpacity || 0.6) * 100)}%`}>
                             <Slider
                               min={0}
                               max={1}
                               step={0.1}
-                              value={plotProps.mesh3d.contourOpacity}
+                              value={plotProps.mesh3d?.contourOpacity || 0.6}
                               onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'contourOpacity', data.value)}
                             />
                           </Field>
@@ -618,7 +627,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                         {/* Lighting */}
                         <Field label="Lighting">
                           <Switch
-                            checked={plotProps.mesh3d.lighting}
+                            checked={plotProps.mesh3d?.lighting ?? true}
                             onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'lighting', data.checked)}
                           />
                         </Field>
@@ -626,7 +635,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                         {/* Smooth Shading */}
                         <Field label="Smooth Shading">
                           <Switch
-                            checked={plotProps.mesh3d.smoothShading}
+                            checked={plotProps.mesh3d?.smoothShading ?? true}
                             onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'smoothShading', data.checked)}
                           />
                         </Field>
@@ -634,19 +643,19 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                         {/* Show Grid */}
                         <Field label="Show 3D Grid">
                           <Switch
-                            checked={plotProps.mesh3d.showGrid}
+                            checked={plotProps.mesh3d?.showGrid ?? true}
                             onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'showGrid', data.checked)}
                           />
                         </Field>
 
                         {/* Grid Opacity */}
-                        {plotProps.mesh3d.showGrid && (
-                          <Field label={`Grid Opacity: ${Math.round(plotProps.mesh3d.gridOpacity * 100)}%`}>
+                        {(plotProps.mesh3d?.showGrid ?? true) && (
+                          <Field label={`Grid Opacity: ${Math.round((plotProps.mesh3d?.gridOpacity || 0.5) * 100)}%`}>
                             <Slider
                               min={0}
                               max={1}
                               step={0.1}
-                              value={plotProps.mesh3d.gridOpacity}
+                              value={plotProps.mesh3d?.gridOpacity || 0.5}
                               onChange={(_, data) => updatePlotSpecificProperty('mesh3d', 'gridOpacity', data.value)}
                             />
                           </Field>
@@ -948,7 +957,8 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
               </AccordionItem>
             )}
 
-            {/* Grid Settings */}
+            {/* Grid Settings - Only show for 2D graphs */}
+            {!detectedFeatures.is3DMesh && (
             <AccordionItem value="gridSettings">
               <AccordionHeader>
                 <div className={classes.accordionHeader}>
@@ -1054,8 +1064,10 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                 </div>
               </AccordionPanel>
             </AccordionItem>
+            )}
 
-            {/* Axis Lines */}
+            {/* Axis Lines - Only show for 2D graphs */}
+            {!detectedFeatures.is3DMesh && (
             <AccordionItem value="axisLines">
               <AccordionHeader>
                 <div className={classes.accordionHeader}>
@@ -1093,8 +1105,10 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                 </div>
               </AccordionPanel>
             </AccordionItem>
+            )}
 
-            {/* Scaling Options */}
+            {/* Scaling Options - Only show for 2D graphs */}
+            {!detectedFeatures.is3DMesh && (
             <AccordionItem value="scalingOptions">
               <AccordionHeader>
                 <div className={classes.accordionHeader}>
@@ -1179,8 +1193,10 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                 </div>
               </AccordionPanel>
             </AccordionItem>
+            )}
 
-            {/* Major Tick Labels */}
+            {/* Major Tick Labels - Only show for 2D graphs */}
+            {!detectedFeatures.is3DMesh && (
             <AccordionItem value="majorTicks">
               <AccordionHeader>
                 <div className={classes.accordionHeader}>
@@ -1240,9 +1256,11 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                 </div>
               </AccordionPanel>
             </AccordionItem>
+            )}
 
 
-            {/* Major Tick Marks Section */}
+            {/* Major Tick Marks Section - Only show for 2D graphs */}
+            {!detectedFeatures.is3DMesh && (
             <AccordionItem value="majorTickMarks">
               <AccordionHeader>
                 <div className={classes.accordionHeader}>
@@ -1330,8 +1348,10 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                 </div>
               </AccordionPanel>
             </AccordionItem>
+            )}
 
-            {/* Minor Tick Marks Section */}
+            {/* Minor Tick Marks Section - Only show for 2D graphs */}
+            {!detectedFeatures.is3DMesh && (
             <AccordionItem value="minorTickMarks">
               <AccordionHeader>
                 <div className={classes.accordionHeader}>
@@ -1405,8 +1425,10 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                 </div>
               </AccordionPanel>
             </AccordionItem>
+            )}
 
-            {/* Break Properties Section */}
+            {/* Break Properties Section - Only show for 2D graphs */}
+            {!detectedFeatures.is3DMesh && (
             <AccordionItem value="breakProperties">
               <AccordionHeader>
                 <div className={classes.accordionHeader}>
@@ -1534,6 +1556,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
                 </div>
               </AccordionPanel>
             </AccordionItem>
+            )}
 
             {/* Export Section */}
             <AccordionItem value="export">

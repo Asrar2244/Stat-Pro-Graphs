@@ -18,16 +18,21 @@ export const GraphBodyRender: FC<any> = (props) => {
   };
 
   // Create liveProps with plot properties and canvas mode
+  // Use tools.graphProperties.plotSpecific to get the properties from the properties panel
   const liveProps = {
     ...props.liveProps,
-    plotSpecific: plotProperties,
+    plotSpecific: tools.graphProperties.plotSpecific || plotProperties,
+    global: tools.graphProperties.global,
     canvasMode: tools.canvasMode
   };
   
-  console.log('🎨 Graph Body Render - Canvas Mode:', {
+  console.log('🎨 Graph Body Render - Live Props:', {
     toolsCanvasMode: tools.canvasMode,
     livePropsCanvasMode: liveProps.canvasMode,
-    hasTools: !!tools
+    hasTools: !!tools,
+    plotSpecific: liveProps.plotSpecific,
+    mesh3d: liveProps.plotSpecific?.mesh3d,
+    hasMesh3dProperties: !!liveProps.plotSpecific?.mesh3d
   });
   
   // Track canvas mode changes

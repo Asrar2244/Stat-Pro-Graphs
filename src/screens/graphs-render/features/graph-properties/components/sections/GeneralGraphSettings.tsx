@@ -21,6 +21,7 @@ import { GraphPropertiesProps } from '../../types';
 export const GeneralGraphSettings: FC<GraphPropertiesProps> = ({ properties }) => {
   const classes = useGraphPropertiesClasses();
   const globalProps = properties.graphProperties.global;
+  const detectedFeatures = properties.getDetectedPlotFeatures(properties.currentSubType);
 
   return (
     <AccordionItem value="global">
@@ -58,6 +59,15 @@ export const GeneralGraphSettings: FC<GraphPropertiesProps> = ({ properties }) =
                   onChange={(_, data) => properties.updateGraphProperty('axisYData', data.value)}
                 />
               </Field>
+              {/* Show Z axis input for 3D graphs */}
+              {detectedFeatures.is3DMesh && (
+                <Field label="Axis (Z data)">
+                  <Input 
+                    value={globalProps.axisZData || ''}
+                    onChange={(_, data) => properties.updateGraphProperty('axisZData', data.value)}
+                  />
+                </Field>
+              )}
               <Field label="Title Visibility">
                 <Switch 
                   checked={globalProps.showTitle}

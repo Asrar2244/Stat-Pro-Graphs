@@ -84,12 +84,34 @@ export interface DotPlotProperties {
   dottedLineColor?: string;
 }
 
+export interface Mesh3DProperties {
+  /** Surface type */
+  surfaceType?: 'mesh' | 'surface' | 'wireframe';
+  /** Surface opacity (0-1) */
+  opacity?: number;
+  /** Color scale */
+  colorScale?: string;
+  /** Show contours */
+  showContours?: boolean;
+  /** Contour opacity (0-1) */
+  contourOpacity?: number;
+  /** Lighting enabled */
+  lighting?: boolean;
+  /** Smooth shading */
+  smoothShading?: boolean;
+  /** Show grid */
+  showGrid?: boolean;
+  /** Grid opacity (0-1) */
+  gridOpacity?: number;
+}
+
 export interface PlotSpecificProperties {
   scatter?: ScatterPointProperties;
   regression?: RegressionLineProperties;
   errorBar?: ErrorBarProperties;
   pointPlot?: PointPlotProperties;
   dotPlot?: DotPlotProperties;
+  mesh3d?: Mesh3DProperties;
 }
 
 export interface LiveProperties {
@@ -151,6 +173,17 @@ export const DEFAULT_PLOT_PROPERTIES: PlotSpecificProperties = {
     showDottedLines: true,
     dottedLineOpacity: 0.5,
     dottedLineColor: 'rgba(0,0,0,0.3)'
+  },
+  mesh3d: {
+    surfaceType: 'surface',
+    opacity: 1.0,
+    colorScale: 'viridis',
+    showContours: true,
+    contourOpacity: 0.6,
+    lighting: true,
+    smoothShading: true,
+    showGrid: true,
+    gridOpacity: 0.5
   }
 };
 
@@ -174,6 +207,10 @@ export const getPlotProperties = (liveProps?: LiveProperties): PlotSpecificPrope
     errorBar: {
       ...DEFAULT_PLOT_PROPERTIES.errorBar,
       ...liveProps.plotSpecific.errorBar
+    },
+    mesh3d: {
+      ...DEFAULT_PLOT_PROPERTIES.mesh3d,
+      ...liveProps.plotSpecific.mesh3d
     }
   };
 };

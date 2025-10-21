@@ -18,6 +18,7 @@ export interface GlobalGraphProperties {
   tabName: string;
   axisXData?: string;
   axisYData?: string;
+  axisZData?: string; // For 3D graphs
   showTitle: boolean;
   canvasMode?: 'light' | 'dark';
 
@@ -215,6 +216,7 @@ export const useTools = () => {
       tabName: 'Graph Tab',
       axisXData: 'X axis',
       axisYData: 'Y axis',
+      axisZData: 'Z axis', // For 3D graphs
       showTitle: true,
       canvasMode: 'light',
       // Legends defaults
@@ -506,10 +508,15 @@ export const useTools = () => {
     
     const subTypeLower = subType.toLowerCase();
     
-    // Check for 3D mesh
-    const is3DMesh = subTypeLower.includes('3d mesh') || subTypeLower === '3d mesh plot';
+    // Check for any 3D graph types (mesh, surface, scatter3d, bar3d, line3d, contour3d, volume, etc.)
+    const is3DMesh = subTypeLower.includes('3d') || 
+                     subTypeLower.includes('mesh') || 
+                     subTypeLower.includes('surface') ||
+                     subTypeLower.includes('scatter3d') ||
+                     subTypeLower.includes('volume') ||
+                     subTypeLower.includes('contour3d');
     
-    // If it's a 3D mesh, don't show any 2D plot features
+    // If it's a 3D graph, don't show any 2D plot features
     if (is3DMesh) {
       return {
         hasScatter: false,

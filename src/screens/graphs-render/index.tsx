@@ -82,22 +82,33 @@ export const GraphsRender: FC = () => {
   // Accessors for per-run properties
   const currentProps = useMemo(() => {
     const baseProps = propertiesByRun[selectedGraphRun.id] || tools.graphProperties;
-    return {
+    const result = {
       ...baseProps,
       global: {
         ...baseProps.global,
         canvasMode: tools.canvasMode
       },
       plotSpecific: {
-        ...baseProps.plotSpecific
+        ...baseProps.plotSpecific,
+        mesh3d: {
+          ...(tools.graphProperties.plotSpecific.mesh3d),
+          ...(baseProps.plotSpecific?.mesh3d)
+        }
       }
     };
+    console.log('🔄 currentProps recalculated:', {
+      hasMesh3d: !!result.plotSpecific.mesh3d,
+      mesh3dProps: result.plotSpecific.mesh3d,
+      selectedRunId: selectedGraphRun.id
+    });
+    return result;
   }, [propertiesByRun, selectedGraphRun.id, tools.canvasMode, tools.graphProperties]);
   
   console.log('🎨 GraphsRender - currentProps Debug:', {
     toolsCanvasMode: tools.canvasMode,
     currentPropsCanvasMode: currentProps.global.canvasMode,
     plotSpecific: currentProps.plotSpecific,
+    mesh3d: currentProps.plotSpecific?.mesh3d,
     selectedRunId: selectedGraphRun.id,
     hasPropertiesByRun: !!propertiesByRun[selectedGraphRun.id]
   });
@@ -231,9 +242,16 @@ export const GraphsRender: FC = () => {
     key: keyof NonNullable<typeof tools.graphProperties.plotSpecific[T]>,
     value: any,
   ) => {
+    console.log('🔧 updatePlotSpecificPropertyPerRun called:', {
+      plotType,
+      key,
+      value,
+      selectedRunId: selectedGraphRun.id
+    });
+    
     setPropertiesByRun((prev) => {
       const base = prev[selectedGraphRun.id] || tools.graphProperties;
-      return {
+      const updated = {
         ...prev,
         [selectedGraphRun.id]: {
           ...base,
@@ -246,6 +264,14 @@ export const GraphsRender: FC = () => {
           },
         },
       };
+      
+      console.log('📦 Updated properties:', {
+        oldValue: (base.plotSpecific as any)[plotType]?.[key],
+        newValue: value,
+        updatedPlotSpecific: updated[selectedGraphRun.id].plotSpecific
+      });
+      
+      return updated;
     });
     // Persist immediately
     try {

@@ -104,6 +104,24 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         }
       };
 
+      console.log('🎨 3D Mesh Config Merge - DETAILED:', {
+        originalMeshConfig: graphConfig.meshConfig,
+        liveProps3D: liveProps?.plotSpecific?.mesh3d,
+        enhancedMeshConfig: enhancedGraphConfig.meshConfig,
+        hasLiveProps: !!liveProps,
+        hasPlotSpecific: !!liveProps?.plotSpecific,
+        hasMesh3d: !!liveProps?.plotSpecific?.mesh3d,
+        // DETAILED DEBUG
+        livePropsKeys: liveProps ? Object.keys(liveProps) : [],
+        plotSpecificKeys: liveProps?.plotSpecific ? Object.keys(liveProps.plotSpecific) : [],
+        mesh3dKeys: liveProps?.plotSpecific?.mesh3d ? Object.keys(liveProps.plotSpecific.mesh3d) : [],
+        fullMesh3dObject: liveProps?.plotSpecific?.mesh3d,
+        // Background color debug
+        backgroundColor: liveProps?.global?.backgroundColor,
+        hasGlobal: !!liveProps?.global,
+        globalKeys: liveProps?.global ? Object.keys(liveProps.global) : []
+      });
+
       // Process data by format
       const processedSeries = processDataByFormat({
         graphConfig: { ...enhancedGraphConfig, dataFormat: normalizedFormat },
@@ -625,7 +643,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       const applyInlineEditing = () => {
         const root = containerRef.current as HTMLElement | null;
         if (!root) return;
-        const dispatchUpdate = (key: 'graphName' | 'axisXData' | 'axisYData', value: string) => {
+        const dispatchUpdate = (key: 'graphName' | 'axisXData' | 'axisYData' | 'axisZData', value: string) => {
           // Find React context updater if exposed via window or custom event
           // As a minimal approach, modify liveProps directly is not possible; edits will re-render via parent state changes.
           const event = new CustomEvent('statpro:updateGraphProperty', { detail: { key, value } });
@@ -639,7 +657,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             if (next) dispatchUpdate('graphName', next);
           });
         }
-        // Axis titles
+        // Axis titles (2D)
         const xTitleEl = root.querySelector('g.xg .xtitle') as SVGGElement | null;
         if (xTitleEl) {
           xTitleEl.addEventListener('dblclick', () => {
@@ -656,6 +674,17 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             if (next) dispatchUpdate('axisYData', next);
           });
         }
+        // Z axis title (3D) - for 3D graphs
+        if (has3DMeshTraces) {
+          const zTitleEl = root.querySelector('g.scene .ztitle') as SVGGElement | null;
+          if (zTitleEl) {
+            zTitleEl.addEventListener('dblclick', () => {
+              const current = (liveProps?.global?.axisZData) || 'Z';
+              const next = prompt('Edit Z axis title', current) || '';
+              if (next) dispatchUpdate('axisZData', next);
+            });
+          }
+        }
       };
 
       // For category plots, merge category-specific axis settings
@@ -671,9 +700,20 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
 
       // Add 3D scene configuration for 3D mesh plots
       if (has3DMeshTraces) {
+        // Get axis titles from properties or fall back to column names
+        const scene3DXTitle = (liveProps?.global?.showAxisLabels && liveProps?.global?.axisXData) 
+          ? liveProps.global.axisXData 
+          : (xNames[0] || 'X');
+        const scene3DYTitle = (liveProps?.global?.showAxisLabels && liveProps?.global?.axisYData) 
+          ? liveProps.global.axisYData 
+          : (yNames[0] || 'Y');
+        const scene3DZTitle = (liveProps?.global?.showAxisLabels && liveProps?.global?.axisZData) 
+          ? liveProps.global.axisZData 
+          : 'Z';
+        
         layout.scene = {
           xaxis: { 
-            title: xNames[0] || 'X',
+            title: scene3DXTitle,
             // Ensure X-axis goes from low to high (left to right)
             autorange: true,
             showgrid: true,
@@ -690,7 +730,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             showbackground: true
           },
           yaxis: { 
-            title: yNames[0] || 'Y',
+            title: scene3DYTitle,
             // Ensure Y-axis goes from low to high (front to back)
             autorange: true,
             showgrid: true,
@@ -707,7 +747,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             showbackground: true
           },
           zaxis: { 
-            title: 'Z',
+            title: scene3DZTitle,
             // Ensure Z-axis goes from low to high (bottom to top)
             autorange: true,
             showgrid: true,

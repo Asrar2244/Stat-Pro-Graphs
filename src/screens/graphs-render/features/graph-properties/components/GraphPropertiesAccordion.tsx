@@ -22,6 +22,10 @@ export const GraphPropertiesAccordion: FC<GraphPropertiesProps> = ({ properties 
   // Data format properties state
   const [dataFormatProperties, setDataFormatProperties] = useState<DataFormatProperties | null>(null);
   
+  // Detect if this is a 3D graph
+  const detectedFeatures = properties.getDetectedPlotFeatures(properties.currentSubType);
+  const is3D = detectedFeatures.is3DMesh;
+  
   // Create series labels based on current data format and variables
   const seriesLabels = properties.currentDataFormat && properties.currentVariables ? 
     getSeriesLabels(
@@ -60,11 +64,11 @@ export const GraphPropertiesAccordion: FC<GraphPropertiesProps> = ({ properties 
       {/* Legend Properties */}
       <LegendPropertiesSection properties={properties} />
       
-      {/* Grid Settings */}
-      <GridSettingsSection properties={properties} />
+      {/* Grid Settings - Only show for 2D graphs */}
+      {!is3D && <GridSettingsSection properties={properties} />}
       
-      {/* Axis Properties */}
-      <AxisPropertiesSection properties={properties} />
+      {/* Axis Properties - Only show for 2D graphs */}
+      {!is3D && <AxisPropertiesSection properties={properties} />}
       
       {/* Export Properties */}
       <ExportPropertiesSection properties={properties} />
