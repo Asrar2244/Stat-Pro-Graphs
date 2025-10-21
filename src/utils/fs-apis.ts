@@ -69,6 +69,35 @@ export const getFileSize = async (filePath: string): Promise<number> => {
   return await invoke('get_file_size', { path: filePath });
 };
 
+export const getDirectorySize = async (directoryPath: string): Promise<number> => {
+  return await invoke('get_directory_size', { path: directoryPath });
+};
+
+export const getProjectSize = async (dbPath: string): Promise<number> => {
+  return await invoke('get_project_size', { dbPath: dbPath });
+};
+
+export interface ProjectSizeBreakdown {
+  total: number;
+  database: number;
+  breakdown: {
+    data: number;
+    output: number;
+    graphs: number;
+    other: number;
+  };
+  tables: string[];
+  tableDetails: Array<{
+    name: string;
+    rows: number;
+    size: number;
+  }>;
+}
+
+export const getProjectSizeBreakdown = async (dbPath: string): Promise<ProjectSizeBreakdown> => {
+  return await invoke('get_project_size_breakdown', { dbPath: dbPath });
+};
+
 export const getFileNameFromPath = (filePath: string): Promise<string> => {
   return basename(filePath);
 };

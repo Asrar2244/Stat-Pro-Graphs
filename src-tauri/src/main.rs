@@ -78,6 +78,9 @@ fn main() {
             close_splashscreen,
             tauri_json_file::save_json_to_file,
             tauri_json_file::get_file_size,
+            tauri_json_file::get_directory_size,
+            tauri_json_file::get_project_size,
+            tauri_json_file::get_project_size_breakdown,
             excel_csv_file::save_excel_to_file,
             excel_csv_file::save_csv_to_file
         ])

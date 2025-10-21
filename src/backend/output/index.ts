@@ -86,9 +86,32 @@ export const outputGenerateIDTable = async (dbName: string, parameters: any[]): 
 export const outputTable = async (dbName: string, parameters: any[]): Promise<number> => {
   const db = new Database(dbName);
   const record = await db.executeQuery(`${createOutputTable};${insertToOutputTable}`, parameters);
+  
+  // Notify workspace that project size should be updated
+  try {
+    const event = new CustomEvent('statpro:projectUpdated', { 
+      detail: { projectName: parameters[2], workspacePath: dbName } // tabName is parameters[2]
+    });
+    window.dispatchEvent(event);
+    console.log(`🔔 Notified workspace: output saved for "${parameters[2]}"`);
+  } catch (error) {
+    console.warn('Could not notify workspace:', error);
+  }
+  
   return record.lastInsertId;
 };
 export const outputUpdateResult = async (dbName: string, parameters: any[]): Promise<void> => {
   const db = new Database(dbName);
   await db.executeQuery(updateOutputResult, parameters);
+  
+  // Notify workspace that project size should be updated (results added)
+  try {
+    const event = new CustomEvent('statpro:projectUpdated', { 
+      detail: { projectName: dbName, workspacePath: dbName }
+    });
+    window.dispatchEvent(event);
+    console.log(`🔔 Notified workspace: output results updated for database "${dbName}"`);
+  } catch (error) {
+    console.warn('Could not notify workspace:', error);
+  }
 };

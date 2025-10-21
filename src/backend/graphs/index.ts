@@ -83,6 +83,17 @@ export const graphGenerateIDTable = async (dbName: string, parameters: any[]): P
   const db = new Database(dbName);
   const record = await db.executeQuery(`${createGraphTable};${generateIDGraphTable}`, parameters);
   
+  // Notify workspace that project size should be updated
+  try {
+    const event = new CustomEvent('statpro:projectUpdated', { 
+      detail: { projectName: parameters[3], workspacePath: dbName } // tabName is parameters[3]
+    });
+    window.dispatchEvent(event);
+    console.log(`🔔 Notified workspace: graph saved (backend) for "${parameters[3]}"`);
+  } catch (error) {
+    console.warn('Could not notify workspace:', error);
+  }
+  
   // Automatically set flag to display the latest graph
   try {
     const { useStartProStore } = await import('@store/main-store');
