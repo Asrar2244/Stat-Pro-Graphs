@@ -4,8 +4,7 @@ import { LinePlotForm } from './LinePlotForm';
 import { useLinePlotStore } from './linePlotSlice';
 import { IModal } from '@hooks';
 import { useLinePlotModalStyles } from './styles-hook/use-line-plot-modal-styles';
-import { LinePlotErrorBoundary } from './components/ErrorBoundary';
-import { AdvancedValidationModal } from './components/AdvancedValidationModal';
+import { GraphErrorBoundary, AdvancedValidationModal } from '../../shared/components';
 import { validateLinePlotRequirements, LinePlotValidationError } from './utils/validationUtils';
 import { isValidDataFormat } from './constants';
 
@@ -205,14 +204,15 @@ export const LinePlotModal: FC<LinePlotModalProps> = ({
       modalType="non-modal"
     >
       <div style={modalContentStyles}>
-        <LinePlotErrorBoundary
+        <GraphErrorBoundary
+          graphType="Line Plot"
           onError={(error, errorInfo) => {
             console.error('LinePlot Modal Error:', error, errorInfo);
             // In production, you might want to send this to an error reporting service
           }}
         >
           <LinePlotForm projects={projects} datasets={datasets} />
-        </LinePlotErrorBoundary>
+        </GraphErrorBoundary>
       </div>
     </Modal>
     
@@ -221,11 +221,18 @@ export const LinePlotModal: FC<LinePlotModalProps> = ({
       isOpen={showValidationErrorModal}
       onClose={() => setShowValidationErrorModal(false)}
       errors={validationErrors}
+      graphType="Line Plot"
+      dataFormat={dataFormat}
+      selectedVariables={{
+        x: (graphConfig as any)?.variables?.x || (selectedXVariable && selectedXVariable.trim() !== '' ? [selectedXVariable] : []),
+        y: (graphConfig as any)?.variables?.y || (selectedYVariable && selectedYVariable.trim() !== '' ? [selectedYVariable] : []),
+        category: (graphConfig as any)?.variables?.category || [],
+        errorBar: (graphConfig as any)?.variables?.errorBar || []
+      }}
       onRetry={() => {
         // Close the modal and let user try again
         setShowValidationErrorModal(false);
       }}
-      title="Cannot Create Line Plot"
       showDetailedHelp={true}
       />
     </>

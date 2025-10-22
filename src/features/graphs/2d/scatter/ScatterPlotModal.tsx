@@ -4,8 +4,7 @@ import { ScatterPlotForm } from './ScatterPlotForm';
 import { useScatterPlotStore } from './scatterPlotSlice';
 import { IModal } from '@hooks';
 import { useScatterPlotModalStyles } from './styles-hook/use-scatter-plot-modal-styles';
-import { ScatterPlotErrorBoundary } from './components/ErrorBoundary';
-import { AdvancedValidationModal } from './components/AdvancedValidationModal';
+import { GraphErrorBoundary, AdvancedValidationModal } from '../../shared/components';
 import { validateScatterPlotRequirements, ScatterPlotValidationError } from './utils/validationUtils';
 import { isValidDataFormat } from './constants';
 
@@ -205,14 +204,15 @@ export const ScatterPlotModal: FC<ScatterPlotModalProps> = ({
       modalType="non-modal"
     >
       <div style={modalContentStyles}>
-        <ScatterPlotErrorBoundary
+        <GraphErrorBoundary
+          graphType="Scatter Plot"
           onError={(error, errorInfo) => {
             console.error('ScatterPlot Modal Error:', error, errorInfo);
             // In production, you might want to send this to an error reporting service
           }}
         >
           <ScatterPlotForm projects={projects} datasets={datasets} />
-        </ScatterPlotErrorBoundary>
+        </GraphErrorBoundary>
       </div>
     </Modal>
     
@@ -221,11 +221,18 @@ export const ScatterPlotModal: FC<ScatterPlotModalProps> = ({
       isOpen={showValidationErrorModal}
       onClose={() => setShowValidationErrorModal(false)}
       errors={validationErrors}
+      graphType="Scatter Plot"
+      dataFormat={dataFormat}
+      selectedVariables={{
+        x: (graphConfig as any)?.variables?.x || (selectedXVariable && selectedXVariable.trim() !== '' ? [selectedXVariable] : []),
+        y: (graphConfig as any)?.variables?.y || (selectedYVariable && selectedYVariable.trim() !== '' ? [selectedYVariable] : []),
+        category: (graphConfig as any)?.variables?.category || [],
+        errorBar: (graphConfig as any)?.variables?.errorBar || []
+      }}
       onRetry={() => {
         // Close the modal and let user try again
         setShowValidationErrorModal(false);
       }}
-      title="Cannot Create Scatter Plot"
       showDetailedHelp={true}
       />
     </>

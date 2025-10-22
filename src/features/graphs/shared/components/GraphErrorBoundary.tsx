@@ -6,6 +6,7 @@ interface Props {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  graphType?: string; // e.g., "Line Plot", "Scatter Plot", "3D Mesh"
 }
 
 interface State {
@@ -15,11 +16,18 @@ interface State {
 }
 
 /**
- * Error Boundary component for LinePlot feature
+ * Generic Error Boundary component for all graph types
  * Catches JavaScript errors anywhere in the child component tree,
  * logs those errors, and displays a fallback UI
+ * 
+ * @example
+ * ```tsx
+ * <GraphErrorBoundary graphType="Line Plot">
+ *   <LinePlotForm />
+ * </GraphErrorBoundary>
+ * ```
  */
-export class LinePlotErrorBoundary extends Component<Props, State> {
+export class GraphErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
@@ -31,12 +39,14 @@ export class LinePlotErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    const { graphType = 'Graph', onError } = this.props;
+    
     // Log error details
-    console.error('LinePlot Error Boundary caught an error:', error, errorInfo);
+    console.error(`${graphType} Error Boundary caught an error:`, error, errorInfo);
     
     // Call custom error handler if provided
-    if (this.props.onError) {
-      this.props.onError(error, errorInfo);
+    if (onError) {
+      onError(error, errorInfo);
     }
 
     // Update state with error info
@@ -48,6 +58,8 @@ export class LinePlotErrorBoundary extends Component<Props, State> {
   };
 
   render() {
+    const { graphType = 'Graph' } = this.props;
+
     if (this.state.hasError) {
       // Custom fallback UI
       if (this.props.fallback) {
@@ -72,11 +84,11 @@ export class LinePlotErrorBoundary extends Component<Props, State> {
           
           <div>
             <Text size={500} weight="semibold" style={{ color: tokens.colorPaletteRedForeground1 }}>
-              Something went wrong with the Line Plot
+              Something went wrong with the {graphType}
             </Text>
             <br />
             <Text size={300} style={{ color: tokens.colorPaletteRedForeground2 }}>
-              An unexpected error occurred while rendering the line plot configuration.
+              An unexpected error occurred while rendering the {graphType.toLowerCase()} configuration.
             </Text>
           </div>
 
@@ -124,16 +136,29 @@ export class LinePlotErrorBoundary extends Component<Props, State> {
 }
 
 /**
- * Hook-based error boundary for functional components
+ * Hook-based error handler for functional components
  * Note: This is a simplified version - full error boundaries require class components
+ * 
+ * @example
+ * ```tsx
+ * const { handleError } = useGraphErrorHandler('Line Plot');
+ * 
+ * try {
+ *   // ... code that might throw
+ * } catch (error) {
+ *   handleError(error as Error);
+ * }
+ * ```
  */
-export const useErrorHandler = () => {
+export const useGraphErrorHandler = (graphType: string = 'Graph') => {
   const handleError = (error: Error, errorInfo?: any) => {
-    console.error('LinePlot Error:', error, errorInfo);
+    console.error(`${graphType} Error:`, error, errorInfo);
     
     // In a real app, you might want to send this to an error reporting service
-    // Example: Sentry.captureException(error, { extra: errorInfo });
+    // Example: Sentry.captureException(error, { extra: { graphType, ...errorInfo } });
   };
 
   return { handleError };
 };
+
+

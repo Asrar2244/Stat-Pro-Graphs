@@ -4,8 +4,7 @@ import { MeshPlotForm } from './MeshPlotForm';
 import { useMeshPlotStore } from './meshPlotSlice';
 import { IModal } from '@hooks';
 import { useMeshPlotModalStyles } from './styles-hook/use-mesh-plot-modal-styles';
-import { MeshPlotErrorBoundary } from './components/ErrorBoundary';
-import { AdvancedValidationModal } from './components/AdvancedValidationModal';
+import { GraphErrorBoundary, AdvancedValidationModal } from '../../shared/components';
 import { validateMeshPlotRequirements, MeshPlotValidationError } from './utils/validationUtils';
 import { isValidDataFormat } from './constants';
 
@@ -220,14 +219,15 @@ export const MeshPlotModal: FC<MeshPlotModalProps> = ({
       modalType="non-modal"
     >
       <div style={modalContentStyles}>
-        <MeshPlotErrorBoundary
+        <GraphErrorBoundary
+          graphType="3D Mesh Plot"
           onError={(error, errorInfo) => {
             console.error('MeshPlot Modal Error:', error, errorInfo);
             // In production, you might want to send this to an error reporting service
           }}
         >
           <MeshPlotForm projects={projects} datasets={datasets} />
-        </MeshPlotErrorBoundary>
+        </GraphErrorBoundary>
       </div>
     </Modal>
     
@@ -236,15 +236,21 @@ export const MeshPlotModal: FC<MeshPlotModalProps> = ({
       isOpen={showValidationErrorModal}
       onClose={() => setShowValidationErrorModal(false)}
       errors={validationErrors}
+      graphType="3D Mesh Plot"
+      dataFormat={dataFormat}
+      selectedVariables={{
+        x: (graphConfig as any)?.variables?.x || (selectedXVariable && selectedXVariable.trim() !== '' ? [selectedXVariable] : []),
+        y: (graphConfig as any)?.variables?.y || (selectedYVariable && selectedYVariable.trim() !== '' ? [selectedYVariable] : []),
+        z: (graphConfig as any)?.variables?.z || (selectedZVariable && selectedZVariable.trim() !== '' ? [selectedZVariable] : [])
+      }}
       onRetry={() => {
         // Close the modal and let user try again
         setShowValidationErrorModal(false);
       }}
       title={validationErrors.some(e => e.field === 'project' || e.field === 'dataFormat') 
         ? "Please Complete Required Fields" 
-        : "Cannot Create 3D Mesh Plot"}
+        : undefined}
       showDetailedHelp={true}
-      dataFormat={dataFormat}
       />
     </>
   );

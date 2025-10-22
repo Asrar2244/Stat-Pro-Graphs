@@ -327,19 +327,34 @@ export const validateFormatRequirements = (
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  // Check X variable requirements
+  const xCount = xVariables.length;
+  const yCount = yVariables.length;
+  const hasX = xCount > 0;
+  const hasY = yCount > 0;
+
+  // Check X variable requirements with context-aware messages
   if (requiresX(dataFormat) && xVariables.length === 0) {
-    errors.push('X variables are required for the selected data format');
+    if (hasY) {
+      errors.push(`Missing X variable: You have ${yCount} Y variable(s) selected, but "${dataFormat}" format requires X variables too`);
+    } else {
+      errors.push(`No variables selected: "${dataFormat}" format requires both X and Y variables`);
+    }
   }
 
-  // Check Y variable requirements
+  // Check Y variable requirements with context-aware messages
   if (requiresY(dataFormat) && yVariables.length === 0) {
-    errors.push('Y variables are required for the selected data format');
+    if (hasX) {
+      errors.push(`Missing Y variable: You have ${xCount} X variable(s) selected, but "${dataFormat}" format requires Y variables too`);
+    } else if (!hasX && requiresX(dataFormat)) {
+      // Already handled above - don't duplicate the message
+    } else {
+      errors.push(`No Y variables selected: "${dataFormat}" format requires Y variables`);
+    }
   }
 
   // Check category variable requirements
   if (requiresCategory(dataFormat) && categoryVariables.length === 0) {
-    errors.push('Category variables are required for the selected data format');
+    errors.push(`Category variable required: "${dataFormat}" format requires a category variable to group data`);
   }
 
   // Check maximum counts
@@ -353,17 +368,33 @@ export const validateFormatRequirements = (
     errors.push(`Maximum ${maxY} Y variable(s) allowed for this data format`);
   }
 
-  // Check for minimum requirements
+  // Check for minimum requirements with specific guidance
   if (dataFormat === 'XY Pair' && (xVariables.length !== 1 || yVariables.length !== 1)) {
-    errors.push('XY Pair format requires exactly 1 X and 1 Y variable');
+    if (xCount === 0 && yCount === 0) {
+      errors.push('XY Pair format requires exactly 1 X and 1 Y variable (none selected yet)');
+    } else if (xCount === 0) {
+      errors.push(`XY Pair format requires exactly 1 X and 1 Y variable (you have ${yCount} Y, but no X)`);
+    } else if (yCount === 0) {
+      errors.push(`XY Pair format requires exactly 1 X and 1 Y variable (you have ${xCount} X, but no Y)`);
+    } else if (xCount > 1 || yCount > 1) {
+      errors.push(`XY Pair format requires exactly 1 X and 1 Y variable (you have ${xCount} X and ${yCount} Y - too many)`);
+    }
   }
 
   if (dataFormat === 'Single X' && xVariables.length !== 1) {
-    errors.push('Single X format requires exactly 1 X variable');
+    if (xCount === 0) {
+      errors.push('Single X format requires exactly 1 X variable (none selected)');
+    } else {
+      errors.push(`Single X format requires exactly 1 X variable (you have ${xCount} - please select only one)`);
+    }
   }
 
   if (dataFormat === 'Single Y' && yVariables.length !== 1) {
-    errors.push('Single Y format requires exactly 1 Y variable');
+    if (yCount === 0) {
+      errors.push('Single Y format requires exactly 1 Y variable (none selected)');
+    } else {
+      errors.push(`Single Y format requires exactly 1 Y variable (you have ${yCount} - please select only one)`);
+    }
   }
 
   // Add warnings for potential issues

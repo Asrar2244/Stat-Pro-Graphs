@@ -1,7 +1,7 @@
 import React from 'react';
 import { Dialog, DialogSurface, DialogTitle, DialogBody, DialogContent, DialogActions, Button, Text, tokens } from '@fluentui/react-components';
-import { MdError, MdWarning, MdClose, MdRefresh } from 'react-icons/md';
-import { ValidationError } from '../utils/validationUtils';
+import { MdError, MdWarning, MdInfo, MdClose, MdRefresh } from 'react-icons/md';
+import { ValidationError } from '../types/validation';
 
 interface ValidationErrorModalProps {
   isOpen: boolean;
@@ -9,24 +9,40 @@ interface ValidationErrorModalProps {
   errors: ValidationError[];
   onRetry?: () => void;
   title?: string;
+  graphType?: string;
 }
 
 /**
- * Modal component to display validation errors in a user-friendly way
+ * Generic modal component to display validation errors in a user-friendly way
+ * Works for all graph types (Line, Scatter, 3D Mesh, etc.)
+ * 
+ * @example
+ * ```tsx
+ * <ValidationErrorModal
+ *   isOpen={showErrors}
+ *   onClose={() => setShowErrors(false)}
+ *   errors={validationErrors}
+ *   graphType="Line Plot"
+ *   onRetry={handleRetry}
+ * />
+ * ```
  */
 export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
   isOpen,
   onClose,
   errors,
   onRetry,
-  title = "Cannot Create Graph"
+  title,
+  graphType = "Graph"
 }) => {
   if (!isOpen || errors.length === 0) {
     return null;
   }
 
+  const defaultTitle = title || `Cannot Create ${graphType}`;
   const errorErrors = errors.filter(e => e.severity === 'error');
   const warningErrors = errors.filter(e => e.severity === 'warning');
+  const infoErrors = errors.filter(e => e.severity === 'info');
 
   const handleRetry = () => {
     if (onRetry) {
@@ -56,7 +72,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
             color: tokens.colorPaletteRedForeground1,
             flex: 1
           }}>
-            {title}
+            {defaultTitle}
           </Text>
           <Button
             appearance="transparent"
@@ -69,23 +85,23 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
 
         <DialogBody style={{ padding: '0 24px' }}>
           <DialogContent style={{ padding: '16px 0' }}>
-            {/* Main Error Message */}
-            <div style={{
-              marginBottom: '20px',
-              padding: '16px',
-              borderRadius: '8px',
-              backgroundColor: tokens.colorPaletteRedBackground2,
-              border: `1px solid ${tokens.colorPaletteRedBorder2}`
-            }}>
-              <Text size={400} weight="semibold" style={{ 
-                color: tokens.colorPaletteRedForeground1,
-                marginBottom: '8px',
-                display: 'block'
+            {/* Error Messages */}
+            {errorErrors.length > 0 && (
+              <div style={{
+                marginBottom: '20px',
+                padding: '16px',
+                borderRadius: '8px',
+                backgroundColor: tokens.colorPaletteRedBackground2,
+                border: `1px solid ${tokens.colorPaletteRedBorder2}`
               }}>
-                Please fix the following issues before creating the graph:
-              </Text>
-              
-              {errorErrors.length > 0 && (
+                <Text size={400} weight="semibold" style={{ 
+                  color: tokens.colorPaletteRedForeground1,
+                  marginBottom: '8px',
+                  display: 'block'
+                }}>
+                  Please fix the following issues before creating the {graphType.toLowerCase()}:
+                </Text>
+                
                 <ul style={{
                   margin: 0,
                   paddingLeft: '20px',
@@ -94,13 +110,14 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
                   {errorErrors.map((error, index) => (
                     <li key={index} style={{ marginBottom: '6px' }}>
                       <Text size={300} style={{ color: tokens.colorPaletteRedForeground1 }}>
+                        {error.field && <strong>{error.field}: </strong>}
                         {error.message}
                       </Text>
                     </li>
                   ))}
                 </ul>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Warning Messages */}
             {warningErrors.length > 0 && (
@@ -127,7 +144,42 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
                   {warningErrors.map((warning, index) => (
                     <li key={index} style={{ marginBottom: '4px' }}>
                       <Text size={300} style={{ color: tokens.colorPaletteYellowForeground1 }}>
+                        {warning.field && <strong>{warning.field}: </strong>}
                         {warning.message}
+                      </Text>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Info Messages */}
+            {infoErrors.length > 0 && (
+              <div style={{
+                marginBottom: '16px',
+                padding: '16px',
+                borderRadius: '8px',
+                backgroundColor: tokens.colorPaletteBlueBackground2,
+                border: `1px solid ${tokens.colorPaletteBlueBorder2}`
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <MdInfo size={20} color={tokens.colorPaletteBlueForeground1} />
+                  <Text size={300} weight="semibold" style={{ 
+                    color: tokens.colorPaletteBlueForeground1 
+                  }}>
+                    Information:
+                  </Text>
+                </div>
+                <ul style={{
+                  margin: 0,
+                  paddingLeft: '20px',
+                  listStyleType: 'disc'
+                }}>
+                  {infoErrors.map((info, index) => (
+                    <li key={index} style={{ marginBottom: '4px' }}>
+                      <Text size={300} style={{ color: tokens.colorPaletteBlueForeground1 }}>
+                        {info.field && <strong>{info.field}: </strong>}
+                        {info.message}
                       </Text>
                     </li>
                   ))}
@@ -146,8 +198,8 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
                 color: tokens.colorNeutralForeground2,
                 lineHeight: '1.4'
               }}>
-                💡 <strong>Tip:</strong> Make sure to select the required variables for your chosen graph type. 
-                Different graph types require different variable combinations (X, Y, Category, Error Bar).
+                💡 <strong>Tip:</strong> Make sure to select the required variables for your chosen {graphType.toLowerCase()} type. 
+                Different graph types require different variable combinations (X, Y, Z, Category, Error Bar).
               </Text>
             </div>
           </DialogContent>
@@ -180,3 +232,5 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
     </Dialog>
   );
 };
+
+
