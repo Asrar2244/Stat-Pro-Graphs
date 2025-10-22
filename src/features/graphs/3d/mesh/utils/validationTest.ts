@@ -205,22 +205,7 @@ export const testMeshPlotCreation = (config: MeshPlotCreationConfig): MeshPlotVa
 export const testMeshPlotCreationWithDebug = (config: MeshPlotCreationConfig): MeshPlotValidationResult => {
   const result = testMeshPlotCreation(config);
   
-  // Debug logging
-  console.group('🧪 Mesh Plot Creation Test');
-  console.log('Config:', config);
-  console.log('Result:', result);
-  
-  if (result.isValid) {
-    console.log('✅ All validation tests passed');
-  } else {
-    console.error('❌ Validation tests failed:', result.errors);
-  }
-  
-  if (result.warnings.length > 0) {
-    console.warn('⚠️ Validation warnings:', result.warnings);
-  }
-  
-  console.groupEnd();
+  // Debug function - console logs removed
   
   return result;
 };

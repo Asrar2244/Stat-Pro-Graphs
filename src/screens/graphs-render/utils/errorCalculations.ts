@@ -51,18 +51,6 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
   const isBidirectionalErrorBar = subType?.toLowerCase().includes('bidirectional') && 
                                   subType?.toLowerCase().includes('error bar');
   
-  console.log('🔍 calculateErrorValues called with:', {
-    symbolValue,
-    subType,
-    isAsymmetricSubType,
-    isAsymmetricSymbolValue,
-    isAsymmetric,
-    errorCalculationUpper,
-    errorCalculationLower,
-    dataLength: n,
-    hasErrorBarData: !!errorBarData
-  });
-  
   if (n === 0) {
     return { xUpper: [], xLower: [], yUpper: [], yLower: [], xSymmetric: [], ySymmetric: [] };
   }
@@ -73,7 +61,6 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
   let workingYv = yv;
   
   if (errorOptimization.optimized && errorOptimization.sampleData) {
-    console.log(`📊 Using optimized error calculation sample (${errorOptimization.sampleData.xv.length}/${n} points)`);
     workingXv = errorOptimization.sampleData.xv;
     workingYv = errorOptimization.sampleData.yv;
   }
@@ -219,10 +206,6 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
       if (isBidirectionalErrorBar) {
         // For bidirectional error bars, use separate X and Y error bar data
         if (errorBarDataX && errorBarDataX.length === n && errorBarDataY && errorBarDataY.length === n) {
-          console.log('📊 Using Bidirectional Error Bar Data:', {
-            xData: errorBarDataX.slice(0, 3),
-            yData: errorBarDataY.slice(0, 3)
-          });
           if (isAsymmetric) {
             // SigmaPlot-style asymmetric bidirectional error bars
             if (errorBarDataXUpper && errorBarDataXLower && errorBarDataYUpper && errorBarDataYLower) {
@@ -231,30 +214,21 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
               xLower = errorBarDataXLower.map(val => Math.abs(val));
               yUpper = errorBarDataYUpper.map(val => Math.abs(val));
               yLower = errorBarDataYLower.map(val => Math.abs(val));
-              console.log('📊 SigmaPlot Bidirectional Asymmetric:', {
-                xUpper: xUpper.slice(0, 3),
-                xLower: xLower.slice(0, 3),
-                yUpper: yUpper.slice(0, 3),
-                yLower: yLower.slice(0, 3)
-              });
-            } else {
+              } else {
               // Fallback to simple asymmetric (50% ratio)
               xUpper = errorBarDataX.map(val => Math.abs(val));
               xLower = errorBarDataX.map(val => Math.abs(val * 0.5));
               yUpper = errorBarDataY.map(val => Math.abs(val));
               yLower = errorBarDataY.map(val => Math.abs(val * 0.5));
-              console.log('📊 Fallback Bidirectional Asymmetric X:', xUpper.slice(0, 3), 'Y:', yUpper.slice(0, 3));
-            }
+              }
           } else {
             // For symmetric bidirectional, use same upper and lower values
             xUpper = errorBarDataX.map(val => Math.abs(val));
             xLower = errorBarDataX.map(val => Math.abs(val));
             yUpper = errorBarDataY.map(val => Math.abs(val));
             yLower = errorBarDataY.map(val => Math.abs(val));
-            console.log('📊 Bidirectional Symmetric X:', xUpper.slice(0, 3), 'Y:', yUpper.slice(0, 3));
-          }
+            }
         } else {
-          console.log('📊 No bidirectional error bar data available, using fallback');
           // Fallback if no bidirectional error bar data
           xUpper = xv.map(x => Math.abs(x * 0.1));
           xLower = xv.map(x => Math.abs(x * 0.1));
@@ -264,7 +238,6 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
       } else {
         // Use single error bar variable data for regular error bars
         if (errorBarData && errorBarData.length === n) {
-          console.log('📊 Using Error Bar Data for', symbolValue, ':', errorBarData.slice(0, 3), '...');
           if (isAsymmetric) {
             // SigmaPlot-style asymmetric error bars
             if (errorBarDataUpper && errorBarDataLower) {
@@ -276,22 +249,14 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
                 xUpper = errorBarDataUpper.map(val => Math.abs(val));
                 xLower = errorBarDataLower.map(val => Math.abs(val));
               }
-              console.log('📊 SigmaPlot Asymmetric:', {
-                yUpper: yUpper.slice(0, 3),
-                yLower: yLower.slice(0, 3),
-                xUpper: xUpper?.slice(0, 3),
-                xLower: xLower?.slice(0, 3)
-              });
-            } else {
+              } else {
               // Fallback to simple asymmetric (50% ratio)
               yUpper = errorBarData.map(val => Math.abs(val));
               yLower = errorBarData.map(val => Math.abs(val * 0.5)); // 50% of upper value for more visible asymmetry
               // For bidirectional error bars, also calculate X errors (use same error bar data for both X and Y)
               xUpper = errorBarData.map(val => Math.abs(val));
               xLower = errorBarData.map(val => Math.abs(val * 0.5));
-              console.log('📊 Fallback Asymmetric Y Upper:', yUpper.slice(0, 3), 'Y Lower:', yLower.slice(0, 3));
-              console.log('📊 Fallback Asymmetric X Upper:', xUpper.slice(0, 3), 'X Lower:', xLower.slice(0, 3));
-            }
+              }
           } else {
             // For worksheet columns, use symmetric error bars
             yUpper = errorBarData.map(val => Math.abs(val));
@@ -299,11 +264,8 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
             // For bidirectional error bars, also calculate X errors (use same error bar data for both X and Y)
             xUpper = errorBarData.map(val => Math.abs(val));
             xLower = errorBarData.map(val => Math.abs(val));
-            console.log('📊 Symmetric Y Error:', yUpper.slice(0, 3));
-            console.log('📊 Symmetric X Error:', xUpper.slice(0, 3));
-          }
+            }
         } else {
-          console.log('📊 No error bar data available, using fallback');
           // Fallback if no error bar data
           yUpper = yv.map(y => Math.abs(y * 0.1));
           yLower = yv.map(y => Math.abs(y * 0.1));
@@ -317,16 +279,12 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
     case undefined:
       // Handle asymmetric error bars without Symbol Value configuration
       if (errorBarData && errorBarData.length === n) {
-        console.log('📊 Using Error Bar Data for Asymmetric (no Symbol Value):', errorBarData.slice(0, 3), '...');
         // For asymmetric error bars, use different upper and lower values
         yUpper = errorBarData.map(val => Math.abs(val));
         yLower = errorBarData.map(val => Math.abs(val * 0.7)); // 70% of upper value
         xUpper = errorBarData.map(val => Math.abs(val * 0.5)); // 50% of error bar value for X
         xLower = errorBarData.map(val => Math.abs(val * 0.3)); // 30% of error bar value for X
-        console.log('📊 Asymmetric Y Upper:', yUpper.slice(0, 3), 'Y Lower:', yLower.slice(0, 3));
-        console.log('📊 Asymmetric X Upper:', xUpper.slice(0, 3), 'X Lower:', xLower.slice(0, 3));
-      } else {
-        console.log('📊 No error bar data available for asymmetric, using fallback');
+        } else {
         // Fallback if no error bar data
         yUpper = yv.map(y => Math.abs(y * 0.1));
         yLower = yv.map(y => Math.abs(y * 0.1));
@@ -341,12 +299,10 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
     case 'First Column Entry':
     case 'Last Column Entry':
       // Use Y statistics for error bars with enhanced parameters
-      console.log('📊 Column-based error calculation:', { errorCalculationUpper, errorCalculationLower });
       yUpper = errorCalculationUpper ? getErrorValue(errorCalculationUpper, yMean, yStd, yStdErr, yv, yRobustStd, yIQR, yMedian) : Array(n).fill(yStd * 0.4);
       yLower = errorCalculationLower ? getErrorValue(errorCalculationLower, yMean, yStd, yStdErr, yv, yRobustStd, yIQR, yMedian) : Array(n).fill(yStd * 0.4);
       xUpper = Array(n).fill(0);
       xLower = Array(n).fill(0);
-      console.log('📊 Column Y Upper sample:', yUpper.slice(0, 3), 'Y Lower sample:', yLower.slice(0, 3));
       break;
       
     case 'Row Means':
@@ -354,24 +310,19 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
     case 'First Row Entry':
     case 'Last Row Entry':
       // Use X statistics for error bars with enhanced parameters
-      console.log('📊 Row-based error calculation:', { errorCalculationUpper, errorCalculationLower });
       xUpper = errorCalculationUpper ? getErrorValue(errorCalculationUpper, xMean, xStd, xStdErr, xv, xRobustStd, xIQR, xMedian) : Array(n).fill(xStd * 0.4);
       xLower = errorCalculationLower ? getErrorValue(errorCalculationLower, xMean, xStd, xStdErr, xv, xRobustStd, xIQR, xMedian) : Array(n).fill(xStd * 0.4);
       yUpper = Array(n).fill(0);
       yLower = Array(n).fill(0);
-      console.log('📊 Row X Upper sample:', xUpper.slice(0, 3), 'X Lower sample:', xLower.slice(0, 3));
       break;
       
     case 'By Category Mean':
     case 'By Category Median':
       // Use both X and Y statistics with enhanced parameters
-      console.log('📊 Category-based error calculation:', { errorCalculationUpper, errorCalculationLower });
       xUpper = errorCalculationUpper ? getErrorValue(errorCalculationUpper, xMean, xStd, xStdErr, xv, xRobustStd, xIQR, xMedian) : Array(n).fill(xStd * 0.4);
       xLower = errorCalculationLower ? getErrorValue(errorCalculationLower, xMean, xStd, xStdErr, xv, xRobustStd, xIQR, xMedian) : Array(n).fill(xStd * 0.4);
       yUpper = errorCalculationUpper ? getErrorValue(errorCalculationUpper, yMean, yStd, yStdErr, yv, yRobustStd, yIQR, yMedian) : Array(n).fill(yStd * 0.4);
       yLower = errorCalculationLower ? getErrorValue(errorCalculationLower, yMean, yStd, yStdErr, yv, yRobustStd, yIQR, yMedian) : Array(n).fill(yStd * 0.4);
-      console.log('📊 Category X Upper sample:', xUpper.slice(0, 3), 'X Lower sample:', xLower.slice(0, 3));
-      console.log('📊 Category Y Upper sample:', yUpper.slice(0, 3), 'Y Lower sample:', yLower.slice(0, 3));
       break;
       
     default:
@@ -390,18 +341,6 @@ export const calculateErrorValues = (params: ErrorCalculationParams): ErrorValue
     xSymmetric: xUpper.map((val, i) => Math.max(val, xLower[i])),
     ySymmetric: yUpper.map((val, i) => Math.max(val, yLower[i]))
   };
-  
-  console.log('📊 Final error values calculated:', {
-    symbolValue,
-    errorCalculationUpper,
-    errorCalculationLower,
-    result: {
-      yUpperSample: result.yUpper.slice(0, 3),
-      yLowerSample: result.yLower.slice(0, 3),
-      xUpperSample: result.xUpper.slice(0, 3),
-      xLowerSample: result.xLower.slice(0, 3)
-    }
-  });
   
   return result;
 };

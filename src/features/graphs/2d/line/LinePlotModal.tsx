@@ -84,16 +84,6 @@ export const LinePlotModal: FC<LinePlotModalProps> = ({
           : undefined
       };
 
-      // Debug logging
-      console.log('Validation Debug:', {
-        subType,
-        dataFormat,
-        selectedVariables,
-        graphConfig: graphConfig,
-        selectedXVariable,
-        selectedYVariable,
-        isValidFormat: isValidDataFormat(subType as any, dataFormat)
-      });
 
       const validation = validateLinePlotRequirements(subType as any, dataFormat as any, selectedVariables);
       
@@ -177,10 +167,8 @@ export const LinePlotModal: FC<LinePlotModalProps> = ({
     } catch (error) {
       if (error instanceof LinePlotValidationError) {
         // Validation errors are already handled above
-        console.warn('Graph creation blocked due to validation errors:', error.errors);
       } else {
         // Handle unexpected errors
-        console.error('Unexpected error during graph creation:', error);
         setValidationErrors([{
           field: 'general',
           message: 'An unexpected error occurred while creating the graph',
@@ -207,7 +195,6 @@ export const LinePlotModal: FC<LinePlotModalProps> = ({
         <GraphErrorBoundary
           graphType="Line Plot"
           onError={(error, errorInfo) => {
-            console.error('LinePlot Modal Error:', error, errorInfo);
             // In production, you might want to send this to an error reporting service
           }}
         >

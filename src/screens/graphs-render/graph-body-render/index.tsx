@@ -26,21 +26,9 @@ export const GraphBodyRender: FC<any> = (props) => {
     canvasMode: tools.canvasMode
   };
   
-  console.log('🎨 Graph Body Render - Live Props:', {
-    toolsCanvasMode: tools.canvasMode,
-    livePropsCanvasMode: liveProps.canvasMode,
-    hasTools: !!tools,
-    plotSpecific: liveProps.plotSpecific,
-    mesh3d: liveProps.plotSpecific?.mesh3d,
-    hasMesh3dProperties: !!liveProps.plotSpecific?.mesh3d
-  });
   
   // Track canvas mode changes
   useEffect(() => {
-    console.log('🎨 Graph Body Render - Canvas Mode Changed:', {
-      canvasMode: tools.canvasMode,
-      timestamp: new Date().toISOString()
-    });
   }, [tools.canvasMode]);
 
   return (

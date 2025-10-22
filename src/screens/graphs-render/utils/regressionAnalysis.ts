@@ -20,22 +20,12 @@ export interface RegressionResult {
  * Enhanced linear regression with comprehensive statistics
  */
 export const computeLinearRegression = (xs: number[], ys: number[]): RegressionResult | null => {
-  console.log(`🔍 computeLinearRegression called with:`, {
-    xsLength: xs.length,
-    ysLength: ys.length,
-    xsSample: xs.slice(0, 5),
-    ysSample: ys.slice(0, 5)
-  });
-  
   const pairs = xs
     .map((x, i) => [x, ys[i]] as [number, number])
     .filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
   const n = pairs.length;
   
-  console.log(`📊 Filtered data pairs: ${n} valid pairs out of ${xs.length} total`);
-  
   if (n < 2) {
-    console.log(`❌ Insufficient data for regression: ${n} valid pairs`);
     return null;
   }
   
@@ -90,13 +80,6 @@ export const computeLinearRegression = (xs: number[], ys: number[]): RegressionR
     yMean
   };
   
-  console.log(`✅ Regression computation successful:`, {
-    slope: m,
-    intercept: b,
-    rSquared: rSquared,
-    dataPoints: n
-  });
-  
   return result;
 };
 
@@ -113,28 +96,13 @@ export const createRegressionTraces = (
   showConfidenceInterval: boolean = true,
   confidenceIntervalOpacity: number = 0.2
 ): any[] => {
-  console.log(`🔍 createRegressionTraces called for "${label}":`, {
-    xValsLength: xVals.length,
-    yValsLength: yVals.length,
-    color,
-    subType,
-    regressionResult: {
-      slope: regressionResult.m,
-      intercept: regressionResult.b,
-      rSquared: regressionResult.rSquared
-    }
-  });
-  
   const traces: any[] = [];
   const isErrorBar = subType.toLowerCase().includes('error bar');
   const { m, b, rSquared, predictionIntervals } = regressionResult;
   
   // Determine domain from finite x values
   const finiteX = xVals.filter((x) => Number.isFinite(x));
-  console.log(`📊 Finite X values: ${finiteX.length} out of ${xVals.length}`);
-  
   if (finiteX.length < 2) {
-    console.log(`❌ Not enough finite X values for regression line: ${finiteX.length}`);
     return traces;
   }
   
@@ -145,14 +113,6 @@ export const createRegressionTraces = (
   const numPoints = Math.max(50, finiteX.length * 2);
   const lineX = Array.from({ length: numPoints }, (_, i) => xMin + (xMax - xMin) * i / (numPoints - 1));
   const lineY = lineX.map(x => m * x + b);
-  
-  console.log(`📊 Regression line data:`, {
-    xMin, xMax,
-    lineXLength: lineX.length,
-    lineYLength: lineY.length,
-    lineXSample: lineX.slice(0, 3),
-    lineYSample: lineY.slice(0, 3)
-  });
   
   // Configure regression line based on sub-type
   let lineConfig: any = {
@@ -172,27 +132,13 @@ export const createRegressionTraces = (
     opacity: 1.0 // Ensure full opacity
   };
   
-  console.log(`🎨 Creating regression line trace:`, {
-    name: lineConfig.name,
-    color: lineConfig.line.color,
-    width: lineConfig.line.width,
-    dataPoints: lineX.length,
-    xRange: [Math.min(...lineX), Math.max(...lineX)],
-    yRange: [Math.min(...lineY), Math.max(...lineY)]
-  });
-
   // Different regression line styles based on sub-type
   if (subType.toLowerCase().includes('multiple')) {
     // Multiple regression - enhanced styling for better visibility
     lineConfig.line.dash = 'solid'; // Use solid line for better visibility
     lineConfig.line.width = 2.5; // Thicker line for better visibility
     lineConfig.line.color = color || 'rgba(200,0,0,0.9)'; // Ensure good contrast
-    console.log(`🎨 Multiple regression line styling:`, {
-      color: lineConfig.line.color,
-      width: lineConfig.line.width,
-      dash: lineConfig.line.dash
-    });
-  } else if (isErrorBar) {
+    } else if (isErrorBar) {
     // Error bar regression - thicker line with enhanced styling
     lineConfig.line.width = 3;
     lineConfig.line.color = color || 'rgba(100,100,100,0.9)';
@@ -203,15 +149,6 @@ export const createRegressionTraces = (
   }
 
   traces.push(lineConfig);
-  
-  console.log(`📈 Regression line trace created:`, {
-    label: lineConfig.name,
-    color: lineConfig.line.color,
-    width: lineConfig.line.width,
-    dash: lineConfig.line.dash,
-    dataPoints: lineX.length,
-    subType
-  });
   
   // Add confidence intervals for error bar regression
   if (isErrorBar && predictionIntervals && showConfidenceInterval) {
@@ -276,6 +213,5 @@ export const createRegressionTraces = (
     traces.push(confidenceLowerLine);
   }
   
-  console.log(`✅ Created ${traces.length} regression traces for "${label}":`, traces.map(t => t.name));
   return traces;
 };

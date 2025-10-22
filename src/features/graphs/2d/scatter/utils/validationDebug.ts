@@ -4,7 +4,7 @@ import { validateScatterPlotRequirements } from './validationUtils';
  * Debug function to test validation with different inputs
  */
 export const testValidation = () => {
-  console.log('=== VALIDATION DEBUG TEST ===');
+  // Test function - console logs removed
   
   // Test 1: Simple Scatter with X and Y variables
   const test1 = validateScatterPlotRequirements(
@@ -15,7 +15,6 @@ export const testValidation = () => {
       y: ['var2']
     }
   );
-  console.log('Test 1 - Simple Scatter with X,Y:', test1);
   
   // Test 2: Simple Scatter without variables
   const test2 = validateScatterPlotRequirements(
@@ -26,7 +25,6 @@ export const testValidation = () => {
       y: []
     }
   );
-  console.log('Test 2 - Simple Scatter without variables:', test2);
   
   // Test 3: Error Bar plot without error bar variables
   const test3 = validateScatterPlotRequirements(
@@ -38,7 +36,6 @@ export const testValidation = () => {
       errorBar: []
     }
   );
-  console.log('Test 3 - Error Bar without error variables:', test3);
   
   // Test 4: Multiple Scatter without category variables
   const test4 = validateScatterPlotRequirements(
@@ -50,9 +47,6 @@ export const testValidation = () => {
       category: []
     }
   );
-  console.log('Test 4 - Multiple Scatter without category:', test4);
-  
-  console.log('=== END VALIDATION DEBUG TEST ===');
 };
 
 // Call the test function

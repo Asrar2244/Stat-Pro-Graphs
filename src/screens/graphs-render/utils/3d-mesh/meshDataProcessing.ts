@@ -12,17 +12,6 @@ export const process3DMeshData = (config: DataProcessingConfig): ProcessedSeries
   const { graphConfig, rows, xNames, yNames, zNames = [] } = config;
   const series: ProcessedSeries[] = [];
 
-  console.log(`🌐 Processing 3D Mesh Data:`, {
-    graphType: graphConfig?.graphType,
-    subType: graphConfig?.subType,
-    dataFormat: graphConfig.dataFormat,
-    xNames,
-    yNames,
-    zNames,
-    rowCount: rows.length,
-    fullConfig: graphConfig
-  });
-
   if (graphConfig.dataFormat === 'XYZ Triplets' || graphConfig.dataFormat === 'xyz-columns') {
     // Format 1: XYZ Triplets - 1 X, 1 Y, 1 Z
     if (xNames?.length >= 1 && yNames?.length >= 1 && zNames?.length >= 1) {
@@ -37,13 +26,7 @@ export const process3DMeshData = (config: DataProcessingConfig): ProcessedSeries
       const label = `${zCol} (Z) vs ${xCol} (X), ${yCol} (Y)`;
       series.push({ xv, yv, zv, label });
       
-      console.log(`✅ XYZ Triplets: Created series with ${xv.length} points`, {
-        xCol, yCol, zCol,
-        sampleX: xv.slice(0, 3),
-        sampleY: yv.slice(0, 3),
-        sampleZ: zv.slice(0, 3)
-      });
-    }
+      }
   } else if (graphConfig.dataFormat === 'Many Z' || graphConfig.dataFormat === 'z-matrix') {
     // Format 2: Many Z - First Z and Last Z, X and Y are assumed/default scales
     if (zNames?.length >= 2) {
@@ -64,15 +47,7 @@ export const process3DMeshData = (config: DataProcessingConfig): ProcessedSeries
       const label = `${firstZCol}, ${lastZCol} (Z) vs X Scale, Y Scale`;
       series.push({ xv, yv, zv, label });
       
-      console.log(`✅ Many Z: Created series with ${xv.length} points`, {
-        firstZCol, lastZCol,
-        xScale: '10, 20, 30...',
-        yScale: '1, 2, 3...',
-        sampleX: xv.slice(0, 3),
-        sampleY: yv.slice(0, 3),
-        sampleZ: zv.slice(0, 3)
-      });
-    } else if (zNames?.length === 1) {
+      } else if (zNames?.length === 1) {
       // Fallback: Use single Z column with assumed scales
       const zCol = zNames[0];
       const xv = rows.map((_, index) => (index + 1) * 10);
@@ -82,13 +57,7 @@ export const process3DMeshData = (config: DataProcessingConfig): ProcessedSeries
       const label = `${zCol} (Z) vs X Scale, Y Scale`;
       series.push({ xv, yv, zv, label });
       
-      console.log(`✅ Many Z (Single): Created series with ${xv.length} points`, {
-        zCol,
-        sampleX: xv.slice(0, 3),
-        sampleY: yv.slice(0, 3),
-        sampleZ: zv.slice(0, 3)
-      });
-    }
+      }
   } else if (graphConfig.dataFormat === 'XY Many Z' || graphConfig.dataFormat === 'xy-z-columns') {
     // Format 3: XY Many Z - 1 X, 1 Y, First Z and Last Z
     if (xNames?.length >= 1 && yNames?.length >= 1 && zNames?.length >= 1) {
@@ -115,30 +84,17 @@ export const process3DMeshData = (config: DataProcessingConfig): ProcessedSeries
         
         label = `${firstZCol}, ${lastZCol} (Z) vs ${xCol} (X), ${yCol} (Y)`;
         
-        console.log(`✅ XY Many Z: Created series with ${xv.length} points`, {
-          xCol, yCol, firstZCol, lastZCol,
-          sampleX: xv.slice(0, 3),
-          sampleY: yv.slice(0, 3),
-          sampleZ: zv.slice(0, 3)
-        });
-      } else {
+        } else {
         // Fallback: Use single Z column
         const zCol = zNames[0];
         zv = rows.map((r: any) => Number(r[zCol]));
         label = `${zCol} (Z) vs ${xCol} (X), ${yCol} (Y)`;
         
-        console.log(`✅ XY Many Z (Single): Created series with ${xv.length} points`, {
-          xCol, yCol, zCol,
-          sampleX: xv.slice(0, 3),
-          sampleY: yv.slice(0, 3),
-          sampleZ: zv.slice(0, 3)
-        });
-      }
+        }
       
       series.push({ xv, yv, zv, label });
     }
   }
 
-  console.log(`✅ Processed ${series.length} 3D mesh series`);
   return series;
 };

@@ -100,16 +100,6 @@ export const MeshPlotModal: FC<MeshPlotModalProps> = ({
           : (selectedZVariable ? [selectedZVariable] : undefined),
       };
 
-      // Debug logging
-      console.log('Validation Debug:', {
-        dataFormat,
-        selectedVariables,
-        graphConfig: graphConfig,
-        selectedXVariable,
-        selectedYVariable,
-        selectedZVariable,
-        isValidFormat: isValidDataFormat(dataFormat as any)
-      });
 
       const validation = validateMeshPlotRequirements(dataFormat as any, selectedVariables);
       
@@ -169,21 +159,6 @@ export const MeshPlotModal: FC<MeshPlotModalProps> = ({
         gridOpacity
       };
       
-      console.log('🎨 3D Mesh Modal - Configuration being passed:', {
-        surfaceType,
-        colorScale,
-        opacity,
-        showContours,
-        contourOpacity,
-        lighting,
-        smoothShading,
-        showGrid,
-        gridOpacity,
-        fullConfig: config,
-        selectedColorScale: colorScale,
-        colorScaleType: typeof colorScale,
-        colorScaleLength: colorScale?.length
-      });
       
       setGraphConfig(config);
       onCreateGraph(config);
@@ -192,10 +167,8 @@ export const MeshPlotModal: FC<MeshPlotModalProps> = ({
     } catch (error) {
       if (error instanceof MeshPlotValidationError) {
         // Validation errors are already handled above
-        console.warn('Graph creation blocked due to validation errors:', error.errors);
       } else {
         // Handle unexpected errors
-        console.error('Unexpected error during graph creation:', error);
         setValidationErrors([{
           field: 'general',
           message: 'An unexpected error occurred while creating the graph',
@@ -222,7 +195,6 @@ export const MeshPlotModal: FC<MeshPlotModalProps> = ({
         <GraphErrorBoundary
           graphType="3D Mesh Plot"
           onError={(error, errorInfo) => {
-            console.error('MeshPlot Modal Error:', error, errorInfo);
             // In production, you might want to send this to an error reporting service
           }}
         >

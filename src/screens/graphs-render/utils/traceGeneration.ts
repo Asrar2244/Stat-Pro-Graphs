@@ -130,16 +130,6 @@ export const createLinePlotTrace = (config: TraceConfig): any => {
     showMarkers: lineStyle.showMarkers === true // Only show markers if explicitly set to true
   };
   
-  console.log(`📊 Creating Line Plot Trace:`, {
-    label,
-    subType,
-    lineStyle: lineConfig.lineStyle,
-    lineWidth: lineConfig.lineWidth,
-    markerSize: lineConfig.markerSize,
-    showMarkers: lineConfig.showMarkers,
-    parsedStyle: lineStyle
-  });
-  
   return createLineTrace(lineConfig);
 };
 
@@ -152,13 +142,6 @@ export const createScatterTrace = (config: TraceConfig): any => {
     errorCalculationUpper, errorCalculationLower, errorBarVariable, errorBarData, 
     errorBarVariableX, errorBarVariableY, errorBarDataX, errorBarDataY, errorBarColor, rows
   } = config;
-  
-  console.log(`🔍 createScatterTrace called for: ${label}`, {
-    subType,
-    dataLength: xv?.length || 0,
-    color,
-    symbol
-  });
   
   const isErrorBar = subType.toLowerCase().includes('error bar');
   const isVerticalErrorBar = subType.toLowerCase().includes('vertical') && isErrorBar;
@@ -317,13 +300,6 @@ export const createScatterTrace = (config: TraceConfig): any => {
     } else if (isBidirectionalErrorBar) {
       // Bidirectional Error Bars with enhanced styling
       if (isAsymmetricErrorBar) {
-        console.log('🔍 Applying Asymmetric Bidirectional Error Bars:', {
-          yUpper: errorValues.yUpper?.slice(0, 3),
-          yLower: errorValues.yLower?.slice(0, 3),
-          xUpper: errorValues.xUpper?.slice(0, 3),
-          xLower: errorValues.xLower?.slice(0, 3),
-          symmetric: false
-        });
         traceConfig.error_y = {
           type: 'data',
           symmetric: false,
@@ -399,14 +375,6 @@ export const createScatterTrace = (config: TraceConfig): any => {
     traceConfig.mode = 'markers';
     
     const finalColor = color; // Point plots don't have error bars, use series color directly
-    console.log(`🎨 Point Plot Color Assignment:`, {
-      label,
-      originalColor: color,
-      errorBarColor,
-      finalColor,
-      isPointPlot
-    });
-    
     traceConfig.marker = { 
       color: finalColor,
       symbol: 'circle',
@@ -441,14 +409,6 @@ export const createScatterTrace = (config: TraceConfig): any => {
     const baseSize = Math.max(3, Math.min(8, 12 - Math.log10(dataDensity)));
     
     const finalColor = color; // Dot plots don't have error bars, use series color directly
-    console.log(`🎨 Dot Plot Color Assignment:`, {
-      label,
-      originalColor: color,
-      errorBarColor,
-      finalColor,
-      isDotPlot
-    });
-    
     traceConfig.marker = { 
       color: finalColor,
       symbol: 'circle',
@@ -487,15 +447,6 @@ export const createScatterTrace = (config: TraceConfig): any => {
     traceConfig.mode = 'markers';
     traceConfig.marker = { color, symbol };
   }
-
-  console.log(`✅ Final scatter trace for ${label}:`, {
-    type: traceConfig.type,
-    mode: traceConfig.mode,
-    name: traceConfig.name,
-    dataLength: traceConfig.x?.length || 0,
-    hasErrorBars: !!traceConfig.error_y || !!traceConfig.error_x,
-    markerColor: traceConfig.marker?.color
-  });
 
   return traceConfig;
 };
@@ -566,16 +517,6 @@ export const createDotPlotDottedLines = (
 export const createLineScatterTrace = (config: TraceConfig): any => {
   const { xv, yv, label, color, symbol, subType, errorBarData, errorBarDataX, errorBarDataY, symbolValue } = config;
   
-  console.log(`📊📈 Creating Line-Scatter Trace: ${label}`, {
-    subType,
-    symbolValue,
-    dataLength: xv.length,
-    hasErrorBars: !!(errorBarData || errorBarDataX || errorBarDataY),
-    errorBarDataLength: errorBarData?.length,
-    errorBarDataSample: errorBarData?.slice(0, 6),
-    fullErrorBarData: errorBarData
-  });
-  
   // Determine line style based on sub-type - use the same logic as line plots
   let lineShape = 'linear';
   const lowerSubType = subType.toLowerCase();
@@ -633,16 +574,6 @@ export const createLineScatterTrace = (config: TraceConfig): any => {
     const isAsymmetricErrorBar = (subType.toLowerCase().includes('asymmetric') || symbolValue === 'Asymmetric Error Bar') && isErrorBar;
     const isBidirectionalErrorBar = (subType.toLowerCase().includes('bidirectional') || subType.toLowerCase().includes('bi-directional')) && isErrorBar;
     
-    console.log(`📊📈 Error Bar Type Detection for: ${label}`, {
-      subType,
-      symbolValue,
-      isErrorBar,
-      isVerticalErrorBar,
-      isHorizontalErrorBar,
-      isAsymmetricErrorBar,
-      isBidirectionalErrorBar
-    });
-    
     // Apply error bar configuration based on type - same logic as scatter plots
     if (isVerticalErrorBar || (!isHorizontalErrorBar && !isBidirectionalErrorBar)) {
       // Vertical Error Bars
@@ -663,15 +594,7 @@ export const createLineScatterTrace = (config: TraceConfig): any => {
           opacity: 0.9
         };
         
-        console.log(`📊📈 Created Asymmetric Vertical Error Bars for: ${label}`, {
-          dataPoints: xv.length,
-          errorBarDataLength: errorBarData.length,
-          yUpperLength: yUpper.length,
-          yLowerLength: yLower.length,
-          yUpper: yUpper.slice(0, 5),
-          yLower: yLower.slice(0, 5)
-        });
-      } else {
+        } else {
         // For symmetric error bars (Worksheet Columns)
         trace.error_y = {
           type: 'data',
@@ -684,10 +607,7 @@ export const createLineScatterTrace = (config: TraceConfig): any => {
           opacity: 0.8
         };
         
-        console.log(`📊📈 Created Symmetric Vertical Error Bars for: ${label}`, {
-          errorBarData: errorBarData.slice(0, 3)
-        });
-      }
+        }
     }
     
     if (isHorizontalErrorBar) {
@@ -709,15 +629,7 @@ export const createLineScatterTrace = (config: TraceConfig): any => {
           opacity: 0.9
         };
         
-        console.log(`📊📈 Created Asymmetric Horizontal Error Bars for: ${label}`, {
-          dataPoints: xv.length,
-          errorBarDataLength: errorBarData.length,
-          xUpperLength: xUpper.length,
-          xLowerLength: xLower.length,
-          xUpper: xUpper.slice(0, 5),
-          xLower: xLower.slice(0, 5)
-        });
-      } else {
+        } else {
         // For symmetric horizontal error bars
         trace.error_x = {
           type: 'data',
@@ -730,10 +642,7 @@ export const createLineScatterTrace = (config: TraceConfig): any => {
           opacity: 0.8
         };
         
-        console.log(`📊📈 Created Symmetric Horizontal Error Bars for: ${label}`, {
-          errorBarData: errorBarData.slice(0, 3)
-        });
-      }
+        }
     }
   }
   
@@ -743,18 +652,6 @@ export const createLineScatterTrace = (config: TraceConfig): any => {
     const isErrorBar = subType.toLowerCase().includes('error bar');
     const isAsymmetricErrorBar = (subType.toLowerCase().includes('asymmetric') || symbolValue === 'Asymmetric Error Bar') && isErrorBar;
     const isBidirectionalErrorBar = (subType.toLowerCase().includes('bidirectional') || subType.toLowerCase().includes('bi-directional')) && isErrorBar;
-    
-    console.log(`📊📈 Bidirectional Error Bar Detection for: ${label}`, {
-      subType,
-      symbolValue,
-      isErrorBar,
-      isAsymmetricErrorBar,
-      isBidirectionalErrorBar,
-      hasErrorBarDataX: !!errorBarDataX,
-      hasErrorBarDataY: !!errorBarDataY,
-      errorBarDataXLength: errorBarDataX?.length,
-      errorBarDataYLength: errorBarDataY?.length
-    });
     
     if (isBidirectionalErrorBar) {
       // Bidirectional Error Bars
@@ -775,15 +672,7 @@ export const createLineScatterTrace = (config: TraceConfig): any => {
           opacity: 0.9
         };
         
-        console.log(`📊📈 Created Asymmetric Bidirectional X Error Bars for: ${label}`, {
-          dataPoints: xv.length,
-          errorBarDataLength: errorBarDataX.length,
-          xUpperLength: xUpper.length,
-          xLowerLength: xLower.length,
-          xUpper: xUpper.slice(0, 5),
-          xLower: xLower.slice(0, 5)
-        });
-      } else {
+        } else {
         // For symmetric bidirectional X error bars
         trace.error_x = {
           type: 'data',
@@ -796,10 +685,7 @@ export const createLineScatterTrace = (config: TraceConfig): any => {
           opacity: 0.8
         };
         
-        console.log(`📊📈 Created Symmetric Bidirectional X Error Bars for: ${label}`, {
-          errorBarData: errorBarDataX.slice(0, 3)
-        });
-      }
+        }
     }
   }
   
@@ -828,15 +714,7 @@ export const createLineScatterTrace = (config: TraceConfig): any => {
           opacity: 0.9
         };
         
-        console.log(`📊📈 Created Asymmetric Bidirectional Y Error Bars for: ${label}`, {
-          dataPoints: xv.length,
-          errorBarDataLength: errorBarDataY.length,
-          yUpperLength: yUpper.length,
-          yLowerLength: yLower.length,
-          yUpper: yUpper.slice(0, 5),
-          yLower: yLower.slice(0, 5)
-        });
-      } else {
+        } else {
         // For symmetric bidirectional Y error bars
         trace.error_y = {
           type: 'data',
@@ -849,18 +727,9 @@ export const createLineScatterTrace = (config: TraceConfig): any => {
           opacity: 0.8
         };
         
-        console.log(`📊📈 Created Symmetric Bidirectional Y Error Bars for: ${label}`, {
-          errorBarData: errorBarDataY.slice(0, 3)
-        });
-      }
+        }
     }
   }
-  
-  console.log(`📊📈 Created Line-Scatter Trace: ${label}`, {
-    mode: trace.mode,
-    lineShape: trace.line.shape,
-    hasErrorBars: !!(trace.error_y || trace.error_x)
-  });
   
   return trace;
 };
@@ -872,12 +741,6 @@ export const createTrace = (config: TraceConfig): any => {
   const { subType, label } = config;
   const lowerSubType = subType.toLowerCase();
   
-  console.log(`🔍 createTrace called for: ${label}`, {
-    subType,
-    lowerSubType,
-    dataLength: config.xv?.length || 0
-  });
-  
   // Check if this is a 3D mesh plot
   const is3DMeshPlot = lowerSubType.includes('3d mesh') || 
                        lowerSubType.includes('3d-mesh') ||
@@ -885,12 +748,6 @@ export const createTrace = (config: TraceConfig): any => {
                        config.graphConfig?.graphType === '3D Mesh Plot';
   
   if (is3DMeshPlot) {
-    console.log(`🌐 Creating 3D Mesh Trace for: ${label}`, {
-      subType,
-      lowerSubType,
-      graphType: config.graphConfig?.graphType,
-      is3DMeshPlot
-    });
     return create3DMeshTrace(config);
   }
   
@@ -905,23 +762,7 @@ export const createTrace = (config: TraceConfig): any => {
                            subType === 'Line-Scatter Plot' ||
                            config.graphConfig?.graphType === 'Line-Scatter Plot';
   
-  console.log(`🔍 Line-Scatter Detection Debug:`, {
-    subType,
-    lowerSubType,
-    graphType: config.graphConfig?.graphType,
-    hasLineAndScatter: lowerSubType.includes('line') && lowerSubType.includes('scatter'),
-    hasStraightLineAndScatter: lowerSubType.includes('straight line') && lowerSubType.includes('scatter'),
-    isLineScatterPlot
-  });
-  
   if (isLineScatterPlot) {
-    console.log(`📊📈 Creating Line-Scatter Plot Trace for: ${label}`, {
-      subType,
-      lowerSubType,
-      graphType: config.graphConfig?.graphType,
-      isLineScatterPlot,
-      dataLength: config.xv?.length
-    });
     // For line-scatter plots, we need to process the data first and then generate traces
     // This will be handled by the main processing function that calls this
     return createLineScatterTrace(config);
@@ -943,18 +784,8 @@ export const createTrace = (config: TraceConfig): any => {
                      !lowerSubType.includes('error bar'); // Exclude error bar plots
   
   if (isLinePlot) {
-    console.log(`📈 Creating Line Plot Trace for: ${label}`, {
-      subType,
-      lowerSubType,
-      isLinePlot
-    });
     return createLinePlotTrace(config);
   } else {
-    console.log(`📊 Creating Scatter Plot Trace for: ${label}`, {
-      subType,
-      lowerSubType,
-      isLinePlot
-    });
     return createScatterTrace(config);
   }
 };
@@ -979,27 +810,15 @@ export const createRegressionTracesIfNeeded = (
   confidenceIntervalOpacity: number = 0.2
 ): any[] => {
   const isRegression = subType.toLowerCase().includes('regression');
-  console.log(`🔍 SIMPLIFIED createRegressionTracesIfNeeded for "${label}":`, {
-    subType,
-    isRegression,
-    dataLength: xv.length,
-    hasValidData: xv.length > 0 && yv.length > 0
-  });
-  
   if (!isRegression) {
-    console.log(`❌ Not a regression subType: ${subType}`);
     return [];
   }
   
   const regressionResult = computeLinearRegression(xv, yv);
-  console.log(`📊 Regression result for "${label}":`, regressionResult ? 'SUCCESS' : 'FAILED');
-  
   if (!regressionResult) {
-    console.log(`❌ No regression result for "${label}" - insufficient data or invalid values`);
     return [];
   }
   
   const traces = createRegressionTraces(xv, yv, label, color, subType, regressionResult, showConfidenceInterval, confidenceIntervalOpacity);
-  console.log(`✅ Created ${traces.length} regression traces for "${label}"`);
   return traces;
 };

@@ -332,8 +332,6 @@ export const applyErrorBarProperties = (
       
       // Update cap properties if cap exists, preserve all other cap properties
       if (updatedTrace.error_y.cap) {
-        console.log('📍 Before cap update:', JSON.parse(JSON.stringify(updatedTrace.error_y.cap)));
-        
         // Preserve existing cap properties and only update what we need
         if (typeof properties.errorBarCapSize !== 'undefined') {
           updatedTrace.error_y.cap.size = properties.errorBarCapSize;
@@ -349,10 +347,8 @@ export const applyErrorBarProperties = (
           updatedTrace.error_y.cap.color = properties.errorBarColor;
         }
         
-        console.log('📍 After cap update:', JSON.parse(JSON.stringify(updatedTrace.error_y.cap)));
-      } else {
-        console.log('⚠️ No cap object found on error_y!');
-      }
+        } else {
+        }
     }
     
     // Apply to X error bars
@@ -371,8 +367,6 @@ export const applyErrorBarProperties = (
       
       // Update cap properties if cap exists, preserve all other cap properties
       if (updatedTrace.error_x.cap) {
-        console.log('📍 Before cap update (X):', JSON.parse(JSON.stringify(updatedTrace.error_x.cap)));
-        
         // Preserve existing cap properties and only update what we need
         if (typeof properties.errorBarCapSize !== 'undefined') {
           updatedTrace.error_x.cap.size = properties.errorBarCapSize;
@@ -388,10 +382,8 @@ export const applyErrorBarProperties = (
           updatedTrace.error_x.cap.color = properties.errorBarColor;
         }
         
-        console.log('📍 After cap update (X):', JSON.parse(JSON.stringify(updatedTrace.error_x.cap)));
-      } else {
-        console.log('⚠️ No cap object found on error_x!');
-      }
+        } else {
+        }
     }
   }
 

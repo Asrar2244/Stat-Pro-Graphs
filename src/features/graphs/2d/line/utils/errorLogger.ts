@@ -31,12 +31,7 @@ export const logLinePlotError = (error: Error, context: ErrorContext, severity: 
     severity
   };
 
-  // Console logging (always available)
-  console.group(`🔴 LinePlot Error [${severity.toUpperCase()}]`);
-  console.error('Error:', error);
-  console.error('Context:', errorData.context);
-  console.error('Stack:', error.stack);
-  console.groupEnd();
+  // Console logging removed
 
   // In production, you would send this to an error reporting service
   // Example: Sentry.captureException(error, { extra: errorData.context });
@@ -68,7 +63,6 @@ export const logPerformanceIssue = (message: string, duration: number, context: 
     }
   };
 
-  console.warn('🐌 LinePlot Performance Issue:', issue);
 
   // In production, you might want to track this differently
   // Example: Analytics.track('scatter_plot_performance_issue', issue);

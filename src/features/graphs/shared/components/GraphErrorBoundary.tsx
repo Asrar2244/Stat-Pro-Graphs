@@ -41,8 +41,6 @@ export class GraphErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { graphType = 'Graph', onError } = this.props;
     
-    // Log error details
-    console.error(`${graphType} Error Boundary caught an error:`, error, errorInfo);
     
     // Call custom error handler if provided
     if (onError) {
@@ -152,7 +150,6 @@ export class GraphErrorBoundary extends Component<Props, State> {
  */
 export const useGraphErrorHandler = (graphType: string = 'Graph') => {
   const handleError = (error: Error, errorInfo?: any) => {
-    console.error(`${graphType} Error:`, error, errorInfo);
     
     // In a real app, you might want to send this to an error reporting service
     // Example: Sentry.captureException(error, { extra: { graphType, ...errorInfo } });

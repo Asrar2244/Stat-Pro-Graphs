@@ -41,7 +41,6 @@ export const useNetworkOperation = () => {
   ): Promise<T> => {
     if (isOffline) {
       if (offlineFallback) {
-        console.warn('Operation executed offline with fallback');
         return await offlineFallback();
       } else {
         throw new Error('Operation requires network connection');
@@ -53,7 +52,6 @@ export const useNetworkOperation = () => {
     } catch (error) {
       // If operation fails and we have an offline fallback, try it
       if (offlineFallback && !isOffline) {
-        console.warn('Network operation failed, trying offline fallback');
         return await offlineFallback();
       }
       throw error;

@@ -52,13 +52,11 @@ export const fetchGraphData = async (config: FetchDataConfig): Promise<FetchData
   }
 
   if (cols.length === 0) {
-    console.warn('⚠️ No columns selected for graph rendering');
     throw new Error('No columns selected');
   }
 
   const colList = cols.map((c: string) => `"${c}"`).join(',');
   if (!colList.trim()) {
-    console.error('❌ Empty column list generated for query');
     throw new Error('Empty column list');
   }
 
@@ -81,8 +79,7 @@ export const fetchGraphData = async (config: FetchDataConfig): Promise<FetchData
 
   if (isBidirectionalAsymmetricErrorBar) {
     normalizedFormat = 'XY Pairs';
-    console.log('🔍 Bidirectional Asymmetric Error Bar detected - using XY Pairs format');
-  }
+    }
 
   // If Single X with both X and Y present → behave as X Many Y
   if (normalizedFormat === 'Single X' && xNames?.length > 0 && yNames?.length > 0) {

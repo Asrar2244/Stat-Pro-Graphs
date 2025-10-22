@@ -118,11 +118,5 @@ export function validateMeshPlotRequirements(
  * Debug validation function
  */
 export function debugMeshPlotValidation(config: any, result: ValidationResult) {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Mesh Plot Validation Debug:', {
-      config,
-      result,
-      timestamp: new Date().toISOString()
-    });
-  }
+  // Debug function - console logs removed
 }

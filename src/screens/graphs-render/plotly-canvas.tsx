@@ -54,14 +54,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
   // Track liveProps changes
   useEffect(() => {
     const canvasMode = liveProps?.canvasMode || liveProps?.global?.canvasMode || 'light';
-    console.log('🎨 Plotly Canvas - liveProps Changed:', {
-      canvasMode,
-      livePropsCanvasMode: liveProps?.canvasMode,
-      livePropsGlobalCanvasMode: liveProps?.global?.canvasMode,
-      hasLiveProps: !!liveProps,
-      hasGlobal: !!liveProps?.global,
-      timestamp: new Date().toISOString()
-    });
   }, [liveProps?.canvasMode, liveProps?.global?.canvasMode]);
 
 
@@ -89,7 +81,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       try {
         fetchResult = await fetchGraphData({ graphConfig, workspacePath });
       } catch (error) {
-        console.error('❌ Data fetching failed:', error);
         return;
       }
 
@@ -104,23 +95,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         }
       };
 
-      console.log('🎨 3D Mesh Config Merge - DETAILED:', {
-        originalMeshConfig: graphConfig.meshConfig,
-        liveProps3D: liveProps?.plotSpecific?.mesh3d,
-        enhancedMeshConfig: enhancedGraphConfig.meshConfig,
-        hasLiveProps: !!liveProps,
-        hasPlotSpecific: !!liveProps?.plotSpecific,
-        hasMesh3d: !!liveProps?.plotSpecific?.mesh3d,
-        // DETAILED DEBUG
-        livePropsKeys: liveProps ? Object.keys(liveProps) : [],
-        plotSpecificKeys: liveProps?.plotSpecific ? Object.keys(liveProps.plotSpecific) : [],
-        mesh3dKeys: liveProps?.plotSpecific?.mesh3d ? Object.keys(liveProps.plotSpecific.mesh3d) : [],
-        fullMesh3dObject: liveProps?.plotSpecific?.mesh3d,
-        // Background color debug
-        backgroundColor: liveProps?.global?.backgroundColor,
-        hasGlobal: !!liveProps?.global,
-        globalKeys: liveProps?.global ? Object.keys(liveProps.global) : []
-      });
 
       // Process data by format
       const processedSeries = processDataByFormat({
@@ -147,7 +121,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
           liveProps
         });
       } catch (error) {
-        console.error('❌ Trace orchestration failed:', error);
         return;
       }
 
@@ -163,7 +136,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
 
       // Check if we have any traces to plot
       if (traces.length === 0) {
-        console.warn('⚠️ No traces generated');
         return;
       }
 
@@ -241,15 +213,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       // Get canvas mode from tools (check both direct and nested paths)
       const canvasMode = liveProps?.canvasMode || liveProps?.global?.canvasMode || 'light';
       
-      console.log('🎨 Canvas Mode Debug:', {
-        canvasMode,
-        livePropsCanvasMode: liveProps?.canvasMode,
-        livePropsGlobalCanvasMode: liveProps?.global?.canvasMode,
-        hasLiveProps: !!liveProps,
-        hasGlobal: !!liveProps?.global,
-        livePropsKeys: liveProps ? Object.keys(liveProps) : 'no liveProps',
-        globalKeys: liveProps?.global ? Object.keys(liveProps.global) : 'no global'
-      });
       
       // Define canvas mode colors
       const lightModeColors = {
@@ -319,14 +282,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       const textColor = modeColors.textColor;
       const axisTextColor = modeColors.axisTextColor;
       
-      console.log('🎨 Canvas Mode Colors Applied:', {
-        canvasMode,
-        finalPaperBg,
-        finalPlotBg,
-        textColor,
-        axisTextColor,
-        modeColors
-      });
       
       let layout: any = {
         title: titleVisible
@@ -781,7 +736,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
 
       // Apply category plot layout configuration for X Category and Y Category formats
       if (isCategoryPlot && isCategoryFormat && (normalizedFormat === 'X Category' || normalizedFormat === 'Y Category')) {
-        console.log(`🔍 Applying category plot layout for format: ${normalizedFormat}`);
         
         // Use the imported category plot layout function
         
@@ -794,12 +748,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         
         // Apply category plot layout
         layout = getCategoryPlotLayout(categoryConfig, layout);
-        console.log(`✅ Applied category plot layout:`, {
-          xAxisTitle: layout.xaxis?.title,
-          yAxisTitle: layout.yaxis?.title,
-          xAxisTickMode: layout.xaxis?.tickmode,
-          yAxisTickMode: layout.yaxis?.tickmode
-        });
       }
 
       // Add annotations if needed
@@ -833,51 +781,11 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         (plot as any).graph.current = containerRef.current;
         const payload = { data: traces, layout, config } as any;
         
-        console.log(`🎨 Rendering plot with ${traces.length} traces:`, {
-          subType: graphConfig?.subType,
-          traceTypes: traces.map(t => ({ 
-            type: t.type, 
-            mode: t.mode, 
-            name: t.name,
-            hasLine: !!t.line,
-            hasMarker: !!t.marker,
-            dataLength: t.x?.length || 0,
-            lineColor: t.line?.color,
-            lineWidth: t.line?.width,
-            // 3D Mesh specific debugging
-            colorscale: t.colorscale,
-            hasIntensity: !!t.intensity,
-            intensityLength: t.intensity?.length,
-            intensityMin: t.intensity ? Math.min(...t.intensity) : 'N/A',
-            intensityMax: t.intensity ? Math.max(...t.intensity) : 'N/A',
-            intensityRange: t.intensity ? `${Math.min(...t.intensity).toFixed(2)} to ${Math.max(...t.intensity).toFixed(2)}` : 'N/A',
-            zMin: t.zmin,
-            zMax: t.zmax,
-            opacity: t.opacity,
-            flatshading: t.flatshading,
-            // Debug Z matrix structure
-            zMatrixLength: t.z?.length,
-            zMatrixFirstRowLength: t.z?.[0]?.length,
-            // Debug color scale consistency
-            hasColorscale: !!t.colorscale,
-            colorscaleValue: t.colorscale
-          }))
-        });
         
         // Check specifically for regression traces
         const regressionTraces = traces.filter(t => t.name?.includes('fit') || t.name?.includes('Regression') || t.name?.includes('Test Line'));
         if (regressionTraces.length > 0) {
-          console.log(`📈 Found ${regressionTraces.length} regression traces:`, regressionTraces.map(t => ({
-            name: t.name,
-            lineColor: t.line?.color,
-            lineWidth: t.line?.width,
-            dataPoints: t.x?.length || 0,
-            mode: t.mode,
-            type: t.type
-          })));
         } else {
-          console.log(`❌ No regression traces found in final traces array`);
-          console.log(`🔍 All trace names:`, traces.map(t => t.name));
         }
         
         lastPlotRef.current = payload;
@@ -1001,7 +909,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
     };
     
     run().catch((error) => {
-      console.error('Graph generation error:', error);
     }).finally(() => {
       // Clear the loading timeout and hide loading state
       if (loadingTimeoutRef.current) {

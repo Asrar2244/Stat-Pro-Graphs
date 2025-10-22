@@ -222,13 +222,6 @@ const createErrorBarTrace = (baseTrace: any, config: ScatterTraceConfig, errorCo
   } else if (errorConfig.isBidirectionalErrorBar) {
     // Bidirectional Error Bars with enhanced styling
     if (errorConfig.isAsymmetricErrorBar) {
-      console.log('🔍 Applying Asymmetric Bidirectional Error Bars:', {
-        yUpper: errorValues.yUpper?.slice(0, 3),
-        yLower: errorValues.yLower?.slice(0, 3),
-        xUpper: errorValues.xUpper?.slice(0, 3),
-        xLower: errorValues.xLower?.slice(0, 3),
-        symmetric: false
-      });
       traceConfig.error_y = {
         type: 'data',
         symmetric: false,
@@ -325,14 +318,6 @@ const createPointPlotTrace = (baseTrace: any, config: ScatterTraceConfig, errorC
   traceConfig.mode = 'markers';
   
   const finalColor = color; // Point plots don't have error bars, use series color directly
-  console.log(`🎨 Point Plot Color Assignment:`, {
-    label,
-    originalColor: color,
-    errorBarColor,
-    finalColor,
-    isPointPlot: errorConfig.isPointPlot
-  });
-  
   traceConfig.marker = { 
     color: finalColor,
     symbol: 'circle',
@@ -377,14 +362,6 @@ const createDotPlotTrace = (baseTrace: any, config: ScatterTraceConfig, errorCon
   const baseSize = Math.max(3, Math.min(8, 12 - Math.log10(dataDensity)));
   
   const finalColor = color; // Dot plots don't have error bars, use series color directly
-  console.log(`🎨 Dot Plot Color Assignment:`, {
-    label,
-    originalColor: color,
-    errorBarColor,
-    finalColor,
-    isDotPlot: errorConfig.isDotPlot
-  });
-  
   traceConfig.marker = { 
     color: finalColor,
     symbol: 'circle',
@@ -494,28 +471,16 @@ export const createRegressionTracesIfNeeded = (
   confidenceIntervalOpacity: number = 0.2
 ): any[] => {
   const isRegression = subType.toLowerCase().includes('regression');
-  console.log(`🔍 createRegressionTracesIfNeeded for "${label}":`, {
-    subType,
-    isRegression,
-    dataLength: xv.length,
-    hasValidData: xv.length > 0 && yv.length > 0
-  });
-  
   if (!isRegression) {
-    console.log(`❌ Not a regression subType: ${subType}`);
     return [];
   }
   
   const regressionResult = computeLinearRegression(xv, yv);
-  console.log(`📊 Regression result for "${label}":`, regressionResult ? 'SUCCESS' : 'FAILED');
-  
   if (!regressionResult) {
-    console.log(`❌ No regression result for "${label}" - insufficient data or invalid values`);
     return [];
   }
   
   const traces = createRegressionTraces(xv, yv, label, color, subType, regressionResult, showConfidenceInterval, confidenceIntervalOpacity);
-  console.log(`✅ Created ${traces.length} regression traces for "${label}"`);
   return traces;
 };
 

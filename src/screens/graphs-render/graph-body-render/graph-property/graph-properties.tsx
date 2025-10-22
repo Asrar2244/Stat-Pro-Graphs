@@ -30,7 +30,6 @@ export const GraphProperties = ({ graphConfig, plotProperties, onPlotPropertiesC
     if (onPlotPropertiesChange) {
       onPlotPropertiesChange(newProperties);
     }
-    console.log('🎨 Plot properties updated:', newProperties);
   };
 
   return (

@@ -12,14 +12,6 @@ export const processScatterData = (config: DataProcessingConfig): ProcessedSerie
   const { graphConfig, rows, xNames, yNames, categoryNames = [] } = config;
   const series: ProcessedSeries[] = [];
 
-  console.log(`🔍 Processing Scatter Data:`, {
-    dataFormat: graphConfig.dataFormat,
-    xNames,
-    yNames,
-    categoryNames,
-    rowCount: rows.length
-  });
-
   // Normalize data format
   let normalizedFormat = graphConfig?.dataFormat;
   
@@ -30,8 +22,7 @@ export const processScatterData = (config: DataProcessingConfig): ProcessedSerie
   
   if (isBidirectionalAsymmetricErrorBar) {
     normalizedFormat = 'XY Pairs';
-    console.log('🔍 Bidirectional Asymmetric Error Bar detected - using XY Pairs format');
-  }
+    }
   
   // If Single X with both X and Y present → behave as X Many Y
   if (normalizedFormat === 'Single X' && xNames?.length > 0 && yNames?.length > 0) {
@@ -101,7 +92,6 @@ export const processScatterData = (config: DataProcessingConfig): ProcessedSerie
     case 'Category Many X':
       return processCategoryManyXData(config);
     default:
-      console.warn(`Unknown scatter data format: ${normalizedFormat}`);
       return [];
   }
 };
@@ -159,17 +149,8 @@ const processXManyYData = (config: DataProcessingConfig): ProcessedSeries[] => {
     
     if (isPointPlot) {
       // For point plots: X becomes index, each Y variable gets plotted at corresponding X position
-      console.log(`🔍 Processing X Many Y Point Plot:`, {
-        xCol,
-        yNames,
-        yCount: yNames.length,
-        rowCount: rows.length
-      });
-      
       // Get unique X values and sort them
       const xValues = [...new Set(rows.map((r: any) => Number(r[xCol])))].sort((a, b) => a - b);
-      console.log(`📊 Unique X values:`, xValues);
-      
       // For X Many Y point plots: Create one series per Y variable
       // Each Y variable gets plotted at a SINGLE specific X position
       yNames.forEach((yCol, yIndex) => {
@@ -196,8 +177,7 @@ const processXManyYData = (config: DataProcessingConfig): ProcessedSeries[] => {
           errorBarVariable: graphConfig?.errorBarVariable 
         });
         
-        console.log(`✅ Created point plot series ${yIndex + 1}: ${label} (${xv.length} points at X=${targetXValue})`);
-      });
+        });
     } else {
       // Standard X Many Y processing for non-point plots
       const xv = rows.map((r: any) => Number(r[xCol]));
@@ -229,17 +209,8 @@ const processYManyXData = (config: DataProcessingConfig): ProcessedSeries[] => {
     
     if (isPointPlot) {
       // For point plots: Y becomes index, each X variable gets plotted at corresponding Y position
-      console.log(`🔍 Processing Y Many X Point Plot:`, {
-        yCol,
-        xNames,
-        xCount: xNames.length,
-        rowCount: rows.length
-      });
-      
       // Get unique Y values and sort them
       const yValues = [...new Set(rows.map((r: any) => Number(r[yCol])))].sort((a, b) => a - b);
-      console.log(`📊 Unique Y values:`, yValues);
-      
       // For Y Many X point plots: Create one series per X variable
       // Each X variable gets plotted at a SINGLE specific Y position
       xNames.forEach((xCol, xIndex) => {
@@ -266,8 +237,7 @@ const processYManyXData = (config: DataProcessingConfig): ProcessedSeries[] => {
           errorBarVariable: graphConfig?.errorBarVariable 
         });
         
-        console.log(`✅ Created point plot series ${xIndex + 1}: ${label} (${xv.length} points at Y=${targetYValue})`);
-      });
+        });
     } else {
       // Standard Y Many X processing for non-point plots
       const yv = rows.map((r: any) => Number(r[yCol]));
@@ -291,18 +261,10 @@ const processXYPairsData = (config: DataProcessingConfig): ProcessedSeries[] => 
   const { graphConfig, rows, xNames, yNames } = config;
   const series: ProcessedSeries[] = [];
 
-  console.log(`🔍 Processing XY Pairs Data:`, {
-    xNames,
-    yNames,
-    xNamesLength: xNames?.length || 0,
-    yNamesLength: yNames?.length || 0
-  });
-
   if (xNames?.length >= 1 && yNames?.length >= 1) {
     // For XY Pairs, create multiple series when we have multiple X and Y pairs
     if (xNames.length === yNames.length && xNames.length > 1) {
       // Multiple XY pairs - create a series for each pair
-      console.log(`📊 Creating ${xNames.length} XY pairs for multiple scatter plot`);
       for (let i = 0; i < xNames.length; i++) {
         const xCol = xNames[i];
         const yCol = yNames[i];
@@ -312,11 +274,9 @@ const processXYPairsData = (config: DataProcessingConfig): ProcessedSeries[] => 
         
         const label = `${yCol} (Y) vs ${xCol} (X)`;
         series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-        console.log(`✅ Created series ${i + 1}: ${label}`);
-      }
+        }
     } else {
       // Single XY pair - create one series
-      console.log(`📊 Creating single XY pair`);
       const xCol = xNames[0];
       const yCol = yNames[0];
       
@@ -325,11 +285,9 @@ const processXYPairsData = (config: DataProcessingConfig): ProcessedSeries[] => 
       
       const label = `${yCol} (Y) vs ${xCol} (X)`;
       series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-      console.log(`✅ Created single series: ${label}`);
-    }
+      }
   }
 
-  console.log(`📊 XY Pairs processing complete: ${series.length} series created`);
   return series;
 };
 
@@ -339,14 +297,6 @@ const processXYPairsData = (config: DataProcessingConfig): ProcessedSeries[] => 
 const processCategoryScatterData = (config: DataProcessingConfig, normalizedFormat: string): ProcessedSeries[] => {
   const { graphConfig, rows, xNames, yNames, categoryNames = [] } = config;
   const series: ProcessedSeries[] = [];
-
-  console.log(`🔍 Processing Category Scatter Data:`, {
-    normalizedFormat,
-    xNames,
-    yNames,
-    categoryNames,
-    rowCount: rows.length
-  });
 
   if (normalizedFormat === 'XY Category') {
     // XY Category format - single X, single Y, category for grouping
@@ -358,8 +308,6 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
       // Group data by category
       const categoryData = groupByCategory(rows, categoryCol);
       const categories = Object.keys(categoryData);
-      
-      console.log(`📊 XY Category: Found ${categories.length} categories:`, categories);
       
       // Create a series for each category
       categories.forEach((category, categoryIndex) => {
@@ -380,8 +328,7 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
         if (xv.length > 0) {
           const label = `${category} (${yCol} vs ${xCol})`;
           series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-          console.log(`✅ Created XY Category series ${categoryIndex + 1}: ${label} (${xv.length} points)`);
-        }
+          }
       });
     }
   } else if (normalizedFormat === 'X Category') {
@@ -395,17 +342,8 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
       const categoryData = groupByCategory(rows, categoryCol);
       const categories = Object.keys(categoryData);
       
-      console.log(`📊 X Category: Found ${categories.length} categories:`, categories);
-      
       if (isPointPlot) {
         // For point plots: Group X values by category and plot each category at different Y positions
-        console.log(`🔍 Processing X Category Point Plot:`, {
-          xCol,
-          categoryCol,
-          categories,
-          isPointPlot
-        });
-        
         // Create a series for each category
         categories.forEach((category, categoryIndex) => {
           const categoryRows = categoryData[category];
@@ -429,8 +367,7 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
               label, 
               errorBarVariable: graphConfig?.errorBarVariable
             });
-            console.log(`✅ Created X Category point plot series ${categoryIndex + 1}: ${label} (${xv.length} points at Y=${categoryIndex})`);
-          }
+            }
         });
       } else {
         // Standard X Category processing for non-point plots
@@ -454,8 +391,7 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
           if (xv.length > 0) {
             const label = `${category} (${xCol})`;
             series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-            console.log(`✅ Created X Category series ${categoryIndex + 1}: ${label} (${xv.length} points)`);
-          }
+            }
         });
       }
     }
@@ -470,17 +406,8 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
       const categoryData = groupByCategory(rows, categoryCol);
       const categories = Object.keys(categoryData);
       
-      console.log(`📊 Y Category: Found ${categories.length} categories:`, categories);
-      
       if (isPointPlot) {
         // For point plots: Group Y values by category and plot each category at different X positions
-        console.log(`🔍 Processing Y Category Point Plot:`, {
-          yCol,
-          categoryCol,
-          categories,
-          isPointPlot
-        });
-        
         // Create a series for each category
         categories.forEach((category, categoryIndex) => {
           const categoryRows = categoryData[category];
@@ -504,8 +431,7 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
               label, 
               errorBarVariable: graphConfig?.errorBarVariable
             });
-            console.log(`✅ Created Y Category point plot series ${categoryIndex + 1}: ${label} (${yv.length} points at X=${categoryIndex})`);
-          }
+            }
         });
       } else {
         // Standard Y Category processing for non-point plots
@@ -529,14 +455,12 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
           if (yv.length > 0) {
             const label = `${category} (${yCol})`;
             series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-            console.log(`✅ Created Y Category series ${categoryIndex + 1}: ${label} (${yv.length} points)`);
-          }
+            }
         });
       }
     }
   }
 
-  console.log(`📊 Category processing complete: ${series.length} series created`);
   return series;
 };
 
@@ -554,12 +478,6 @@ const processManyXData = (config: DataProcessingConfig): ProcessedSeries[] => {
     
     if (isPointPlot) {
       // For point plots: Each X variable gets plotted at a specific Y position
-      console.log(`🔍 Processing Many X Point Plot:`, {
-        xNames,
-        xCount: xNames.length,
-        rowCount: rows.length
-      });
-      
       xNames.forEach((xCol, xIndex) => {
         const xv: number[] = [];
         const yv: number[] = [];
@@ -584,8 +502,7 @@ const processManyXData = (config: DataProcessingConfig): ProcessedSeries[] => {
           errorBarVariable: graphConfig?.errorBarVariable 
         });
         
-        console.log(`✅ Created Many X point plot series ${xIndex + 1}: ${label} (${xv.length} points at Y=${targetYValue})`);
-      });
+        });
     } else {
       // Standard Many X processing for non-point plots
       xNames.forEach((xCol, index) => {
@@ -615,12 +532,6 @@ const processManyYData = (config: DataProcessingConfig): ProcessedSeries[] => {
     
     if (isPointPlot) {
       // For point plots: Each Y variable gets plotted at a specific X position
-      console.log(`🔍 Processing Many Y Point Plot:`, {
-        yNames,
-        yCount: yNames.length,
-        rowCount: rows.length
-      });
-      
       yNames.forEach((yCol, yIndex) => {
         const xv: number[] = [];
         const yv: number[] = [];
@@ -645,8 +556,7 @@ const processManyYData = (config: DataProcessingConfig): ProcessedSeries[] => {
           errorBarVariable: graphConfig?.errorBarVariable 
         });
         
-        console.log(`✅ Created Many Y point plot series ${yIndex + 1}: ${label} (${xv.length} points at X=${targetXValue})`);
-      });
+        });
     } else {
       // Standard Many Y processing for non-point plots
       yNames.forEach((yCol, index) => {
@@ -669,18 +579,10 @@ const processYXPairsData = (config: DataProcessingConfig): ProcessedSeries[] => 
   const { graphConfig, rows, xNames, yNames } = config;
   const series: ProcessedSeries[] = [];
 
-  console.log(`🔍 Processing YX Pairs Data:`, {
-    xNames,
-    yNames,
-    xNamesLength: xNames?.length || 0,
-    yNamesLength: yNames?.length || 0
-  });
-
   if (xNames?.length >= 1 && yNames?.length >= 1) {
     // For YX Pairs, create multiple series when we have multiple Y and X pairs
     if (xNames.length === yNames.length && xNames.length > 1) {
       // Multiple YX pairs - create a series for each pair
-      console.log(`📊 Creating ${xNames.length} YX pairs for multiple scatter plot`);
       for (let i = 0; i < xNames.length; i++) {
         const xCol = xNames[i];
         const yCol = yNames[i];
@@ -690,11 +592,9 @@ const processYXPairsData = (config: DataProcessingConfig): ProcessedSeries[] => 
         
         const label = `${yCol} (Y) vs ${xCol} (X)`;
         series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-        console.log(`✅ Created series ${i + 1}: ${label}`);
-      }
+        }
     } else {
       // Single YX pair - create one series
-      console.log(`📊 Creating single YX pair`);
       const xCol = xNames[0];
       const yCol = yNames[0];
       
@@ -703,11 +603,9 @@ const processYXPairsData = (config: DataProcessingConfig): ProcessedSeries[] => 
       
       const label = `${yCol} (Y) vs ${xCol} (X)`;
       series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-      console.log(`✅ Created single series: ${label}`);
-    }
+      }
   }
 
-  console.log(`📊 YX Pairs processing complete: ${series.length} series created`);
   return series;
 };
 

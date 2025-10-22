@@ -46,14 +46,6 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
   // Load project variables
   const { variables, isLoading: isLoadingVariables, error: loadError, retry, canRetry, retryCount } = useProjectVariables(selectedProject);
 
-  // Debug logging for variables
-  console.log('LineScatterPlotForm Debug:', {
-    selectedProject,
-    variables: variables?.length || 0,
-    isLoadingVariables,
-    loadError,
-    retryCount
-  });
 
   // Variable management - pass variables so we can filter by type
   const variableManagement = useVariableManagement(dataFormat, subType, variables);

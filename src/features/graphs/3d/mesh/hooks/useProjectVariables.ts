@@ -102,13 +102,6 @@ export const useProjectVariables = (selectedProject?: string) => {
         setError(`Failed to load variables: ${errorMessage}`);
         setVariables([]);
         
-        // Log error for debugging
-        console.error('Failed to load project variables:', {
-          project: selectedProject,
-          error: err,
-          retryCount,
-          timestamp: new Date().toISOString()
-        });
       } finally {
         setIsLoading(false);
         setIsRetrying(false);

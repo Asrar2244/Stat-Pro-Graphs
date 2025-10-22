@@ -14,17 +14,6 @@ export const processLineScatterData = (config: DataProcessingConfig): ProcessedS
   const { graphConfig, rows, xNames, yNames, categoryNames = [], errorBarNames = [] } = config;
   const series: ProcessedSeries[] = [];
 
-  console.log(`🔍 Processing Line-Scatter Data:`, {
-    dataFormat: graphConfig.dataFormat,
-    subType: graphConfig.subType,
-    symbolValue: graphConfig.symbolValue,
-    xNames,
-    yNames,
-    categoryNames,
-    errorBarNames,
-    rowCount: rows.length
-  });
-
   // Normalize data format
   let normalizedFormat = graphConfig?.dataFormat;
   
@@ -35,8 +24,7 @@ export const processLineScatterData = (config: DataProcessingConfig): ProcessedS
   
   if (isBidirectionalAsymmetricErrorBar) {
     normalizedFormat = 'XY Pairs';
-    console.log('🔍 Bidirectional Asymmetric Error Bar detected - using XY Pairs format');
-  }
+    }
   
   // If Single X with both X and Y present → behave as X Many Y
   if (normalizedFormat === 'Single X' && xNames?.length > 0 && yNames?.length > 0) {
@@ -53,8 +41,6 @@ export const processLineScatterData = (config: DataProcessingConfig): ProcessedS
   } else if (normalizedFormat === 'Single Y' && (!yNames || yNames.length === 0) && (xNames && xNames.length > 0)) {
     normalizedFormat = 'Single X';
   }
-
-  console.log(`🔍 Normalized format: ${normalizedFormat}`);
 
   // Process data based on normalized format
   switch (normalizedFormat) {
@@ -92,7 +78,6 @@ export const processLineScatterData = (config: DataProcessingConfig): ProcessedS
       return processYCategory(rows, yNames, categoryNames, errorBarNames, graphConfig);
     
     default:
-      console.warn(`🔍 Unknown data format: ${normalizedFormat}, falling back to XY Pair`);
       return processXYPair(rows, xNames, yNames, categoryNames, errorBarNames, graphConfig);
   }
 };
@@ -111,7 +96,6 @@ function processXYPair(
   const series: ProcessedSeries[] = [];
   
   if (!xNames?.length || !yNames?.length) {
-    console.warn('🔍 XY Pair format requires both X and Y variables');
     return series;
   }
 
@@ -140,17 +124,7 @@ function processXYPair(
     errorBarDataX = rows.map(row => parseFloat(row[errorBarNameX])).filter(val => !isNaN(val));
     errorBarDataY = rows.map(row => parseFloat(row[errorBarNameY])).filter(val => !isNaN(val));
     
-    console.log(`🔍 Bidirectional Error Bar Data for XY Pair:`, {
-      errorBarNameX,
-      errorBarNameY,
-      xDataLength: xv.length,
-      yDataLength: yv.length,
-      errorBarDataXLength: errorBarDataX.length,
-      errorBarDataYLength: errorBarDataY.length,
-      sampleDataX: errorBarDataX.slice(0, 5),
-      sampleDataY: errorBarDataY.slice(0, 5)
-    });
-  } else if (errorBarNames?.length > 0) {
+    } else if (errorBarNames?.length > 0) {
     // For regular error bars, use single error bar variable
     const errorBarName = errorBarNames[0];
     errorBarData = rows.map(row => parseFloat(row[errorBarName])).filter(val => !isNaN(val));
@@ -188,7 +162,6 @@ function processXYPair(
   
   series.push(processedSeries);
   
-  console.log(`🔍 Created XY Pair series: ${processedSeries.label}, ${xv.length} points`);
   return series;
 }
 
@@ -206,7 +179,6 @@ function processXYPairs(
   const series: ProcessedSeries[] = [];
   
   if (!xNames?.length || !yNames?.length) {
-    console.warn('🔍 XY Pairs format requires both X and Y variables');
     return series;
   }
 
@@ -238,29 +210,12 @@ function processXYPairs(
        errorBarDataX = rows.map(row => parseFloat(row[errorBarNameX])).filter(val => !isNaN(val));
        errorBarDataY = rows.map(row => parseFloat(row[errorBarNameY])).filter(val => !isNaN(val));
        
-       console.log(`🔍 Bidirectional Error Bar Data for XY Pairs series ${i + 1}:`, {
-         errorBarNameX,
-         errorBarNameY,
-         xDataLength: xv.length,
-         yDataLength: yv.length,
-         errorBarDataXLength: errorBarDataX.length,
-         errorBarDataYLength: errorBarDataY.length,
-         sampleDataX: errorBarDataX.slice(0, 5),
-         sampleDataY: errorBarDataY.slice(0, 5)
-       });
-     } else if (errorBarNames?.length > i) {
+       } else if (errorBarNames?.length > i) {
        // For regular error bars, use single error bar variable
        const errorBarName = errorBarNames[i];
        errorBarData = rows.map(row => parseFloat(row[errorBarName])).filter(val => !isNaN(val));
        
-       console.log(`🔍 Error Bar Data for XY Pairs series ${i + 1}:`, {
-         errorBarName,
-         xDataLength: xv.length,
-         yDataLength: yv.length,
-         errorBarDataLength: errorBarData.length,
-         sampleData: errorBarData.slice(0, 5)
-       });
-     }
+       }
     
     // Extract category data if available
     let categoryData: string[] | undefined;
@@ -294,8 +249,7 @@ function processXYPairs(
     
     series.push(processedSeries);
     
-    console.log(`🔍 Created XY Pairs series ${i + 1}: ${processedSeries.label}, ${xv.length} points`);
-  }
+    }
   
   return series;
 }
@@ -313,7 +267,6 @@ function processSingleX(
   const series: ProcessedSeries[] = [];
   
   if (!xNames?.length) {
-    console.warn('🔍 Single X format requires X variables');
     return series;
   }
 
@@ -360,8 +313,7 @@ function processSingleX(
     
     series.push(processedSeries);
     
-    console.log(`🔍 Created Single X series ${i + 1}: ${processedSeries.label}, ${xv.length} points`);
-  }
+    }
   
   return series;
 }
@@ -379,7 +331,6 @@ function processSingleY(
   const series: ProcessedSeries[] = [];
   
   if (!yNames?.length) {
-    console.warn('🔍 Single Y format requires Y variables');
     return series;
   }
 
@@ -426,8 +377,7 @@ function processSingleY(
     
     series.push(processedSeries);
     
-    console.log(`🔍 Created Single Y series ${i + 1}: ${processedSeries.label}, ${xv.length} points`);
-  }
+    }
   
   return series;
 }
@@ -446,7 +396,6 @@ function processXManyY(
   const series: ProcessedSeries[] = [];
   
   if (!xNames?.length || !yNames?.length) {
-    console.warn('🔍 X Many Y format requires both X and Y variables');
     return series;
   }
 
@@ -495,8 +444,7 @@ function processXManyY(
     
     series.push(processedSeries);
     
-    console.log(`🔍 Created X Many Y series ${i + 1}: ${processedSeries.label}, ${xv.length} points`);
-  }
+    }
   
   return series;
 }
@@ -515,7 +463,6 @@ function processYManyX(
   const series: ProcessedSeries[] = [];
   
   if (!xNames?.length || !yNames?.length) {
-    console.warn('🔍 Y Many X format requires both X and Y variables');
     return series;
   }
 
@@ -564,8 +511,7 @@ function processYManyX(
     
     series.push(processedSeries);
     
-    console.log(`🔍 Created Y Many X series ${i + 1}: ${processedSeries.label}, ${xv.length} points`);
-  }
+    }
   
   return series;
 }
@@ -583,7 +529,6 @@ function processManyX(
   const series: ProcessedSeries[] = [];
   
   if (!xNames?.length) {
-    console.warn('🔍 Many X format requires X variables');
     return series;
   }
 
@@ -630,8 +575,7 @@ function processManyX(
     
     series.push(processedSeries);
     
-    console.log(`🔍 Created Many X series ${i + 1}: ${processedSeries.label}, ${xv.length} points`);
-  }
+    }
   
   return series;
 }
@@ -649,7 +593,6 @@ function processManyY(
   const series: ProcessedSeries[] = [];
   
   if (!yNames?.length) {
-    console.warn('🔍 Many Y format requires Y variables');
     return series;
   }
 
@@ -696,8 +639,7 @@ function processManyY(
     
     series.push(processedSeries);
     
-    console.log(`🔍 Created Many Y series ${i + 1}: ${processedSeries.label}, ${xv.length} points`);
-  }
+    }
   
   return series;
 }
@@ -716,7 +658,6 @@ function processXYCategory(
   const series: ProcessedSeries[] = [];
   
   if (!xNames?.length || !yNames?.length || !categoryNames?.length) {
-    console.warn('🔍 XY Category format requires X, Y, and category variables');
     return series;
   }
 
@@ -777,8 +718,7 @@ function processXYCategory(
     series.push(processedSeries);
     categoryIndex++;
     
-    console.log(`🔍 Created XY Category series: ${processedSeries.label}, ${group.x.length} points`);
-  });
+    });
   
   return series;
 }
@@ -796,7 +736,6 @@ function processXCategory(
   const series: ProcessedSeries[] = [];
   
   if (!xNames?.length || !categoryNames?.length) {
-    console.warn('🔍 X Category format requires X and category variables');
     return series;
   }
 
@@ -856,8 +795,7 @@ function processXCategory(
     series.push(processedSeries);
     categoryIndex++;
     
-    console.log(`🔍 Created X Category series: ${processedSeries.label}, ${group.x.length} points`);
-  });
+    });
   
   return series;
 }
@@ -875,7 +813,6 @@ function processYCategory(
   const series: ProcessedSeries[] = [];
   
   if (!yNames?.length || !categoryNames?.length) {
-    console.warn('🔍 Y Category format requires Y and category variables');
     return series;
   }
 
@@ -935,8 +872,7 @@ function processYCategory(
     series.push(processedSeries);
     categoryIndex++;
     
-    console.log(`🔍 Created Y Category series: ${processedSeries.label}, ${group.x.length} points`);
-  });
+    });
   
   return series;
 }

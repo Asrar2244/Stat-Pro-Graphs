@@ -128,20 +128,12 @@ export const orchestrateTraceGeneration = async (
 
   // Create traces for each series (skip if already handled by XY Category)
   if (!(isCategoryPlot && isCategoryFormat && normalizedFormat === 'XY Category')) {
-    console.log(`🔍 Processing ${processedSeries.length} series for graph type: ${graphConfig?.subType}`);
-
     processedSeries.forEach((series, seriesIndex) => {
       const xv = series.xv || (series as any).x;
       const yv = series.yv || (series as any).y;
       const label = series.label;
       const errorBarVariable = series.errorBarVariable;
       const startTime = performance.now();
-
-      console.log(`📊 Series ${seriesIndex}: ${label}`, {
-        subType: graphConfig?.subType,
-        dataLength: xv.length,
-        sampleData: { x: xv.slice(0, 3), y: yv.slice(0, 3) }
-      });
 
       // Optimize data for large datasets
       const optimizedData = optimizeDataForPerformance(
@@ -170,14 +162,6 @@ export const orchestrateTraceGeneration = async (
       const baseColor = getSeriesColor(seriesIndex);
       const color = perSeriesColor || plotSpecificColor || globalSeriesColor || baseColor;
       const symbol = getSeriesSymbol(seriesIndex);
-
-      console.log(`🎨 Color assignment for "${label}":`, {
-        perSeriesColor,
-        plotSpecificColor,
-        globalSeriesColor,
-        assignedColor: color,
-        seriesIndex
-      });
 
       // Apply axis transforms for special scales
       const xScale = liveProps?.global?.xScaleType;
@@ -229,55 +213,17 @@ export const orchestrateTraceGeneration = async (
             ? applyScatterProperties(optimizedTrace, plotProperties.scatter!)
             : optimizedTrace;
 
-        console.log(`🔍 Checking for error bars on ${label}:`, {
-          hasErrorY: !!finalTrace.error_y,
-          hasErrorX: !!finalTrace.error_x,
-          hasErrorBarProperties: !!plotProperties.errorBar,
-          subType: graphConfig?.subType
-        });
-
         // Apply error bar properties if trace has error bars
         // TEMPORARILY DISABLED: Error bar property application is breaking caps
         // TODO: Fix the applyErrorBarProperties function to properly preserve all cap properties
         if (false && (finalTrace.error_y || finalTrace.error_x) && plotProperties.errorBar) {
-          console.log(`🔧 Before applying error bar properties to ${label}:`, {
-            hasErrorY: !!finalTrace.error_y,
-            hasErrorX: !!finalTrace.error_x,
-            errorYCap: finalTrace.error_y?.cap,
-            errorXCap: finalTrace.error_x?.cap
-          });
-          
           finalTrace = applyErrorBarProperties(finalTrace, plotProperties.errorBar);
           
-          console.log(`🔧 Applied error bar properties to ${label}:`, {
-            thickness: plotProperties.errorBar.errorBarThickness,
-            width: plotProperties.errorBar.errorBarWidth,
-            opacity: plotProperties.errorBar.errorBarOpacity,
-            capSize: plotProperties.errorBar.errorBarCapSize,
-            color: plotProperties.errorBar.errorBarColor,
-            resultErrorY: finalTrace.error_y ? {
-              thickness: finalTrace.error_y.thickness,
-              width: finalTrace.error_y.width,
-              opacity: finalTrace.error_y.opacity,
-              visible: finalTrace.error_y.visible,
-              cap: finalTrace.error_y.cap
-            } : null,
-            resultErrorX: finalTrace.error_x ? {
-              thickness: finalTrace.error_x.thickness,
-              width: finalTrace.error_x.width,
-              opacity: finalTrace.error_x.opacity,
-              visible: finalTrace.error_x.visible,
-              cap: finalTrace.error_x.cap
-            } : null
-          });
-        } else {
-          console.log(`⚠️ Error bar property application disabled - using trace defaults`);
-        }
+          } else {
+          }
 
         traces.push(finalTrace);
-        console.log(`✅ Final trace created for ${label}`);
-      } catch (error) {
-        console.error(`❌ Error creating trace for "${label}":`, error);
+        } catch (error) {
         const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
         const fallbackTrace = {
           x: tx || xv,
@@ -302,15 +248,6 @@ export const orchestrateTraceGeneration = async (
           const showCI = plotProperties.regression?.showConfidenceInterval ?? true;
           const ciOpacity = plotProperties.regression?.confidenceIntervalOpacity ?? 0.2;
           
-          console.log(`🔍 Attempting to create regression traces for "${customLabel}":`, {
-            subType,
-            isRegressionSubType,
-            showRegression: graphConfig?.showRegression,
-            dataLength: { x: tx.length, y: ty.length },
-            showConfidenceInterval: showCI,
-            confidenceIntervalOpacity: ciOpacity
-          });
-
           const regressionTraces = createRegressionTracesIfNeeded(
             tx,
             ty,
@@ -322,17 +259,6 @@ export const orchestrateTraceGeneration = async (
           );
 
           if (regressionTraces && regressionTraces.length > 0) {
-            console.log(
-              `✅ Created ${regressionTraces.length} regression traces for "${customLabel}":`,
-              regressionTraces.map((trace: any) => ({
-                type: trace.type,
-                mode: trace.mode,
-                lineColor: trace.line?.color,
-                lineWidth: trace.line?.width,
-                dataPoints: trace.x?.length || 0
-              }))
-            );
-
             const finalRegressionTraces = plotProperties.regression
               ? regressionTraces.map(trace =>
                   applyRegressionProperties(trace, plotProperties.regression!)
@@ -341,11 +267,9 @@ export const orchestrateTraceGeneration = async (
 
             traces.push(...finalRegressionTraces);
           } else {
-            console.log(`⚠️ No regression traces created for "${customLabel}"`);
-          }
+            }
         } catch (error) {
-          console.error(`❌ Error creating regression traces for "${label}":`, error);
-        }
+          }
       }
 
       // Add dotted lines for dot plots

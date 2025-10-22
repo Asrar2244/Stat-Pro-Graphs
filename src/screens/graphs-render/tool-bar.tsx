@@ -118,10 +118,6 @@ export const ToolBar: FC<IToolBarProps> = ({ tools, title, subTitle }) => {
               <Switch
                 checked={tools.canvasMode === 'dark'}
                 onChange={() => {
-                  console.log('🎨 Canvas Mode Toggle Clicked:', {
-                    currentMode: tools.canvasMode,
-                    newMode: tools.canvasMode === 'light' ? 'dark' : 'light'
-                  });
                   tools.toggleCanvasMode();
                 }}
                 style={{

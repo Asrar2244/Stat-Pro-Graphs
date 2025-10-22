@@ -96,22 +96,9 @@ export const GraphsRender: FC = () => {
         }
       }
     };
-    console.log('🔄 currentProps recalculated:', {
-      hasMesh3d: !!result.plotSpecific.mesh3d,
-      mesh3dProps: result.plotSpecific.mesh3d,
-      selectedRunId: selectedGraphRun.id
-    });
     return result;
   }, [propertiesByRun, selectedGraphRun.id, tools.canvasMode, tools.graphProperties]);
   
-  console.log('🎨 GraphsRender - currentProps Debug:', {
-    toolsCanvasMode: tools.canvasMode,
-    currentPropsCanvasMode: currentProps.global.canvasMode,
-    plotSpecific: currentProps.plotSpecific,
-    mesh3d: currentProps.plotSpecific?.mesh3d,
-    selectedRunId: selectedGraphRun.id,
-    hasPropertiesByRun: !!propertiesByRun[selectedGraphRun.id]
-  });
 
   const updateGraphPropertyPerRun = <K extends keyof typeof tools.graphProperties.global>(
     key: K,
@@ -242,12 +229,6 @@ export const GraphsRender: FC = () => {
     key: keyof NonNullable<typeof tools.graphProperties.plotSpecific[T]>,
     value: any,
   ) => {
-    console.log('🔧 updatePlotSpecificPropertyPerRun called:', {
-      plotType,
-      key,
-      value,
-      selectedRunId: selectedGraphRun.id
-    });
     
     setPropertiesByRun((prev) => {
       const base = prev[selectedGraphRun.id] || tools.graphProperties;
@@ -265,11 +246,6 @@ export const GraphsRender: FC = () => {
         },
       };
       
-      console.log('📦 Updated properties:', {
-        oldValue: (base.plotSpecific as any)[plotType]?.[key],
-        newValue: value,
-        updatedPlotSpecific: updated[selectedGraphRun.id].plotSpecific
-      });
       
       return updated;
     });

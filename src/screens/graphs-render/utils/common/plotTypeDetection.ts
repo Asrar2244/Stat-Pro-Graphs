@@ -13,25 +13,16 @@ export const determinePlotType = (graphConfig: any): PlotType['type'] => {
   const dataFormat = graphConfig?.dataFormat || '';
   const graphType = graphConfig?.graphType || '';
 
-  console.log(`🔍 Plot Type Detection:`, {
-    graphType,
-    subType,
-    dataFormat,
-    fullConfig: graphConfig
-  });
-
   // Check if this is a 3D mesh plot based on graph type and data format
   const is3DMeshPlot = (graphType === '3D Mesh Plot' || subType === '3D Mesh Plot' || lowerSubType.includes('3d mesh')) &&
                        ['XYZ Triplets', 'Many Z', 'XY Many Z', 'xyz-columns', 'z-matrix', 'xy-z-columns'].includes(dataFormat);
 
   if (is3DMeshPlot) {
-    console.log(`🌐 Detected 3D Mesh Plot:`, { graphType, subType, dataFormat });
     return '3d-mesh';
   }
 
   // Additional check: If graphType is '3D Mesh Plot' but dataFormat is not recognized, still treat as 3D mesh
   if (graphType === '3D Mesh Plot') {
-    console.log(`🌐 Detected 3D Mesh Plot by graphType only:`, { graphType, subType, dataFormat });
     return '3d-mesh';
   }
 
@@ -44,7 +35,6 @@ export const determinePlotType = (graphConfig: any): PlotType['type'] => {
                            lowerSubType.includes('error bars') && (lowerSubType.includes('line') || lowerSubType.includes('scatter'));
 
   if (isLineScatterPlot) {
-    console.log(`📊📈 Detected Line-Scatter Plot:`, { graphType, subType, dataFormat });
     return 'line-scatter';
   }
 

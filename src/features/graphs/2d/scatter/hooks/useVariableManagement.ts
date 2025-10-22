@@ -102,18 +102,12 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
       // For Y Many X Replicates format, require Y to be selected first
       const currentYCount = yVariableList.size;
       
-      console.log('canSendToXForYReplicates - Y Many X Replicates:', {
-        currentYCount,
-        canSend: currentYCount > 0,
-        dataFormat
-      });
       
       // Can send to X if Y is selected (no limit on X variables)
       return currentYCount > 0;
     } else if (dataFormat === 'Many X Replicates') {
       // For Many X Replicates format, allow X selection freely (no Y requirement)
       // This format is for horizontal point plots where X variables are grouped
-      console.log('canSendToXForYReplicates - Many X Replicates: true');
       return true;
     }
     
@@ -148,7 +142,6 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
       
       // Only allow one X variable total
       if (currentXCount >= 1) {
-        console.warn('Cannot select more X variables: Only one X variable allowed for this format');
         return; // Don't allow more than one X variable
       }
       
@@ -156,17 +149,11 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
       freeSlots = 1;
     } else if (dataFormat === 'Many Y Replicates') {
       // For Many Y Replicates format, no X variables needed
-      console.warn('Cannot select X variables: Many Y Replicates format does not require X variables');
       return; // Don't allow X selection for this format
     } else if (dataFormat === 'Y Many X Replicates') {
       // For Y Many X Replicates format, require Y variables to be selected first
-      console.log('handleSendToX - Y Many X Replicates:', {
-        yVariableListSize: yVariableList.size,
-        dataFormat
-      });
       
       if (yVariableList.size === 0) {
-        console.warn('Cannot select X variables: Y variable must be selected first');
         return; // Don't allow X selection until Y is selected
       }
       
@@ -175,21 +162,18 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     } else if (dataFormat === 'Many X Replicates') {
       // For Many X Replicates format, allow X selection freely (no Y requirement)
       // This format is for horizontal point plots where X variables are grouped
-      console.log('handleSendToX - Many X Replicates: allowing X selection');
       // No limit on X variables for this format
     }
     
     // Check if there are any selected variables
     const selectedVariables = Array.from(availableList.entries()).filter(([, checked]) => checked);
     if (selectedVariables.length === 0) {
-      console.warn('No variables selected to send to X');
       return;
     }
     
     // Check if any selected variables are valid for X
     const validVariables = selectedVariables.filter(([variableName]) => isValidForSlot(variableName, 'x'));
     if (validVariables.length === 0) {
-      console.warn('No valid variables selected for X slot');
       return;
     }
     
@@ -199,7 +183,6 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
       if (moved >= freeSlots) break;
       // Only move numeric variables to X
       if (!isValidForSlot(variableName, 'x')) {
-        console.warn(`Skipping ${variableName}: not valid for X slot`);
         continue;
       }
       
@@ -210,7 +193,6 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     }
     
     if (moved === 0) {
-      console.warn('No variables were moved to X list');
       return;
     }
     
@@ -234,14 +216,12 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     // Check if there are any selected variables
     const selectedVariables = Array.from(availableList.entries()).filter(([, checked]) => checked);
     if (selectedVariables.length === 0) {
-      console.warn('No variables selected to send to Y');
       return;
     }
     
     // Check if any selected variables are valid for Y
     const validVariables = selectedVariables.filter(([variableName]) => isValidForSlot(variableName, 'y'));
     if (validVariables.length === 0) {
-      console.warn('No valid variables selected for Y slot');
       return;
     }
     
@@ -249,7 +229,6 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     if (dataFormat === 'X Many Y Replicates') {
       // For X Many Y Replicates format, require X variables to be selected first
       if (xVariableList.size === 0) {
-        console.warn('Cannot select Y variables: X variable must be selected first');
         return; // Don't allow Y selection until X is selected
       }
       
@@ -262,7 +241,6 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
         if (moved >= variablesToMove) break;
         // Only move numeric variables to Y
         if (!isValidForSlot(variableName, 'y')) {
-          console.warn(`Skipping ${variableName}: not valid for Y slot`);
           continue;
         }
         newYList.set(variableName, false);
@@ -283,7 +261,6 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
         if (moved >= variablesToMove) break;
         // Only move numeric variables to Y
         if (!isValidForSlot(variableName, 'y')) {
-          console.warn(`Skipping ${variableName}: not valid for Y slot`);
           continue;
         }
         newYList.set(variableName, false);
@@ -298,7 +275,6 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
       
       // Only allow one Y variable total
       if (currentYCount >= 1) {
-        console.warn('Cannot select more Y variables: Only one Y variable allowed for this format');
         return; // Don't allow more than one Y variable
       }
       
@@ -307,7 +283,6 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     } else if (dataFormat === 'Many X Replicates') {
       // Special logic for Many X Replicates format (horizontal point plots)
       // For this format, Y is assumed as index, so no Y variables should be selected
-      console.warn('Cannot select Y variables: Many X Replicates format assumes Y as index');
       return; // Don't allow Y selection for this format
     } else {
       // Standard logic for other formats
@@ -316,7 +291,6 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
         if (moved >= freeSlots) break;
         // Only move numeric variables to Y
         if (!isValidForSlot(variableName, 'y')) {
-          console.warn(`Skipping ${variableName}: not valid for Y slot`);
           continue;
         }
         newYList.set(variableName, false);
@@ -327,7 +301,6 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     }
     
     if (moved === 0) {
-      console.warn('No variables were moved to Y list');
       return;
     }
     

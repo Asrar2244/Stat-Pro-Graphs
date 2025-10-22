@@ -42,7 +42,6 @@ export const createCategoryScatterTraces = (config: CategoryPlotConfig): Categor
   const { rows, xCol, yCol, categoryCol, subType = 'Scatter Plot' } = config;
   
   if (!rows || rows.length === 0) {
-    console.warn('No data rows provided');
     return [];
   }
 
@@ -61,7 +60,6 @@ export const createCategoryScatterTraces = (config: CategoryPlotConfig): Categor
     // Format 3: Y, Category → Strip plot with categories on X-axis
     traces.push(...createYCategoryTraces(rows, yCol, categoryCol, colors, symbols, subType));
   } else {
-    console.warn('Invalid combination of columns for category plot');
     return [];
   }
 
@@ -443,8 +441,6 @@ export const plotWithCategory = (config: CategoryPlotConfig): {
   
   // Get plot properties for live customization
   const plotProperties = getPlotProperties(config.liveProps);
-  console.log('🎨 Category plot properties loaded:', plotProperties);
-  
   // Apply scatter properties to all traces
   const finalTraces = plotProperties.scatter ? traces.map(trace => 
     applyScatterProperties(trace, plotProperties.scatter!)
@@ -453,29 +449,17 @@ export const plotWithCategory = (config: CategoryPlotConfig): {
   // Add regression traces if this is a regression subType
   const isRegression = config.subType?.toLowerCase().includes('regression');
   if (isRegression) {
-    console.log(`🔍 Adding regression traces for category plot with subType: ${config.subType}`);
-    
     const { colors } = getSeriesConfig();
     
     // Get user's confidence interval preferences
     const showCI = plotProperties.regression?.showConfidenceInterval ?? true;
     const ciOpacity = plotProperties.regression?.confidenceIntervalOpacity ?? 0.2;
     
-    console.log(`📊 Category regression settings:`, { showCI, ciOpacity });
-    
     // Add regression traces for each category trace
     finalTraces.forEach((trace, index) => {
       if (trace.x && trace.y && trace.x.length > 1 && trace.y.length > 1) {
-        console.log(`📊 Computing regression for category trace: ${trace.name}`);
-        
         const regressionResult = computeLinearRegression(trace.x, trace.y);
         if (regressionResult) {
-          console.log(`✅ Regression computed for ${trace.name}:`, {
-            slope: regressionResult.m,
-            intercept: regressionResult.b,
-            rSquared: regressionResult.rSquared
-          });
-          
           const regressionTraces = createRegressionTraces(
             trace.x,
             trace.y,
@@ -492,11 +476,9 @@ export const plotWithCategory = (config: CategoryPlotConfig): {
             applyRegressionProperties(regTrace, plotProperties.regression!)
           ) : regressionTraces;
           
-          console.log(`📈 Adding ${finalRegressionTraces.length} regression traces for ${trace.name}`);
           finalTraces.push(...finalRegressionTraces);
         } else {
-          console.log(`❌ No regression result for ${trace.name}`);
-        }
+          }
       }
     });
   }

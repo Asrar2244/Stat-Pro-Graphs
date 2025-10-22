@@ -12,8 +12,6 @@ import { LineScatterTraceConfig, LINE_SCATTER_SUB_TYPE_CONFIGS } from './types';
 export const generateLineScatterTraces = (processedSeries: ProcessedSeries[]): any[] => {
   const traces: any[] = [];
 
-  console.log(`🔍 Generating Line-Scatter Traces for ${processedSeries.length} series`);
-
   processedSeries.forEach((series, index) => {
     const trace = generateSingleLineScatterTrace(series, index);
     if (trace) {
@@ -21,7 +19,6 @@ export const generateLineScatterTraces = (processedSeries: ProcessedSeries[]): a
     }
   });
 
-  console.log(`🔍 Generated ${traces.length} line-scatter traces`);
   return traces;
 };
 
@@ -46,17 +43,6 @@ function generateSingleLineScatterTrace(series: ProcessedSeries, index: number):
     markerSize = 8,
     lineWidth = 2
   } = series;
-
-  console.log(`🔍 Generating trace for series: ${label}`, {
-    subType,
-    dataFormat,
-    xLength: x.length,
-    yLength: y.length,
-    isLinePlot,
-    isScatterPlot,
-    showMarkers,
-    showLines
-  });
 
   // Get sub-type configuration
   const subTypeConfig = LINE_SCATTER_SUB_TYPE_CONFIGS[subType] || LINE_SCATTER_SUB_TYPE_CONFIGS['Simple Straight Line & Scatter Plots'];
@@ -116,14 +102,6 @@ function generateSingleLineScatterTrace(series: ProcessedSeries, index: number):
 
   // Apply sub-type specific configurations
   applySubTypeSpecificConfig(trace, subType, subTypeConfig);
-
-  console.log(`🔍 Generated trace: ${label}`, {
-    mode: trace.mode,
-    hasMarkers: !!trace.marker,
-    hasLines: !!trace.line,
-    hasErrorBars: !!trace.error_y,
-    hasCategoryData: !!trace.customdata
-  });
 
   return trace;
 }
@@ -286,8 +264,6 @@ export const generateLineScatterTracesWithErrorBars = (
 ): any[] => {
   const traces: any[] = [];
 
-  console.log(`🔍 Generating Line-Scatter Traces with Error Bars for ${processedSeries.length} series`);
-
   processedSeries.forEach((series, index) => {
     const trace = generateSingleLineScatterTraceWithErrorBars(series, index, errorBarConfig);
     if (trace) {
@@ -295,7 +271,6 @@ export const generateLineScatterTracesWithErrorBars = (
     }
   });
 
-  console.log(`🔍 Generated ${traces.length} line-scatter traces with error bars`);
   return traces;
 };
 

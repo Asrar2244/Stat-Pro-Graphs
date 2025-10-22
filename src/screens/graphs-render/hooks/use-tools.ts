@@ -391,10 +391,6 @@ export const useTools = () => {
   const toggleCanvasMode = () => {
     setCanvasMode(prev => {
       const newMode = prev === 'light' ? 'dark' : 'light';
-      console.log('🎨 Canvas Mode Toggle in use-tools:', {
-        previousMode: prev,
-        newMode: newMode
-      });
       return newMode;
     });
   };

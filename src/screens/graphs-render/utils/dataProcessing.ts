@@ -18,15 +18,6 @@ import { processLineScatterData } from './line-scatter/lineScatterDataProcessing
 export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeries[] => {
   const plotType = determinePlotType(config.graphConfig);
   
-  console.log(`🔍 Processing data for plot type: ${plotType}`, {
-    dataFormat: config.graphConfig?.dataFormat,
-    subType: config.graphConfig?.subType,
-    xNames: config.xNames,
-    yNames: config.yNames,
-    zNames: config.zNames,
-    categoryNames: config.categoryNames
-  });
-
   switch (plotType) {
     case 'scatter':
       return processScatterData(config);
@@ -37,7 +28,6 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
     case '3d-mesh':
       return process3DMeshData(config);
     default:
-      console.warn(`Unknown plot type: ${plotType}, falling back to scatter`);
       return processScatterData(config);
   }
 };

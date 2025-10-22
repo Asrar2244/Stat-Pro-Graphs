@@ -44,16 +44,13 @@ export const insertGraphRun = async (workspacePath: string, run: GraphRunInput) 
     detail: { projectName: run.tabName, workspacePath } 
   });
   window.dispatchEvent(event);
-  console.log(`🔔 Notified workspace: graph saved for "${run.tabName}"`);
   
   // Automatically set flag to display the latest graph
   try {
     const { useStartProStore } = await import('@store/main-store');
     const { setRenderLatestRun } = useStartProStore.getState();
     setRenderLatestRun(true);
-    console.log('🎯 Auto-selecting latest graph after creation');
   } catch (error) {
-    console.warn('Could not set renderLatestRun flag:', error);
   }
 };
 

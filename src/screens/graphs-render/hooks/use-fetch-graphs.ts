@@ -26,12 +26,9 @@ export const useFetchGraphs = (tabName: string): IFetch => {
   const fetchData = async (): Promise<any> => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching graphs from database:', tabName);
       const result = await fetchGraphRunList(tabName);
-      console.log('📊 Graph run list result:', result);
       return result;
     } catch (e: any) {
-      console.error('❌ Error fetching graphs:', e);
       // Don't show error dialog for graph fetching errors - just log them
       // setBlockUI({ value: true, msg: e.message });
     } finally {

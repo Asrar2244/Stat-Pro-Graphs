@@ -79,26 +79,6 @@ export const LineScatterPlotModal: FC<LineScatterPlotModalProps> = ({
           : undefined
       };
 
-      // Debug logging
-      console.log('Validation Debug:', {
-        subType,
-        dataFormat,
-        selectedVariables,
-        graphConfig: graphConfig,
-        selectedXVariable,
-        selectedYVariable,
-        isValidFormat: isValidDataFormat(subType as any, dataFormat)
-      });
-      
-      // Debug selectedVariables content
-      console.log('Selected Variables Details:', {
-        x: selectedVariables.x,
-        y: selectedVariables.y,
-        category: selectedVariables.category,
-        errorBar: selectedVariables.errorBar,
-        xLength: selectedVariables.x?.length,
-        yLength: selectedVariables.y?.length
-      });
 
       const validation = validateLineScatterPlotRequirements(subType as any, dataFormat as any, selectedVariables);
       
@@ -180,10 +160,8 @@ export const LineScatterPlotModal: FC<LineScatterPlotModalProps> = ({
     } catch (error) {
       if (error instanceof LineScatterPlotValidationError) {
         // Validation errors are already handled above
-        console.warn('Graph creation blocked due to validation errors:', error.errors);
       } else {
         // Handle unexpected errors
-        console.error('Unexpected error during graph creation:', error);
         setValidationErrors([{
           field: 'general',
           message: 'An unexpected error occurred while creating the graph',
@@ -210,7 +188,6 @@ export const LineScatterPlotModal: FC<LineScatterPlotModalProps> = ({
         <GraphErrorBoundary
           graphType="Line-Scatter Plot"
           onError={(error, errorInfo) => {
-            console.error('LineScatterPlot Modal Error:', error, errorInfo);
             // In production, you might want to send this to an error reporting service
           }}
         >

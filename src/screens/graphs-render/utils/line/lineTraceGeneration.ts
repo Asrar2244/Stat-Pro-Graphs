@@ -20,18 +20,6 @@ export const createLinePlotTrace = (config: LineTraceConfig): any => {
   const lineShape = getLineShape(subType);
   const mode = getLinePlotMode(subType, lineStyle);
   
-  console.log(`📊 Creating Line Plot Trace:`, {
-    label,
-    subType,
-    lineStyle: lineStyle.lineStyle,
-    lineWidth: lineStyle.lineWidth,
-    markerSize: lineStyle.markerSize,
-    showMarkers: lineStyle.showMarkers,
-    lineShape,
-    mode,
-    parsedStyle: lineStyle
-  });
-  
   // Create the line trace directly
   let traceConfig: any = {
     x: xv,

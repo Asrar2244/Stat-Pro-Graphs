@@ -21,22 +21,9 @@ export const LinePlotGraph: FC = () => {
 
   const { graphConfig, workspacePath } = selectedRun.config;
   
-  console.log('🎨 LinePlotGraph - Props Debug:', {
-    graphProperties,
-    canvasMode: graphProperties?.global?.canvasMode,
-    plotSpecific: graphProperties?.plotSpecific,
-    hasGraphProperties: !!graphProperties,
-    selectedRunId: selectedRun.id
-  });
   
   // Track graphProperties changes
   useEffect(() => {
-    console.log('🔄 LinePlotGraph - graphProperties changed:', {
-      timestamp: new Date().toISOString(),
-      graphProperties,
-      plotSpecific: graphProperties?.plotSpecific,
-      global: graphProperties?.global
-    });
   }, [graphProperties]);
   
   // Fallback: if workspacePath missing (older runs), resolve from projects by selectedProject/tabName
