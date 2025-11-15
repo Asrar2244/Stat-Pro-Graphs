@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@excel-view/library':
+        specifier: ./dependencies/excel-view-library-1.0.0.tgz
+        version: file:dependencies/excel-view-library-1.0.0.tgz(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@faker-js/faker':
         specifier: ^9.7.0
         version: 9.7.0
@@ -1062,6 +1065,13 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@excel-view/library@file:dependencies/excel-view-library-1.0.0.tgz':
+    resolution: {integrity: sha512-lhfq/A5rEjLrwwT0oQpbKsPL43b6cdx1vhqe6AlnBftaR6dbN21nJ2vsbM82V+IbTznHB8bxO47pjoVgsDTJHQ==, tarball: file:dependencies/excel-view-library-1.0.0.tgz}
+    version: 1.0.0
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
   '@faker-js/faker@9.7.0':
     resolution: {integrity: sha512-aozo5vqjCmDoXLNUJarFZx2IN/GgGaogY4TMJ6so/WLZOWpSV7fvj2dmrV6sEAnUm1O7aCrhTibjpzeDFgNqbg==}
     engines: {node: '>=18.0.0', npm: '>=9.0.0'}
@@ -1702,6 +1712,12 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@jspreadsheet-ce/react@5.0.2':
+    resolution: {integrity: sha512-KKUXQ+NkuDAe0QQ1ob7ivjxcE9Eu3Vrn41l4s1ZdZhdZDr+yohzEBwdduBzeTfwR2+aUTAYAbE4gNceDFdy8QQ==}
+
+  '@jspreadsheet/formula@2.0.2':
+    resolution: {integrity: sha512-PDQYf9REQA53I7tVYkvkeyQxrd5jcjUeHgItYnRpjN2QiIQwawSqBDtGGEVQTSboTG+JwgGCuhvOpj7FxeKwew==}
 
   '@ljharb/through@2.3.14':
     resolution: {integrity: sha512-ajBvlKpWucBB17FuQYUShqpqy8GRgYEpJW0vWJbUu1CV9lWyrDCapy0lScU8T8Z6qn49sSwJB3+M+evYIdGg+A==}
@@ -4073,8 +4089,14 @@ packages:
     resolution: {integrity: sha512-POQXvpdL69+CluYsillJ7SUhKvytYjW9vG/GKpnf+xP8UWgYEM/RaMzHHofbALDiKbbP1W8UEYmgGl39WkPZsg==}
     engines: {'0': node >= 0.2.0}
 
+  jspreadsheet-ce@5.0.4:
+    resolution: {integrity: sha512-ra1JI1n+tEGgRMzTzNkPZjG0HZz8W6bFGAiTiHl+eYarXdRmS5qDc/ua3l2ev7oZ6Og9kjfrXYHVLUWiVc308w==}
+
   jstat@1.9.6:
     resolution: {integrity: sha512-rPBkJbK2TnA8pzs93QcDDPlKcrtZWuuCo2dVR0TFLOJSxhqfWOVCSp8aV3/oSbn+4uY4yw1URtLpHQedtmXfug==}
+
+  jsuites@5.13.4:
+    resolution: {integrity: sha512-7tcUo4njh5IuhttacrPgzOZHzin43XFAxUpnzJgwInR5mEDl2jp8ofhZ2xgYpgg/t7Oz+bQOoyL4Wj8IQDKDTg==}
 
   kdbush@3.0.0:
     resolution: {integrity: sha512-hRkd6/XW4HTsA9vjVpY9tuXJYLSlelnkTmVFu4M9/7MIYQtFcHpbugAU7UbOfjOiVSVYl2fqgBuJ32JUmRo5Ew==}
@@ -6641,6 +6663,14 @@ snapshots:
   '@esbuild/win32-x64@0.19.12':
     optional: true
 
+  '@excel-view/library@file:dependencies/excel-view-library-1.0.0.tgz(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@jspreadsheet-ce/react': 5.0.2
+      jspreadsheet-ce: 5.0.4
+      jsuites: 5.13.4
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
   '@faker-js/faker@9.7.0': {}
 
   '@floating-ui/core@1.7.0':
@@ -7992,6 +8022,12 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  '@jspreadsheet-ce/react@5.0.2':
+    dependencies:
+      jspreadsheet-ce: 5.0.4
+
+  '@jspreadsheet/formula@2.0.2': {}
 
   '@ljharb/through@2.3.14':
     dependencies:
@@ -10794,7 +10830,14 @@ snapshots:
 
   jsonparse@1.3.1: {}
 
+  jspreadsheet-ce@5.0.4:
+    dependencies:
+      '@jspreadsheet/formula': 2.0.2
+      jsuites: 5.13.4
+
   jstat@1.9.6: {}
+
+  jsuites@5.13.4: {}
 
   kdbush@3.0.0: {}
 

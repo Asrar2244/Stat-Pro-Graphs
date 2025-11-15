@@ -7,6 +7,7 @@ import { ColumnCreate } from './columns';
 import { RowHeaderCreate } from './rows';
 import { useContextMenu } from './hooks/use-context-menu';
 import { ContextMenuComponent } from './context-menu';
+import { ExcelView } from "@excel-view/library";
 
 export const ViewRender = () => {
   const { data, /*columns,*/ setData, setSelectedCell, setDataState } =
@@ -14,23 +15,26 @@ export const ViewRender = () => {
   const contextMenu = useContextMenu();
   const classes = useViewRenderLayout();
 
-  useEffect(() => {
-    updateData();
-  }, [setData]);
 
-  const updateData = (noOfRows: number = 50, noOfColumns: number = 36) => {
+
+  const updateData = (noOfRows: number = 50, noOfColumns: number = 10) => {
     if (setData) {
       const data: Matrix<CellBase> = [];
       for (let i = 0; i < noOfRows; i++) {
         const row: CellBase[] = [];
         for (let j = 0; j < noOfColumns; j++) {
-          row.push({ value: '' });
+          row.push("" as any);
         }
         data.push(row);
       }
       setData(data);
     }
   };
+
+  useEffect(() => {
+    updateData();
+  }, [setData]);
+
   const onSelectHandler = (cell: Selection) => {
     if (setSelectedCell) {
       setSelectedCell(cell as any);
@@ -49,16 +53,39 @@ export const ViewRender = () => {
     setDataState?.('draft');
     setData?.(state);
   };
-
+  console.log(data, "===========data")
   return (
-    <DivShowScrollOnHover customClass={classes.layoutToolStrip}>
-      <Spreadsheet
+    <DivShowScrollOnHover customClass={classes.layoutToolStrip} key={`${JSON.stringify(data)}`}>
+      {/* <Spreadsheet
         data={data}
         onChange={handleOnChange}
         onSelect={onSelectHandler}
         RowIndicator={(props) => RowHeaderCreate({ ...props, handleContextMenu })}
         ColumnIndicator={(props) => ColumnCreate({ ...props, handleContextMenu })}
         darkMode
+      /> */}
+      <ExcelView
+        showTabs={false}
+        showToolbar={true}
+        sheets={[{ data } as any]}
+      // sheets={[
+      //   {
+      //     columns: [
+      //       { type: "numeric", title: "Id" },
+      //       { type: "text", width: "350px", title: "Title" },
+      //       { type: "text", width: "250px", title: "Artist" },
+      //       { type: "text", title: "Service" },
+      //       { type: "text", title: "IPO" },
+      //     ],
+      //     data: [
+      //       ["1", "DIVINELY UNINSPIRED TO A HELLISH EXTENT", "LEWIS CAPALDI"],
+      //       ["2", "NO 6 COLLABORATIONS PROJECT", "ED SHEERAN"],
+      //       ["3", "THE GREATEST SHOWMAN", "MOTION PICTURE CAST RECORDING"],
+      //       ["4", "WHEN WE ALL FALL ASLEEP WHERE DO WE GO", "BILLIE EILISH"],
+      //       ["5", "What are there", "Book"],
+      //     ],
+      //   },
+      // ]}
       />
       <ContextMenuComponent {...contextMenu} />
     </DivShowScrollOnHover>
