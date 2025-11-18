@@ -113,6 +113,16 @@ export const topMenuConfig = {
           execute: exporters.descriptiveStat,
         },
         {
+          id: "t-test",
+          label: "t-test",
+          execute: exporters.tests,
+        },
+        {
+          id: "paired-t-test",
+          label: "paired-t-test",
+          execute: exporters.pairedTTest,
+        },
+        {
           id: 'test',
           label: 'test',
           submenu: [
@@ -121,16 +131,6 @@ export const topMenuConfig = {
               label: "options",
               execute: exporters.options,
             },
-            {
-              id: "t-test",
-              label: "t-test",
-              execute: exporters.tests,
-            },
-            // {
-            //   id: "paired-t-test",
-            //   label: "paired-t-test",
-            //   execute: exporters.pairedTTest,
-            // }
           ]
         },
       ],
