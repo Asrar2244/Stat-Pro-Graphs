@@ -98,15 +98,20 @@ const ExplorerComp: FC = () => {
       // Backend Deletion
       const response = await mainWorker.axios(`${API.backendURL}/api/${API.analysis}`, deletePayload);
 
-      if (response.error) {
-        throw new Error(`Backend deletion failed: ${response.error}`);
+      if (response.status !== 200) {
+        throw new Error(`Backend deletion failed with status ${response.status}: ${response.statusText || 'Unknown error'}`);
       }
 
-      if (response.status && response.status !== 'success') {
-        throw new Error(`Backend deletion failed: ${response.msg || 'Unknown error'}`);
+      const responseData = response.data || response;
+      if (responseData.error) {
+        throw new Error(`Backend deletion failed: ${responseData.error}`);
       }
 
-      console.log('Backend deletion successful:', response.msg || 'Project deleted from backend');
+      if (responseData.status && responseData.status !== 'success') {
+        throw new Error(`Backend deletion failed: ${responseData.msg || 'Unknown error'}`);
+      }
+
+      console.log('Backend deletion successful:', responseData.msg || 'Project deleted from backend');
 
       // Frontend Deletion
       await db.executeQuery(deleteProject, [projectToDelete.id]);

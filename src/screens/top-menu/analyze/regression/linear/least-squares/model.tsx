@@ -11,15 +11,15 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLinearLeastSquares } from './use-squares-hook';
 import { useModelStyle } from './styles-hook/use-model-style';
 import { ListCheckboxWithSelectAll } from '@libs';
-import { generateKey } from '@utils/helper';
 import { useStartProStore } from '@store/main-store';
+import { generateKey } from '@utils/helper';
+
 export const Model: FC = () => {
   const classes = useModelStyle();
   const { t } = useTranslation('regLinearLeastSquare');
-  const { includeConst, save, setModel } = useLinearLeastSquares(
+  const { includeConst, setModel } = useLinearLeastSquares(
     useShallow((state) => ({
       includeConst: state.model.includeConst,
-      save: state.model.save,
       setModel: state.setModel,
     })),
   );
@@ -46,14 +46,6 @@ export const Model: FC = () => {
             name="includeConst"
             label={t('includeConst', { ns: 'regLinearLeastSquare' })}
             checked={includeConst}
-            onChange={onChangeHandler}
-          />
-        </div>
-        <div>
-          <Checkbox
-            name="save"
-            label={t('save', { ns: 'regLinearLeastSquare' })}
-            checked={save}
             onChange={onChangeHandler}
           />
         </div>
@@ -117,7 +109,7 @@ const IndependentListRender: FC = () => {
   );
 };
 const DependentListRender: FC = () => {
-  const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
+  const [, setSelectAll] = useState<boolean | string | undefined>(false);
 
   const { t } = useTranslation('regLinearLeastSquare');
   const { availableList, dependentList, setModelBulk } = useLinearLeastSquares(
@@ -149,7 +141,7 @@ const DependentListRender: FC = () => {
         listSize={dependentList.size}
         list={dependentList}
         selectAllText={t('selectAll')}
-        selectValue={selectAll}
+        selectValue={false}
         requiredSelectAll
         onSelectAllChanged={setSelectAll}
         propKey={propKey}
@@ -228,7 +220,7 @@ const AvailableListRender: FC = () => {
       />
 
       <div className="send-buttons">
-        <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler}>
+        <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler} disabled={dependentList.size >= 1}>
           {t('sendToDependent')}
         </Button>
 

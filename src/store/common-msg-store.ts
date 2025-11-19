@@ -1,5 +1,6 @@
 import { app } from '@tauri-apps/api';
 import { create } from 'zustand';
+import { safeTauriCall } from '@utils/tauri-utils';
 interface ICommonMessage {
   message: string;
   spinner?: boolean;
@@ -39,8 +40,14 @@ export const useTasks = create<ICommonMsgStore>((set) => ({
   tasks: undefined,
   setCommonMsg(common, translationVersion): void {
     if (!common || common?.message === '') {
-      app.getVersion().then((version) => {
+      safeTauriCall(
+        () => app.getVersion(),
+        'dev-version'
+      ).then((version) => {
         set({ commonMsg: { message: `${translationVersion}:${version}` } });
+      }).catch((error) => {
+        console.warn('Error getting app version:', error);
+        set({ commonMsg: { message: `${translationVersion}:dev-version` } });
       });
     } else {
       set({ commonMsg: common });

@@ -42,14 +42,14 @@ const GraphTool: FC<IGraphTool> = ({
 }) => {
   const classes = useToolsStyles();
   const { t } = useTranslation('common');
+  // Initialize Plotly first so the DOM node is ready before data/traces are added
+  useGraphInit(plotly, graph);
   const { totalRecords, loadPagingData, loading } = useTableFetch({
     dbName: dbFileName,
     tableName: dbTableName,
     graph,
     plotly,
   });
-
-  useGraphInit(plotly, graph);
 
   const toolsClass = mergeClasses(
     classes.toolsLayout,

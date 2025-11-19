@@ -1,0 +1,28 @@
+{
+	"bayesian-inputs": "Bayesian Regression: Inputs",
+	"posterior-parameters": "Posterior/Hyperparameter Summary",
+	"coefficients": "Coefficient Estimates (Posterior)",
+
+	"t-dependentVariables": "Dependent Variable",
+	"t-independentVariables": "Independent Variable(s)",
+	"t-sampleSize": "N",
+	"t-credibleInterval": "Credible Interval Level",
+	"t-coefficientMarginalDistribution": "Coefficient Marginal Distribution",
+	"t-degreesOfFreedom": "Degrees of Freedom",
+
+	"t-posteriorShapeAN": "Posterior Shape aₙ",
+	"t-posteriorScaleBN": "Posterior Scale bₙ",
+	"t-varianceMean": "Variance Mean (σ² Mean)",
+	"t-varianceMode": "Variance Mode (σ² Mode)",
+	"t-varianceShapeAN": "Variance Shape aₙ",
+	"t-varianceScaleBN": "Variance Scale bₙ",
+	"t-precisionMarginalDistribution": "Precision (τ) Marginal Distribution",
+	"t-precisionShape": "Precision Shape",
+	"t-precisionRate": "Precision Rate",
+
+	"t-results.effect": "Term",
+	"t-results.coefficeint": "Estimate",
+	"t-results.bse": "Std. Error",
+	"t-results.ci_lower": "Lower CI",
+	"t-results.ci_upper": "Upper CI"
+}

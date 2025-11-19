@@ -6,3 +6,4 @@ export * from './types';
 export * from './logger';
 export * from './unique-number';
 export * from './excel-csv';
+export * from './tauri-utils';

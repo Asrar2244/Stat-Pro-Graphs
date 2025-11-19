@@ -18,7 +18,10 @@ module.exports = {
         "^@hooks/(.*)$": "<rootDir>/src/hooks/$1",
         "^@hooks$": "<rootDir>/src/hooks",
         "^@workers/(.*)$": "<rootDir>/src/workers/$1",
-        "^@workers$": "<rootDir>/src/workers"
+        "^@workers$": "<rootDir>/src/workers",
+        "^@context$": "<rootDir>/src/screens/output-render/context",
+        "^@outputStyles/(.*)$": "<rootDir>/src/screens/output-render/styles-hook/$1",
+        "^@outputStyles$": "<rootDir>/src/screens/output-render/styles-hook"
     },
     setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
 };

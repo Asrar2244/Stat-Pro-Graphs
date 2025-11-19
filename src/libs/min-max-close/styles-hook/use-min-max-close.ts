@@ -8,14 +8,20 @@ export const useMinMaxCloseStyles = makeStyles({
     //window.electron.process.platform === 'darwin'
     // ? tokens.spacingHorizontalM
     // : tokens.spacingHorizontalXL,
+    WebkitAppRegion: 'no-drag',
   },
   ul: {
     display: 'contents',
     listStyle: 'none',
     '& li': {
       padding: tokens.spacingHorizontalS,
+      WebkitAppRegion: 'no-drag',
+      cursor: 'pointer',
+      pointerEvents: 'auto',
+      userSelect: 'none',
       '& svg': {
         fill: tokens.colorNeutralBackgroundInverted,
+        pointerEvents: 'none',
       },
       ':hover': {
         backgroundColor: tokens.colorNeutralBackground1Selected,

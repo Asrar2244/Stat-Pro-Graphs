@@ -1,91 +1,283 @@
 {
   "tables": [
     {
-      "name": "ridge-estimates",
+      "name": "ridge-inputs",
       "showCaption": false,
       "showHeaders": false,
       "view": [
-        ["t-hkb_estimator", "hkb_estimator"],
-        ["t-lw_estimator", "lw_estimator"],
-        ["t-min_gcv_lambda", "min_gcv_lambda"]
+        ["t-dependent_var_names", "dependent_var_names"],
+        ["t-independent_var_names", "independent_var_names"],
+        ["t-dependent_variables_len", "dependent_variables_len"],
+        ["t-MultipleR", "MultipleR"],
+        ["t-SquaredMultipleR", "SquaredMultipleR"],
+        ["t-AdjustedSquaredMultiple_R", "AdjustedSquaredMultiple_R"],
+        ["t-Standard_Error_of_Estimate", "Standard_Error_of_Estimate"],
+        ["t-dw_statistic", "dw_statistic"],
+        ["t-autocorrelation", "autocorrelation"],
+        ["t-AIC", "AIC"],
+        ["t-corrected_AIC", "corrected_AIC"],
+        ["t-Schwarzs_BIC", "Schwarzs_BIC"],
+        ["t-HKB_estimator", "HKB_estimator"],
+        ["t-LW_estimator", "LW_estimator"],
+        ["t-GCV_best_lambda", "GCV_best_lambda"],
+        ["t-ridge_alpha", "ridge_alpha"],
+        ["t-fileName", "fileName"]
       ]
     },
     {
-      "name": "coefficients-saved",
+      "name": "ridge-statics",
+      "showCaption": false,
+      "showHeaders": true,
+      "view": [
+        ["", "t-test_stat", "t-p_value"],
+        ["t-ks_stat", "ks_stat", "ks_p_value"],
+        ["t-shapiro_stat", "shapiro_stat", "shapiro_p_value"]
+      ]
+    },
+    {
+      "name": "andersonDarlingStatistics",
       "showCaption": true,
       "showHeaders": false,
-      "view": [["t-feature_names", "feature_names"]]
+      "view": [
+        ["t-anderson_stat", "anderson_stat"],
+        ["t-anderson_critical_values", "anderson_critical_values"],
+        ["t-anderson_significance_level", "anderson_significance_level"]
+      ]
     },
     {
-      "name": "ridge-coefficients",
-      "showCaption": false,
-      "showHeaders": false,
+      "name": "anova",
+      "showHeaders": true,
+      "showCaption": true,
       "view": [
-        ["t-n_features_in", "n_features_in"],
-        ["t-coef", "coef"],
-        ["t-intercept", "intercept"],
-        ["t-alpha", "alpha"],
-        ["t-best_score", "best_score"],
-        ["t-unstandardized_coefficients", "unstandardized_coefficients"]
+        "t-anova_source",
+        "t-anova_df",
+        "t-anova_ss",
+        "t-anova_ms",
+        "t-anova_f",
+        "t-anova_p"
+      ],
+      "recordType": true
+    },
+    {
+      "name": "Regression Coefficients B = (X'X)-1X'Y",
+      "showHeaders": true,
+      "showCaption": false,
+      "view": [
+        "t-results.effect",
+        "t-results.coefficeint",
+        "t-results.bse",
+        "t-results.tvalues",
+        "t-results.pvalues",
+        "t-results.std_coefficient",
+        "t-results.tolerance"
+      ],
+      "recordType": true
+    },
+    {
+      "name": "lcl-lpl-ucl-upl",
+      "showHeaders": true,
+      "showCaption": true,
+      "view": ["t-lcl", "t-lpl", "t-ucl", "t-upl"],
+      "recordType": {
+        "pageSize": 500
+      }
+    },
+    {
+      "name": "other-data",
+      "showHeaders": false,
+      "showCaption": false,
+      "view": [
+        ["t-dw_statistic", "dw_statistic"],
+        ["t-fvalue", "fvalue"],
+        ["t-f_pvalue", "f_pvalue"],
+        ["t-df_model", "df_model"],
+        ["t-mse_model", "mse_model"],
+        ["t-AIC", "AIC"],
+        ["t-corrected_AIC", "corrected_AIC"],
+        ["t-Schwarzs_BIC", "Schwarzs_BIC"]
       ]
+    },
+    {
+      "name": "outlierData",
+      "showHeaders": true,
+      "showCaption": true,
+      "type": "columns",
+      "appendColumn": ["outlier_const"],
+      "prefix": "outlier_",
+      "view": ["independent_var_names", "dependent_var_names"],
+      "recordType": {
+        "pageSize": 500
+      }
+    },
+    {
+      "name": "standardized ridge coefficients",
+      "showCaption": true,
+      "showHeaders": true,
+      "type": "json-array",
+      "view": ["standardized_ridge_coefficients"],
+      "recordType": true
+    },
+    {
+      "name": "bias vector standardized",
+      "showCaption": true,
+      "showHeaders": true,
+      "type": "json-array",
+      "view": ["bias_vector_standardized"],
+      "recordType": true
+    },
+    {
+      "name": "unstandardized ridge coefficients",
+      "showCaption": true,
+      "showHeaders": true,
+      "type": "json-array",
+      "view": ["unstandardized_ridge_coefficients"],
+      "recordType": true
     }
   ],
-  "graph": {
-    "traces": {
-      "traces1": {
-        "x": "dependent_var_names",
-        "y": "independent_var_names",
-        "type": "scatter",
-        "mode": "lines+markers"
-      }
+  "graph": [
+    {
+      "name": "ridge-regression-plot",
+      "traces": {
+        "traces1": {
+          "x": "dependent_var_names",
+          "y": "independent_var_names",
+          "type": "scatter",
+          "mode": "lines+markers",
+          "name": "Ridge Regression"
+        }
+      },
+      "layout": {
+        "xaxis": {
+          "tickformat": ".4s"
+        },
+        "yaxis": {
+          "tickformat": ".4s"
+        }
+      },
+      "multipleTraces": {
+        "commonAxis": "x"
+      },
+      "supportedGraph": [
+        "lines",
+        "markers",
+        "text",
+        "lines+markers",
+        "text+markers",
+        "text+lines",
+        "text+lines+markers",
+        "none",
+        "gauge",
+        "number",
+        "delta",
+        "number+delta",
+        "gauge+number",
+        "gauge+number+delta",
+        "gauge+delta"
+      ],
+      "download": [
+        {
+          "format": "png",
+          "description": "pngFormat"
+        },
+        {
+          "format": "jpeg",
+          "description": "jpegFormat"
+        },
+        {
+          "format": "svg",
+          "description": "svgFormat"
+        },
+        {
+          "format": "webp",
+          "description": "webpFormat"
+        }
+      ]
     },
-    "multipleTraces": {
-      "commonAxis": "x"
-    },
-    "supportedGraph": [
-      "lines",
-      "markers",
-      "text",
-      "lines+markers",
-      "text+markers",
-      "text+lines",
-      "text+lines+markers",
-      "none",
-      "gauge",
-      "number",
-      "delta",
-      "number+delta",
-      "gauge+number",
-      "gauge+number+delta",
-      "gauge+delta"
-    ],
-    "layout": {
-      "xaxis": {
-        "showgrid": true,
-        "showticklabels": false
+    {
+      "name": "ridge-lms",
+      "traces": {
+        "traces1": {
+          "x": "dependent_var_names",
+          "y": "lcl",
+          "dynamicTableColumns": ["lcl"],
+          "type": "scatter",
+          "mode": "markers"
+        },
+        "traces2": {
+          "x": "dependent_var_names",
+          "y": "upl",
+          "dynamicTableColumns": ["upl"],
+          "type": "scatter",
+          "mode": "lines+markers"
+        },
+        "traces3": {
+          "x": "dependent_var_names",
+          "y": "Estimate",
+          "dynamicTableColumns": ["Estimate"],
+          "type": "scatter",
+          "mode": "lines+markers"
+        },
+        "traces4": {
+          "x": "dependent_var_names",
+          "y": "ucl",
+          "dynamicTableColumns": ["ucl"],
+          "type": "scatter",
+          "mode": "lines+markers"
+        },
+        "traces5": {
+          "x": "dependent_var_names",
+          "y": "lpl",
+          "dynamicTableColumns": ["lpl"],
+          "type": "scatter",
+          "mode": "lines+markers"
+        }
       },
-      "yaxis": {
-        "showgrid": true,
-        "showticklabels": false
-      }
-    },
-    "download": [
-      {
-        "format": "png",
-        "description": "pngFormat"
+      "multipleTraces": {
+        "commonAxis": "x"
       },
-      {
-        "format": "jpeg",
-        "description": "jpegFormat"
+      "layout": {
+        "xaxis": {
+          "tickformat": ".4s"
+        },
+        "yaxis": {
+          "tickformat": ".4s"
+        }
       },
-      {
-        "format": "svg",
-        "description": "svgFormat"
-      },
-      {
-        "format": "webp",
-        "description": "webpFormat"
-      }
-    ]
-  }
+      "supportedGraph": [
+        "lines",
+        "markers",
+        "text",
+        "lines+markers",
+        "text+markers",
+        "text+lines",
+        "text+lines+markers",
+        "none",
+        "gauge",
+        "number",
+        "delta",
+        "number+delta",
+        "gauge+number",
+        "gauge+number+delta",
+        "gauge+delta"
+      ],
+      "download": [
+        {
+          "format": "png",
+          "description": "pngFormat"
+        },
+        {
+          "format": "jpeg",
+          "description": "jpegFormat"
+        },
+        {
+          "format": "svg",
+          "description": "svgFormat"
+        },
+        {
+          "format": "webp",
+          "description": "webpFormat"
+        }
+      ]
+    }
+  ]
 }

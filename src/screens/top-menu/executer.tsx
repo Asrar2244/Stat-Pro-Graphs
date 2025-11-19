@@ -5,11 +5,10 @@ import { exporters } from './configuration';
 import { useTranslation } from 'react-i18next';
 import { useLicenseStore } from '@store';
 import { useShallow } from 'zustand/react/shallow';
+import { LeastSquare } from './analyze/regression/linear/least-squares/least-squares';
+import { Bayesian } from './analyze/regression/linear/bayesian/bayesian';
 const BrowseFile = lazy(() =>
   import('./browse-file').then((module) => ({ default: module.BrowseFile })),
-);
-const LeastSquare = lazy(() =>
-  import('./analyze').then((module) => ({ default: module.LeastSquare })),
 );
 const Ridge = lazy(() => import('./analyze').then((module) => ({ default: module.RidgeModule })));
 
@@ -27,6 +26,24 @@ const PairwiseComparisonOfModule = lazy(() =>
   import('./analyze').then((module) => ({ default: module.PairwiseComparisonModule })),
 );
 
+const ForwardStepwise = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.ForwardStepwiseModule }))
+);
+const BackwardStepwise = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.BackwardStepwiseModule }))
+);
+const Stepwise = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.StepwiseModule }))
+);
+const BestSubset = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.BestSubsetModule }))
+);
+const MultipleLinear = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.MultipleLinearModule }))
+);
+const Polynomial = lazy(() =>
+  import('./analyze').then((module) => ({ default: module.PolynomialModule }))
+);
 const TestsAnalysis = lazy(() => import('./advanced').then((module) => ({ default: module.TestsAnalysis })));
 
 const Options = lazy(() => import('./advanced').then((module) => ({ default: module.Options })));
@@ -88,8 +105,22 @@ const MenuSelector: FC<{
         return <BrowseFile {...modal} t={t} />;
       case exporters.regressionLeastSquare:
         return <LeastSquare {...modal} />;
+      case exporters.regressionBayesian:
+        return <Bayesian {...modal} />;
       case exporters.regressionRidge:
         return <Ridge {...modal} />;
+      case exporters.regressionForwardStepwise:
+        return <ForwardStepwise {...modal} />;
+      case exporters.regressionBackwardStepwise:
+        return <BackwardStepwise {...modal} />;
+      case exporters.regressionStepwise:
+        return <Stepwise {...modal} />;
+      case exporters.regressionBestSubset:
+        return <BestSubset {...modal} />;
+      case exporters.regressionMultipleLinear:
+        return <MultipleLinear {...modal} />;
+      case exporters.regressionPolynomial:
+        return <Polynomial {...modal} />;
       case exporters.descriptiveStat:
         return <DescriptiveStatistics {...modal} />;
       case exporters.estimationOfModule:

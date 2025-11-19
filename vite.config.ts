@@ -17,6 +17,10 @@ export default defineConfig(async () => ({
       '@utils': resolve('src/utils'),
       '@store': resolve('src/store'),
       '@workers': resolve('src/workers'),
+      '@context': resolve('src/screens/output-render/context'),
+      '@outputStyles': resolve('src/screens/output-render/styles-hook'),
+      '@outputRegressionCommon': resolve('src/screens/output-render/analyze/regression/common'),
+      '@outputPrintReport': resolve('src/screens/output-render/print-report'),
     },
   },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

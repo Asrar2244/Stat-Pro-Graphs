@@ -33,22 +33,51 @@ export const BaseComponent: FC = () => {
     };
     const body: any = bodyRef?.current;
     body?.addEventListener('keydown', handleKeyDown);
-    setLicenseState({ state: 'lookingProductLicense' });
-    //TODO: This has to change when backend starts.
-    const intervalCounter = setInterval(() => {
-      getSystemData()
-        .then((res) => {
-          clearInterval(intervalCounter);
-          console.log('res 30Days hardcoded===', res);
-          //TODO: Hardcoded remove it
+    
+    // Set a default license state immediately so the app can function
+    setLicenseState({ state: '30Days', type: 'unknown' });
+    
+    // Make this non-blocking - don't wait for backend response to show the app
+    let hasLoggedTimeout = false;
+    const attemptLicenseCheck = () => {
+      // Add a race condition with timeout
+      const licensePromise = getSystemData();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('LICENSE_CHECK_TIMEOUT')), 5000)
+      );
+
+      Promise.race([licensePromise, timeoutPromise])
+        .then((res: any) => {
+          hasLoggedTimeout = false; // Reset on success
+          if (process.env.NODE_ENV === 'development') {
+            console.log('License check successful:', res);
+          }
           setLicenseState({ state: '30Days', type: res.msg });
-          //TODO: popup license based on license status
           if (res.msg === 'expired') modal.openModal();
         })
         .catch((err) => {
-          console.log('err===', err);
+          // Only log timeouts once to reduce console noise, but always log actual errors
+          const isTimeout = err?.message === 'LICENSE_CHECK_TIMEOUT';
+          if (!isTimeout || !hasLoggedTimeout) {
+            if (isTimeout) {
+              hasLoggedTimeout = true;
+              if (process.env.NODE_ENV === 'development') {
+                console.log('License check timed out (non-blocking, using default state)');
+              }
+            } else {
+              console.error('License check failed:', err);
+            }
+          }
+          // Keep the default state we already set
         });
-    }, 10000);
+    };
+
+    // Try once immediately, then set up interval for retries
+    attemptLicenseCheck();
+    
+    const intervalCounter = setInterval(() => {
+      attemptLicenseCheck();
+    }, 60000); // Check every 60 seconds instead of 30
 
     return () => {
       body?.removeEventListener('keydown', handleKeyDown);

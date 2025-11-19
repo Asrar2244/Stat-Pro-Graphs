@@ -8,23 +8,45 @@ import { Minimize } from './minimize';
 import { Maximize } from './maximize';
 import { Close } from './close';
 import { platformInfo } from '@utils';
+
 const MinMaxCloseComponent: FC = () => {
   const classes = useMinMaxCloseStyles();
   const classMerge = mergeClasses(classes.ul, classes.liCloseMaxMin);
   const platformIsMac = useMemo(() => {
     return platformInfo() === 'mac';
   }, []);
-  const onHandleMaximize = () => {
-    getCurrentWindow().toggleMaximize();
+  
+
+  const onHandleMinimize = async () => {
+    try {
+      await getCurrentWindow().minimize();
+    } catch (e) {
+      console.warn('Minimize failed:', e);
+    }
   };
 
-  const onHandleMinimize = () => {
-    getCurrentWindow().minimize();
+  const onHandleClose = async () => {
+    try {
+      await getCurrentWindow().close();
+    } catch (e) {
+      console.warn('Close failed:', e);
+    }
   };
 
-  const onHandleClose = () => {
-    getCurrentWindow().close();
+  const onHandleToggleFullscreen = async () => {
+    try {
+      const window = getCurrentWindow();
+      const isFullscreen = await window.isFullscreen();
+      if (isFullscreen) {
+        await window.setFullscreen(false);
+      } else {
+        await window.setFullscreen(true);
+      }
+    } catch (e) {
+      console.warn('Toggle fullscreen failed:', e);
+    }
   };
+  
   return (
     <div className={classes.minMaxClose}>
       <ul className={classes.ul}>
@@ -35,6 +57,7 @@ const MinMaxCloseComponent: FC = () => {
           <ThemeSwitch />
         </li>
       </ul>
+      {/* Custom window controls for non-macOS */}
       {!platformIsMac && (
         <>
           <Divider vertical />
@@ -42,7 +65,7 @@ const MinMaxCloseComponent: FC = () => {
             <li onClick={onHandleMinimize}>
               <Minimize />
             </li>
-            <li onClick={onHandleMaximize}>
+            <li onClick={onHandleToggleFullscreen}>
               <Maximize />
             </li>
             <li data-close-window="true" onClick={onHandleClose}>

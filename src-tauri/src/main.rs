@@ -119,13 +119,20 @@ fn main() {
                 // Store the child process in the shared state
                 *child_process.lock().unwrap() = Some(child);
 
-                // Window settings (same as before)
-                let window = _app.get_webview_window("main").unwrap();
+                // Window settings - show the main window and close splash screen
+                let main_window = _app.get_webview_window("main").unwrap();
+                
+                // Close splash screen first
+                if let Some(splashscreen) = _app.get_webview_window("splashscreen") {
+                    splashscreen.close().unwrap();
+                }
+                
                 #[cfg(not(target_os = "macos"))]
-                window.set_decorations(false).unwrap();
-                window.maximize().unwrap();
+                main_window.set_decorations(false).unwrap();
+                main_window.maximize().unwrap();
+                main_window.show().unwrap();
                 #[cfg(target_os = "macos")]
-                window.set_fullscreen(true).unwrap();
+                main_window.set_fullscreen(true).unwrap();
 
                 Ok(())
             }

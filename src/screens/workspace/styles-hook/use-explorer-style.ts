@@ -36,6 +36,8 @@ export const useExplorerLayout = makeStyles({
     fontWeight: 600,
     fontSize: 'small',
     textTransform: 'uppercase',
+    flexShrink: 0,
+    ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke1),
   },
   treeItemLayout: {
     display: 'flex',
