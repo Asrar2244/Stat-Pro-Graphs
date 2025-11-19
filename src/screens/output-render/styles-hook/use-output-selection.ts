@@ -25,6 +25,10 @@ export const useOutputSelection = makeStyles({
     alignItems: 'baseline',
     ...shorthands.padding(tokens.spacingHorizontalS),
     overflow: 'auto',
+    position: 'relative',
+    '& > *': {
+      maxHeight: '100%',
+    },
   },
   content: {
     display: 'flex',
