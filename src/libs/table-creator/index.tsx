@@ -93,11 +93,14 @@ const TableCreatorComponent: FC<ITableComp> = ({ table, dbFileName, dbTableName,
                   {row?.map((col, cIndex) => {
                     const transCell =
                       Array.isArray(translationColumns) && translationColumns[cIndex];
+                    const cellType = col.startsWith('t-') || row.length > 2 ? "left" : "right";
                     return (
-                      <TableCell key={cIndex} data-cellType={col.startsWith('t-') || row.length > 2 ? "left" : "right"}>
-                        {col && (col.startsWith('t-') || transCell !== undefined)
-                          ? t(numberFormat(col), { ...jsonData })
-                          : numberFormat(col)}
+                      <TableCell key={cIndex} className={cellType === "right" ? "cell-type-right" : "cell-type-left"}>
+                        <div data-celltype={cellType}>
+                          {col && (col.startsWith('t-') || transCell !== undefined)
+                            ? t(numberFormat(col), { ...jsonData })
+                            : numberFormat(col)}
+                        </div>
                       </TableCell>
                     );
                   })}

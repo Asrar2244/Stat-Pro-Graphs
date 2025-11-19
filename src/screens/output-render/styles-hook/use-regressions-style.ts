@@ -5,6 +5,12 @@ export const useRegressions = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalL,
+    width: '100%',
+    maxWidth: '100%',
+    overflow: 'visible',
+    '& > *': {
+      maxWidth: '100%',
+    },
     '& table': {
       borderCollapse: 'collapse',
       '& th': {
@@ -21,6 +27,30 @@ export const useRegressions = makeStyles({
     '& .fullscreen-enabled': {
       '& .fui-Card': {
         height: '100%',
+      },
+    },
+    // Constrain graph wrapper to prevent fullscreen expansion
+    '& .graph-wrapper': {
+      maxHeight: '550px !important',
+      height: 'auto !important',
+      position: 'relative !important',
+      display: 'block',
+      overflow: 'visible',
+      '& > div': {
+        '&:not(.fullscreen-enabled)': {
+          position: 'relative !important',
+          height: 'auto !important',
+          maxHeight: '550px !important',
+          top: 'auto !important',
+          left: 'auto !important',
+          right: 'auto !important',
+          bottom: 'auto !important',
+        },
+        '&.fullscreen-enabled': {
+          position: 'fixed !important',
+          height: '100vh !important',
+          maxHeight: '100vh !important',
+        },
       },
     },
   },
