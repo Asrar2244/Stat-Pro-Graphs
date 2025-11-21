@@ -1,5 +1,6 @@
-import { ChangeEvent, FC, useEffect, useState } from 'react';
-import { Field, Dropdown, Option, OptionOnSelectData, SelectionEvents, Input, Tab, TabList, SelectTabData, SelectTabEvent, Checkbox, Radio, RadioGroup, tokens, makeStyles } from "@fluentui/react-components";
+import { ChangeEvent, FC, useEffect, useState, MouseEvent } from 'react';
+import { Field, Dropdown, Option, OptionOnSelectData, SelectionEvents, Input, Tab, TabList, SelectTabData, SelectTabEvent, Checkbox, Radio, RadioGroup, tokens, makeStyles, Button } from "@fluentui/react-components";
+import { MdKeyboardDoubleArrowRight, MdOutlineRemove } from 'react-icons/md';
 import { useTranslation } from "react-i18next";
 import { Fieldset } from "@libs/fieldset";
 import { useCommonStyles } from "./styles-hook/use-test-styles";
@@ -8,6 +9,9 @@ import { useTTestsStats } from "./use-t-tests";
 import { useActiveNode } from "@hooks/layout-nodes";
 import { useShallow } from 'zustand/react/shallow';
 import { useTestsStats } from '../options/use-tests-config';
+import { ListCheckboxWithSelectAll } from '@libs';
+import { generateKey } from '@utils/helper';
+import { useStartProStore } from '@store/main-store';
 
 export const Model: FC = () => {
   const classes = useCommonStyles();
@@ -50,22 +54,60 @@ export const Model: FC = () => {
 const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
   const classes = useCommonStyles();
   const { t } = useTranslation(['T_TestsAnalysys', 'common']);
-  const { model: { dataFormat }, setModelBulk } = useTTestsStats(
+  const { model: { dataFormat }, setModelBulk, setModel } = useTTestsStats(
     useShallow((state) => ({
       model: state.model,
       setModelBulk: state.setModelBulk,
+      setModel: state.setModel,
     }))
   );
+
+  // Initialize availableList and dataList from columns
+  useEffect(() => {
+    if (!columns || columns.length === 0) return;
+    
+    const columnMap = new Map<string, boolean>();
+    let dataListMap = new Map<string, boolean>();
+    
+    // Initialize dataList from existing data (backward compatibility with sample array)
+    if (dataFormat.sample && dataFormat.sample.length > 0 && (!dataFormat.dataList || dataFormat.dataList.size === 0)) {
+      dataFormat.sample.forEach((colId) => {
+        dataListMap.set(colId, false);
+      });
+    } else if (dataFormat.dataList && dataFormat.dataList.size > 0) {
+      dataListMap = new Map(dataFormat.dataList);
+    }
+    
+    // Initialize availableList with ALL columns (including those in dataList)
+    columns.forEach((column) => {
+      columnMap.set(column.columnId, false);
+    });
+    
+    // Only update if there are changes
+    const currentAvailableSize = dataFormat.availableList?.size || 0;
+    const currentDataSize = dataListMap.size;
+    const newAvailableSize = columnMap.size;
+    
+    if (currentAvailableSize !== newAvailableSize || currentDataSize !== dataListMap.size) {
+      setModel({
+        dataFormat: {
+          ...dataFormat,
+          availableList: columnMap,
+          dataList: dataListMap,
+        }
+      });
+    }
+  }, [columns.length]);
+
   // Determine initial format based on store data
   const getInitialFormat = () => {
-    if (dataFormat.sample && dataFormat.sample.length > 0) return "raw";
+    if ((dataFormat.dataList && dataFormat.dataList.size > 0) || (dataFormat.sample && dataFormat.sample.length > 0)) return "raw";
     if (dataFormat.values?.deviation) return "MSSD";
     if (dataFormat.values?.standard_error) return "MSSE";
     return "raw";
   };
 
   const [selectedDataFormat, setSelectedDataFormat] = useState(getInitialFormat());
-  const [selectedOption, setSelectedOption] = useState<string[]>(dataFormat.sample || []);
   const [selectedMean, setSelectedMean] = useState<string>(dataFormat.values?.mean || "");
   const [selectedSize, setSelectedSize] = useState<string>(dataFormat.values?.size || "");
   const [selectedStd, setSelectedStd] = useState<string>(
@@ -80,15 +122,20 @@ const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
 
   const onFormatSelect = (_e: SelectionEvents, data: OptionOnSelectData) => {
     setSelectedDataFormat(data.selectedOptions[0]);
-    setSelectedOption([]);
     setSelectedMean("");
     setSelectedSize("");
     setSelectedStd("");
-  };
-
-  const onColumnSelect = (_: SelectionEvents, data: OptionOnSelectData) => {
-    setSelectedOption(data.selectedOptions);
-    setModelBulk({ ...dataFormat, sample: data.selectedOptions }, "dataFormat");
+    // Clear dataList when switching format
+    if (data.selectedOptions[0] !== 'raw') {
+      const newDataList = new Map<string, boolean>();
+      setModel({
+        dataFormat: {
+          ...dataFormat,
+          dataList: newDataList,
+          sample: [],
+        }
+      });
+    }
   };
 
   const onMeanChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -110,6 +157,9 @@ const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
     setModelBulk({ ...dataFormat, sample: [""], values: { ...dataFormat.values, [colName]: val } }, "dataFormat");
   };
 
+  const availableList = dataFormat.availableList || new Map<string, boolean>();
+  const dataList = dataFormat.dataList || new Map<string, boolean>();
+
   return (
     <Fieldset title={t("dataFormat")}>
       <div className={classes.dataformatWrapper}>
@@ -130,19 +180,13 @@ const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
         </div>
 
         {selectedDataFormat === 'raw' ? (
-          <div className={classes.dataWrapper}>
-            <span>{t("dataForData")}</span>
-            <Field>
-              <Dropdown
-                size="small"
-                onOptionSelect={onColumnSelect}
-                selectedOptions={selectedOption}
-              >
-                {columns.map((column) => (
-                  <Option key={column.columnId}>{column.columnId}</Option>
-                ))}
-              </Dropdown>
-            </Field>
+          <div className={classes.dataSelectionWrapper}>
+            <Fieldset title={t("availableVar", { ns: 'regLinearLeastSquare' })}>
+              <AvailableListRender columns={columns} />
+            </Fieldset>
+            <Fieldset title={t("selectedColumn")}>
+              <DataListRender />
+            </Fieldset>
           </div>
         ) : (
           <div className={classes.dataWrapper}>
@@ -165,21 +209,162 @@ const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
             </Fieldset>
           </div>
         )}
-
-        {selectedDataFormat === 'raw' && selectedOption.length > 0 && (
-          <div className={classes.selectedColWrapper}>
-            <span>{t("selectedColumn")}</span>
-            <Fieldset title="" className={classes.selectedData}>
-              <div className={classes.valInput}>
-                <p>{t("data")}</p>
-                <p>:</p>
-                <p>{selectedOption.join(", ")}</p>
-              </div>
-            </Fieldset>
-          </div>
-        )}
       </div>
     </Fieldset>
+  );
+};
+
+const AvailableListRender: FC<{ columns: IColumn[] }> = ({ columns }) => {
+  const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
+  const { t } = useTranslation(['T_TestsAnalysys', 'regLinearLeastSquare']);
+  const { model: { dataFormat }, setModelBulk, setModel } = useTTestsStats(
+    useShallow((state) => ({
+      model: state.model,
+      setModelBulk: state.setModelBulk,
+      setModel: state.setModel,
+    }))
+  );
+  const { setBlockUI } = useStartProStore();
+  const availableList = dataFormat.availableList || new Map<string, boolean>();
+  const dataList = dataFormat.dataList || new Map<string, boolean>();
+  const [propKey, setPropKey] = useState(generateKey(availableList));
+
+  useEffect(() => {
+    setPropKey(generateKey(availableList));
+  }, [availableList.size, Array.from(availableList.keys()).join(',')]);
+
+  const onSendHandler = (): void => {
+    const selected = Array.from(availableList.entries()).filter(([, v]) => v).map(([k]) => k);
+    
+    // Check if more than one variable is selected
+    if (selected.length > 1) {
+      setBlockUI({ value: true, msg: t('allowOnlyOneRecord', { ns: 'errors', defaultValue: 'Please select exactly one variable.' }) });
+      return;
+    }
+    
+    // Check if dataList already has a variable
+    if (dataList.size >= 1 && selected.length > 0) {
+      setBlockUI({ value: true, msg: t('allowOnlyOneRecord', { ns: 'errors', defaultValue: 'Please select exactly one variable.' }) });
+      return;
+    }
+
+    // Add selected items to dataList (should only be one) without removing from availableList
+    const newDataList = new Map(dataList);
+    selected.forEach((key) => {
+      newDataList.set(key, false);
+    });
+
+    // Reset checkboxes in availableList but keep all items
+    const newAvailableList = new Map(availableList);
+    newAvailableList.forEach((_, key) => {
+      newAvailableList.set(key, false);
+    });
+
+    // Update sample array for backward compatibility
+    const sampleArray = Array.from(newDataList.keys());
+
+    setModel({
+      dataFormat: {
+        ...dataFormat,
+        availableList: newAvailableList,
+        dataList: newDataList,
+        sample: sampleArray,
+      }
+    });
+    setSelectAll(false);
+  };
+
+  return (
+    <div className="section-available">
+      <ListCheckboxWithSelectAll
+        listSize={availableList.size}
+        list={availableList}
+        selectAllText={t('selectAll', { ns: 'regLinearLeastSquare' })}
+        selectValue={selectAll}
+        requiredSelectAll
+        onSelectAllChanged={setSelectAll}
+        propKey={propKey}
+        setModelBulk={setModelBulk}
+        listName='availableList'
+      />
+      <div className="send-buttons">
+        <Button
+          icon={<MdKeyboardDoubleArrowRight />}
+          iconPosition="after"
+          onClick={onSendHandler}
+          disabled={dataList.size >= 1}
+        >
+          {t("data", { ns: 'T_TestsAnalysys' })}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const DataListRender: FC = () => {
+  const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
+  const { t } = useTranslation(['T_TestsAnalysys', 'regLinearLeastSquare']);
+  const { model: { dataFormat }, setModelBulk, setModel } = useTTestsStats(
+    useShallow((state) => ({
+      model: state.model,
+      setModelBulk: state.setModelBulk,
+      setModel: state.setModel,
+    }))
+  );
+  const availableList = dataFormat.availableList || new Map<string, boolean>();
+  const dataList = dataFormat.dataList || new Map<string, boolean>();
+  const [propKey, setPropKey] = useState(generateKey(dataList));
+
+  useEffect(() => {
+    setPropKey(generateKey(dataList));
+  }, [dataList.size, Array.from(dataList.keys()).join(',')]);
+
+  const onRemoveHandler = (): void => {
+    const newDataList = new Map(dataList);
+    const newAvailableList = new Map(availableList);
+
+    dataList.forEach((value: boolean, name: string) => {
+      if (value) {
+        newAvailableList.set(name, false);
+        newDataList.delete(name);
+      }
+    });
+
+    // Update sample array for backward compatibility
+    const sampleArray = Array.from(newDataList.keys());
+
+    setModel({
+      dataFormat: {
+        ...dataFormat,
+        availableList: newAvailableList,
+        dataList: newDataList,
+        sample: sampleArray,
+      }
+    });
+    if (newDataList.size === 0) setSelectAll(false);
+  };
+
+  return (
+    <div className="section-available">
+      <ListCheckboxWithSelectAll
+        listSize={dataList.size}
+        list={dataList}
+        selectAllText={t('selectAll', { ns: 'regLinearLeastSquare' })}
+        selectValue={selectAll}
+        requiredSelectAll
+        onSelectAllChanged={setSelectAll}
+        propKey={propKey}
+        setModelBulk={setModelBulk}
+        listName='dataList'
+      />
+      <Button
+        icon={<MdOutlineRemove />}
+        className="remove-button"
+        onClick={onRemoveHandler}
+      >
+        {t('removeFromSelected', { ns: 'T_TestsAnalysys', defaultValue: 'Remove from Selected' })}
+      </Button>
+    </div>
   );
 };
 

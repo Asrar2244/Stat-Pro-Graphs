@@ -1,5 +1,4 @@
-import { FC, useEffect, useState } from 'react';
-import { makeStyles, tokens } from '@fluentui/react-components';
+import { FC, useEffect } from 'react';
 import { IModal, useActiveNode } from '@hooks';
 import { Modal, NoIdSelected } from '@libs';
 import { useTranslation } from 'react-i18next';
@@ -14,44 +13,11 @@ import { join } from '@tauri-apps/api/path';
 import { homeDirectory } from '../../../../../utils/app-apis';
 import { COLLECTION_DIR } from '@constants/home-folders';
 import { useShallow } from 'zustand/react/shallow';
-
-const useClasses = makeStyles({
-  tTestWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: tokens.spacingHorizontalM,
-    width: '65em',
-    maxHeight: '60vh',
-    paddingTop: tokens.spacingVerticalL,
-    paddingBottom: tokens.spacingVerticalM,
-    '& .details': {
-      maxHeight: '42vh',
-      overflowY: 'auto',
-      scrollbarWidth: 'thin',
-      scrollbarColor: `${tokens.colorNeutralStroke1} transparent`,
-      '&::-webkit-scrollbar': {
-        width: '8px',
-        backgroundColor: 'transparent',
-      },
-      '&::-webkit-scrollbar-thumb': {
-        borderRadius: '8px',
-        backgroundColor: tokens.colorNeutralStroke1,
-        backgroundClip: 'padding-box',
-        border: '2px solid transparent',
-      },
-      '&::-webkit-scrollbar-thumb:hover': {
-        backgroundColor: tokens.colorNeutralStroke2,
-      },
-      '&::-webkit-scrollbar-track': {
-        backgroundColor: 'transparent',
-      },
-    },
-  },
-});
+import { useIndexStyles } from './styles-hook/use-index-styles';
 
 const TestsAnalysisComponent: FC<IModal> = ({ ...props }) => {
   const { t } = useTranslation(['T_TestsAnalysys', 'common']);
-  const classes = useClasses();
+  const classes = useIndexStyles();
   const { setReset } = useTTestsStats(
     useShallow((state) => ({
       setReset: state.setReset,
@@ -60,8 +26,6 @@ const TestsAnalysisComponent: FC<IModal> = ({ ...props }) => {
   const { id, config } = useActiveNode([props.open]);
   const { setBlockUI } = useStartProStore();
   const { setModel: setOptionsModel } = useTestsStats();
-  const [appFolder, setAppFolder] = useState("");
-  const [filePath, setFilePath] = useState("");
 
   const { executeAnalysis } = usePrepareAnalysis({
     config,
@@ -71,9 +35,7 @@ const TestsAnalysisComponent: FC<IModal> = ({ ...props }) => {
 
   useEffect(() => {
     homeDirectory().then(r => {
-      setAppFolder(r);
       join(r, COLLECTION_DIR, CONFIG_FILE).then(path => {
-        setFilePath(path);
         readJsonFile(path).then(configData => {
           setOptionsModel(configData as any);
         }).catch(e => {

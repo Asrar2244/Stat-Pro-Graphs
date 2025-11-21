@@ -33,12 +33,21 @@ export interface IDialogProps extends IModal, PropsWithChildren {
 }
 
 const useModalLayout = makeStyles({
+  surface: {
+    boxShadow: `0 8px 32px ${tokens.colorNeutralStroke1}40, 0 4px 16px ${tokens.colorNeutralStroke1}30`,
+    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
+    ...shorthands.borderRadius(tokens.borderRadiusLarge),
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
   header: {
     flex: 1,
     display: 'flex',
     gap: '16px',
     justifyContent: 'space-between',
     ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralForegroundDisabled),
+    background: `linear-gradient(to bottom, ${tokens.colorNeutralBackground1}, ${tokens.colorNeutralBackground2})`,
+    ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalL),
+    ...shorthands.borderRadius(tokens.borderRadiusLarge, tokens.borderRadiusLarge, 0, 0),
   },
   body: {
     ...shorthands.padding(0),
@@ -71,7 +80,7 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
   if (!open) return null;
   return (
     <Dialog open={open} onOpenChange={(_event, data) => data.open === false && closeModal()} {...others}>
-      <DialogSurface style={{ maxWidth: sizeConversion(size), width: 'fit-content' }}>
+      <DialogSurface className={classes.surface} style={{ maxWidth: sizeConversion(size), width: 'fit-content' }}>
         {showTitle && (
           <div className={classes.header}>
             <DialogTitle>{title}</DialogTitle>
