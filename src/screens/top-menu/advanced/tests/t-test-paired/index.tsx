@@ -21,8 +21,49 @@ const useClasses = makeStyles({
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
     width: '65em',
+    maxHeight: '60vh',
+    paddingTop: tokens.spacingVerticalL,
+    paddingBottom: tokens.spacingVerticalM,
+    overflowY: 'auto',
+    scrollbarWidth: 'thin',
+    scrollbarColor: `${tokens.colorNeutralStroke1} transparent`,
+    '&::-webkit-scrollbar': {
+      width: '8px',
+      backgroundColor: 'transparent',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      borderRadius: '8px',
+      backgroundColor: tokens.colorNeutralStroke1,
+      backgroundClip: 'padding-box',
+      border: '2px solid transparent',
+    },
+    '&::-webkit-scrollbar-thumb:hover': {
+      backgroundColor: tokens.colorNeutralStroke2,
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: 'transparent',
+    },
     '& .details': {
-      height: '42vh',
+      maxHeight: '42vh',
+      overflowY: 'auto',
+      scrollbarWidth: 'thin',
+      scrollbarColor: `${tokens.colorNeutralStroke1} transparent`,
+      '&::-webkit-scrollbar': {
+        width: '8px',
+        backgroundColor: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        borderRadius: '8px',
+        backgroundColor: tokens.colorNeutralStroke1,
+        backgroundClip: 'padding-box',
+        border: '2px solid transparent',
+      },
+      '&::-webkit-scrollbar-thumb:hover': {
+        backgroundColor: tokens.colorNeutralStroke2,
+      },
+      '&::-webkit-scrollbar-track': {
+        backgroundColor: 'transparent',
+      },
     },
   },
 });
@@ -48,19 +89,18 @@ const PairedTestsAnalysisComponent: FC<IModal> = ({ ...props }) => {
   });
 
   useEffect(() => {
-    homeDirectory().then(r => setAppFolder(r));
-    join(appFolder, COLLECTION_DIR, CONFIG_FILE).then(r => setFilePath(r));
-  }, [appFolder]);
-
-  useEffect(() => {
-    if (filePath) {
-      readJsonFile(filePath).then(r => {
-        setOptionsModel(r as any);
-      }).catch(e => {
-        console.log("error in reading config file", e);
+    homeDirectory().then(r => {
+      setAppFolder(r);
+      join(r, COLLECTION_DIR, CONFIG_FILE).then(path => {
+        setFilePath(path);
+        readJsonFile(path).then(configData => {
+          setOptionsModel(configData as any);
+        }).catch(e => {
+          console.log("error in reading config file", e);
+        });
       });
-    }
-  }, [filePath, setOptionsModel]);
+    });
+  }, [setOptionsModel]);
 
   const onCloseModal = (): void => {
     setReset();
