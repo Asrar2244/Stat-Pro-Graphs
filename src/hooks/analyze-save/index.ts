@@ -123,6 +123,18 @@ export const useAnalyzeSave = () => {
         })();
 
         if (normalizedError) {
+          console.error(
+            '[analysis] request failed',
+            {
+              queueType: otherParameters.queueType,
+              queueFor: otherParameters.queueFor,
+              dbName,
+            },
+            {
+              error: normalizedError,
+              response: responseData,
+            },
+          );
           errorOccurred = true;
           // Do NOT persist failed outputs in history: delete the created OUTPUT row and remove notification
           return deleteByIDOutputTable(dbName, [outputId])
