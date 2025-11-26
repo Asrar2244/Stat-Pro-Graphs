@@ -285,7 +285,7 @@ const AvailableListRender: FC<{
 
     // Separate selected and unselected items
     availableList.forEach((value, key) => {
-      if (value) {
+    if (value) {
         movList.set(key, true);
         // Keep in available list but uncheck it
         newAvailableList.set(key, false);
@@ -380,11 +380,11 @@ const FieldListRender: FC<{
   const handleFieldListChange = (list: Map<string, boolean>, listName?: string) => {
     setModel({
       dataFormat: {
-        ...dataFormat,
-        [modelKey]: {
-          ...dataFormat[modelKey],
+      ...dataFormat,
+      [modelKey]: {
+        ...dataFormat[modelKey],
           [fieldKey]: list,
-        }
+      }
       }
     });
   };
@@ -436,7 +436,7 @@ const FieldListRender: FC<{
       >
         {t('remove', { ns: 'pairedTTestAanalysis' })}
       </Button>
-    </div>
+      </div>
   );
 };
 

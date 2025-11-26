@@ -52,6 +52,19 @@ const useModalLayout = makeStyles({
   body: {
     ...shorthands.padding(0),
   },
+  closeButton: {
+    fontSize: '20px',
+    minWidth: '32px',
+    minHeight: '32px',
+    '&:hover': {
+      color: tokens.colorPaletteRedForeground1,
+      backgroundColor: tokens.colorPaletteRedBackground3,
+    },
+    '&:hover:active': {
+      color: tokens.colorPaletteRedForeground1,
+      backgroundColor: tokens.colorPaletteRedBackground2,
+    },
+  },
 });
 
 const sizeConversion = (size: 'small' | 'medium' | 'large' | undefined): string => {
@@ -85,7 +98,7 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
           <div className={classes.header}>
             <DialogTitle>{title}</DialogTitle>
             <DialogTrigger disableButtonEnhancement>
-              <Button appearance="subtle" icon={<RiCloseLine />} />
+              <Button appearance="subtle" icon={<RiCloseLine />} className={classes.closeButton} />
             </DialogTrigger>
           </div>
         )}

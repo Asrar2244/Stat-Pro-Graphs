@@ -75,6 +75,11 @@ const TTestComponent = lazy(() =>
     default: modules.TTestComponent,
   })),
 );
+const SampleSizeOutput = lazy(() =>
+  import('./sample-size').then((modules) => ({
+    default: modules.SampleSizeOutput,
+  })),
+);
 
 interface IOutputSelection extends IToolBar {
   id: number;
@@ -93,7 +98,8 @@ const load: any = {
   estimationOfModules: <EstimationOfModule />,
   pairwiseComparisonModules: <PairwiseComparisonOfModules />,
   descriptiveStatistics: <DescriptiveStatistics />,
-  tTestModule: <TTestComponent />
+  tTestModule: <TTestComponent />,
+  sampleSize: <SampleSizeOutput />
 };
 export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...props }) => {
   const { config } = useActiveNode([]);

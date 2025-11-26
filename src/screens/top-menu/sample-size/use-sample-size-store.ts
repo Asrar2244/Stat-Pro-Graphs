@@ -10,7 +10,6 @@ import {
   ISampleSizeResult,
   SampleSizeTestType,
 } from './types';
-import { useAnalyzeSave } from '@hooks';
 
 const initValues = {
   ttestForm: {
@@ -125,56 +124,21 @@ export const useSampleSizeStore = create<ISampleSizeStore>((set, get) => ({
     set(cloneDeep(initValues));
   },
 
-  calculateSampleSize: async (test: SampleSizeTestType, queueFor: string, queueType: string, id: string) => {
-    set((state) => ({ ...state, isLoading: true, error: '', sampleSize: null }));
-    try {
-      let formData: ITTestForm | IProportionForm | IPairedTTestForm | IAnovaForm | IChiSquareForm;
-      switch (test) {
-        case 'ttest-sample-size':
-          formData = get().ttestForm;
-          break;
-        case 'proportion-sample-size':
-          formData = get().proportionForm;
-          break;
-        case 'paired-ttest-sample-size':
-          formData = get().pairedTTestForm;
-          break;
-        case 'anova-sample-size':
-          formData = get().anovaForm;
-          break;
-        case 'chi-square-sample-size':
-          formData = get().chiSquareForm;
-          break;
-        default:
-          throw new Error('Unknown test type');
-      }
-
-      // Create parameters in the same format as regression
-      const parameters = {
-        operation: 'sample_size',
-        test_type: test,
-        parameters: formData,
-        // Add any additional parameters needed for sample size
-        input_data_type: 'parameters', // Sample size doesn't need data files
-      };
-
-      // Use the same queued task system as regression
-      const { execute } = useAnalyzeSave();
-      await execute(
-        'sample_size_calculation', // tabName
-        parameters,
-        {
-          queueFor,
-          url: `/api/analysis`,
-          method: 'POST',
-          queueType,
-        },
-        id,
-      );
-
-      set((state) => ({ ...state, isLoading: false, error: '' }));
-    } catch (error) {
-      set((state) => ({ ...state, error: error instanceof Error ? error.message : 'Calculation failed', isLoading: false, sampleSize: null }));
+  // Get form data for a specific test type
+  getFormData(test: SampleSizeTestType): ITTestForm | IProportionForm | IPairedTTestForm | IAnovaForm | IChiSquareForm {
+    switch (test) {
+      case 'ttest-sample-size':
+        return get().ttestForm;
+      case 'proportion-sample-size':
+        return get().proportionForm;
+      case 'paired-ttest-sample-size':
+        return get().pairedTTestForm;
+      case 'anova-sample-size':
+        return get().anovaForm;
+      case 'chi-square-sample-size':
+        return get().chiSquareForm;
+      default:
+        throw new Error('Unknown test type');
     }
   },
 })); 

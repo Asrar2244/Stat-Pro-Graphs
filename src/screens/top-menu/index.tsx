@@ -176,7 +176,7 @@ const TopMenus: FC = (props) => {
                           </Fragment>
                         );
                       } else {
-                        return (
+  return (
                           <Fragment key={item.id}>
                             <CreateSubMenu
                               key={item.id}
@@ -195,15 +195,15 @@ const TopMenus: FC = (props) => {
             </>
           </Menu>
         ))}
-      </div>
+            </div>
       {/* Render TestsDropdownPanel outside of Menu components to prevent click bubbling */}
       {testsOpen && (
         <TestsDropdownPanel open={testsOpen} onClose={() => setTestsOpen(false)} setMenuItem={setMenuItem} />
-      )}
+          )}
       <div className={classes.tools}>
         <CommonMessages />
         <MinMaxClose />
-      </div>
+        </div>
 
     </div>
   );
