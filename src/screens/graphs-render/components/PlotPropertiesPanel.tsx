@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';``
 import { 
   Button, 
   Field, 
@@ -22,7 +22,8 @@ import {
   DEFAULT_PLOT_PROPERTIES,
   ScatterPointProperties,
   RegressionLineProperties,
-  ErrorBarProperties
+  ErrorBarProperties,
+  Mesh3DProperties
 } from '../utils/plotProperties';
 
 interface PlotPropertiesPanelProps {
@@ -31,6 +32,7 @@ interface PlotPropertiesPanelProps {
   hasRegression: boolean;
   hasErrorBars: boolean;
   isCategoryPlot: boolean;
+  graphConfig?: any;
 }
 
 export const PlotPropertiesPanel: FC<PlotPropertiesPanelProps> = ({
@@ -38,13 +40,22 @@ export const PlotPropertiesPanel: FC<PlotPropertiesPanelProps> = ({
   onPropertiesChange,
   hasRegression,
   hasErrorBars,
-  isCategoryPlot
+  isCategoryPlot,
+  graphConfig
 }) => {
   const [expandedSections, setExpandedSections] = useState({
     scatter: true,
     regression: false,
-    errorBar: false
+    errorBar: false,
+    mesh3d: false
   });
+
+  // Track if color scale has been changed from original
+  const [colorScaleChanged, setColorScaleChanged] = useState(false);
+  
+  // Track original color scale from graph config
+  const originalColorScale = properties.mesh3d?.originalColorScale || properties.mesh3d?.colorScale || 'viridis';
+  
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
@@ -74,8 +85,43 @@ export const PlotPropertiesPanel: FC<PlotPropertiesPanelProps> = ({
     });
   };
 
+  const updateMesh3DProperties = (updates: Partial<Mesh3DProperties>) => {
+    // Track if color scale is being changed
+    if (updates.colorScale !== undefined && updates.colorScale !== originalColorScale) {
+      setColorScaleChanged(true);
+    }
+    
+    const updatedMesh3d = { 
+      ...properties.mesh3d, 
+      ...updates,
+      // Preserve original color scale
+      originalColorScale: properties.mesh3d?.originalColorScale || originalColorScale
+    };
+    
+    onPropertiesChange({
+      ...properties,
+      mesh3d: updatedMesh3d
+    });
+  };
+
+  // Reset to original color scale
+  const resetColorScale = () => {
+    setColorScaleChanged(false);
+    updateMesh3DProperties({ colorScale: originalColorScale });
+  };
+
   const resetToDefaults = () => {
-    onPropertiesChange(DEFAULT_PLOT_PROPERTIES);
+    setColorScaleChanged(false);
+    // Reset to defaults but preserve the original color scale
+    const resetProperties = {
+      ...DEFAULT_PLOT_PROPERTIES,
+      mesh3d: {
+        ...DEFAULT_PLOT_PROPERTIES.mesh3d,
+        colorScale: originalColorScale,
+        originalColorScale: originalColorScale
+      }
+    };
+    onPropertiesChange(resetProperties);
   };
 
   return (
@@ -341,6 +387,207 @@ export const PlotPropertiesPanel: FC<PlotPropertiesPanelProps> = ({
                   checked={properties.errorBar.showInLegend}
                   onChange={(_, data) => updateErrorBarProperties({ showInLegend: Boolean(data.checked) })}
                 />
+              </Field>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 3D Mesh Properties */}
+      {properties.mesh3d && (
+        <div style={{ marginBottom: tokens.spacingVerticalM }}>
+          <div 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              cursor: 'pointer',
+              padding: tokens.spacingVerticalS,
+              backgroundColor: expandedSections.mesh3d ? tokens.colorNeutralBackground2 : 'transparent',
+              borderRadius: tokens.borderRadiusSmall,
+              border: `1px solid ${tokens.colorNeutralStroke2}`
+            }}
+            onClick={() => toggleSection('mesh3d')}
+          >
+            <MdShowChart style={{ marginRight: tokens.spacingHorizontalS }} />
+            <Text size={300} weight="medium">3D Mesh Properties</Text>
+            {expandedSections.mesh3d ? <MdExpandLess /> : <MdExpandMore />}
+          </div>
+          
+          {expandedSections.mesh3d && (
+            <div style={{ 
+              padding: tokens.spacingVerticalS,
+              paddingLeft: tokens.spacingHorizontalM,
+              borderLeft: `2px solid ${tokens.colorNeutralStroke2}`
+            }}>
+              <Field label="Surface Type" size="small">
+                <Dropdown
+                  value={properties.mesh3d.surfaceType}
+                  onOptionSelect={(_, data) => updateMesh3DProperties({ surfaceType: data.optionValue as any })}
+                >
+                  <Option value="surface">Surface</Option>
+                  <Option value="mesh">Mesh</Option>
+                  <Option value="wireframe">Wireframe</Option>
+                </Dropdown>
+              </Field>
+
+              <Field label="Color Scale" size="small">
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <Dropdown
+                    value={properties.mesh3d.colorScale}
+                    onOptionSelect={(_, data) => updateMesh3DProperties({ colorScale: data.optionValue as string })}
+                    style={{ flex: 1 }}
+                  >
+                    {/* Show only selected color scale initially, or all if changed */}
+                    {!colorScaleChanged ? (
+                      <Option 
+                        value={properties.mesh3d.colorScale}
+                        text={properties.mesh3d.colorScale.charAt(0).toUpperCase() + properties.mesh3d.colorScale.slice(1)}
+                      >
+                        {properties.mesh3d.colorScale.charAt(0).toUpperCase() + properties.mesh3d.colorScale.slice(1)}
+                      </Option>
+                    ) : (
+                      <>
+                        {/* Original scientific scales */}
+                        <Option value="viridis" text="Viridis">Viridis</Option>
+                        <Option value="plasma" text="Plasma">Plasma</Option>
+                        <Option value="inferno" text="Inferno">Inferno</Option>
+                        <Option value="magma" text="Magma">Magma</Option>
+                        <Option value="cividis" text="Cividis">Cividis</Option>
+                        <Option value="turbo" text="Turbo">Turbo</Option>
+                        <Option value="jet" text="Jet">Jet</Option>
+                        <Option value="hot" text="Hot">Hot</Option>
+                        <Option value="cool" text="Cool">Cool</Option>
+                        <Option value="rainbow" text="Rainbow">Rainbow</Option>
+                        
+                        {/* Scientific sequential scales */}
+                        <Option value="blues" text="Blues">Blues</Option>
+                        <Option value="greens" text="Greens">Greens</Option>
+                        <Option value="reds" text="Reds">Reds</Option>
+                        <Option value="oranges" text="Oranges">Oranges</Option>
+                        <Option value="purples" text="Purples">Purples</Option>
+                        <Option value="greys" text="Greys">Greys</Option>
+                        
+                        {/* Diverging scales */}
+                        <Option value="rdbu" text="Red-Blue">Red-Blue</Option>
+                        <Option value="rdylbu" text="Red-Yellow-Blue">Red-Yellow-Blue</Option>
+                        <Option value="spectral" text="Spectral">Spectral</Option>
+                        <Option value="rdylgn" text="Red-Yellow-Green">Red-Yellow-Green</Option>
+                        
+                        {/* Professional scales */}
+                        <Option value="piyg" text="Pink-Yellow-Green">Pink-Yellow-Green</Option>
+                        <Option value="prgn" text="Purple-Green">Purple-Green</Option>
+                        <Option value="brbg" text="Brown-Green">Brown-Green</Option>
+                        
+                        {/* Medical/Scientific scales */}
+                        <Option value="bone" text="Bone">Bone</Option>
+                        <Option value="copper" text="Copper">Copper</Option>
+                        <Option value="pink" text="Pink">Pink</Option>
+                        
+                        {/* Seasonal scales */}
+                        <Option value="spring" text="Spring">Spring</Option>
+                        <Option value="summer" text="Summer">Summer</Option>
+                        <Option value="autumn" text="Autumn">Autumn</Option>
+                        <Option value="winter" text="Winter">Winter</Option>
+                        
+                        {/* Professional data visualization scales */}
+                        <Option value="tab10" text="Tab10">Tab10</Option>
+                        <Option value="set1" text="Set1">Set1</Option>
+                        <Option value="set2" text="Set2">Set2</Option>
+                        <Option value="set3" text="Set3">Set3</Option>
+                      </>
+                    )}
+                  </Dropdown>
+                  
+                  {/* Show expand button if not changed yet */}
+                  {!colorScaleChanged && (
+                    <Button
+                      appearance="subtle"
+                      size="small"
+                      onClick={() => setColorScaleChanged(true)}
+                      title="Show all color scales"
+                    >
+                      More...
+                    </Button>
+                  )}
+                  
+                  {/* Show reset button if changed */}
+                  {colorScaleChanged && (
+                    <Button
+                      appearance="subtle"
+                      size="small"
+                      onClick={resetColorScale}
+                      title="Reset to original color scale"
+                    >
+                      Reset
+                    </Button>
+                  )}
+                </div>
+              </Field>
+
+              <Field label="Opacity" size="small">
+                <Slider
+                  min={0.1}
+                  max={1}
+                  step={0.1}
+                  value={properties.mesh3d.opacity}
+                  onChange={(_, data) => updateMesh3DProperties({ opacity: data.value })}
+                />
+                <Text size={200}>{Math.round(properties.mesh3d.opacity * 100)}%</Text>
+              </Field>
+
+              <Field label="Contour Options" size="small">
+                <Checkbox
+                  label="Show contours"
+                  checked={properties.mesh3d.showContours}
+                  onChange={(_, data) => updateMesh3DProperties({ showContours: Boolean(data.checked) })}
+                />
+                {properties.mesh3d.showContours && (
+                  <div style={{ marginTop: tokens.spacingVerticalS }}>
+                    <Text size={200}>Contour Opacity</Text>
+                    <Slider
+                      min={0.1}
+                      max={1}
+                      step={0.1}
+                      value={properties.mesh3d.contourOpacity}
+                      onChange={(_, data) => updateMesh3DProperties({ contourOpacity: data.value })}
+                    />
+                    <Text size={200}>{Math.round(properties.mesh3d.contourOpacity * 100)}%</Text>
+                  </div>
+                )}
+              </Field>
+
+              <Field label="Lighting Options" size="small">
+                <Checkbox
+                  label="Enable lighting"
+                  checked={properties.mesh3d.lighting}
+                  onChange={(_, data) => updateMesh3DProperties({ lighting: Boolean(data.checked) })}
+                />
+                <Checkbox
+                  label="Smooth shading"
+                  checked={properties.mesh3d.smoothShading}
+                  onChange={(_, data) => updateMesh3DProperties({ smoothShading: Boolean(data.checked) })}
+                />
+              </Field>
+
+              <Field label="Grid Options" size="small">
+                <Checkbox
+                  label="Show grid"
+                  checked={properties.mesh3d.showGrid}
+                  onChange={(_, data) => updateMesh3DProperties({ showGrid: Boolean(data.checked) })}
+                />
+                {properties.mesh3d.showGrid && (
+                  <div style={{ marginTop: tokens.spacingVerticalS }}>
+                    <Text size={200}>Grid Opacity</Text>
+                    <Slider
+                      min={0.1}
+                      max={1}
+                      step={0.1}
+                      value={properties.mesh3d.gridOpacity}
+                      onChange={(_, data) => updateMesh3DProperties({ gridOpacity: data.value })}
+                    />
+                    <Text size={200}>{Math.round(properties.mesh3d.gridOpacity * 100)}%</Text>
+                  </div>
+                )}
               </Field>
             </div>
           )}

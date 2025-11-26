@@ -103,6 +103,8 @@ export interface Mesh3DProperties {
   showGrid?: boolean;
   /** Grid opacity (0-1) */
   gridOpacity?: number;
+  /** Original color scale from graph config */
+  originalColorScale?: string;
 }
 
 export interface PlotSpecificProperties {
@@ -190,12 +192,31 @@ export const DEFAULT_PLOT_PROPERTIES: PlotSpecificProperties = {
 /**
  * Get plot properties with defaults applied
  */
-export const getPlotProperties = (liveProps?: LiveProperties): PlotSpecificProperties => {
+export const getPlotProperties = (liveProps?: LiveProperties, graphConfig?: any): PlotSpecificProperties => {
   if (!liveProps?.plotSpecific) {
     return DEFAULT_PLOT_PROPERTIES;
   }
 
-  return {
+  // Extract 3D mesh properties from graph config if available
+  // Priority: root-level properties (from modal) > meshConfig properties (from form)
+  const mesh3dFromConfig = graphConfig ? {
+    surfaceType: graphConfig.surfaceType || graphConfig.meshConfig?.surfaceType,
+    opacity: graphConfig.opacity || graphConfig.meshConfig?.opacity,
+    colorScale: graphConfig.colorScale || graphConfig.meshConfig?.colorScale,
+    showContours: graphConfig.showContours || graphConfig.meshConfig?.showContours,
+    contourOpacity: graphConfig.contourOpacity || graphConfig.meshConfig?.contourOpacity,
+    lighting: graphConfig.lighting || graphConfig.meshConfig?.lighting,
+    smoothShading: graphConfig.smoothShading || graphConfig.meshConfig?.smoothShading,
+    showGrid: graphConfig.showGrid || graphConfig.meshConfig?.showGrid,
+    gridOpacity: graphConfig.gridOpacity || graphConfig.meshConfig?.gridOpacity
+  } : {};
+  
+  console.log('🔍 getPlotProperties - graphConfig:', graphConfig);
+  console.log('🔍 getPlotProperties - mesh3dFromConfig:', mesh3dFromConfig);
+  console.log('🔍 getPlotProperties - liveProps.plotSpecific.mesh3d:', liveProps.plotSpecific.mesh3d);
+  
+
+  const result = {
     scatter: {
       ...DEFAULT_PLOT_PROPERTIES.scatter,
       ...liveProps.plotSpecific.scatter
@@ -210,9 +231,13 @@ export const getPlotProperties = (liveProps?: LiveProperties): PlotSpecificPrope
     },
     mesh3d: {
       ...DEFAULT_PLOT_PROPERTIES.mesh3d,
-      ...liveProps.plotSpecific.mesh3d
+      ...liveProps.plotSpecific.mesh3d,
+      ...mesh3dFromConfig  // Modal config should override live props for 3D mesh
     }
   };
+  
+  console.log('🔍 getPlotProperties - Final mesh3d:', result.mesh3d);
+  return result;
 };
 
 /**

@@ -47,6 +47,8 @@ interface IGraphProperties {
     is3DMesh: boolean;
   };
   currentSubType?: string;
+  // Add graphConfig for 3D mesh properties synchronization
+  graphConfig?: any;
   currentLegendLabels?: string[]; // Current legend labels from the graph
   currentDataFormat?: string; // Current data format
   currentVariables?: { xNames: string[]; yNames: string[]; categoryNames: string[] }; // Current variables
@@ -56,7 +58,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
   properties,
 }) => {
   const classes = useGraphPropertiesClasses();
-  const { graphProperties, resetAllProperties, updateGraphProperty, updatePlotSpecificProperty, updateLegendTextEntry, updateLegendSeriesColor, getCurrentPlotType, getDetectedPlotFeatures, currentSubType, currentLegendLabels, currentDataFormat, currentVariables } = properties;
+  const { graphProperties, resetAllProperties, updateGraphProperty, updatePlotSpecificProperty, updateLegendTextEntry, updateLegendSeriesColor, getCurrentPlotType, getDetectedPlotFeatures, currentSubType, currentLegendLabels, currentDataFormat, currentVariables, graphConfig } = properties;
   
   const currentPlotType = getCurrentPlotType(currentSubType);
   const detectedFeatures = getDetectedPlotFeatures(currentSubType);
@@ -72,6 +74,41 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
   
   // Data format properties state
   const [dataFormatProperties, setDataFormatProperties] = useState<DataFormatProperties | null>(null);
+  
+  // Track if 3D mesh properties have been initialized to prevent overriding user changes
+  const [mesh3dInitialized, setMesh3dInitialized] = useState(false);
+  
+  // Reset initialization flag when graph changes
+  useEffect(() => {
+    setMesh3dInitialized(false);
+  }, [graphConfig]);
+
+  // Initialize 3D mesh properties from graphConfig if available (only once)
+  useEffect(() => {
+    if (graphConfig && detectedFeatures.is3DMesh && !mesh3dInitialized) {
+      // Extract 3D mesh properties from graph config
+      const mesh3dFromConfig = {
+        surfaceType: graphConfig.surfaceType || graphConfig.meshConfig?.surfaceType,
+        opacity: graphConfig.opacity || graphConfig.meshConfig?.opacity,
+        colorScale: graphConfig.colorScale || graphConfig.meshConfig?.colorScale,
+        showContours: graphConfig.showContours || graphConfig.meshConfig?.showContours,
+        contourOpacity: graphConfig.contourOpacity || graphConfig.meshConfig?.contourOpacity,
+        lighting: graphConfig.lighting || graphConfig.meshConfig?.lighting,
+        smoothShading: graphConfig.smoothShading || graphConfig.meshConfig?.smoothShading,
+        showGrid: graphConfig.showGrid || graphConfig.meshConfig?.showGrid,
+        gridOpacity: graphConfig.gridOpacity || graphConfig.meshConfig?.gridOpacity
+      };
+
+      // Update properties only if they are undefined (not yet set)
+      Object.entries(mesh3dFromConfig).forEach(([key, value]) => {
+        if (value !== undefined && plotProps.mesh3d?.[key as keyof typeof mesh3dFromConfig] === undefined) {
+          updatePlotSpecificProperty('mesh3d', key as keyof typeof mesh3dFromConfig, value);
+        }
+      });
+      
+      setMesh3dInitialized(true);
+    }
+  }, [graphConfig, detectedFeatures.is3DMesh, updatePlotSpecificProperty, mesh3dInitialized]);
   
   // Create series labels based on current data format and variables
   const seriesLabels = currentDataFormat && currentVariables ? 

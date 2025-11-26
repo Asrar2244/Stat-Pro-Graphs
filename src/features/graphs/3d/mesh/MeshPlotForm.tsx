@@ -27,6 +27,16 @@ export const MeshPlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
     setDataFormat,
     setAvailableVariables,
     setGraphConfig,
+    // Mesh configuration values
+    opacity,
+    surfaceType,
+    colorScale,
+    showContours,
+    contourOpacity,
+    lighting,
+    smoothShading,
+    showGrid,
+    gridOpacity,
   } = useMeshPlotStore();
   
   // Load project variables
@@ -146,15 +156,15 @@ export const MeshPlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
       dataFormat: dataFormat || 'XYZ Triplets',
       variables: { x: xVars, y: yVars, z: zVars },
       meshConfig: {
-        opacity: 0.9,
-        surfaceType: 'mesh',
-        colorScale: 'viridis',
-        showContours: true,
-        contourOpacity: 0.6,
-        lighting: false,
-        smoothShading: true,
-        showGrid: true,
-        gridOpacity: 0.5,
+        opacity,
+        surfaceType,
+        colorScale,
+        showContours,
+        contourOpacity,
+        lighting,
+        smoothShading,
+        showGrid,
+        gridOpacity,
       },
     });
   }, [
@@ -163,7 +173,17 @@ export const MeshPlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
     xVariableList, 
     yVariableList, 
     zVariableList,
-    setGraphConfig
+    setGraphConfig,
+    // Include mesh configuration values
+    opacity,
+    surfaceType,
+    colorScale,
+    showContours,
+    contourOpacity,
+    lighting,
+    smoothShading,
+    showGrid,
+    gridOpacity,
   ]);
 
   return (

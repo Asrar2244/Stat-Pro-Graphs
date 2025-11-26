@@ -20,6 +20,7 @@ import {
   applyRegressionProperties,
   applyErrorBarProperties
 } from '../common';
+import { applyMesh3DProperties } from '../mesh3DProperties';
 import { transformArrayForScale } from '../axisTransforms';
 import { is3DMeshTrace } from '../common/plotlyCommon';
 import { plotWithCategory } from '../categoryScatterPlot';
@@ -67,7 +68,9 @@ export const orchestrateTraceGeneration = async (
   const getSeriesSymbol = (i: number) => seriesConfig.symbols[i % seriesConfig.symbols.length];
 
   // Get plot properties for live customization
-  const plotProperties = getPlotProperties(liveProps);
+  const plotProperties = getPlotProperties(liveProps, graphConfig);
+  console.log('🔍 Trace Orchestrator - Plot properties:', plotProperties);
+  console.log('🔍 Trace Orchestrator - Graph config:', graphConfig);
 
   // Store legend labels in graph config
   if (legendLabels.length > 0) {
@@ -221,6 +224,14 @@ export const orchestrateTraceGeneration = async (
           
           } else {
           }
+
+        // Apply 3D mesh properties if trace is a 3D mesh
+        if (isCurrentTrace3D && plotProperties.mesh3d) {
+          console.log('🔍 Trace Orchestrator - Applying 3D mesh properties:', plotProperties.mesh3d);
+          console.log('🔍 Trace Orchestrator - Original trace:', finalTrace);
+          finalTrace = applyMesh3DProperties(finalTrace, plotProperties.mesh3d);
+          console.log('🔍 Trace Orchestrator - Updated trace:', finalTrace);
+        }
 
         traces.push(finalTrace);
         } catch (error) {

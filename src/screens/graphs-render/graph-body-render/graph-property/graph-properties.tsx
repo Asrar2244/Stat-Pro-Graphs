@@ -54,6 +54,7 @@ export const GraphProperties = ({ graphConfig, plotProperties, onPlotPropertiesC
               hasRegression={hasRegression}
               hasErrorBars={hasErrorBars}
               isCategoryPlot={isCategoryPlot}
+              graphConfig={graphConfig}
             />
           </div>
         </AccordionPanel>

@@ -34,7 +34,7 @@ interface IStartProStore {
     subTitle?: string;
     config?: any;
   };
-  setSelectedGraphRun: (id: number, title: string, subTitle?: string) => void;
+  setSelectedGraphRun: (id: number, title: string, subTitle?: string, config?: any) => void;
   // Graph data cache for persistence
   graphDataCache: {
     [key: string]: any;
@@ -59,9 +59,9 @@ export const useStartProStore = create<IStartProStore>((set, get) => ({
       return { renderLatestRun: x }
     })
   },
-  setSelectedGraphRun(id: number, title: string, subTitle?: string) {
+  setSelectedGraphRun(id: number, title: string, subTitle?: string, config?: any) {
     set(() => {
-      return { selectedGraphRun: { id, title, subTitle } }
+      return { selectedGraphRun: { id, title, subTitle, config } }
     })
   },
   setGraphDataCache(key: string, data: any) {

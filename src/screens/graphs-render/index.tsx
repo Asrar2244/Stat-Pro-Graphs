@@ -71,6 +71,11 @@ export const GraphsRender: FC = () => {
         if (!runId) return;
         const { fetchSingleGraph } = await import('@backend/graphs');
         const row = await fetchSingleGraph(dbName, runId);
+        // Update selectedGraphRun with config from database
+        if (row?.config) {
+          setSelectedGraphRun(selectedGraphRun.id, selectedGraphRun.title, selectedGraphRun.subTitle, row.config);
+        }
+        
         const saved = row?.properties;
         if (saved && Object.keys(saved).length > 0) {
           setPropertiesByRun(prev => ({ ...prev, [runId]: saved }));
@@ -92,7 +97,9 @@ export const GraphsRender: FC = () => {
         ...baseProps.plotSpecific,
         mesh3d: {
           ...(tools.graphProperties.plotSpecific.mesh3d),
-          ...(baseProps.plotSpecific?.mesh3d)
+          ...(baseProps.plotSpecific?.mesh3d),
+          // Preserve original color scale from baseProps if it exists
+          originalColorScale: baseProps.plotSpecific?.mesh3d?.originalColorScale || tools.graphProperties.plotSpecific.mesh3d?.originalColorScale
         }
       }
     };
@@ -241,6 +248,10 @@ export const GraphsRender: FC = () => {
             [plotType]: {
               ...(base.plotSpecific as any)[plotType],
               [key]: value,
+              // Preserve originalColorScale for mesh3d properties
+              ...(plotType === 'mesh3d' && {
+                originalColorScale: (base.plotSpecific as any)[plotType]?.originalColorScale
+              })
             },
           },
         },
@@ -261,6 +272,10 @@ export const GraphsRender: FC = () => {
           [plotType]: {
             ...(base.plotSpecific as any)[plotType],
             [key]: value,
+            // Preserve originalColorScale for mesh3d properties
+            ...(plotType === 'mesh3d' && {
+              originalColorScale: (base.plotSpecific as any)[plotType]?.originalColorScale
+            })
           },
         },
       } as any;
@@ -386,6 +401,8 @@ export const GraphsRender: FC = () => {
                 yNames: selectedGraphRun.config?.graphConfig?.variables?.y || [],
                 categoryNames: selectedGraphRun.config?.graphConfig?.variables?.category || []
               },
+              // Pass the graph config for 3D mesh properties synchronization
+              graphConfig: selectedGraphRun.config?.graphConfig,
             }}
           />
         </div>
