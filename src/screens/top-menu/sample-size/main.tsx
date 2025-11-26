@@ -1,11 +1,16 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Button, Input, Label, Checkbox } from '@fluentui/react-components';
 import { useSampleSizeStyles } from './styles-hook/use-sample-size-styles';
 import { useSampleSizeEnhanced } from './use-sample-size-enhanced';
 import { SampleSizeModalProps, SampleSizeTestType } from './types';
+import { ProjectSelectionModal } from './project-selection-modal';
+import { useSaveSampleSize } from './use-save-sample-size';
+import { useModal } from '@hooks';
 
 export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
   const classes = useSampleSizeStyles();
+  const projectModal = useModal({});
+  const { saveSampleSizeToProject } = useSaveSampleSize();
   
   const {
     ttestForm,
@@ -21,8 +26,42 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
     calculateSampleSize,
   } = useSampleSizeEnhanced();
 
+  // Debug: log error state
+  console.log('[SampleSizeModal] Render - error:', error, 'isLoading:', isLoading, 'sampleSize:', sampleSize);
+
   // Check if current test can be executed
   const currentTestCanRun = canUseBackend(selectedTest as SampleSizeTestType);
+
+  // Get test title for display
+  const getTestTitle = (test: string): string => {
+    const titles: Record<string, string> = {
+      'ttest-sample-size': 'T-Test',
+      'proportion-sample-size': 'Proportion Test',
+      'paired-ttest-sample-size': 'Paired T-Test',
+      'anova-sample-size': 'ANOVA',
+      'chi-square-sample-size': 'Chi-Square Test',
+    };
+    return titles[test] || 'Sample Size';
+  };
+
+  // Handle save to project
+  const handleSelectProject = async (projectId: number, projectName: string) => {
+    if (!sampleSize) return;
+    
+    const testTitle = getTestTitle(selectedTest);
+    await saveSampleSizeToProject(
+      projectId,
+      projectName,
+      testTitle,
+      selectedTest as SampleSizeTestType,
+      sampleSize,
+      ttestForm,
+      proportionForm,
+      pairedTTestForm,
+      anovaForm,
+      chiSquareForm
+    );
+  };
 
   const renderTTestForm = () => (
     <div className={classes.formContainer}>
@@ -77,6 +116,14 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
         </div>
       </div>
       <div className={classes.calculateButtonContainer}>
+        <Button
+          appearance="outline"
+          className={classes.saveButton}
+          onClick={() => projectModal.openModal()}
+          disabled={!sampleSize}
+        >
+          Save to Report
+        </Button>
         <Button
           appearance="subtle"
           className={classes.calculateButton}
@@ -152,6 +199,14 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
         />
       </div>
       <div className={classes.calculateButtonContainer}>
+        <Button
+          appearance="outline"
+          className={classes.saveButton}
+          onClick={() => projectModal.openModal()}
+          disabled={!sampleSize}
+        >
+          Save to Report
+        </Button>
         <Button
           appearance="subtle"
           className={classes.calculateButton}
@@ -235,6 +290,14 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
       </div>
       <div className={classes.calculateButtonContainer}>
         <Button
+          appearance="outline"
+          className={classes.saveButton}
+          onClick={() => projectModal.openModal()}
+          disabled={!sampleSize}
+        >
+          Save to Report
+        </Button>
+        <Button
           appearance="subtle"
           className={classes.calculateButton}
           onClick={() => calculateSampleSize('paired-ttest-sample-size', 'sample_size', 'sample_size', 'paired_ttest_' + Date.now())}
@@ -316,6 +379,14 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
       </div>
       <div className={classes.calculateButtonContainer}>
         <Button
+          appearance="outline"
+          className={classes.saveButton}
+          onClick={() => projectModal.openModal()}
+          disabled={!sampleSize}
+        >
+          Save to Report
+        </Button>
+        <Button
           appearance="subtle"
           className={classes.calculateButton}
           onClick={() => calculateSampleSize('anova-sample-size', 'sample_size', 'sample_size', 'anova_' + Date.now())}
@@ -365,6 +436,14 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
       </div>
       <div className={classes.calculateButtonContainer}>
         <Button
+          appearance="outline"
+          className={classes.saveButton}
+          onClick={() => projectModal.openModal()}
+          disabled={!sampleSize}
+        >
+          Save to Report
+        </Button>
+        <Button
           appearance="subtle"
           className={classes.calculateButton}
           onClick={() => calculateSampleSize('chi-square-sample-size', 'sample_size', 'sample_size', 'chi_square_' + Date.now())}
@@ -393,10 +472,13 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
     }
   };
 
+  // Debug logging
+  console.log('[SampleSizeModal] Rendering with:', { error, isLoading, sampleSize: sampleSize ? 'has value' : 'null' });
+
   return (
     <div className={classes.sampleSizeWrapper}>
-      {/* Error Display */}
-      {error && (
+      {/* Error Display - simplified check */}
+      {error ? (
         <div className={classes.errorCard}>
           <Label className={classes.errorLabel}>
             Error
@@ -405,7 +487,7 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
             {error}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Sample Size Result Display */}
       {sampleSize && (
@@ -414,6 +496,13 @@ export const SampleSizeModal: FC<SampleSizeModalProps> = ({ selectedTest }) => {
           <div className={classes.resultValue}>{typeof sampleSize === 'object' ? sampleSize.sample_size : sampleSize}</div>
         </div>
       )}
+      
+      {/* Project Selection Modal */}
+      <ProjectSelectionModal
+        open={projectModal.open}
+        onClose={projectModal.closeModal}
+        onSelectProject={handleSelectProject}
+      />
 
       {/* Loading Message */}
       {isLoading && (
