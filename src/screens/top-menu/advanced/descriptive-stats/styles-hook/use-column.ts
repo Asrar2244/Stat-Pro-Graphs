@@ -2,7 +2,7 @@ import { makeStyles, tokens, shorthands } from '@fluentui/react-components';
 
 export const useMainStyles = makeStyles({
   mainLayout: {
-    gap: tokens.spacingHorizontalM,
+    gap: tokens.spacingHorizontalS,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -11,10 +11,58 @@ export const useMainStyles = makeStyles({
     marginTop: '1em',
     width: '100%',
     '& fieldset': {
-      flex: '1',
-      minWidth: '20em',
+      width: '50%',
     },
-    // ...shorthands.padding(tokens.spacingHorizontalM),
+  },
+  sectionAvailable: {
+    display: 'flex',
+    width: '100%',
+    flexDirection: 'column',
+    gap: tokens.spacingHorizontalS,
+    '& .select-size': {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    '& .dependent-list': {
+      display: 'flex',
+      flexDirection: 'column',
+      height: '340px',
+      overflowY: 'auto',
+      ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralBackground1Pressed),
+      scrollbarWidth: 'thin',
+      scrollbarColor: `${tokens.colorNeutralStroke1} transparent`,
+      '&::-webkit-scrollbar': {
+        width: '8px',
+        backgroundColor: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        borderRadius: '8px',
+        backgroundColor: tokens.colorNeutralStroke1,
+        backgroundClip: 'padding-box',
+        border: '2px solid transparent',
+      },
+      '&::-webkit-scrollbar-thumb:hover': {
+        backgroundColor: tokens.colorNeutralStroke2,
+      },
+      '&::-webkit-scrollbar-track': {
+        backgroundColor: 'transparent',
+      },
+    },
+  },
+  sendButtons: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: tokens.spacingHorizontalM,
+    width: '100%',
+    '& button': {
+      width: '100%',
+    },
+  },
+  removeButtonClass: {
+    backgroundColor: tokens.colorPaletteRedBorder1,
+    width: '100%',
   },
   list: {
     height: '90%',
@@ -108,5 +156,8 @@ export const useMainStyles = makeStyles({
   },
   availableList: {
     height: '32vh',
+  },
+  removeButtons: {
+    backgroundColor: tokens.colorPaletteRedBorder1,
   },
 });

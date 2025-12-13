@@ -14,6 +14,7 @@ const CREATE_PROJECTS_TABLE = `CREATE TABLE IF NOT EXISTS PROJECTS (
   isActive SMALLINT NOT NULL DEFAULT 1,
   isOpenedData SMALLINT NOT NULL DEFAULT 0,
   isOpenedOutput SMALLINT NOT NULL DEFAULT 0,
+  isOpenedGraphs SMALLINT NOT NULL DEFAULT 0,
   workspacePath TEXT NULL DEFAULT '',
   createdDateTime TEXT NOT NULL,
   modifiedDateTime TEXT NOT NULL
@@ -127,6 +128,33 @@ export class Database {
         }
       } catch (error) {
         console.warn('Error creating table:', error);
+      }
+    }
+
+    // Run migrations for existing tables (add missing columns)
+    await this.runMigrations(database);
+  }
+
+  // Run migrations to add missing columns to existing tables
+  private async runMigrations(database: DB) {
+    const migrations = [
+      // Add isOpenedGraphs column to PROJECTS table if it doesn't exist
+      'ALTER TABLE PROJECTS ADD COLUMN isOpenedGraphs SMALLINT NOT NULL DEFAULT 0',
+    ];
+
+    for (const migration of migrations) {
+      try {
+        await database.execute(migration);
+        if (MODE === 'development') {
+          console.log('Migration applied:', migration.substring(0, 50) + '...');
+        }
+      } catch (error: any) {
+        // Ignore "duplicate column" errors - column already exists
+        if (!error?.message?.includes('duplicate column')) {
+          if (MODE === 'development') {
+            console.log('Migration skipped (column may already exist):', error?.message);
+          }
+        }
       }
     }
   }

@@ -156,5 +156,5 @@ export interface ISampleSizeStore {
   setSampleSize: (result: ISampleSizeResult | null) => void;
   setError: (error: string) => void;
   resetAll: () => void;
-  calculateSampleSize: (test: SampleSizeTestType, queueFor: string, queueType: string, id: string) => Promise<void>;
+  getFormData: (test: SampleSizeTestType) => ITTestForm | IProportionForm | IPairedTTestForm | IAnovaForm | IChiSquareForm;
 } 

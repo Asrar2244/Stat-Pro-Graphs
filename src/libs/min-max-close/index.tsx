@@ -13,11 +13,10 @@ const MinMaxCloseComponent: FC = () => {
   const classes = useMinMaxCloseStyles();
   const classMerge = mergeClasses(classes.ul, classes.liCloseMaxMin);
   const platformIsMac = useMemo(() => {
-    const platform = platformInfo();
-    const isMac = platform === 'mac';
-    return isMac;
+    return platformInfo() === 'mac';
   }, []);
   
+
   const onHandleMinimize = async () => {
     try {
       await getCurrentWindow().minimize();
@@ -34,17 +33,11 @@ const MinMaxCloseComponent: FC = () => {
     }
   };
 
-  const onHandleToggleFullscreen = async () => {
+  const onHandleToggleMaximize = async () => {
     try {
-      const window = getCurrentWindow();
-      const isFullscreen = await window.isFullscreen();
-      if (isFullscreen) {
-        await window.setFullscreen(false);
-      } else {
-        await window.setFullscreen(true);
-      }
+      await getCurrentWindow().toggleMaximize();
     } catch (e) {
-      console.warn('Toggle fullscreen failed:', e);
+      console.warn('Toggle maximize failed:', e);
     }
   };
   
@@ -66,7 +59,7 @@ const MinMaxCloseComponent: FC = () => {
             <li onClick={onHandleMinimize}>
               <Minimize />
             </li>
-            <li onClick={onHandleToggleFullscreen}>
+            <li onClick={onHandleToggleMaximize}>
               <Maximize />
             </li>
             <li data-close-window="true" onClick={onHandleClose}>

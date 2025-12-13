@@ -13,6 +13,7 @@ import {
   makeStyles,
   tokens,
   shorthands,
+  Text,
 } from '@fluentui/react-components';
 import { IModal } from '@hooks';
 import { RiCloseLine } from 'react-icons/ri';
@@ -34,15 +35,39 @@ export interface IDialogProps extends IModal, PropsWithChildren {
 }
 
 const useModalLayout = makeStyles({
+  surface: {
+    boxShadow: `0 8px 32px ${tokens.colorNeutralStroke1}40, 0 4px 16px ${tokens.colorNeutralStroke1}30`,
+    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
+    ...shorthands.borderRadius(tokens.borderRadiusLarge),
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
   header: {
     flex: 1,
     display: 'flex',
     gap: '16px',
     justifyContent: 'space-between',
     ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralForegroundDisabled),
+    background: `linear-gradient(to bottom, ${tokens.colorNeutralBackground1}, ${tokens.colorNeutralBackground2})`,
+    ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalL),
+    ...shorthands.borderRadius(tokens.borderRadiusLarge, tokens.borderRadiusLarge, 0, 0),
   },
   body: {
     ...shorthands.padding(0),
+    overflow: 'hidden',
+    maxHeight: 'none',
+  },
+  closeButton: {
+    fontSize: '20px',
+    minWidth: '32px',
+    minHeight: '32px',
+    '&:hover': {
+      color: tokens.colorPaletteRedForeground1,
+      backgroundColor: tokens.colorPaletteRedBackground3,
+    },
+    '&:hover:active': {
+      color: tokens.colorPaletteRedForeground1,
+      backgroundColor: tokens.colorPaletteRedBackground2,
+    },
   },
 });
 
@@ -183,18 +208,19 @@ const FloatingModal: FC<{
             minHeight: '48px'
           }}
         >
-          <DialogTitle style={{ 
+          <Text style={{ 
             color: tokens.colorNeutralForeground1,
             margin: 0,
             fontSize: tokens.fontSizeBase300,
             fontWeight: tokens.fontWeightSemibold
           }}>
             {title}
-          </DialogTitle>
+          </Text>
           <Button 
             appearance="subtle" 
             icon={<RiCloseLine />} 
             onClick={closeModal}
+            className={classes.closeButton}
             style={{ marginLeft: tokens.spacingHorizontalM }}
           />
         </div>
@@ -279,12 +305,12 @@ export const Modal: FC<IDialogProps & DialogProps> = ({
   // Default modal behavior
   return (
     <Dialog open={open} onOpenChange={(_event, data) => data.open === false && closeModal()} {...others}>
-      <DialogSurface style={{ maxWidth: sizeConversion(size), width: 'fit-content' }}>
+      <DialogSurface className={classes.surface} style={{ maxWidth: sizeConversion(size), width: 'fit-content' }}>
         {showTitle && (
           <div className={classes.header}>
             <DialogTitle>{title}</DialogTitle>
             <DialogTrigger disableButtonEnhancement>
-              <Button appearance="subtle" icon={<RiCloseLine />} />
+              <Button appearance="subtle" icon={<RiCloseLine />} className={classes.closeButton} />
             </DialogTrigger>
           </div>
         )}

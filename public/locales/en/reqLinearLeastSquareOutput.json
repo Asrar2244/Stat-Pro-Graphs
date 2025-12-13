@@ -32,5 +32,8 @@
   "t-ucl": "UCL",
   "t-upl": "UPL",
   "t-fvalue": "First Order Autocorrelation",
-  "t-col5": "this is test input {{col5}}"
+  "t-col5": "this is test input {{col5}}",
+  "errorBackendOutputTitle": "Backend Output (Raw String)",
+  "errorBackendOutputDescription": "The backend did not return a structured result. Only the raw output string is available:",
+  "errorBackendOutputFooter": "To see full tables and statistics, please ask your backend developer to return a JSON object as described in the documentation."
 }

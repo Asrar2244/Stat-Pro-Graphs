@@ -73,24 +73,8 @@ export const topMenuConfig = {
       ],
     },
     {
-      id: 'edit',
-      label: 'edit',
-    },
-    {
-      id: 'view',
-      label: 'view',
-    },
-    {
-      id: 'data',
-      label: 'data',
-    },
-    {
-      id: 'utilities',
-      label: 'utilities',
-    },
-    {
       id: 'tests',
-      label: 'tests',
+      label: 'Analysis',
       submenu: [
         {
           id: "options",
@@ -111,7 +95,7 @@ export const topMenuConfig = {
     },
     {
       id: 'graphs',
-      label: 'graphs',
+      label: 'Graphs',
       submenu: [
         {
           id: 'graphView',
@@ -119,14 +103,6 @@ export const topMenuConfig = {
           codeExecute: exporters.openNewTabForGraph,
         },
       ],
-    },
-    {
-      id: 'quick_access',
-      label: 'quickAccess',
-    },
-    {
-      id: 'window',
-      label: 'window',
     },
     {
       id: 'help',

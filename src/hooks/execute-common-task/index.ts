@@ -67,9 +67,15 @@ export const useExecuteTask = (): void => {
               notificationId: notificationID,
             });
 
-            await outputUpdateResult(`${task?.tabName}`, [JSON.stringify(response), outputId]);
-            if (response.error) {
-              setCommonMsg({ spinner: false, message: response.error as string });
+            if (response.status !== 200) {
+              setCommonMsg({ spinner: false, message: `Request failed with status ${response.status}` });
+              return;
+            }
+
+            const responseData = response.data || response;
+            await outputUpdateResult(`${task?.tabName}`, [JSON.stringify(responseData), outputId]);
+            if (responseData.error) {
+              setCommonMsg({ spinner: false, message: responseData.error as string });
             } else {
               setCommonMsg({
                 spinner: false,

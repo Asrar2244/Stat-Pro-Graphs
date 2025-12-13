@@ -4,6 +4,8 @@ export interface GraphsDropdownPanelProps {
   open: boolean;
   onClose: () => void;
   setMenuItem: (item: string) => void;
+  pinned?: boolean;
+  setPinned?: (pinned: boolean) => void;
 }
 
 export type GraphsTab = '2d' | '3d' | 'advanced';

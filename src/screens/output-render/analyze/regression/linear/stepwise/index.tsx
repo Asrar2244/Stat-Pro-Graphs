@@ -6,6 +6,7 @@ import configurations from './configuration/stepwise-config.json';
 import { useTranslation } from 'react-i18next';
 import { ITableCreator, IGraph } from '@utils';
 import { useGraphConfig } from '@hooks';
+import { renderRawBackendOutput } from '@outputRegressionCommon/render-raw-backend-output';
 
 export const StepwiseRegression: FC = () => {
   const context = useContext(OutputRenderContext);
@@ -15,18 +16,9 @@ export const StepwiseRegression: FC = () => {
   const result = context?.selectedRun?.result;
 
   if (typeof result === 'string') {
-    return (
-      <div className={classes.regressionsLayout} style={{ padding: 24, color: '#b71c1c', background: '#fff3e0', borderRadius: 8 }}>
-        <h2>Backend Output (Raw String)</h2>
-        <p style={{ fontWeight: 'bold', marginBottom: 8 }}>
-          The backend did not return a structured result. Only the raw output string is available:
-        </p>
-        <pre style={{ fontSize: 18, color: '#263238', background: '#eceff1', padding: 16, borderRadius: 4 }}>{result}</pre>
-        <p style={{ marginTop: 16, color: '#b71c1c' }}>
-          To see full tables and statistics, please ask your backend developer to return a JSON object as described in the documentation.
-        </p>
-      </div>
-    );
+    return renderRawBackendOutput(result, {
+      containerClassName: classes.regressionsLayout,
+    });
   }
 
   return (

@@ -63,7 +63,7 @@ const StepwiseComponent: FC<IModal> = ({ ...props }) => {
   return (
     <Modal
       key={id}
-      modalType="modal"
+      modalType="alert"
       {...props}
       cancelLabel={t('close', { ns: 'regLinearStepwise' })}
       okLabel={t('ok', { ns: 'regLinearStepwise' })}

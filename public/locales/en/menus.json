@@ -7,6 +7,8 @@
   "emptyDataView": "Empty Data View",
   "utilities": "Utilities",
   "graph": "Graph",
+  "graphs": "Graphs",
+  "Graphs": "Graphs",
   "analyze": "Analyze",
   "advanced": "Advanced",
   "quickAccess": "Quick Access",
@@ -33,6 +35,8 @@
   "descriptiveStat": "Descriptive Stats",
   "graphView": "Graph View",
   "test": "Test",
+  "tests": "Analysis",
+  "Analysis": "Analysis",
   "t-test": "T-Test",
   "options": "Options",
   "paired-t-test": "Paired T Test"

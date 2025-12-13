@@ -51,19 +51,25 @@ const ForwardStepwiseComponent: FC<IModal> = ({ ...props }) => {
     props.closeModal();
   };
 
-  const onOkModal = (): void => {
+  const onOkModal = async (): Promise<void> => {
     if (!id && id !== '') {
       props.closeModal();
       return;
     }
-    executeAnalysis(id);
-    props.closeModal();
-    setBlockUI({ value: true, msg: 'processRequest', hideOk: true });
+    
+    try {
+      props.closeModal();
+      setBlockUI({ value: true, msg: 'processRequest', hideOk: true });
+      await executeAnalysis(id);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start analysis. Please try again.';
+      setBlockUI({ value: true, msg: errorMessage, hideOk: false });
+    }
   };
   return (
     <Modal
       key={id}
-      modalType="modal"
+      modalType="alert"
       {...props}
       cancelLabel={t('close', { ns: 'regLinearForwardStepwise' })}
       okLabel={t('ok', { ns: 'regLinearForwardStepwise' })}

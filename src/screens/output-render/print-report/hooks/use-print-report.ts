@@ -1,30 +1,51 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { OutputRenderContext } from '../../context';
-import type { IPrintSection, IDatabaseConnectionInfo } from '../types';
+import { OutputRenderContext } from '@context';
+import type { IPrintSection, IDatabaseConnectionInfo } from '@outputPrintReport/types';
 import { 
   getAllDatabaseData, 
   generateCompleteDataFromDatabase, 
   extractSectionContent,
   getAllStylesheets 
-} from '../utils';
+} from '@outputPrintReport/utils';
+import { generatePrintReportHTML, type IPrintReportTemplateData } from '@outputPrintReport/utils/template';
+import { useStartProStore } from '@store/main-store';
 
 export const usePrintReport = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const context = useContext(OutputRenderContext);
   const { t } = useTranslation('outputToolBar');
+  const setBlockUI = useStartProStore((state) => state.setBlockUI);
+  const toolsElRef = useRef<HTMLElement | null>(null);
+  const titleContainerRef = useRef<HTMLElement | null>(null);
+  const subtitleRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!toolsElRef.current) {
+      toolsElRef.current = document.querySelector('.output-tools') as HTMLElement | null;
+    }
+
+    const toolsEl = toolsElRef.current;
+    const container = toolsEl?.previousElementSibling as HTMLElement | null;
+    titleContainerRef.current = container ?? null;
+
+    const subtitle = container?.querySelector('small') as HTMLElement | null;
+    subtitleRef.current = subtitle ?? null;
+  }, [context?.selectedRun]);
 
   const generateReport = async (selectedSections: IPrintSection[]) => {
     if (selectedSections.length === 0) {
-      alert(t('noSectionsSelected') || 'Please select at least one section to print.');
+      setBlockUI({
+        value: true,
+        msg: t('noSectionsSelected'),
+        hideOk: false,
+      });
       return;
     }
 
     setIsGenerating(true);
     
     try {
-      console.log('🎯 PrintReport: Generating for', selectedSections.length, 'sections');
-
       // Get database connection info
       const connectionInfo: IDatabaseConnectionInfo = {
         tabName: context?.selectedRun?.tabName || '',
@@ -32,29 +53,41 @@ export const usePrintReport = () => {
       };
 
       // Validate connection info
-      if (!connectionInfo.tabName) {
-        console.warn('⚠️ No tab name available, will use DOM fallback');
-      }
+      // If no tab name available, will use DOM fallback
 
       // 🚀 Get ALL database data upfront to ensure complete data access
       const allDatabaseData = await getAllDatabaseData(connectionInfo);
 
-      // 🚀 Create a new window for printing
-      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      // 🚀 Create a hidden iframe for printing (works better in desktop apps)
+      const printFrame = document.createElement('iframe');
+      printFrame.style.position = 'fixed';
+      printFrame.style.right = '0';
+      printFrame.style.bottom = '0';
+      printFrame.style.width = '0';
+      printFrame.style.height = '0';
+      printFrame.style.border = '0';
+      printFrame.style.opacity = '0';
+      printFrame.style.pointerEvents = 'none';
+      document.body.appendChild(printFrame);
+      
+      const printWindow = printFrame.contentWindow;
       if (!printWindow) {
-        alert('Please allow popups to use the print feature');
+        document.body.removeChild(printFrame);
+        setBlockUI({
+          value: true,
+          msg: t('printError'),
+          hideOk: false,
+        });
         return;
       }
 
       // Read toolbar title exactly as shown (left side of toolbar)
       const computeToolbarTitle = (): string | null => {
         try {
-          const toolsEl = document.querySelector('.output-tools');
-          const titleContainer = toolsEl?.previousElementSibling as HTMLElement | null;
+          const titleContainer = titleContainerRef.current;
           if (!titleContainer) return null;
           const mainTitle = (titleContainer.childNodes[0]?.textContent || '').trim();
-          const small = titleContainer.querySelector('small');
-          const sub = (small?.textContent || '').trim();
+          const sub = (subtitleRef.current?.textContent || '').trim();
           if (mainTitle && sub) return `${mainTitle} ${sub}`; // matches "X @: Y"
           if (mainTitle) return mainTitle;
           return null;
@@ -67,371 +100,12 @@ export const usePrintReport = () => {
       // 🚀 Get all existing stylesheets
       const allStyles = getAllStylesheets();
 
-      // 🚀 Start building the HTML content
-      let htmlContent = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>${context?.selectedRun?.outputFor || 'Statistical Analysis'} - Report</title>
-            <style>
-              /* Original application styles */
-              ${allStyles}
-              
-                             /* Additional print-specific styles */
-               body {
-                 background: white !important;
-                 color: black !important;
-                 margin: 20px;
-                 font-family: inherit;
-                 /* A4 page optimization */
-                 max-width: 210mm;
-                 min-height: 297mm;
-               }
-              
-              .print-header {
-                text-align: center;
-                margin-bottom: 30px;
-                page-break-after: avoid;
-              }
-              
-              .print-title {
-                font-size: 24pt;
-                font-weight: bold;
-                color: black !important;
-                margin-bottom: 10px;
-              }
-              
-              .print-date {
-                font-size: 12pt;
-                color: #666;
-                margin-bottom: 20px;
-              }
-              .print-subtitle {
-                font-size: 13pt;
-                color: #333;
-                margin-top: -6px;
-                margin-bottom: 4px;
-                font-weight: 500;
-              }
-              
-                             .print-section {
-                 margin-bottom: 32px;
-                 padding: 10px 0;
-                 border: none;
-                 border-radius: 0;
-                 background: transparent;
-                 page-break-inside: avoid;
-                 overflow: visible;
-                 clear: both;
-                 /* A4 page optimization */
-                 max-width: 190mm;
-                 box-sizing: border-box;
-               }
-              
-              .print-section-title {
-                font-size: 18pt;
-                font-weight: 700;
-                color: #111 !important;
-                margin: 0 0 14px 0;
-                padding-bottom: 6px;
-                border-bottom: 1px solid #999;
-                page-break-after: avoid;
-              }
-              /* KV auto table styling (hook styles mirror) */
-              .kv-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-              .kv-th { border: 1px solid #999; background: #f3f3f3; padding: 6px; text-align: left; }
-              .kv-td { border: 1px solid #999; padding: 6px; vertical-align: top; word-break: break-word; white-space: normal; }
-              
-              .print-section-content {
-                position: relative;
-                overflow: visible;
-                background: transparent;
-                padding: 0;
-                border: none;
-                border-radius: 0;
-              }
-              
-              /* Ensure all content is visible and properly styled for print */
-              * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                color-adjust: exact !important;
-              }
-              
-              /* EXPAND ALL SCROLLABLE CONTENT FOR PRINTING */
-              .print-section-content * {
-                max-height: none !important;
-                overflow: visible !important;
-                overflow-x: visible !important;
-                overflow-y: visible !important;
-                box-shadow: none !important;
-                outline: none !important;
-              }
-              /* Remove Card/Preview decorative borders completely */
-              .print-section-content .fui-Card,
-              .print-section-content .fui-CardPreview,
-              .print-section-content [class*="Card"],
-              .print-section-content [class*="Preview"] {
-                border: none !important;
-                box-shadow: none !important;
-                background: transparent !important;
-              }
-              .print-section-content .fui-Card::before,
-              .print-section-content .fui-Card::after,
-              .print-section-content .fui-CardPreview::before,
-              .print-section-content .fui-CardPreview::after {
-                content: none !important;
-                display: none !important;
-              }
-              
-              /* Ensure tables show all rows and columns align consistently */
-              .print-section-content table {
-                height: auto !important;
-                max-height: none !important;
-                overflow: visible !important;
-                width: 100% !important;
-                table-layout: fixed !important;
-                border-collapse: collapse !important;
-                border-spacing: 0 !important;
-                border: none !important; /* remove outer box entirely */
-              }
-              
-              /* Make sure table bodies show all content */
-              .print-section-content tbody, 
-              .print-section-content thead, 
-              .print-section-content tfoot {
-                height: auto !important;
-                max-height: none !important;
-                overflow: visible !important;
-                display: table-row-group !important;
-              }
-              
-              /* Handle very wide tables */
-              .print-section-content table {
-                word-wrap: break-word;
-                word-break: break-word;
-                font-size: 10pt !important;
-              }
-              
-              .print-section-content th,
-              .print-section-content td {
-                box-sizing: border-box;
-                padding: 6px !important;
-                overflow-wrap: anywhere;
-                word-break: break-word;
-                white-space: normal;
-                border: 1px solid #999 !important; /* clearer grid lines for print */
-                font-variant-numeric: tabular-nums;
-                line-height: 1.2;
-              }
-              .print-section-content th { text-align: left !important; background: #f7f7f7; }
-              .print-section-content td.numeric { text-align: right !important; }
-
-              /* Slightly tighter typography for very wide tables generated with class 'wide-table' */
-              .print-section-content table.wide-table {
-                font-size: 8.5pt !important;
-              }
-              .print-section-content table.wide-table th,
-              .print-section-content table.wide-table td {
-                padding: 4px !important;
-              }
-              
-                                                                                                                       /* ENHANCED CHART/SVG STYLING FOR PRINT WITH COMPLETE WIDTH but AUTO HEIGHT to fit content */
-                 .print-section-content svg {
-                   width: 100% !important;
-                   height: auto !important;
-                   max-width: 170mm !important;
-                   min-width: 100% !important;
-                   max-height: none !important;
-                   min-height: 150px !important;
-                   display: block !important;
-                   margin: 15px 0 !important;
-                   background: white !important;
-                   border: none !important;
-                   padding: 15px !important;
-                   page-break-inside: avoid !important;
-                   left: 0 !important;
-                   right: 0 !important;
-                   transform: none !important;
-                 }
-              
-                                                                                                                       .print-section-content canvas {
-                   width: 100% !important;
-                   height: auto !important;
-                   max-width: 170mm !important;
-                   min-width: 100% !important;
-                   max-height: none !important;
-                   display: block !important;
-                   margin: 15px 0 !important;
-                   border: none !important;
-                   page-break-inside: avoid !important;
-                   left: 0 !important;
-                   right: 0 !important;
-                   transform: none !important;
-                 }
-              
-                                                                                                                       /* Plotly specific styling with COMPLETE WIDTH but CONTROLLED HEIGHT */
-                 .print-section-content .js-plotly-plot,
-                 .print-section-content [class*="plotly"],
-                 .print-section-content [data-unformatted-plot] {
-                   width: 100% !important;
-                   max-width: 170mm !important;
-                   min-width: 100% !important;
-                   height: 450px !important;
-                   min-height: 360px !important;
-                   max-height: 520px !important;
-                   overflow: visible !important;
-                   display: block !important;
-                   margin: 20px 0 !important;
-                   background: white !important;
-                   border: none !important;
-                   padding: 15px !important;
-                   page-break-inside: avoid !important;
-                   left: 0 !important;
-                   right: 0 !important;
-                   transform: none !important;
-                 }
-              
-              /* Chart containers within cards */
-              .print-section-content .fui-CardPreview {
-                overflow: visible !important;
-                height: auto !important;
-                max-height: none !important;
-              }
-              
-                                                                                                                       /* Enhanced chart styling for print with COMPLETE WIDTH but CONTROLLED HEIGHT */
-                 .print-section-content [class*="chart"],
-                 .print-section-content [class*="graph"],
-                 .print-section-content [class*="visualization"] {
-                   width: 100% !important;
-                   max-width: 170mm !important;
-                   min-width: 100% !important;
-                   height: 450px !important;
-                   min-height: 360px !important;
-                   max-height: 520px !important;
-                   overflow: visible !important;
-                   display: block !important;
-                   background: white !important;
-                   border: none !important;
-                   margin: 15px 0 !important;
-                   padding: 15px !important;
-                   page-break-inside: avoid !important;
-                   left: 0 !important;
-                   right: 0 !important;
-                   transform: none !important;
-                 }
-              
-                                                                                                                       /* Ensure chart images are properly sized with COMPLETE WIDTH but CONTROLLED HEIGHT */
-                 .print-section-content img[src*="data:image"] {
-                   width: 100% !important;
-                   max-width: 170mm !important;
-                   min-width: 100% !important;
-                   height: 350px !important;
-                   min-height: 300px !important;
-                   max-height: 450px !important;
-                   display: block !important;
-                   margin: 15px 0 !important;
-                   border: none !important;
-                   page-break-inside: avoid !important;
-                   left: 0 !important;
-                   right: 0 !important;
-                   transform: none !important;
-                 }
-                 
-                 /* Ensure SVG elements are properly sized with COMPLETE WIDTH but CONTROLLED HEIGHT */
-                 .print-section-content svg {
-                   width: 100% !important;
-                   max-width: 170mm !important;
-                   min-width: 100% !important;
-                   height: 350px !important;
-                   min-height: 300px !important;
-                   max-height: 450px !important;
-                   display: block !important;
-                   margin: 15px 0 !important;
-                   border: none !important;
-                   page-break-inside: avoid !important;
-                   left: 0 !important;
-                   right: 0 !important;
-                   transform: none !important;
-                 }
-              
-                             /* Hide interactive elements and toolbars */
-               button, 
-               [role="button"],
-               [class*="Button"],
-               [class*="Menu"],
-               [class*="menu"],
-               [class*="fui-CardFooter"],
-               .modebar,
-               .plotly-modebar,
-               [class*="toolbar"],
-               [class*="tools"] {
-                 display: none !important;
-               }
-               
-               /* CRITICAL: Force empty chart containers to be compact */
-               .print-section-content [class*="plotly"]:empty,
-               .print-section-content [class*="chart"]:empty,
-               .print-section-content [class*="graph"]:empty,
-               .print-section-content [class*="visualization"]:empty {
-                 height: 120px !important;
-                 min-height: 120px !important;
-                 max-height: 120px !important;
-                 background: #f8f9fa !important;
-                 border: 1px solid #dee2e6 !important;
-                 border-radius: 4px !important;
-                 display: flex !important;
-                 align-items: center !important;
-                 justify-content: center !important;
-                 color: #6c757d !important;
-                 font-size: 14px !important;
-                 font-style: italic !important;
-                 text-align: center !important;
-                 padding: 20px !important;
-                 margin: 10px 0 !important;
-               }
-               
-               /* Force empty SVG containers to be compact */
-               .print-section-content svg:empty,
-               .print-section-content svg:not(:has(*)) {
-                 height: 120px !important;
-                 min-height: 120px !important;
-                 max-height: 120px !important;
-                 background: #f8f9fa !important;
-                 border: 1px solid #dee2e6 !important;
-                 border-radius: 4px !important;
-               }
-              
-                             @page {
-                 margin: 0.5in;
-                 size: A4;
-               }
-              
-              @media print {
-                .print-section { page-break-inside: avoid; }
-                .print-section-title { page-break-after: avoid; }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="print-header">
-              <div class="print-title">${context?.selectedRun?.outputFor || 'Statistical Analysis'} - Report</div>
-              ${toolbarTitle ? `<div class=\"print-subtitle\">${toolbarTitle}</div>` : (context?.selectedRun?.tabName ? `<div class=\"print-subtitle\">${context?.selectedRun?.outputFor || ''}: ${context?.selectedRun?.tabName}</div>` : '')}
-              <div class="print-date">Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</div>
-            </div>
-      `;
-
       // 🚀 Process selected sections with COMPLETE DATABASE DATA
+      const sections: Array<{ title: string; content: string }> = [];
+      
       for (let i = 0; i < selectedSections.length; i++) {
         const section = selectedSections[i];
-        console.log(`📊 Section ${i + 1}/${selectedSections.length}: ${section.title}`);
         
-        htmlContent += `
-          <div class="print-section">
-            <div class="print-section-title">${section.title}</div>
-            <div class="print-section-content">
-        `;
-
         try {
           // 🎯 PRIORITY 1: Try to get complete data from database
           let sectionContent = '';
@@ -449,26 +123,33 @@ export const usePrintReport = () => {
             sectionContent = extractedContent || '';
           }
           
-          htmlContent += sectionContent;
-          // processed
+          sections.push({
+            title: section.title,
+            content: sectionContent || '',
+          });
           
         } catch (error) {
-          console.error(`❌ Error processing section "${section.title}":`, error);
-          htmlContent += `<p style="color: red; font-style: italic;">⚠️ Error loading complete data for this section.</p>`;
+          sections.push({
+            title: section.title,
+            content: '<p style="color: red; font-style: italic;">⚠️ Error loading complete data for this section.</p>',
+          });
         }
-
-        htmlContent += `
-            </div>
-          </div>
-        `;
       }
-      
-      console.log(`🎉 Prepared ${selectedSections.length} sections`);
 
-      htmlContent += `
-          </body>
-        </html>
-      `;
+      // 🚀 Generate HTML using template function
+      const now = new Date();
+      const templateData: IPrintReportTemplateData = {
+        title: context?.selectedRun?.outputFor || 'Statistical Analysis',
+        toolbarTitle,
+        tabName: context?.selectedRun?.tabName,
+        outputFor: context?.selectedRun?.outputFor,
+        generatedDate: now.toLocaleDateString(),
+        generatedTime: now.toLocaleTimeString(),
+        allStyles,
+        sections,
+      };
+
+      const htmlContent = generatePrintReportHTML(templateData);
 
              // Write content to the new window
        printWindow.document.write(htmlContent);
@@ -486,8 +167,8 @@ export const usePrintReport = () => {
           await delay(1200); // initial grace
 
           while (Date.now() - start < maxWaitMs) {
-            if (printWindow.closed) break;
             const printDoc = printWindow.document;
+            if (!printDoc) break;
             const svgs = printDoc.querySelectorAll('svg');
             const canvases = printDoc.querySelectorAll('canvas');
             let ready = true;
@@ -498,22 +179,38 @@ export const usePrintReport = () => {
             await delay(checkIntervalMs);
           }
 
-          console.log('🖨️ Printing...');
           printWindow.focus();
           printWindow.print();
-          setTimeout(() => { try { printWindow.close(); } catch {} }, 500);
+          // Clean up iframe after printing
+          setTimeout(() => {
+            try {
+              if (printFrame.parentNode) {
+                document.body.removeChild(printFrame);
+              }
+            } catch {}
+          }, 1000);
         } catch (e) {
-          console.warn('⚠️ Fallback: printing without additional wait due to error', e);
-          try { printWindow.print(); } catch {}
-          try { printWindow.close(); } catch {}
+          // Fallback: printing without additional wait due to error
+          try { 
+            printWindow.print(); 
+          } catch {}
+          // Clean up iframe
+          try {
+            if (printFrame.parentNode) {
+              document.body.removeChild(printFrame);
+            }
+          } catch {}
         }
       };
 
       void waitAndPrint();
 
     } catch (error) {
-      console.error('❌ Fatal error generating report:', error);
-      alert('Error generating report. Please check the console for details.');
+      setBlockUI({
+        value: true,
+        msg: t('printError'),
+        hideOk: false,
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -544,6 +241,7 @@ export const usePrintReport = () => {
 // Styled to match the app's Fluent-like look. Hold Shift while right‑clicking to use the system menu.
 (() => {
   let menuEl: HTMLDivElement | null = null;
+  let contextStyleEl: HTMLStyleElement | null = null;
   let focusIndex = 0;
   const hideMenu = () => {
     if (menuEl) {
@@ -600,12 +298,16 @@ export const usePrintReport = () => {
 
       [printItem, sysItem, divider, cancelItem].forEach((n) => menuEl!.appendChild(n));
 
-      // Inject CSS once in a <style> tag if not present
-      if (!document.getElementById('sp-context-style')) {
-        const style = document.createElement('style');
-        style.id = 'sp-context-style';
-        style.textContent = `.sp-context-menu{position:fixed;z-index:99999;background:#fff;border:1px solid #e3e3e3;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.16);min-width:220px;font:14px system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#1a1a1a;overflow:hidden}.sp-context-title{padding:8px 12px;font-weight:600;font-size:12px;opacity:.7}.sp-context-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;color:#1a1a1a}.sp-context-item:hover{background:#f4f4f4}.sp-context-shortcut{font-size:12px;color:#6b7280;margin-left:16px}.sp-context-divider{height:1px;background:#e3e3e3;margin:4px 0}`;
-        document.head.appendChild(style);
+      // Inject CSS once in a <style> tag if not present - use cached reference
+      if (!contextStyleEl) {
+        contextStyleEl = document.getElementById('sp-context-style') as HTMLStyleElement | null;
+        if (!contextStyleEl) {
+          const style = document.createElement('style');
+          style.id = 'sp-context-style';
+          style.textContent = `.sp-context-menu{position:fixed;z-index:99999;background:#fff;border:1px solid #e3e3e3;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.16);min-width:220px;font:14px system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#1a1a1a;overflow:hidden}.sp-context-title{padding:8px 12px;font-weight:600;font-size:12px;opacity:.7}.sp-context-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;color:#1a1a1a}.sp-context-item:hover{background:#f4f4f4}.sp-context-shortcut{font-size:12px;color:#6b7280;margin-left:16px}.sp-context-divider{height:1px;background:#e3e3e3;margin:4px 0}`;
+          document.head.appendChild(style);
+          contextStyleEl = style;
+        }
       }
       document.body.appendChild(menuEl);
       document.addEventListener('click', hideMenu);

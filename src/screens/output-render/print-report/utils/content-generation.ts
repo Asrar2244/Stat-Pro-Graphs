@@ -10,17 +10,14 @@ export const generateCompleteDataFromDatabase = async (
   sectionTitle: string,
   connectionInfo?: IDatabaseConnectionInfo
 ): Promise<string | null> => {
-  console.log(`🚀 Generating complete data for section: "${sectionTitle}"`);
   
   // Find the best matching data for this section
   const sectionData = findBestDataForSection(allData, sectionTitle, connectionInfo?.outputTableName);
   
   if (!sectionData || sectionData.length === 0) {
-    console.log('❌ No data found for section');
     return null;
   }
 
-  console.log(`✅ Found ${sectionData.length} rows for section "${sectionTitle}"`);
 
   // Filter out completely empty rows
   const validData = sectionData.filter(row => {
@@ -29,7 +26,6 @@ export const generateCompleteDataFromDatabase = async (
   });
 
   if (validData.length === 0) {
-    console.log('❌ No valid data after filtering');
     return null;
   }
 
@@ -41,7 +37,6 @@ export const generateCompleteDataFromDatabase = async (
     return nonEmptyValues.length > validData.length * 0.05; // At least 5% non-empty
   });
 
-  // console.debug meta
 
   // Determine which columns are predominantly numeric to align them to the right
   const isNumericColumnByHeader = new Map<string, boolean>();
@@ -213,7 +208,6 @@ export const generateCompleteDataFromDatabase = async (
     </div>
   `;
 
-  // console.debug table rows
   return tableHTML;
 };
 
@@ -225,15 +219,34 @@ export const extractSectionContent = async (
   _sectionTitle: string,
   options: IContentExtractionOptions = {}
 ): Promise<string> => {
-  console.log('Extracting content from element with HTML length:', element.innerHTML.length);
-  console.log('Element classes:', element.className);
-  console.log('Element contains tables:', element.querySelectorAll('table').length);
-  console.log('Element contains SVGs:', element.querySelectorAll('svg').length);
+  
+  // Check if this is a sample size output (textarea/notepad type)
+  const notepadContainer = element.querySelector('[class*="notepadContainer"]') as HTMLElement | null;
+  const textarea = notepadContainer 
+    ? notepadContainer.querySelector('textarea') as HTMLTextAreaElement | null
+    : element.querySelector('textarea') as HTMLTextAreaElement | null;
+  
+  if (textarea) {
+    const textareaValue = textarea.value || textarea.textContent || '';
+    if (textareaValue.trim().length > 0) {
+      // Print exactly as-is, no formatting - just preserve whitespace and line breaks
+      // Escape HTML to prevent XSS and preserve formatting
+      const escapedValue = textareaValue
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+      
+      // Simple pre tag to preserve exact formatting
+      let html = `<pre style="margin: 0; padding: 0; font-family: monospace; white-space: pre; word-wrap: normal;">${escapedValue}</pre>`;
+      return html;
+    }
+  }
   
   // Try database extraction first if this is a table section
   const hasTable = element.querySelector('table');
   if (hasTable) {
-    console.log('🔄 Found table in DOM fallback, attempting database extraction...');
     
     try {
       // This would need connection info passed in - for now, skip database fallback
@@ -241,12 +254,10 @@ export const extractSectionContent = async (
       // if (allData.size > 0) {
       //   const completeHTML = await generateCompleteDataFromDatabase(allData, sectionTitle);
       //   if (completeHTML) {
-      //     console.log('✅ Fallback database extraction successful');
       //     return completeHTML;
       //   }
       // }
     } catch (error) {
-      console.error('❌ Error in fallback database extraction:', error);
     }
   }
   
@@ -262,7 +273,6 @@ export const extractSectionContent = async (
     const unwantedElements = clonedElement.querySelectorAll(
       'button, input[type="button"], input[type="submit"], [role="button"], [class*="fui-CardFooter"], [class*="Menu"], [class*="menu"]'
     );
-    console.log('Removing', unwantedElements.length, 'unwanted elements');
     unwantedElements.forEach(el => el.remove());
   }
 
@@ -273,44 +283,33 @@ export const extractSectionContent = async (
 
   // If snapshotting already captured charts, skip heavy re-rendering logic
   if (!didSnapshot) {
-    console.log('🎨 Processing charts with enhanced rendering (fallback)...');
     try {
       await handlePlotlyCharts(clonedElement);
-      console.log('✅ Plotly chart processing completed');
     } catch (error) {
-      console.error('❌ Error processing Plotly charts:', error);
     }
     
     try {
       handleGenericCharts(clonedElement);
-      console.log('✅ Generic chart processing completed');
     } catch (error) {
-      console.error('❌ Error processing generic charts:', error);
     }
   } else {
-    console.log('⚡ Charts snapshotted from output; skipping re-render processing.');
   }
   
   // Final waits and forced rendering are heavy; only run if charts exist
   const hasAnyCharts = !didSnapshot && !!clonedElement.querySelector('[class*="plotly"], [class*="chart"], [class*="graph"], svg, canvas');
   if (hasAnyCharts) {
-    console.log('⏳ Final wait for chart rendering completion...');
     await new Promise(resolve => setTimeout(resolve, 300));
-    console.log('🔄 Forcing chart data to load and render...');
     await forceChartDataLoading(clonedElement);
   } else {
-    console.log('⚡ Skipping final chart waits; no charts in this section.');
   }
   
   // CRITICAL: Fix empty chart containers by replacing them with compact placeholders
-  console.log('🔧 Fixing empty chart containers...');
   fixEmptyChartContainers(clonedElement);
   
   // Additional short settle
   await new Promise(resolve => setTimeout(resolve, 150));
   
   // CRITICAL: Final verification - check if we accidentally replaced charts with data
-  console.log('🔍 Final verification: checking for accidentally replaced charts...');
   await verifyChartReplacements(clonedElement);
 
   // Apply containment wrapper to the entire cloned element
@@ -345,7 +344,6 @@ export const extractSectionContent = async (
   }
 
   const finalHTML = clonedElement.outerHTML;
-  console.log('Final extracted HTML length:', finalHTML.length);
   
   return finalHTML;
 };
@@ -394,53 +392,52 @@ const buildKeyValueTableFromLines = (lines: string[]): string | null => {
  * Expand scrollable content within an element
  */
 const expandScrollableContent = (element: HTMLElement): void => {
-  console.log('🔍 Expanding scrollable content in element:', element.tagName, element.className);
-  
   const allElements = element.querySelectorAll('*');
-  let expandedCount = 0;
-  
-  allElements.forEach(el => {
+
+  allElements.forEach((el) => {
     const htmlEl = el as HTMLElement;
-    
-    // Remove height constraints that might limit content
-    if (htmlEl.style.height && (htmlEl.style.height !== 'auto' && htmlEl.style.height !== '100%')) {
-      console.log(`  📏 Removing height constraint: ${htmlEl.style.height} -> auto`);
+
+    if (htmlEl.style.height && htmlEl.style.height !== 'auto' && htmlEl.style.height !== '100%') {
       htmlEl.style.height = 'auto';
-      expandedCount++;
     }
-    
-    // Remove max-height constraints
+
     if (htmlEl.style.maxHeight && htmlEl.style.maxHeight !== 'none') {
-      console.log(`  📏 Removing max-height constraint: ${htmlEl.style.maxHeight} -> none`);
       htmlEl.style.maxHeight = 'none';
-      expandedCount++;
     }
-    
-    // Remove overflow hidden/scroll to show all content
-    if (htmlEl.style.overflow === 'hidden' || htmlEl.style.overflow === 'scroll' || htmlEl.style.overflow === 'auto') {
-      console.log(`  📜 Removing overflow constraint: ${htmlEl.style.overflow} -> visible`);
+
+    if (
+      htmlEl.style.overflow === 'hidden' ||
+      htmlEl.style.overflow === 'scroll' ||
+      htmlEl.style.overflow === 'auto'
+    ) {
       htmlEl.style.overflow = 'visible';
-      expandedCount++;
     }
-    
-    if (htmlEl.style.overflowY === 'hidden' || htmlEl.style.overflowY === 'scroll' || htmlEl.style.overflowY === 'auto') {
-      console.log(`  📜 Removing overflowY constraint: ${htmlEl.style.overflowY} -> visible`);
+
+    if (
+      htmlEl.style.overflowY === 'hidden' ||
+      htmlEl.style.overflowY === 'scroll' ||
+      htmlEl.style.overflowY === 'auto'
+    ) {
       htmlEl.style.overflowY = 'visible';
-      expandedCount++;
     }
-    
-    if (htmlEl.style.overflowX === 'hidden' || htmlEl.style.overflowX === 'scroll' || htmlEl.style.overflowX === 'auto') {
-      console.log(`  📜 Removing overflowX constraint: ${htmlEl.style.overflowX} -> visible`);
+
+    if (
+      htmlEl.style.overflowX === 'hidden' ||
+      htmlEl.style.overflowX === 'scroll' ||
+      htmlEl.style.overflowX === 'auto'
+    ) {
       htmlEl.style.overflowX = 'visible';
-      expandedCount++;
     }
-    
-    // Also check computed styles for scrollable content
+
     try {
       const computedStyle = window.getComputedStyle(htmlEl);
-      if (computedStyle.overflow === 'scroll' || computedStyle.overflow === 'auto' || 
-          computedStyle.maxHeight !== 'none' || computedStyle.height !== 'auto') {
-        console.log(`  📜 Found computed scrollable styles - forcing expansion`);
+      const isScrollable =
+        computedStyle.overflow === 'scroll' ||
+        computedStyle.overflow === 'auto' ||
+        computedStyle.maxHeight !== 'none' ||
+        computedStyle.height !== 'auto';
+
+      if (isScrollable) {
         htmlEl.style.cssText += `
           height: auto !important;
           max-height: none !important;
@@ -448,70 +445,20 @@ const expandScrollableContent = (element: HTMLElement): void => {
           overflow-x: visible !important;
           overflow-y: visible !important;
         `;
-        expandedCount++;
       }
-    } catch (error) {
-      // Ignore errors from computed styles
-    }
-    
-    // Copy important styling properties for print
-    htmlEl.style.cssText += `
-      background-color: white !important;
-      color: black !important;
-      border-color: #333 !important;
-    `;
-  });
-  
-  // Special handling for Plotly charts
-  handlePlotlyCharts(element);
-  
-  // Handle table containers specifically
-  const tableContainers = element.querySelectorAll('div');
-  tableContainers.forEach(container => {
-    const containerEl = container as HTMLElement;
-    const table = containerEl.querySelector('table');
-    
-    if (table) {
-      const computedStyle = window.getComputedStyle(containerEl);
-      if (computedStyle.overflow === 'auto' || computedStyle.overflow === 'scroll' || 
-          computedStyle.overflowY === 'auto' || computedStyle.overflowY === 'scroll') {
-        
-        console.log('Found scrollable table container, expanding...');
-        containerEl.style.height = 'auto';
-        containerEl.style.maxHeight = 'none';
-        containerEl.style.overflow = 'visible';
-        containerEl.style.overflowY = 'visible';
-        containerEl.style.overflowX = 'visible';
-        
-        // Add container styling to keep table contained
-        containerEl.style.border = '1px solid #ddd';
-        containerEl.style.padding = '10px';
-        containerEl.style.marginBottom = '20px';
-        containerEl.style.backgroundColor = 'white';
-        
-        // Make the table show all rows
-        if (table) {
-          (table as HTMLElement).style.height = 'auto';
-          (table as HTMLElement).style.maxHeight = 'none';
-          (table as HTMLElement).style.width = '100%';
-          (table as HTMLElement).style.tableLayout = 'auto';
-        }
-      }
+    } catch {
+      // Ignore elements where computed style cannot be retrieved
     }
   });
-  
-  console.log(`✅ Content expansion complete - expanded ${expandedCount} elements`);
 };
 
 /**
  * Wait for charts to be fully loaded and rendered
  */
 const waitForChartReadiness = async (element: HTMLElement): Promise<void> => {
-  console.log('⏳ Waiting for charts to be fully ready...');
   // Fast path: if there are no charts/SVG/canvas, skip all waits
   const fastCheck = element.querySelector('[class*="plotly"], [class*="chart"], [class*="graph"], svg, canvas');
   if (!fastCheck) {
-    console.log('⚡ No charts detected in element. Skipping chart readiness waits.');
     return;
   }
   
@@ -525,7 +472,6 @@ const waitForChartReadiness = async (element: HTMLElement): Promise<void> => {
     for (const container of plotlyContainers) {
       const plotlyDiv = container as HTMLElement;
       if ((plotlyDiv as any)._fullData) {
-        console.log('✅ Chart data is loaded, brief settle wait...');
         await new Promise(resolve => setTimeout(resolve, 200));
       }
     }
@@ -534,14 +480,12 @@ const waitForChartReadiness = async (element: HTMLElement): Promise<void> => {
   // Also wait for any CSS animations or transitions to complete
   const animatedElements = element.querySelectorAll('[style*="animation"], [style*="transition"], [class*="animate"], [class*="fade"]');
   if (animatedElements.length > 0) {
-    console.log(`⏳ Found ${animatedElements.length} animated elements, waiting for animations to complete...`);
     await new Promise(resolve => setTimeout(resolve, 300));
   }
   
   // Wait for any pending image loads
   const images = element.querySelectorAll('img');
   if (images.length > 0) {
-    console.log(`⏳ Found ${images.length} images, waiting for them to load...`);
     const imagePromises = Array.from(images).map(img => {
       if (img.complete) return Promise.resolve();
       return new Promise(resolve => {
@@ -553,12 +497,10 @@ const waitForChartReadiness = async (element: HTMLElement): Promise<void> => {
   }
   
   // CRITICAL: Wait for chart data to be fully rendered
-  console.log('⏳ Waiting for chart data rendering to complete...');
   await new Promise(resolve => setTimeout(resolve, 800));
   
   // Force any lazy-loaded charts to render
   const chartElements = element.querySelectorAll('[class*="chart"], [class*="graph"], [class*="plotly"], svg, canvas');
-  console.log(`⏳ Found ${chartElements.length} chart elements, ensuring they are fully rendered...`);
   
   // Trigger any pending renders
   chartElements.forEach((chartEl) => {
@@ -572,7 +514,6 @@ const waitForChartReadiness = async (element: HTMLElement): Promise<void> => {
   // CRITICAL: Force Plotly charts to re-render if they exist
   if ((window as any).Plotly) {
     const plotlyContainers = element.querySelectorAll('div[class*="plotly"], .js-plotly-plot, [data-unformatted-plot]');
-    console.log(`🔄 Forcing ${plotlyContainers.length} Plotly charts to re-render...`);
     
     for (const container of plotlyContainers) {
       const plotlyDiv = container as HTMLElement;
@@ -589,7 +530,6 @@ const waitForChartReadiness = async (element: HTMLElement): Promise<void> => {
           (window as any).Plotly.redraw(plotlyDiv);
         }
       } catch (error) {
-        console.log('⚠️ Could not force Plotly re-render:', error);
       }
     }
     
@@ -600,14 +540,12 @@ const waitForChartReadiness = async (element: HTMLElement): Promise<void> => {
   // Final wait for rendering
   await new Promise(resolve => setTimeout(resolve, 200));
   
-  console.log('✅ Chart readiness check completed');
 };
 
 /**
  * Handle Plotly charts for printing with enhanced rendering
  */
 const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
-  console.log('🎨 Processing Plotly charts for printing with enhanced rendering...');
   
   // First, wait for charts to be fully ready
   await waitForChartReadiness(element);
@@ -615,9 +553,7 @@ const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
   // Find all potential Plotly containers
   const plotlyContainers = element.querySelectorAll('div[class*="plotly"], .js-plotly-plot, [data-unformatted-plot]');
   
-  console.log(`📊 Found ${plotlyContainers.length} potential Plotly containers`);
   if (plotlyContainers.length === 0) {
-    console.log('⚡ No Plotly containers. Skipping Plotly processing.');
     return;
   }
   
@@ -625,9 +561,6 @@ const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
   for (let index = 0; index < plotlyContainers.length; index++) {
     const container = plotlyContainers[index];
     const plotlyDiv = container as HTMLElement;
-    console.log(`🎨 Processing Plotly chart ${index + 1}:`);
-    console.log(`  - Container classes: ${plotlyDiv.className}`);
-    console.log(`  - Container ID: ${plotlyDiv.id}`);
     
                           // Force the Plotly container to be visible and properly sized with COMPLETE WIDTH but CONTROLLED HEIGHT
        plotlyDiv.style.cssText += `
@@ -652,7 +585,6 @@ const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
     // Try to force Plotly to re-render if it's available
     try {
       if ((window as any).Plotly && (plotlyDiv as any)._fullData) {
-        console.log(`  🔄 Forcing Plotly re-render for chart ${index + 1}...`);
         await new Promise(resolve => setTimeout(resolve, 500)); // Wait for any pending renders
         
                                               // Force a resize to ensure full rendering with COMPLETE WIDTH but CONTROLLED HEIGHT
@@ -665,20 +597,16 @@ const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
         
         // Wait a bit more for the re-render to complete
         await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log(`  ✅ Plotly re-render completed for chart ${index + 1}`);
       }
     } catch (error) {
-      console.log(`  ⚠️ Could not force Plotly re-render:`, error);
     }
     
     // Find SVG elements within the Plotly container
     const svgElements = plotlyDiv.querySelectorAll('svg');
-    console.log(`  - Found ${svgElements.length} SVG elements`);
     
          for (let svgIndex = 0; svgIndex < svgElements.length; svgIndex++) {
        const svg = svgElements[svgIndex];
        const svgElement = svg as SVGElement;
-       console.log(`    📈 Processing SVG ${svgIndex + 1}`);
       
              // Ensure SVG is properly sized and visible with COMPLETE WIDTH but CONTROLLED HEIGHT
        svgElement.style.cssText += `
@@ -709,7 +637,6 @@ const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
         // CRITICAL: If SVG has minimal content, reduce its height to prevent oversized empty containers
         const svgDataContent = svgElement.innerHTML;
         if (svgDataContent && svgDataContent.length < 200) {
-          console.log(`    ⚠️ SVG ${svgIndex + 1} has minimal content, reducing height to prevent oversized container`);
           svgElement.style.height = '200px !important';
           svgElement.style.minHeight = '150px !important';
         }
@@ -718,13 +645,10 @@ const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
              // Ensure SVG content is fully visible
        const svgContent = svgElement.innerHTML;
        if (svgContent && svgContent.length > 100) {
-         console.log(`    ✅ SVG ${svgIndex + 1} has substantial content (${svgContent.length} chars)`);
        } else {
-         console.log(`    ⚠️ SVG ${svgIndex + 1} has minimal content, may need more time to render`);
          
          // CRITICAL: If SVG has minimal content, try to force Plotly to render data
          if ((window as any).Plotly && (plotlyDiv as any)._fullData) {
-           console.log(`    🔄 Attempting to force data rendering for SVG ${svgIndex + 1}...`);
            try {
              // Force a complete re-render with data
              (window as any).Plotly.relayout(plotlyDiv, {
@@ -739,12 +663,9 @@ const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
              // Check if content is now available
              const newSvgContent = svgElement.innerHTML;
              if (newSvgContent && newSvgContent.length > 100) {
-               console.log(`    ✅ SVG ${svgIndex + 1} now has content after forced render (${newSvgContent.length} chars)`);
              } else {
-               console.log(`    ❌ SVG ${svgIndex + 1} still has minimal content after forced render`);
              }
            } catch (error) {
-             console.log(`    ⚠️ Could not force data rendering:`, error);
            }
                   }
        }
@@ -752,11 +673,9 @@ const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
      
      // Handle Canvas elements (backup for some chart types)
     const canvasElements = plotlyDiv.querySelectorAll('canvas');
-    console.log(`  - Found ${canvasElements.length} Canvas elements`);
     
-    canvasElements.forEach((canvas, canvasIndex) => {
+    canvasElements.forEach((canvas) => {
       const canvasElement = canvas as HTMLCanvasElement;
-      console.log(`    🖼️ Processing Canvas ${canvasIndex + 1}`);
       
       // Convert canvas to image for better print support
       try {
@@ -780,9 +699,7 @@ const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
         canvasElement.parentNode?.insertBefore(img, canvasElement);
         canvasElement.style.display = 'none';
         
-        console.log(`    ✅ Canvas converted to high-quality image for printing`);
       } catch (error) {
-        console.log(`    ⚠️ Could not convert canvas to image:`, error);
         // Fallback: just style the canvas
         canvasElement.style.cssText += `
           width: 100% !important;
@@ -799,16 +716,13 @@ const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
       (toolbar as HTMLElement).style.display = 'none';
     });
     
-    console.log(`  ✅ Plotly chart ${index + 1} processed for printing`);
   }
   
   // Also handle generic SVG elements that might not be in Plotly containers
   const standaloneSvgs = element.querySelectorAll('svg:not([class*="plotly"] svg):not(.js-plotly-plot svg)');
-  console.log(`📈 Found ${standaloneSvgs.length} standalone SVG elements`);
   
-  standaloneSvgs.forEach((svg, index) => {
+  standaloneSvgs.forEach((svg) => {
     const svgElement = svg as SVGElement;
-    console.log(`📈 Processing standalone SVG ${index + 1}`);
     
                    // Ensure standalone SVGs are also properly styled for printing with COMPLETE WIDTH but AUTO HEIGHT to fit content
       svgElement.style.cssText += `
@@ -837,74 +751,49 @@ const handlePlotlyCharts = async (element: HTMLElement): Promise<void> => {
       // CRITICAL: Check if standalone SVG has minimal content and reduce height accordingly
       const standaloneSvgContent = svgElement.innerHTML;
       if (standaloneSvgContent && standaloneSvgContent.length < 200) {
-        console.log(`    ⚠️ Standalone SVG has minimal content, reducing height to prevent oversized container`);
         svgElement.style.height = '200px !important';
         svgElement.style.minHeight = '150px !important';
       }
      svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   });
   
-  console.log('✅ Enhanced Plotly chart processing complete');
   
   // CRITICAL: Verify that charts actually contain data
-  console.log('🔍 Verifying chart data content...');
   const allSvgs = element.querySelectorAll('svg');
-  let chartsWithData = 0;
-  let chartsWithoutData = 0;
   
-  allSvgs.forEach((svg, index) => {
+  allSvgs.forEach((svg) => {
     const svgElement = svg as SVGElement;
     const svgContent = svgElement.innerHTML;
-    if (svgContent && svgContent.length > 200) {
-      chartsWithData++;
-      console.log(`✅ SVG ${index + 1} has data: ${svgContent.length} chars`);
-    } else {
-      chartsWithoutData++;
-      console.log(`❌ SVG ${index + 1} missing data: ${svgContent.length} chars`);
-      
-      // CRITICAL: Reduce height of empty chart containers to prevent oversized appearance
+    if (!svgContent || svgContent.length <= 200) {
       const chartContainer = svgElement.closest('[class*="plotly"], [class*="chart"], [class*="graph"], [class*="visualization"]');
       if (chartContainer) {
-        console.log(`    🔧 Reducing height of empty chart container ${index + 1}`);
         (chartContainer as HTMLElement).style.height = '200px !important';
         (chartContainer as HTMLElement).style.minHeight = '150px !important';
         (chartContainer as HTMLElement).style.maxHeight = '250px !important';
       }
-      
-      // Also reduce the SVG itself
       svgElement.style.height = '200px !important';
       svgElement.style.minHeight = '150px !important';
       svgElement.style.maxHeight = '250px !important';
     }
   });
-  
-  console.log(`📊 Chart data verification: ${chartsWithData} with data, ${chartsWithoutData} without data`);
-  
-  if (chartsWithoutData > 0) {
-    console.warn('⚠️ Some charts are missing data - container heights have been reduced to prevent oversized appearance');
-  }
 };
 
 /**
  * Handle generic charts and visualizations for printing
  */
 const handleGenericCharts = (element: HTMLElement): void => {
-  console.log('📊 Processing generic charts and visualizations...');
   // Fast path: if there are no chart-like elements, return immediately
   if (!element.querySelector('[class*="chart"], [class*="graph"], [class*="visualization"], svg, canvas')) {
-    console.log('⚡ No generic charts found. Skipping generic chart processing.');
     return;
   }
   
   // First, expand any collapsed chart containers
   const collapsedContainers = element.querySelectorAll('[style*="display: none"], [style*="visibility: hidden"], [class*="collapsed"], [class*="hidden"]');
-  console.log(`🔍 Found ${collapsedContainers.length} potentially collapsed containers`);
   
-  collapsedContainers.forEach((container, index) => {
+  collapsedContainers.forEach((container) => {
     const containerEl = container as HTMLElement;
     // Check if this container has chart-like content
     if (containerEl.querySelector('svg, canvas, [class*="chart"], [class*="graph"]')) {
-      console.log(`📊 Expanding collapsed chart container ${index + 1}`);
       containerEl.style.display = 'block';
       containerEl.style.visibility = 'visible';
       containerEl.style.height = 'auto';
@@ -914,12 +803,10 @@ const handleGenericCharts = (element: HTMLElement): void => {
   });
   
   // CRITICAL: Force all chart data to be visible and rendered
-  console.log('🔍 Ensuring all chart data is visible and rendered...');
   const allChartElements = element.querySelectorAll('svg, canvas, [class*="chart"], [class*="graph"], [class*="plotly"]');
   
-  allChartElements.forEach((chartEl, index) => {
+  allChartElements.forEach((chartEl) => {
     const chartElement = chartEl as HTMLElement;
-    console.log(`📊 Ensuring chart element ${index + 1} is fully visible:`, chartElement.tagName, chartElement.className);
     
     // Force visibility and proper sizing
     chartElement.style.cssText += `
@@ -942,7 +829,6 @@ const handleGenericCharts = (element: HTMLElement): void => {
     let depth = 0;
     while (parent && depth < 5) {
       if (parent.style.display === 'none' || parent.style.visibility === 'hidden') {
-        console.log(`📊 Making parent visible:`, parent.tagName, parent.className);
         parent.style.display = 'block';
         parent.style.visibility = 'visible';
         parent.style.overflow = 'visible';
@@ -954,11 +840,9 @@ const handleGenericCharts = (element: HTMLElement): void => {
   
   // Handle any remaining chart-like elements
   const chartElements = element.querySelectorAll('[class*="chart"], [class*="graph"], [class*="visualization"]');
-  console.log(`📈 Found ${chartElements.length} generic chart elements`);
   
-  chartElements.forEach((chartEl, index) => {
+  chartElements.forEach((chartEl) => {
     const chartElement = chartEl as HTMLElement;
-    console.log(`📊 Processing generic chart ${index + 1}: ${chartElement.className}`);
     
                           // Ensure chart container is properly sized for printing with COMPLETE WIDTH but CONTROLLED HEIGHT
        chartElement.style.cssText += `
@@ -983,7 +867,6 @@ const handleGenericCharts = (element: HTMLElement): void => {
       // CRITICAL: Check if chart container has minimal content and reduce height accordingly
       const chartContent = chartElement.innerHTML;
       if (chartContent && chartContent.length < 500) {
-        console.log(`    ⚠️ Chart container has minimal content, reducing height to prevent oversized container`);
         chartElement.style.height = '200px !important';
         chartElement.style.minHeight = '150px !important';
       }
@@ -993,7 +876,6 @@ const handleGenericCharts = (element: HTMLElement): void => {
     const canvases = chartElement.querySelectorAll('canvas');
     
     if (svgs.length > 0) {
-      console.log(`  📈 Found ${svgs.length} SVG elements in generic chart`);
       svgs.forEach((svg) => {
         const svgElement = svg as SVGElement;
         svgElement.style.cssText += `
@@ -1013,7 +895,6 @@ const handleGenericCharts = (element: HTMLElement): void => {
     }
     
     if (canvases.length > 0) {
-      console.log(`  🖼️ Found ${canvases.length} Canvas elements in generic chart`);
       canvases.forEach((canvas) => {
         const canvasElement = canvas as HTMLCanvasElement;
         try {
@@ -1036,30 +917,24 @@ const handleGenericCharts = (element: HTMLElement): void => {
           canvasElement.parentNode?.insertBefore(img, canvasElement);
           canvasElement.style.display = 'none';
           
-          console.log(`    ✅ Canvas converted to high-quality image for printing`);
         } catch (error) {
-          console.log(`    ⚠️ Could not convert canvas to image:`, error);
         }
       });
     }
     
-    console.log(`  ✅ Generic chart ${index + 1} processed for printing`);
   });
   
-  console.log('✅ Generic chart processing complete');
 };
 
 /**
  * Detect and fix empty chart containers by replacing them with compact placeholders
  */
 const fixEmptyChartContainers = (element: HTMLElement): void => {
-  console.log('🔍 Detecting and fixing empty chart containers...');
   
   // Find all potential chart containers - be more aggressive
   const chartContainers = element.querySelectorAll('[class*="plotly"], [class*="chart"], [class*="graph"], [class*="visualization"], .js-plotly-plot, svg, canvas');
-  let fixedCount = 0;
   
-  chartContainers.forEach((container, index) => {
+  chartContainers.forEach((container) => {
     const containerEl = container as HTMLElement;
     const svgElements = containerEl.querySelectorAll('svg');
     const canvasElements = containerEl.querySelectorAll('canvas');
@@ -1068,9 +943,7 @@ const fixEmptyChartContainers = (element: HTMLElement): void => {
     if (containerEl.tagName === 'SVG' || containerEl.tagName === 'CANVAS') {
       const hasContent = checkElementForMeaningfulContent(containerEl);
       if (!hasContent) {
-        console.log(`    🔧 Replacing empty ${containerEl.tagName} ${index + 1} with compact placeholder`);
         replaceWithPlaceholder(containerEl);
-        fixedCount++;
         return;
       }
     }
@@ -1101,9 +974,8 @@ const fixEmptyChartContainers = (element: HTMLElement): void => {
      
      // If no meaningful content and has large height, replace with compact placeholder
      if (!hasMeaningfulContent && hasLargeHeight) {
-       console.log(`    🔧 Replacing oversized empty chart container ${index + 1} (height: ${containerHeight}px) with compact placeholder`);
        replaceWithPlaceholder(containerEl);
-       fixedCount++;
+       return;
      } else if (!hasMeaningfulContent) {
        // Be much more conservative - only replace if we're absolutely sure it's empty
        const containerContent = containerEl.innerHTML;
@@ -1111,16 +983,11 @@ const fixEmptyChartContainers = (element: HTMLElement): void => {
                           (containerContent.includes('svg') && containerContent.length < 150);
        
        if (isVeryEmpty) {
-         console.log(`    🔧 Replacing very empty chart container ${index + 1} with compact placeholder`);
          replaceWithPlaceholder(containerEl);
-         fixedCount++;
-       } else {
-         console.log(`    ⚠️ Chart container ${index + 1} has minimal content but might still be loading, keeping it`);
        }
      }
   });
   
-  console.log(`✅ Fixed ${fixedCount} empty chart containers with compact placeholders`);
 };
 
 /**
@@ -1146,17 +1013,14 @@ const checkElementForMeaningfulContent = (element: Element): boolean => {
        
        // If it's just a grid with axes but no data, consider it empty
        if (hasOnlyGrid && hasOnlyAxes && !hasDataElements && !hasPlotlyData) {
-         console.log(`    🔍 SVG appears to be just grid/axes without data`);
          return false;
        } else if (hasDataElements || hasTextLabels || hasPlotlyData) {
-         console.log(`    ✅ SVG has meaningful content: data=${!!hasDataElements}, labels=${!!hasTextLabels}, plotly=${!!hasPlotlyData}`);
          return true;
        }
      }
      
      // If SVG is very small, it might still be loading
      if (svgContent && svgContent.length < 100) { // Reduced threshold
-       console.log(`    ⚠️ SVG has minimal content (${svgContent.length} chars), might still be loading`);
        // Don't immediately consider it empty - give it more time
        return true; // Assume it has content to avoid false positives
      }
@@ -1167,13 +1031,11 @@ const checkElementForMeaningfulContent = (element: Element): boolean => {
     try {
       const imageData = canvasElement.getContext('2d')?.getImageData(0, 0, canvasElement.width, canvasElement.height);
       if (imageData && imageData.data.some(pixel => pixel !== 0)) { // Check if canvas has non-transparent pixels
-        console.log(`    ✅ Canvas has non-transparent pixels`);
         return true;
       }
     } catch (error) {
       // Ignore canvas errors
     }
-    console.log(`    ⚠️ Canvas appears empty or error occurred`);
     return false;
   }
   return false;
@@ -1183,24 +1045,20 @@ const checkElementForMeaningfulContent = (element: Element): boolean => {
  * Force chart data to load and render before checking if empty
  */
 const forceChartDataLoading = async (element: HTMLElement): Promise<void> => {
-  console.log('🔄 Forcing chart data loading and rendering...');
   // Fast path: if no charts at all, skip
   const anyChart = element.querySelector('[class*="plotly"], [class*="chart"], [class*="graph"], svg, canvas');
   if (!anyChart) {
-    console.log('⚡ No chart elements found. Skipping force loading.');
     return;
   }
   
   // Force Plotly charts to re-render if available
   if ((window as any).Plotly) {
     const plotlyContainers = element.querySelectorAll('div[class*="plotly"], .js-plotly-plot, [data-unformatted-plot]');
-    console.log(`🔄 Found ${plotlyContainers.length} Plotly containers, forcing re-render...`);
     
     for (const container of plotlyContainers) {
       const plotlyDiv = container as HTMLElement;
       try {
         if ((plotlyDiv as any)._fullData) {
-          console.log(`  🔄 Forcing Plotly re-render for container...`);
           
           // Force a complete re-render with proper dimensions
           (window as any).Plotly.relayout(plotlyDiv, {
@@ -1217,7 +1075,6 @@ const forceChartDataLoading = async (element: HTMLElement): Promise<void> => {
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       } catch (error) {
-        console.log(`  ⚠️ Could not force Plotly re-render:`, error);
       }
     }
     
@@ -1227,7 +1084,6 @@ const forceChartDataLoading = async (element: HTMLElement): Promise<void> => {
   
   // Force any lazy-loaded charts to render
   const chartElements = element.querySelectorAll('[class*="chart"], [class*="graph"], [class*="plotly"], svg, canvas');
-  console.log(`🔄 Found ${chartElements.length} chart elements, ensuring they are fully rendered...`);
   
   // Trigger any pending renders with individual waits
   for (let i = 0; i < chartElements.length; i++) {
@@ -1246,7 +1102,6 @@ const forceChartDataLoading = async (element: HTMLElement): Promise<void> => {
   // Final wait for rendering (short)
   await new Promise(resolve => setTimeout(resolve, 500));
   
-  console.log('✅ Chart data loading and rendering forced');
 };
 
 /**
@@ -1283,11 +1138,9 @@ const replaceWithPlaceholder = (element: HTMLElement): void => {
  * Final verification to check if we accidentally replaced charts with data
  */
 const verifyChartReplacements = async (element: HTMLElement): Promise<void> => {
-  console.log('🔍 Verifying chart replacements...');
   
   // Look for any placeholder divs that might have replaced charts with data
   const placeholders = element.querySelectorAll('div[style*="Chart data not available"]');
-  console.log(`🔍 Found ${placeholders.length} placeholder divs to verify`);
   
   for (const placeholder of placeholders) {
     const placeholderEl = placeholder as HTMLElement;
@@ -1301,20 +1154,17 @@ const verifyChartReplacements = async (element: HTMLElement): Promise<void> => {
     
     // If we find chart elements nearby, this placeholder might be wrong
     if (nearbyChartElements.length > 0) {
-      console.log(`⚠️ Found chart elements near placeholder - placeholder might be incorrect`);
       
       // Check if any of these charts actually have data
       let hasRealData = false;
       for (const chartEl of nearbyChartElements) {
         if (checkElementForMeaningfulContent(chartEl)) {
           hasRealData = true;
-          console.log(`✅ Found chart with real data near placeholder`);
           break;
         }
       }
       
       if (hasRealData) {
-        console.log(`🔧 Removing incorrect placeholder and restoring chart area`);
         // Remove the placeholder and add a note
         const noteDiv = document.createElement('div');
         noteDiv.innerHTML = `
@@ -1342,7 +1192,6 @@ const verifyChartReplacements = async (element: HTMLElement): Promise<void> => {
     }
   }
   
-  console.log('✅ Chart replacement verification completed');
 };
 
 /**
@@ -1361,11 +1210,9 @@ export const getAllStylesheets = (): string => {
           }
         }
       } catch (e) {
-        console.log('Could not access stylesheet:', e);
       }
     }
   } catch (e) {
-    console.log('Error copying styles:', e);
   }
   
   return allStyles;

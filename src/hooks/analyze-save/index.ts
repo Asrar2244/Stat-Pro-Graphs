@@ -94,19 +94,47 @@ export const useAnalyzeSave = () => {
     mainWorker
       .axios(`${API.backendURL}/api/${API.analysis}`, parameters)
       .then((response: any) => {
+        // Check HTTP status code
+        if (response.status !== 200) {
+          errorOccurred = true;
+          const errorMsg = `Request failed with status ${response.status}: ${response.statusText || 'Unknown error'}`;
+          return deleteByIDOutputTable(dbName, [outputId])
+            .then(async () => {
+              if (otherParameters.notificationId) {
+                await insertInNotifications(otherParameters.notificationId, '', '', 0);
+              }
+              setBlockUI({ value: true, msg: errorMsg, hideOk: false });
+            });
+        }
+
+        // Extract data from response
+        const responseData = response.data || response;
+
         // Normalize backend error formats and stop output rendering immediately
         const normalizedError: string | undefined = (() => {
-          if (!response) return 'Backend returned no response';
-          if (typeof response === 'string') return response;
-          if (response.error) return String(response.error);
-          if (response.message && (response.status === 'error' || response.code === 'error')) return String(response.message);
-          if (response.return_value && String(response.return_value).toLowerCase() !== 'success') {
-            return String(response.message || response.detail || response.return_value);
+          if (!responseData) return 'Backend returned no response';
+          if (typeof responseData === 'string') return responseData;
+          if (responseData.error) return String(responseData.error);
+          if (responseData.message && (responseData.status === 'error' || responseData.code === 'error')) return String(responseData.message);
+          if (responseData.return_value && String(responseData.return_value).toLowerCase() !== 'success') {
+            return String(responseData.message || responseData.detail || responseData.return_value);
           }
           return undefined;
         })();
 
         if (normalizedError) {
+          console.error(
+            '[analysis] request failed',
+            {
+              queueType: otherParameters.queueType,
+              queueFor: otherParameters.queueFor,
+              dbName,
+            },
+            {
+              error: normalizedError,
+              response: responseData,
+            },
+          );
           errorOccurred = true;
           // Do NOT persist failed outputs in history: delete the created OUTPUT row and remove notification
           return deleteByIDOutputTable(dbName, [outputId])
@@ -125,9 +153,9 @@ export const useAnalyzeSave = () => {
         ) {
           const direction = parameters?.linearparameters?.direction || 'forward';
           if (otherParameters.queueType === 'regLinearStepwise') {
-            response.outputType = 'regLinearStepwise';
+            responseData.outputType = 'regLinearStepwise';
           } else {
-            response.outputType = direction === 'backward' ? 'regLinearBackwardStepwise' : 'regLinearForwardStepwise';
+            responseData.outputType = direction === 'backward' ? 'regLinearBackwardStepwise' : 'regLinearForwardStepwise';
           }
         }
 
@@ -136,7 +164,7 @@ export const useAnalyzeSave = () => {
           parameters?.regressionType === 'linear' &&
           parameters?.estimationparameters?.estimation_type === 'bestsubset'
         ) {
-          response.outputType = 'regLinearBestSubset';
+          responseData.outputType = 'regLinearBestSubset';
         }
 
         // Inject outputType for multiple linear regression
@@ -144,7 +172,7 @@ export const useAnalyzeSave = () => {
           parameters?.regressionType === 'linear' &&
           parameters?.sub_type === 'multiple_linear_regression'
         ) {
-          response.outputType = 'regLinearMultipleLinear';
+          responseData.outputType = 'regLinearMultipleLinear';
         }
 
         // Inject outputType for bayesian regression
@@ -152,10 +180,10 @@ export const useAnalyzeSave = () => {
           parameters?.regressionType === 'linear' &&
           parameters?.sub_type === 'bayesian'
         ) {
-          response.outputType = 'regLinearBayesian';
+          responseData.outputType = 'regLinearBayesian';
         }
 
-        outputUpdateResult(dbName, [JSON.stringify(response), outputId])
+        outputUpdateResult(dbName, [JSON.stringify(responseData), outputId])
           .then(() => {
             const { isEmptyDataView } = config;
             if (!isEmptyDataView) {
@@ -164,13 +192,10 @@ export const useAnalyzeSave = () => {
                 (item) => Number(item.id) === projectId,
               ) as ISelector;
               const type = 'OUTPUT';
-              // Professional debug log for output tab opening
-              console.log('[Statpro] Attempting to open output tab:', { data, projectId, type, t, config });
               if (data) {
                 openNewTab(data, projectId, type, t);
               } else {
                 // Fallback: open with config if project lookup fails
-                console.warn('[Statpro] Project lookup failed, falling back to config for output tab.', { config });
                 openNewTab(config as any, config.id, type, t);
               }
             } else {
@@ -183,7 +208,6 @@ export const useAnalyzeSave = () => {
           });
       })
       .catch((errorMsg: any) => {
-        console.log('errorMsg===>', errorMsg);
         errorOccurred = true;
         setBlockUI({ value: true, msg: errorMsg.message, hideOk: false });
       })

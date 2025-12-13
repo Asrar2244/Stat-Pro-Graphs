@@ -25,6 +25,8 @@
     "noImplicitThis": false,
     "noPropertyAccessFromIndexSignature": false,
     "ignoreDeprecations": "5.0",
+    "suppressImplicitAnyIndexErrors": true,
+    "noUncheckedIndexedAccess": false,
 
     /* Alias Path */
     "baseUrl": ".",
@@ -42,9 +44,20 @@
       "@hooks/*": [ "src/hooks/*" ],
       "@hooks": [ "src/hooks" ],
       "@workers/*": [ "src/workers/*" ],
-      "@workers": [ "src/workers" ]
+      "@workers": [ "src/workers" ],
+      "@context": [ "src/screens/output-render/context" ],
+      "@outputStyles/*": [ "src/screens/output-render/styles-hook/*" ],
+      "@outputStyles": [ "src/screens/output-render/styles-hook" ],
+      "@outputRegressionCommon/*": [ "src/screens/output-render/analyze/regression/common/*" ],
+      "@outputRegressionCommon": [ "src/screens/output-render/analyze/regression/common" ],
+      "@outputPrintReport/*": [ "src/screens/output-render/print-report/*" ],
+      "@outputPrintReport": [ "src/screens/output-render/print-report" ]
     }
   },
   "include": [ "src" ],
+  "exclude": [
+    "src/screens/graphs-render-backup-20251020_090308",
+    "node_modules"
+  ],
   "references": [ { "path": "./tsconfig.node.json" } ]
 }

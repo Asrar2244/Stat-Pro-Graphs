@@ -6,12 +6,15 @@ export const useGraphsRender = makeStyles({
     flexDirection: 'column',
     height: '100%',
     width: '100%',
+    overflow: 'hidden',
   },
   'graphs-area': {
     width: '100%',
     display: 'flex',
     flexDirection: 'row',
-    height: '100%',
+    flex: 1,
+    minHeight: 0,
+    overflow: 'hidden',
   },
   caption: {
     color: tokens.colorNeutralForeground3,

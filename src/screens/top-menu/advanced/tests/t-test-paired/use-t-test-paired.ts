@@ -1,35 +1,45 @@
 import cloneDeep from 'lodash.clonedeep';
 import { create } from 'zustand';
 
+type IList = Map<string, boolean>;
+
 interface IModelStats {
   dataFormat: IDataFormat;
 };
 
 interface IDataFormat {
+  availableList?: IList;
   indexed: {
-    subject: string[],
-    data: string[],
-    treatment: string[]
+    subject: IList,
+    data: IList,
+    treatment: IList
   }
-  raw_data: { after: string[], before: string[] }
+  raw_data: { 
+    after: IList, 
+    before: IList 
+  }
 }
 
 interface IBasicStatics {
   model: IModelStats;
   setReset: () => void;
-  setModelBulk: (list: IDataFormat, type: string) => void;
+  setModelBulk: (list: any, type: string) => void;
   setModel: (list: IModelStats) => void
 }
 
 const initial = {
   model: {
     dataFormat: {
+      availableList: new Map<string, boolean>(),
       indexed: {
-        subject: [],
-        data: [],
-        treatment: [],
+        subject: new Map<string, boolean>(),
+        data: new Map<string, boolean>(),
+        treatment: new Map<string, boolean>(),
       },
-      raw_data: { after: [], before: [] }
+      raw_data: { 
+        after: new Map<string, boolean>(), 
+        before: new Map<string, boolean>() 
+      }
     }
   }
 }

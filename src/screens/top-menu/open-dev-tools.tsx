@@ -164,9 +164,7 @@ export const OpenDevTools: FC<IModal & { showCloseButton?: boolean }> = ({
               </ul>
             </div>
             <div className={classes.maskInputButton}>
-              <textarea className={classes.textArea} rows={10} onChange={handleChange}>
-                {licenseKey}
-              </textarea>
+              <textarea className={classes.textArea} rows={10} value={licenseKey} onChange={handleChange} />
               <div className={classes.informationList}>
                 <Text font="monospace" align="start" size={200} weight="regular">
                   {t(licenseStatus.state as string, { ns: 'common' })}

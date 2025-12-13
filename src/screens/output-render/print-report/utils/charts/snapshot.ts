@@ -47,7 +47,6 @@ export const snapshotChartsFromOriginal = async (source: HTMLElement, targetClon
     }
     return snapshotted;
   } catch (e) {
-    console.warn('⚠️ Snapshot charts failed, will fallback:', e);
     return false;
   }
 };

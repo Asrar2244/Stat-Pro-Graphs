@@ -2,13 +2,15 @@ import { makeStyles, tokens } from '@fluentui/react-components';
 
 export const useGraphPropertiesClasses = makeStyles({
   drawerContainer: {
-    width: '350px',
+    position: 'relative',
+    minWidth: '320px',
+    maxWidth: '900px',
     backgroundColor: tokens.colorNeutralBackground1,
     borderLeft: `1px solid ${tokens.colorNeutralStroke1}`,
-    boxShadow: `-2px 0 8px ${tokens.colorNeutralShadowAmbient}`,
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
+    flexShrink: 0,
   },
   drawerHeader: {
     backgroundColor: tokens.colorNeutralBackground1,

@@ -98,7 +98,6 @@ const IndependentListRender: FC = () => {
       />
 
       <Button
-        type="button"
         icon={<MdOutlineRemove />}
         className="remove-button"
         name="independent"
@@ -151,7 +150,6 @@ const DependentListRender: FC = () => {
       />
 
       <Button
-        type="button"
         icon={<MdOutlineRemove />}
         className="remove-button"
         name="dependent"
@@ -222,12 +220,11 @@ const AvailableListRender: FC = () => {
       />
 
       <div className="send-buttons">
-        <Button type="button" icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler} disabled={dependentList.size >= 1}>
+        <Button icon={<MdKeyboardDoubleArrowLeft />} data-name="dependent" onClick={onSendHandler} disabled={dependentList.size >= 1}>
           {t('sendToDependent')}
         </Button>
 
         <Button
-          type="button"
           icon={<MdKeyboardDoubleArrowRight />}
           iconPosition="after"
           data-name="independent"

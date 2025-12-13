@@ -49,7 +49,7 @@ export const MultipleLinearComponent: FC<IModal> = (props) => {
 
   return (
     <Modal
-      modalType="modal"
+      modalType="alert"
       {...props}
       cancelLabel={t('close', { ns: 'regLinearMultipleLinear' })}
       okLabel={t('ok', { ns: 'regLinearMultipleLinear' })}

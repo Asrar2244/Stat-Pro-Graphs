@@ -1,11 +1,6 @@
 // Utility to detect if the app is running in Tauri environment
 export const isTauriEnvironment = (): boolean => {
-  return typeof window !== 'undefined' && 
-         (window.__TAURI__ !== undefined || 
-          // Additional checks for production Tauri builds
-          (typeof window !== 'undefined' && 
-           (window.location?.protocol === 'tauri:' || 
-            navigator.userAgent.includes('Tauri'))));
+  return typeof window !== 'undefined' && window.__TAURI__ !== undefined;
 };
 
 // Safe wrapper for Tauri API calls

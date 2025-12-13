@@ -1,27 +1,21 @@
-// Sample size now uses the same queued task system as regression
-export const getSampleSizeEndpoint = (_testType: string): string => {
-  // All sample size tests use the same analysis endpoint like regression
-  return `/api/analysis`; // Using direct string since API import might cause circular dependency
-};
-
-export const getLegacySampleSizeEndpoint = (): string => '';
-
-export const makeApiRequest = () => {};
+import axios from 'axios';
 
 // Legacy direct HTTP call - kept for backward compatibility but not used
-export const makeSampleSizeRequest = async (testType: string, formData: Record<string, any>): Promise<any> => {
-  const endpoint = getSampleSizeEndpoint(testType);
-  if (!endpoint) throw new Error('Unknown test type or endpoint not set');
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(formData),
-  });
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+// Sample size now uses the same queued task system as regression
+// All sample size tests use the same analysis endpoint like regression
+export const makeSampleSizeRequest = async (_testType: string, formData: Record<string, any>): Promise<any> => {
+  const endpoint = '/api/analysis'; // Using direct string since API import might cause circular dependency
+  try {
+    const response = await axios.post(endpoint, formData, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw new Error(`API request failed: ${error.response.status} ${error.response.statusText}`);
+    }
+    throw error;
   }
-  return await response.json();
 };
 
-export const getCurrentApiBaseUrl = (): string => '';
 export const testApiConnectivity = (): Promise<boolean> => Promise.resolve(true); 

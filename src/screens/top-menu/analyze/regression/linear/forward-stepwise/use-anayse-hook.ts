@@ -37,50 +37,56 @@ export const usePrepareAnalysis = ({
   }, [columns.length]);
 
   const executeAnalysis = async (id: string): Promise<void> => {
-    const tableName = config.tabName;
+    try {
+      const tableName = config.tabName;
 
-    const dependentVars = Array.from(model.dependentList.keys());
-    if (dependentVars.length !== 1) {
-      setBlockUI({ value: true, msg: 'Please select exactly one dependent variable.' });
-      return;
+      const dependentVars = Array.from(model.dependentList.keys());
+      if (dependentVars.length !== 1) {
+        setBlockUI({ value: true, msg: 'Please select exactly one dependent variable.' });
+        return;
+      }
+
+      const parameters = {
+        data_name: tableName,
+        input_data_type: 'file',
+        operation: 'regression',
+        sheet_name: EXCEL,
+        db_name: tableName,
+        table_name: EXCEL,
+        dependent_var_names: dependentVars,
+        independent_var_names: Array.from(model.independentList.keys()),
+        regressionType: 'linear',
+        linearparameters: {
+          inc_constant: model.includeConst,
+          confidence: parseFloat(estimate.confidence),
+          tolerance: parseFloat(estimate.tolerance),
+          estimation_type: 'stepwise',
+          probability_threshold_enter: Number(estimate.propEnter),
+          probability_threshold_remove: Number(estimate.propRemove),
+          f_statistic_threshold_enter: Number(estimate.fStatisticEnter),
+          f_statistic_threshold_remove: Number(estimate.fStatisticRemove),
+          max_steps: Number(estimate.maxStep),
+          force_features: estimate.force ? estimate.force.split(',').map(s => s.trim()) : [],
+          direction: estimate.direction || 'forward',
+        },
+        sub_type: 'estimation',
+      };
+      
+      await execute(
+        config.tabName,
+        parameters,
+        {
+          queueFor,
+          url: `/api/${API.analysis}`,
+          method: 'POST',
+          queueType,
+        },
+        id,
+      );
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred while executing the analysis.';
+      setBlockUI({ value: true, msg: errorMessage, hideOk: false });
     }
-
-    const parameters = {
-      data_name: tableName,
-      input_data_type: 'file',
-      operation: 'regression',
-      sheet_name: EXCEL,
-      db_name: tableName,
-      table_name: EXCEL,
-      dependent_var_names: dependentVars,
-      independent_var_names: Array.from(model.independentList.keys()),
-      regressionType: 'linear',
-      linearparameters: {
-        inc_constant: model.includeConst,
-        confidence: parseFloat(estimate.confidence),
-        tolerance: parseFloat(estimate.tolerance),
-        estimation_type: 'stepwise',
-        probability_threshold_enter: Number(estimate.propEnter),
-        probability_threshold_remove: Number(estimate.propRemove),
-        f_statistic_threshold_enter: Number(estimate.fStatisticEnter),
-        f_statistic_threshold_remove: Number(estimate.fStatisticRemove),
-        max_steps: Number(estimate.maxStep),
-        force_features: estimate.force ? estimate.force.split(',').map(s => s.trim()) : [],
-        direction: estimate.direction || 'forward',
-      },
-      sub_type: 'estimation',
-    };
-    await execute(
-      config.tabName,
-      parameters,
-      {
-        queueFor,
-        url: `/api/${API.analysis}`,
-        method: 'POST',
-        queueType,
-      },
-      id,
-    );
   };
 
   return { executeAnalysis };

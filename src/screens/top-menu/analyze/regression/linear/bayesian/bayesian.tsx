@@ -56,7 +56,7 @@ const BayesianComponent: FC<IModal> = ({ ...props }) => {
 	return (
 		<Modal
 			key={id}
-   modalType="modal"
+			modalType="alert"
 			{...props}
 			cancelLabel={t('close', { ns: 'regLinearLeastSquare' })}
 			okLabel={t('ok', { ns: 'regLinearLeastSquare' })}

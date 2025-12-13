@@ -22,7 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-/src-tauri/backend/windows/main.exe
+/src-tauri/backend
 *.txt
 
 # Coverage directory used by tools like istanbul

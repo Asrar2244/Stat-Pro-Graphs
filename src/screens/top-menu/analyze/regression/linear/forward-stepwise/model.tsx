@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, MouseEvent, useEffect, useState } from 'react';
+import { ChangeEvent, FC, MouseEvent, useMemo, useState } from 'react';
 import { Checkbox, Button } from '@fluentui/react-components';
 import {
   MdKeyboardDoubleArrowLeft,
@@ -63,11 +63,11 @@ const IndependentListRender: FC = () => {
       setModelBulk: state.setModelBulk,
     })),
   );
-  const [propKey, setPropKey] = useState(generateKey(independentList));
+  const independentListKey = useMemo(() => {
+    return Array.from(independentList.keys()).sort().join(',') + '-' + independentList.size;
+  }, [independentList]);
 
-  useEffect(() => {
-    setPropKey(generateKey(independentList))
-  }, [...independentList.values()])
+  const propKey = useMemo(() => generateKey(independentList), [independentListKey]);
 
   const onRemoveHandler = (): void => {
     independentList.forEach((value: boolean, name: string) => {
@@ -118,11 +118,11 @@ const DependentListRender: FC = () => {
       setModelBulk: state.setModelBulk,
     })),
   );
-  const [propKey, setPropKey] = useState(generateKey(dependentList))
+  const dependentListKey = useMemo(() => {
+    return Array.from(dependentList.keys()).sort().join(',') + '-' + dependentList.size;
+  }, [dependentList]);
 
-  useEffect(() => {
-    setPropKey(generateKey(dependentList))
-  }, [...dependentList.values()])
+  const propKey = useMemo(() => generateKey(dependentList), [dependentListKey]);
   const onRemoveHandler = (): void => {
     dependentList.forEach((value: boolean, name: string) => {
       if (value) {
@@ -171,12 +171,13 @@ const AvailableListRender: FC = () => {
       setModelBulk: state.setModelBulk,
     })),
   );
-  const [propKey, setPropKey] = useState(generateKey(availableList))
   const { setBlockUI } = useStartProStore();
 
-  useEffect(() => {
-    setPropKey(generateKey(availableList))
-  }, [...availableList.values()])
+  const availableListKey = useMemo(() => {
+    return Array.from(availableList.keys()).sort().join(',') + '-' + availableList.size;
+  }, [availableList]);
+
+  const propKey = useMemo(() => generateKey(availableList), [availableListKey]);
 
   const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
     const name = (e.currentTarget as HTMLButtonElement).dataset.name;

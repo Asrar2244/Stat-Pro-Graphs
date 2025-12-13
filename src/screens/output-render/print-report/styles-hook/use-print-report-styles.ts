@@ -4,6 +4,52 @@ export const usePrintReportStyles = makeStyles({
   printButton: {
     marginLeft: '8px',
   },
+
+  simpleModalOverlay: {
+    position: 'fixed',
+    inset: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+
+  simpleModalContainer: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    padding: '20px',
+    borderRadius: tokens.borderRadiusLarge,
+    minWidth: '300px',
+    boxShadow: tokens.shadow64,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+
+  simpleModalTitle: {
+    margin: 0,
+    fontSize: tokens.fontSizeBase500,
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground1,
+  },
+
+  simpleModalDescription: {
+    margin: 0,
+    color: tokens.colorNeutralForeground2,
+    fontSize: tokens.fontSizeBase300,
+    lineHeight: tokens.lineHeightBase300,
+  },
+
+  simpleModalActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
+
+  refreshContainer: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginBottom: '16px',
+  },
   
   modalContent: {
     minWidth: '500px',

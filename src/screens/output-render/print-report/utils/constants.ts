@@ -1,5 +1,3 @@
-export const PRINT_DEBUG = false;
-
 // Data attributes and selectors used across print-report
 export const DATA_OUTPUT_ID_ATTR = 'data-output-id';
 export const OUTPUT_ROOT_SELECTOR = '[data-output-root="true"]';
@@ -11,6 +9,10 @@ export const ALTERNATIVE_LAYOUT_SELECTORS: string[] = [
   'div[class*="Regression"]',
   'div[class*="layout"]',
   'div[class*="Layout"]',
+  'div:has(.fui-Card)',
+  'div:has(table)',
+  'div:has(svg)',
+  'div:has(canvas)',
 ];
 
 // Signals of content we consider printable

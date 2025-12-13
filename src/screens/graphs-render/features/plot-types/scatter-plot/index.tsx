@@ -1,7 +1,6 @@
 import React, { FC, useContext, useRef, useState, useEffect } from 'react';
 import { GraphsRenderContext } from '../../../context';
 import { GraphCanvas, GraphCanvasRef } from '../../../plotly-canvas';
-import { Card, CardFooter, CardPreview } from '@fluentui/react-components';
 import { GraphTools } from '@libs/graphs/tools';
 import { useFullScreenHandle } from 'react-full-screen';
 import { useGraphStyles } from '@libs/graphs/styles-hook/use-graph-style';
@@ -63,32 +62,28 @@ export const ScatterPlotGraph: FC = () => {
 
   return (
     <div className={classes.graph}>
-      <Card>
-        <CardPreview>
-          <div style={{ width: '100%', height: 'calc(100vh - 300px)', minHeight: '400px' }}>
-            <GraphCanvas 
-              ref={plotlyRef}
-              key={`graph-${selectedRun?.id || 'new'}`}
-              graphConfig={graphConfig} 
-              workspacePath={resolvedWorkspacePath}
-              liveProps={graphProperties}
+      <div className={classes.graphCard}>
+        <div className={classes.graphCanvas}>
+          <GraphCanvas 
+            ref={plotlyRef}
+            key={`graph-${selectedRun?.id || 'new'}`}
+            graphConfig={graphConfig} 
+            workspacePath={resolvedWorkspacePath}
+            liveProps={graphProperties}
+          />
+        </div>
+        <div className={classes.toolsWrapper}>
+          {isPlotlyReady && plotlyRef.current && (
+            <GraphTools
+              handle={handle}
+              plotly={plotlyRef.current}
+              graph={graphObject}
+              dbFileName={workspacePath || ''}
+              dbTableName="EXCEL"
             />
-          </div>
-        </CardPreview>
-        <CardFooter>
-          <div className={classes.toolsWrapper}>
-            {isPlotlyReady && plotlyRef.current && (
-              <GraphTools
-                handle={handle}
-                plotly={plotlyRef.current}
-                graph={graphObject}
-                dbFileName={workspacePath || ''}
-                dbTableName="EXCEL"
-              />
-            )}
-          </div>
-        </CardFooter>
-      </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

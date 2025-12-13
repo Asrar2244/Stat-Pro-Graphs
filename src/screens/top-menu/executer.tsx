@@ -55,22 +55,46 @@ const PairedTestsAnalysis = lazy(() => import('./advanced').then((module) => ({ 
 
 // Scatter Plot Modal
 const ScatterPlotModal = lazy(() =>
-  import('../../features/graphs/2d/scatter').then((m) => ({ default: m.ScatterPlotModal })),
+  import('../../features/graphs/2d/scatter').then(
+    (m) => ({ default: m.ScatterPlotModal }),
+    (error) => {
+      console.error('Failed to load ScatterPlotModal:', error);
+      throw error;
+    }
+  ),
 );
 
 // Line Plot Modal
 const LinePlotModal = lazy(() =>
-  import('../../features/graphs/2d/line').then((m) => ({ default: m.LinePlotModal })),
+  import('../../features/graphs/2d/line').then(
+    (m) => ({ default: m.LinePlotModal }),
+    (error) => {
+      console.error('Failed to load LinePlotModal:', error);
+      throw error;
+    }
+  ),
 );
 
 // Line-Scatter Plot Modal
 const LineScatterPlotModal = lazy(() =>
-  import('../../features/graphs/2d/line-scatter').then((m) => ({ default: m.LineScatterPlotModal })),
+  import('../../features/graphs/2d/line-scatter').then(
+    (m) => ({ default: m.LineScatterPlotModal }),
+    (error) => {
+      console.error('Failed to load LineScatterPlotModal:', error);
+      throw error;
+    }
+  ),
 );
 
 // 3D Mesh Plot Modal
 const MeshPlotModal = lazy(() =>
-  import('../../features/graphs/3d/mesh').then((m) => ({ default: m.MeshPlotModal })),
+  import('../../features/graphs/3d/mesh').then(
+    (m) => ({ default: m.MeshPlotModal }),
+    (error) => {
+      console.error('Failed to load MeshPlotModal:', error);
+      throw error;
+    }
+  ),
 );
 
 export const withMenuEvents = <P extends object>(
@@ -388,6 +412,7 @@ const MenuSelector: FC<{
   };
 
   const runSelector = () => {
+    console.log('MenuSelector runSelector called with selector:', selector);
     switch (selector) {
       case exporters.importBusinessObject:
         return <BrowseFile {...modal} t={t} />;

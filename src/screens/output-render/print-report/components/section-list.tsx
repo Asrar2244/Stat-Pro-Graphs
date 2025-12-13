@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Button, Checkbox, Spinner, Text } from '@fluentui/react-components';
 import { TbTable, TbChartBar, TbFile } from 'react-icons/tb';
 import { useTranslation } from 'react-i18next';
@@ -35,23 +35,32 @@ export const SectionList: React.FC<ISectionListProps> = ({
     return <TbFile className={styles.sectionIcon} />;
   };
 
-  const getSectionMeta = (section: IPrintSection) => {
-    const hasTable = section.element.querySelector('table');
-    const hasChart = section.element.querySelector('[class*="plotly"], svg');
-    
-    const types: string[] = [];
-    if (hasTable) types.push('Table');
-    if (hasChart) types.push('Chart');
-    if (types.length === 0) types.push('Content');
-    
-    return types.join(' + ');
-  };
+  const getSectionMeta = useMemo(() => {
+    const separator = ` ${t('sectionTypeSeparator')} `;
+
+    return (section: IPrintSection) => {
+      const hasTable = section.element.querySelector('table');
+      const hasChart = section.element.querySelector('[class*="plotly"], svg');
+
+      const types: string[] = [];
+      if (hasTable) types.push(t('sectionTypeTable'));
+      if (hasChart) types.push(t('sectionTypeChart'));
+      if (types.length === 0) types.push(t('sectionTypeContent'));
+
+      return types.join(separator);
+    };
+  }, [t]);
+
+  const selectedCount = useMemo(
+    () => sections.filter((section) => section.selected).length,
+    [sections]
+  );
 
   if (isLoading) {
     return (
       <div className={styles.loadingContainer}>
         <Spinner size="small" />
-        <span className={styles.loadingText}>Loading sections...</span>
+        <span className={styles.loadingText}>{t('loadingSections')}</span>
       </div>
     );
   }
@@ -67,12 +76,10 @@ export const SectionList: React.FC<ISectionListProps> = ({
   if (sections.length === 0) {
     return (
       <div className={styles.noSectionsMessage}>
-        No printable sections found in the current output.
+        {t('noSectionsFound')}
       </div>
     );
   }
-
-  const selectedCount = sections.filter(s => s.selected).length;
 
   return (
     <div>
@@ -85,7 +92,7 @@ export const SectionList: React.FC<ISectionListProps> = ({
           {allSelected ? (t('deselectAll') || 'Deselect All') : (t('selectAll') || 'Select All')}
         </Button>
         <span className={styles.sectionCount}>
-          {selectedCount} of {sections.length} sections selected
+          {t('sectionCount', { selected: selectedCount, total: sections.length })}
         </span>
       </div>
 

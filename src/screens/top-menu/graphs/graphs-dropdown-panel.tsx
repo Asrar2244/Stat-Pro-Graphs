@@ -5,12 +5,26 @@ import { useGraphsStyles } from './styles-hook/use-graphs-styles';
 import { useGraphs } from './use-graphs';
 import { graph3DOptions } from './constants';
 import type { GraphsDropdownPanelProps } from './types';
+import { ComingSoonModal } from '../coming-soon';
+import { useModal } from '@hooks';
 
-export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClose, setMenuItem: propSetMenuItem }) => {
+// List of implemented graph types
+const IMPLEMENTED_GRAPHS = [
+  'open-scatter-plot-modal',
+  'open-line-plot-modal',
+  'open-line-scatter-plot-modal',
+  '3d-mesh',
+];
+
+export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClose, setMenuItem: propSetMenuItem, pinned: propPinned, setPinned: propSetPinned }) => {
   const classes = useGraphsStyles();
-  const [pinned, setPinned] = useState(false);
+  const [localPinned, setLocalPinned] = useState(false);
+  const pinned = propPinned !== undefined ? propPinned : localPinned;
+  const setPinned = propSetPinned || setLocalPinned;
   
   const onCloseIfNotPinned = () => { if (!pinned) onClose(); };
+  const comingSoonModal = useModal({});
+  const [comingSoonFeature, setComingSoonFeature] = useState<string | null>(null);
 
   const {
     filtered2DOptions,
@@ -19,7 +33,8 @@ export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClos
 
   if (!open) return null;
 
-  const renderRibbonRow = (options: any[], title: string, color: string, strokeColor: string) => (
+  const renderRibbonRow = (options: any[], title: string, color: string, strokeColor: string) => {
+    return (
     <div style={{ marginBottom: tokens.spacingVerticalS }}>
       <div style={{
         fontSize: tokens.fontSizeBase200,
@@ -74,10 +89,17 @@ export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClos
                   appearance="outline"
                   onClick={() => {
                     if (graphType.execute) {
-                      propSetMenuItem(graphType.execute);
-                    }
-                    if (!pinned) {
-                      onClose();
+                      // Check if this graph type is implemented
+                      if (IMPLEMENTED_GRAPHS.includes(graphType.execute)) {
+                        propSetMenuItem(graphType.execute);
+                        if (!pinned) {
+                          onClose();
+                        }
+                      } else {
+                        // Show coming soon modal with the graph name
+                        setComingSoonFeature(graphType.label);
+                        comingSoonModal.openModal();
+                      }
                     }
                   }}
             style={{
@@ -122,10 +144,18 @@ export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClos
         </div>
           </div>
     </div>
-  );
+    );
+  };
 
   return (
     <>
+      {/* Coming Soon Modal */}
+      {comingSoonModal.open && (
+        <ComingSoonModal 
+          {...comingSoonModal} 
+          featureName={comingSoonFeature ? `${comingSoonFeature} graph` : 'This graph type'}
+        />
+      )}
       {/* Backdrop to close the slider when clicking outside */}
       <div 
         style={{ 
@@ -137,7 +167,17 @@ export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClos
           zIndex: 1000,
           pointerEvents: pinned ? 'none' : 'auto' 
         }} 
-        onClick={onCloseIfNotPinned} 
+        onClick={(e) => {
+          if (!pinned && e.target === e.currentTarget) {
+            e.stopPropagation();
+            onCloseIfNotPinned();
+          }
+        }}
+        onMouseDown={(e) => {
+          if (!pinned && e.target === e.currentTarget) {
+            e.stopPropagation();
+          }
+        }}
       />
       
       <div style={classes.container}>
@@ -145,12 +185,12 @@ export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClos
         <div 
           style={{ 
             position: 'absolute', 
-            left: 12, 
-            top: 8, 
+            right: 12, 
+            bottom: 8, 
             zIndex: 1002, 
             cursor: 'pointer' 
           }}
-             onClick={(e) => { e.stopPropagation(); setPinned((v) => !v); }}
+             onClick={(e) => { e.stopPropagation(); setPinned(!pinned); }}
           title={pinned ? 'Unpin panel' : 'Pin panel'}
         >
           {pinned ? <MdPushPin size={14} /> : <MdOutlinePushPin size={14} />}

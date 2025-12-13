@@ -72,15 +72,14 @@ export const PrintReportModal: React.FC<IPrintReportModalProps> = ({ open, close
       }}
     >
       <div className={styles.modalContent}>
-        {/* Add refresh button at the top */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+        <div className={styles.refreshContainer}>
           <Button
             appearance="outline"
             size="small"
             onClick={forceRefreshSections}
             disabled={isLoading}
           >
-            🔄 Refresh Sections
+            🔄 {t('refreshSections')}
           </Button>
         </div>
         
@@ -95,7 +94,7 @@ export const PrintReportModal: React.FC<IPrintReportModalProps> = ({ open, close
         
         {isGenerating && (
           <div className={styles.successMessage}>
-            🖨️ Generating report with complete data...
+            🖨️ {t('generatingReport')}
           </div>
         )}
       </div>

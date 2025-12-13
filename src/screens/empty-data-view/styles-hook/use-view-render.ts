@@ -2,7 +2,8 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 export const useViewRenderLayout = makeStyles({
   layoutToolStrip: {
     display: 'flex',
-    height: 'calc(100vh - 180px)',
+    flex: 1,
+    minHeight: 0,
     overflow: 'auto',
     position: 'relative',
     userSelect: 'none',

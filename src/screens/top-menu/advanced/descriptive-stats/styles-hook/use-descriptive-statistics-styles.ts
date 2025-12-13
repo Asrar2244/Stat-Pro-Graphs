@@ -5,6 +5,7 @@ export const useCommonStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
+    width: '55em',
     '& .details': {
       height: '45vh',
     },

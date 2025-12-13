@@ -34,6 +34,8 @@
   "mode": "Mode",
   "color": "Color",
   "download": "Download",
+  "graphDownloaded": "Graph downloaded: {{filename}}",
+  "graphDownloadError": "Failed to download graph. Please try again.",
   "jpegFormat": "Joint Photographic Experts Group",
   "pngFormat": "Portable Network Graphics",
   "svgFormat": "Scalable Vector Graphics",

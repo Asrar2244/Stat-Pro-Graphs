@@ -30,12 +30,10 @@ export const getAllDatabaseData = async (connectionInfo: IDatabaseConnectionInfo
           dataMap.set(tableName, fullData);
         }
       } catch (error) {
-        console.warn(`❌ Error fetching table ${table.name}:`, error);
       }
     }
     return dataMap;
   } catch (error) {
-    console.error('❌ Error fetching all database data:', error);
     return dataMap;
   }
 };

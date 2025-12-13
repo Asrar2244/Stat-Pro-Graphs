@@ -63,7 +63,7 @@ const BestSubsetComponent: FC<IModal> = ({ ...props }) => {
   return (
     <Modal
       key={id}
-      modalType="modal"
+      modalType="alert"
       {...props}
       cancelLabel={t('close', { ns: 'regLinearBestSubset' })}
       okLabel={t('ok', { ns: 'regLinearBestSubset' })}

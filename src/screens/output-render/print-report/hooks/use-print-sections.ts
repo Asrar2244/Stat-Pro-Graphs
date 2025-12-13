@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useRef } from 'react';
 import type { IPrintSection } from '../types';
 import { detectPrintableSections, hasSignificantContent } from '../utils';
-import { PRINT_DEBUG, DATA_OUTPUT_ID_ATTR, OUTPUT_ROOT_SELECTOR } from '../utils/constants';
+import { DATA_OUTPUT_ID_ATTR, OUTPUT_ROOT_SELECTOR } from '../utils/constants';
 import { OutputRenderContext } from '../../context';
 
 export const usePrintSections = () => {
@@ -22,6 +22,11 @@ export const usePrintSections = () => {
   const modalOpenRef = useRef(false);
   const clearedOnceRef = useRef(false);
   const refreshTimerRef = useRef<number | null>(null);
+  
+  // Cache expensive DOM queries with refs
+  const allOutputContainersRef = useRef<NodeListOf<Element> | null>(null);
+  const rootElementRef = useRef<HTMLElement | null>(null);
+  const outputContainerRef = useRef<Element | null>(null);
 
   const loadSections = async () => {
     if (isRefreshing) return;
@@ -37,22 +42,27 @@ export const usePrintSections = () => {
       
       if (currentOutputId) {
         // Look for the specific output container with the data-output-id attribute
-        rootElement = document.querySelector(`[${DATA_OUTPUT_ID_ATTR}="${currentOutputId}"]`) as HTMLElement;
+        // Use cached ref if available and still valid
+        if (rootElementRef.current && rootElementRef.current.getAttribute(DATA_OUTPUT_ID_ATTR) === currentOutputId.toString()) {
+          rootElement = rootElementRef.current;
+        } else {
+          rootElement = document.querySelector(`[${DATA_OUTPUT_ID_ATTR}="${currentOutputId}"]`) as HTMLElement;
+          rootElementRef.current = rootElement || null;
+        }
         
         if (!rootElement) {
-          console.warn(`⚠️ Could not find output container with data-output-id="${currentOutputId}"`);
           setError(`Could not find the current output (ID: ${currentOutputId}). Please refresh the page.`);
           setSections([]);
           return;
         }
-        
-        if (PRINT_DEBUG) console.log(`📍 Found output container for ID: ${currentOutputId}`);
       } else {
         // Enhanced fallback: try to find the currently active output container
-        if (PRINT_DEBUG) console.warn('⚠️ No current output ID available, trying enhanced fallback detection');
-        
         // Strategy 1: Look for visible/active output containers
-        const allOutputContainers = document.querySelectorAll(`[${DATA_OUTPUT_ID_ATTR}]`);
+        // Use cached ref if available, otherwise query and cache
+        if (!allOutputContainersRef.current) {
+          allOutputContainersRef.current = document.querySelectorAll(`[${DATA_OUTPUT_ID_ATTR}]`);
+        }
+        const allOutputContainers = allOutputContainersRef.current;
         let activeContainer: HTMLElement | null = null;
         
         // Find the container that is currently visible/active
@@ -68,34 +78,31 @@ export const usePrintSections = () => {
           
           // Check if this container is in the currently active tab
           const isInActiveTab = containerEl.closest(OUTPUT_ROOT_SELECTOR) !== null;
-          
-          if (PRINT_DEBUG) console.log(`🔍 Checking container ${containerEl.getAttribute(DATA_OUTPUT_ID_ATTR)}: visible=${isVisible}, hasContent=${hasContent}, inActiveTab=${isInActiveTab}`);
-          
           if (isVisible && hasContent && isInActiveTab) {
             activeContainer = containerEl;
-            if (PRINT_DEBUG) console.log(`📍 Found active output container: ${containerEl.getAttribute(DATA_OUTPUT_ID_ATTR)}`);
             break;
           }
         }
         
         if (activeContainer) {
           rootElement = activeContainer;
-          const fallbackId = rootElement.getAttribute(DATA_OUTPUT_ID_ATTR);
-          if (PRINT_DEBUG) console.log(`📍 Using active output container ID: ${fallbackId}`);
+          rootElementRef.current = rootElement;
         } else {
           // Strategy 2: If no active container found, try to find any container with content
-          if (PRINT_DEBUG) console.log('⚠️ No active container found, looking for any container with content');
           for (const container of allOutputContainers) {
             const containerEl = container as HTMLElement;
             if (containerEl.children.length > 0) {
               // Check if it has meaningful content (cards, tables, etc.)
-              const hasCards = containerEl.querySelectorAll('.fui-Card').length > 0;
-              const hasTables = containerEl.querySelectorAll('table').length > 0;
-              const hasCharts = containerEl.querySelectorAll('svg, canvas').length > 0;
+              // Use single query with combined selector for better performance
+              const cards = containerEl.querySelectorAll('.fui-Card');
+              const tables = containerEl.querySelectorAll('table');
+              const charts = containerEl.querySelectorAll('svg, canvas');
+              const hasCards = cards.length > 0;
+              const hasTables = tables.length > 0;
+              const hasCharts = charts.length > 0;
               
               if (hasCards || hasTables || hasCharts) {
                 activeContainer = containerEl;
-                if (PRINT_DEBUG) console.log(`📍 Found container with content: ${containerEl.getAttribute(DATA_OUTPUT_ID_ATTR)} (cards: ${hasCards}, tables: ${hasTables}, charts: ${hasCharts})`);
                 break;
               }
             }
@@ -103,8 +110,7 @@ export const usePrintSections = () => {
           
           if (activeContainer) {
             rootElement = activeContainer;
-            const fallbackId = rootElement.getAttribute(DATA_OUTPUT_ID_ATTR);
-            if (PRINT_DEBUG) console.log(`📍 Using content-rich container ID: ${fallbackId}`);
+            rootElementRef.current = rootElement;
           } else {
             setError('No active output containers found. Please open an output first.');
             setSections([]);
@@ -117,7 +123,6 @@ export const usePrintSections = () => {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       let detectedSections = detectPrintableSections(rootElement);
-      if (PRINT_DEBUG) console.log(`🔍 Detected ${detectedSections.length} sections from current output`);
       
       // If no sections found, wait a bit longer and try again (content might still be loading)
       if (detectedSections.length === 0) {
@@ -125,7 +130,6 @@ export const usePrintSections = () => {
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         detectedSections = detectPrintableSections(rootElement);
-        if (PRINT_DEBUG) console.log(`🔍 Retry detected ${detectedSections.length} sections from current output`);
         
       }
       
@@ -141,12 +145,10 @@ export const usePrintSections = () => {
         return;
       }
       
-      if (PRINT_DEBUG) console.log(`✅ ${validSections.length} sections ready for current output`);
       setSections(validSections);
       setAllSelected(true);
       
     } catch (err) {
-      console.error('❌ Error loading sections:', err);
       setError('Failed to load printable sections.');
       setSections([]);
     } finally {
@@ -197,6 +199,11 @@ export const usePrintSections = () => {
       setSections([]);
       setError(null);
       
+      // Invalidate cached refs when output changes
+      allOutputContainersRef.current = null;
+      rootElementRef.current = null;
+      outputContainerRef.current = null;
+      
       await loadSections();
     }
   };
@@ -205,6 +212,10 @@ export const usePrintSections = () => {
   const forceRefreshSections = async () => {
     // Reset the current output ID to force a fresh load
     setCurrentOutputId('');
+    // Invalidate cached refs to force fresh queries
+    allOutputContainersRef.current = null;
+    rootElementRef.current = null;
+    outputContainerRef.current = null;
     // Debounce to avoid rapid re-entrancy
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
@@ -219,6 +230,10 @@ export const usePrintSections = () => {
     setSections([]);
     setError(null);
     setCurrentOutputId('');
+    // Invalidate cached refs
+    allOutputContainersRef.current = null;
+    rootElementRef.current = null;
+    outputContainerRef.current = null;
   };
 
   // Set modal open state
@@ -297,7 +312,6 @@ export const usePrintSections = () => {
   useEffect(() => {
     const handlePageLoad = () => {
       if (isModalOpen && context?.selectedRun) {
-        console.log('🔄 Page loaded, refreshing sections...');
         // Longer delay to let all content load
         setTimeout(() => {
           forceRefreshSections();
@@ -316,8 +330,11 @@ export const usePrintSections = () => {
   useEffect(() => {
     if (!context?.selectedRun) return;
 
-    // Find the main output container
-    const outputContainer = document.querySelector('[class*="regressionsLayout"], [class*="Layout"], [class*="content"]');
+    // Find the main output container - use cached ref if available
+    if (!outputContainerRef.current) {
+      outputContainerRef.current = document.querySelector('[class*="regressionsLayout"], [class*="Layout"], [class*="content"]');
+    }
+    const outputContainer = outputContainerRef.current;
     
     if (!outputContainer) {
       return;
@@ -380,7 +397,6 @@ export const usePrintSections = () => {
     const checkActiveOutputChange = () => {
       const newOutputId = context?.selectedRun?.id?.toString();
       if (newOutputId && newOutputId !== currentOutputId) {
-        console.log('🔄 Active output changed, refreshing sections...');
         void forceRefreshSections();
       }
     };

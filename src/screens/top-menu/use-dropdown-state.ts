@@ -3,10 +3,13 @@ import { useState } from 'react';
 export const useDropdownState = () => {
   const [testsOpen, setTestsOpen] = useState(false);
   const [graphsOpen, setGraphsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [pinned, setPinned] = useState(false);
 
   const openTests = () => {
     setTestsOpen(true);
-    if (graphsOpen) setGraphsOpen(false); // Close graphs if open
+    if (graphsOpen) setGraphsOpen(false);
+    if (helpOpen) setHelpOpen(false);
   };
 
   const closeTests = () => {
@@ -14,17 +17,19 @@ export const useDropdownState = () => {
   };
 
   const toggleTests = () => {
-    setTestsOpen((open) => {
-      const newOpen = !open;
-      // Close graphs if opening tests
-      if (newOpen && graphsOpen) setGraphsOpen(false);
-      return newOpen;
-    });
+    if (testsOpen) {
+      setTestsOpen(false);
+    } else {
+      if (graphsOpen) setGraphsOpen(false);
+      if (helpOpen) setHelpOpen(false);
+      setTestsOpen(true);
+    }
   };
 
   const openGraphs = () => {
     setGraphsOpen(true);
-    if (testsOpen) setTestsOpen(false); // Close tests if open
+    if (testsOpen) setTestsOpen(false);
+    if (helpOpen) setHelpOpen(false);
   };
 
   const closeGraphs = () => {
@@ -32,28 +37,56 @@ export const useDropdownState = () => {
   };
 
   const toggleGraphs = () => {
-    setGraphsOpen((open) => {
-      const newOpen = !open;
-      // Close tests if opening graphs
-      if (newOpen && testsOpen) setTestsOpen(false);
-      return newOpen;
-    });
+    if (graphsOpen) {
+      setGraphsOpen(false);
+    } else {
+      if (testsOpen) setTestsOpen(false);
+      if (helpOpen) setHelpOpen(false);
+      setGraphsOpen(true);
+    }
+  };
+
+  const openHelp = () => {
+    setHelpOpen(true);
+    if (testsOpen) setTestsOpen(false);
+    if (graphsOpen) setGraphsOpen(false);
+  };
+
+  const closeHelp = () => {
+    setHelpOpen(false);
+  };
+
+  const toggleHelp = () => {
+    if (helpOpen) {
+      setHelpOpen(false);
+    } else {
+      if (testsOpen) setTestsOpen(false);
+      if (graphsOpen) setGraphsOpen(false);
+      setHelpOpen(true);
+    }
   };
 
   const closeAllDropdowns = () => {
     setTestsOpen(false);
     setGraphsOpen(false);
+    setHelpOpen(false);
   };
 
   return {
     testsOpen,
     graphsOpen,
+    helpOpen,
+    pinned,
+    setPinned,
     openTests,
     closeTests,
     toggleTests,
     openGraphs,
     closeGraphs,
     toggleGraphs,
+    openHelp,
+    closeHelp,
+    toggleHelp,
     closeAllDropdowns,
   };
 };

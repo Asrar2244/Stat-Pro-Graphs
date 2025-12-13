@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { exists, mkdir, create } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
-import { safeTauriCall, isTauriEnvironment } from '@utils/tauri-utils';
 import { Database, homeDirectory, saveLargeJsonToFile } from '@utils';
+import { safeTauriCall, isTauriEnvironment } from '@utils/tauri-utils';
 import { useTasks } from '@store';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
@@ -27,21 +27,20 @@ export const useInitialConfig = () => {
   const createInitialFolders = async (): Promise<void> => {
     try {
       const homeDir = await homeDirectory();
-      
+
       // In development mode, skip folder creation
       if (!isTauriEnvironment()) {
-        console.log('Development mode: Skipping folder creation for:', homeDir);
         return;
       }
 
       if (!(await safeTauriCall(() => exists(homeDir), false))) {
         await safeTauriCall(() => mkdir(homeDir), undefined);
       }
-      
+
       for (const folder of [COLLECTION_DIR]) {
         const fullPath = await safeTauriCall(
           () => join(homeDir, folder),
-          homeDir + '/' + folder
+          `${homeDir}/${folder}`
         );
         if (!(await safeTauriCall(() => exists(fullPath), false))) {
           await safeTauriCall(() => mkdir(fullPath), undefined);
@@ -58,12 +57,11 @@ export const useInitialConfig = () => {
       const homeDir = await homeDirectory();
       const fullCollectionDBPath = await safeTauriCall(
         () => join(homeDir, COLLECTION_DIR, CONFIGURATION_DB),
-        homeDir + '/' + COLLECTION_DIR + '/' + CONFIGURATION_DB
+        `${homeDir}/${COLLECTION_DIR}/${CONFIGURATION_DB}`
       );
 
       // In development mode, skip file creation
       if (!isTauriEnvironment()) {
-        console.log('Development mode: Skipping file creation for:', fullCollectionDBPath);
         return;
       }
 
@@ -78,8 +76,7 @@ export const useInitialConfig = () => {
   const createInitialTestConfigFile = async (): Promise<void> => {
     const homeDir = await homeDirectory();
     const configFile = await join(homeDir, COLLECTION_DIR, CONFIG_FILE);
-    saveLargeJsonToFile(configFile, initialConfig)
-
+    saveLargeJsonToFile(configFile, initialConfig);
   };
 
   const seedInitialConfig = async () => {
@@ -87,15 +84,13 @@ export const useInitialConfig = () => {
       setIsLoading(true);
       await createInitialFolders();
       await createInitialFile();
-      
+
       // Skip database operations in development mode
       if (isTauriEnvironment()) {
         const db = new Database(CONFIGURATION_DB);
         await db.executeQuery(`${Object.values(initialTables).join(';')}`).catch((error) => {
           console.warn('Database initialization error:', error);
         });
-      } else {
-        console.log('Development mode: Skipping database initialization');
       }
       await createInitialTestConfigFile();
       const db = new Database(CONFIGURATION_DB);

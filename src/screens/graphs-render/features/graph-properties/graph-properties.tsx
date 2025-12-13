@@ -67,7 +67,7 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
   const plotProps = graphProperties.plotSpecific;
   
 
-  const [drawerWidth, setDrawerWidth] = useState<number>(560);
+  const [drawerWidth, setDrawerWidth] = useState<number>(340);
   const isDraggingRef = useRef(false);
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);

@@ -48,7 +48,7 @@ const MainListRender: FC = () => {
   };
   return (
     <Fieldset title={t('selectedVariables')}>
-      <div className={classes.availableList}>
+      <div className={classes.sectionAvailable}>
         <ListCheckboxWithSelectAll
           listSize={mainSelectedList.size}
           list={mainSelectedList}
@@ -60,9 +60,12 @@ const MainListRender: FC = () => {
           setModelBulk={setModelBulk}
           listName="mainSelectedList"
         />
-      </div>
-      <div className={classes.removeButton}>
-        <Button icon={<IoMdClose />} name="apply" onClick={onRemoveHandler}>
+        <Button
+          icon={<IoMdClose />}
+          className={classes.removeButtonClass}
+          name="apply"
+          onClick={onRemoveHandler}
+        >
           {t('remove')}
         </Button>
       </div>
@@ -72,9 +75,9 @@ const MainListRender: FC = () => {
 
 const AvailableListRender: FC = () => {
   const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
+  const classes = useMainStyles();
   const { t } = useTranslation('descriptiveStatistics');
 
-  const classes = useMainStyles();
   const { mainSelectedList, availableList, setModelBulk } = useDescriptiveStatistics(
     useShallow((state) => ({
       mainSelectedList: state.model.mainSelectedList,
@@ -103,7 +106,7 @@ const AvailableListRender: FC = () => {
   };
   return (
     <Fieldset title={t('Available')}>
-      <div className={classes.availableList}>
+      <div className={classes.sectionAvailable}>
         <ListCheckboxWithSelectAll
           listSize={availableList.size}
           list={availableList}
@@ -115,11 +118,11 @@ const AvailableListRender: FC = () => {
           setModelBulk={setModelBulk}
           listName="availableList"
         />
-      </div>
-      <div className={classes.applyButton}>
-        <Button icon={<IoMdCheckmark />} name="apply" onClick={onSendHandler}>
-          {t('add')}
-        </Button>
+        <div className={classes.sendButtons}>
+          <Button icon={<IoMdCheckmark />} name="apply" onClick={onSendHandler}>
+            {t('add')}
+          </Button>
+        </div>
       </div>
     </Fieldset>
   );

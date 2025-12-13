@@ -173,7 +173,6 @@ const AnovaComponentBase: FC<IAnovaComponentProps> = ({ executeCalculation }) =>
 
         <div className={classes.calculateButtonContainer}>
           <Button
-            type="button"
             appearance="subtle"
             className={classes.calculateButton}
             onClick={handleCalculate}
