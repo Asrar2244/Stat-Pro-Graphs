@@ -13,10 +13,11 @@ const MinMaxCloseComponent: FC = () => {
   const classes = useMinMaxCloseStyles();
   const classMerge = mergeClasses(classes.ul, classes.liCloseMaxMin);
   const platformIsMac = useMemo(() => {
-    return platformInfo() === 'mac';
+    const platform = platformInfo();
+    const isMac = platform === 'mac';
+    return isMac;
   }, []);
   
-
   const onHandleMinimize = async () => {
     try {
       await getCurrentWindow().minimize();
