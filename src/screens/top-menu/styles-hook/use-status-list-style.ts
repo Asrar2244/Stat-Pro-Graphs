@@ -18,6 +18,7 @@ export const useMenuLayout = makeStyles({
     // width: '65%',
     display: 'inline-flex',
     cursor: 'pointer',
+    WebkitAppRegion: 'no-drag',
     // ...shorthands.flex(1),
     '& span': {
       wordSpacing: 'nowrap',

@@ -53,7 +53,10 @@ export type DataFormat =
   | 'Y Many X'
   // Category formats
   | 'X Category'
-  | 'Y Category';
+  | 'Y Category'
+  // Replicate formats
+  | 'Y Single X Replicates'
+  | 'X Single Y Replicates';
 
 /**
  * Symbol value options for error bar configuration
@@ -121,13 +124,13 @@ interface LineScatterPlotState {
   selectedYVariable?: string;
   availableVariables: Variable[];
   graphConfig: Record<string, unknown>;
-  
+
   // Error Bar specific state
   symbolValue?: SymbolValueOption;
   errorCalculationUpper?: ErrorCalculationOption;
   errorCalculationLower?: ErrorCalculationOption;
   errorBarVariable?: string;
-  
+
   setProject: (p?: string) => void;
   setSubType: (t?: LineScatterSubType) => void;
   setDataset: (d?: string) => void;
@@ -139,13 +142,13 @@ interface LineScatterPlotState {
   setYVariable: (y?: string) => void;
   setAvailableVariables: (v: Variable[]) => void;
   setGraphConfig: (c: Record<string, unknown>) => void;
-  
+
   // Error Bar specific setters
   setSymbolValue: (s?: SymbolValueOption) => void;
   setErrorCalculationUpper: (e?: ErrorCalculationOption) => void;
   setErrorCalculationLower: (e?: ErrorCalculationOption) => void;
   setErrorBarVariable: (v?: string) => void;
-  
+
   reset: () => void;
 }
 
@@ -172,19 +175,19 @@ export const useLineScatterPlotStore = create<LineScatterPlotState>()(
       setSubType: (subType) => {
         set({ subType });
         // Auto-set data format for Simple types
-        if (subType === 'Simple Straight Line and Scatter' || 
-            subType === 'Simple Spline Curve Line and Scatter' ||
-            subType === 'Simple Vertical Step Plot' ||
-            subType === 'Simple Vertical Midpoint Step Plot' ||
-            subType === 'Simple Horizontal Step Plot' ||
-            subType === 'Simple Horizontal Midpoint Step Plot') {
+        if (subType === 'Simple Straight Line and Scatter' ||
+          subType === 'Simple Spline Curve Line and Scatter' ||
+          subType === 'Simple Vertical Step Plot' ||
+          subType === 'Simple Vertical Midpoint Step Plot' ||
+          subType === 'Simple Horizontal Step Plot' ||
+          subType === 'Simple Horizontal Midpoint Step Plot') {
           set({ dataFormat: 'XY Pairs' });
         }
         // Auto-set symbol value to Worksheet for error bar subplot types
-        if (subType === 'Simple Line and Scatter Error Bars' || 
-            subType === 'Multiple Line and Scatter Error Bars' ||
-            subType === 'Horizontal Error Bars' ||
-            subType === 'Bi-Directional Error Bars') {
+        if (subType === 'Simple Line and Scatter Error Bars' ||
+          subType === 'Multiple Line and Scatter Error Bars' ||
+          subType === 'Horizontal Error Bars' ||
+          subType === 'Bi-Directional Error Bars') {
           set({ symbolValue: 'Worksheet' });
         }
       },
@@ -197,13 +200,13 @@ export const useLineScatterPlotStore = create<LineScatterPlotState>()(
       setYVariable: (selectedYVariable) => set({ selectedYVariable }),
       setAvailableVariables: (availableVariables) => set({ availableVariables }),
       setGraphConfig: (graphConfig) => set({ graphConfig }),
-      
+
       // Error Bar specific setters
       setSymbolValue: (symbolValue) => set({ symbolValue }),
       setErrorCalculationUpper: (errorCalculationUpper) => set({ errorCalculationUpper }),
       setErrorCalculationLower: (errorCalculationLower) => set({ errorCalculationLower }),
       setErrorBarVariable: (errorBarVariable) => set({ errorBarVariable }),
-      
+
       reset: () => set({ ...initial }),
     }),
     {

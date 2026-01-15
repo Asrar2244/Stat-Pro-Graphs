@@ -1,5 +1,5 @@
-import { ChangeEvent, FC, useEffect, useState, MouseEvent } from 'react';
-import { Field, Dropdown, Option, OptionOnSelectData, SelectionEvents, Tab, TabList, SelectTabData, SelectTabEvent, Checkbox, Radio, RadioGroup, Input, tokens, Button } from "@fluentui/react-components";
+import { ChangeEvent, FC, useEffect, useState, MouseEvent, FormEvent } from 'react';
+import { Field, Dropdown, Option, OptionOnSelectData, SelectionEvents, Tab, TabList, SelectTabData, SelectTabEvent, Checkbox, Radio, RadioGroup, Input, tokens, Button, RadioGroupOnChangeData } from "@fluentui/react-components";
 import { MdKeyboardDoubleArrowRight, MdOutlineRemove } from 'react-icons/md';
 import { useTranslation } from "react-i18next";
 import { Fieldset } from "@libs/fieldset";
@@ -47,11 +47,11 @@ export const Model: FC = () => {
   // Initialize availableList from columns - keep all columns in available list
   useEffect(() => {
     if (!columns || columns.length === 0) return;
-    
+
     // Build available list from all columns
     const newAvailableList = new Map<string, boolean>();
     const currentAvailableList = dataFormat.availableList || new Map<string, boolean>();
-    
+
     columns.forEach((column) => {
       // If column already exists in availableList, keep its current state, otherwise add it as unchecked
       if (currentAvailableList.has(column.columnId)) {
@@ -60,7 +60,7 @@ export const Model: FC = () => {
         newAvailableList.set(column.columnId, false);
       }
     });
-    
+
     // Only update if the available list has changed (new columns added)
     const currentKeys = Array.from(currentAvailableList.keys()).sort().join(',');
     const newKeys = Array.from(newAvailableList.keys()).sort().join(',');
@@ -81,7 +81,7 @@ export const Model: FC = () => {
     const subjectSize = dataFormat.indexed?.subject?.size || 0;
     const treatmentSize = dataFormat.indexed?.treatment?.size || 0;
     const dataSize = dataFormat.indexed?.data?.size || 0;
-    
+
     if (beforeSize > 0 || afterSize > 0) {
       return "raw";
     }
@@ -194,17 +194,17 @@ const DataSelection: React.FC<Props> = ({ modelKey, fields, columns }) => {
       setModel: state.setModel,
     }))
   );
-  const { setBlockUI } = useStartProStore();
+
   const availableList = dataFormat.availableList || new Map<string, boolean>();
 
   // Initialize availableList from columns - keep all columns in available list
   useEffect(() => {
     if (!columns || columns.length === 0) return;
-    
+
     // Build available list from all columns
     const newAvailableList = new Map<string, boolean>();
     const currentAvailableList = availableList || new Map<string, boolean>();
-    
+
     columns.forEach((column) => {
       // If column already exists in availableList, keep its current state, otherwise add it as unchecked
       if (currentAvailableList.has(column.columnId)) {
@@ -213,7 +213,7 @@ const DataSelection: React.FC<Props> = ({ modelKey, fields, columns }) => {
         newAvailableList.set(column.columnId, false);
       }
     });
-    
+
     // Only update if the available list has changed (new columns added)
     const currentKeys = Array.from(currentAvailableList.keys()).sort().join(',');
     const newKeys = Array.from(newAvailableList.keys()).sort().join(',');
@@ -230,9 +230,9 @@ const DataSelection: React.FC<Props> = ({ modelKey, fields, columns }) => {
   return (
     <div className={classes.dataSelectionWrapper}>
       <Fieldset title={t('availableVar', { ns: 'regLinearLeastSquare' })}>
-        <AvailableListRender 
-          modelKey={modelKey} 
-          fields={fields} 
+        <AvailableListRender
+          modelKey={modelKey}
+          fields={fields}
           availableList={availableList}
           setModelBulk={setModelBulk}
           setModel={setModel}
@@ -274,7 +274,7 @@ const AvailableListRender: FC<{
 
   useEffect(() => {
     setPropKey(generateKey(availableList));
-  }, [...availableList.values()]);
+  }, [availableList]);
 
   const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
     const fieldKey = (e.currentTarget as HTMLButtonElement).dataset.name;
@@ -285,7 +285,7 @@ const AvailableListRender: FC<{
 
     // Separate selected and unselected items
     availableList.forEach((value, key) => {
-    if (value) {
+      if (value) {
         movList.set(key, true);
         // Keep in available list but uncheck it
         newAvailableList.set(key, false);
@@ -318,9 +318,17 @@ const AvailableListRender: FC<{
           }
         }
       });
-      setModelBulk(newAvailableList, 'availableList');
       setSelectAll(false);
     }
+  };
+
+  const handleAvailableListChange = (list: Map<string, boolean>) => {
+    setModel({
+      dataFormat: {
+        ...dataFormat,
+        availableList: list,
+      }
+    });
   };
 
   return (
@@ -333,7 +341,7 @@ const AvailableListRender: FC<{
         requiredSelectAll
         onSelectAllChanged={setSelectAll}
         propKey={propKey}
-        setModelBulk={setModelBulk}
+        setModelBulk={handleAvailableListChange}
         listName='availableList'
       />
 
@@ -366,7 +374,7 @@ const FieldListRender: FC<{
   setModelBulk: any;
   setModel: any;
   dataFormat: any;
-}> = ({ modelKey, fieldKey, fieldLabel, availableList, setModelBulk, setModel, dataFormat }) => {
+}> = ({ modelKey, fieldKey, availableList, setModelBulk, setModel, dataFormat }) => {
   const classes = useCommonStyles();
   const { t } = useTranslation(['pairedTTestAanalysis', 'regLinearLeastSquare']);
   const fieldList = dataFormat[modelKey]?.[fieldKey] || new Map<string, boolean>();
@@ -375,16 +383,16 @@ const FieldListRender: FC<{
 
   useEffect(() => {
     setPropKey(generateKey(fieldList));
-  }, [...fieldList.values()]);
+  }, [fieldList]);
 
-  const handleFieldListChange = (list: Map<string, boolean>, listName?: string) => {
+  const handleFieldListChange = (list: Map<string, boolean>) => {
     setModel({
       dataFormat: {
-      ...dataFormat,
-      [modelKey]: {
-        ...dataFormat[modelKey],
+        ...dataFormat,
+        [modelKey]: {
+          ...dataFormat[modelKey],
           [fieldKey]: list,
-      }
+        }
       }
     });
   };
@@ -436,7 +444,7 @@ const FieldListRender: FC<{
       >
         {t('remove', { ns: 'pairedTTestAanalysis' })}
       </Button>
-      </div>
+    </div>
   );
 };
 
@@ -470,8 +478,9 @@ const AssumptionChecking: FC = () => {
     setModelBulk({ ...assumptionChecking, "P_value_reject": value }, "assumptionChecking");
   };
 
-  const onRadioChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
+
+  const onRadioChangeHandler = (_ev: FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
+    const value = data.value as string;
     const availableValues = ["shaprio_walk", "kolmo_with_correction"];
     let payLoad: Record<string, boolean> = {};
     availableValues.forEach(v => {

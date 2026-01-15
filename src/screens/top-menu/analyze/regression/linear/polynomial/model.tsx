@@ -68,18 +68,20 @@ const IndependentListRender: FC = () => {
 
   useEffect(() => {
     setPropKey(generateKey(independentList))
-  }, [...independentList.values()])
+  }, [independentList])
 
   const onRemoveHandler = (): void => {
+    const nextAvail = new Map(availableList);
+    const nextIndep = new Map(independentList);
     independentList.forEach((value: boolean, name: string) => {
       if (value) {
-        availableList.set(name, false);
-        independentList.delete(name);
+        nextAvail.set(name, false);
+        nextIndep.delete(name);
       }
     });
-    setModelBulk(availableList, 'availableList');
-    setModelBulk(independentList, 'independentList');
-    if (independentList.size === 0) {
+    setModelBulk(nextAvail, 'availableList');
+    setModelBulk(nextIndep, 'independentList');
+    if (nextIndep.size === 0) {
       setSelectAll(false);
     }
   };
@@ -123,17 +125,19 @@ const DependentListRender: FC = () => {
 
   useEffect(() => {
     setPropKey(generateKey(dependentList))
-  }, [...dependentList.values()])
+  }, [dependentList])
   const onRemoveHandler = (): void => {
+    const nextAvail = new Map(availableList);
+    const nextDep = new Map(dependentList);
     dependentList.forEach((value: boolean, name: string) => {
       if (value) {
-        availableList.set(name, false);
-        dependentList.delete(name);
+        nextAvail.set(name, false);
+        nextDep.delete(name);
       }
     });
-    setModelBulk(availableList, 'availableList');
-    setModelBulk(dependentList, 'dependentList');
-    if (dependentList.size === 0) setSelectAll(false);
+    setModelBulk(nextAvail, 'availableList');
+    setModelBulk(nextDep, 'dependentList');
+    if (nextDep.size === 0) setSelectAll(false);
   };
   return (
     <div className="section-available">
@@ -177,7 +181,7 @@ const AvailableListRender: FC = () => {
 
   useEffect(() => {
     setPropKey(generateKey(availableList))
-  }, [...availableList.values()])
+  }, [availableList])
 
   const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
     const name = (e.currentTarget as HTMLButtonElement).dataset.name;
@@ -194,24 +198,33 @@ const AvailableListRender: FC = () => {
         return;
       }
     }
+    const nextAvail = new Map(availableList);
+    const nextDep = new Map(dependentList);
+    const nextIndep = new Map(independentList);
+
     availableList.forEach((value: boolean, key: string) => {
       if (value) {
         if (name === 'dependent') {
           // Enforce single dependent in polynomial
-          dependentList.clear();
-          dependentList.set(key, true);
+          nextDep.clear();
+          nextDep.set(key, false);
         } else {
           // Only add if we don't already have an independent variable
-          if (independentList.size === 0) {
-            independentList.set(key, true);
+          if (nextIndep.size === 0) {
+            nextIndep.set(key, false);
           }
         }
-        availableList.delete(key);
+        nextAvail.delete(key);
       }
     });
 
-    setModelBulk(availableList, 'availableList');
-    if (availableList.size === 0) setSelectAll(false);
+    setModelBulk(nextAvail, 'availableList');
+    if (name === 'dependent') {
+      setModelBulk(nextDep, 'dependentList');
+    } else {
+      setModelBulk(nextIndep, 'independentList');
+    }
+    if (nextAvail.size === 0) setSelectAll(false);
   };
   return (
     <div className="section-available">

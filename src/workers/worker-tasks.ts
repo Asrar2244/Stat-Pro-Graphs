@@ -35,3 +35,43 @@ export const axios = async (url: string, parameters: any): Promise<any> => {
 export const stringToObject = (str: string) => {
   return JSON.parse(str);
 };
+
+// Database Worker Tasks
+// CRITICAL: Database operations removed from Worker because Tauri IPC relies on window object
+// which is not available in Web Workers.
+// Hybrid Approach:
+// 1. Main Thread fetches raw data from SQLite
+// 2. Worker processes/formats the data (heavy CPU task)
+export const processDbData = async (result: any[]): Promise<any> => {
+  if (!result || !Array.isArray(result) || result.length === 0) return [];
+
+  // 4. Format Data (The Heavy CPU Task)
+  // Extract column names from first row
+  const allColumns = Object.keys(result[0] || {});
+  const columns = allColumns.filter((col: string) => col !== 'xxx_start_pro_id');
+
+  if (columns.length === 0) return [];
+
+  // Check for default headers
+  const isDefaultHeaders = columns.every(col => {
+    return /^[A-Z]+$/.test(col) ||
+      /^Column[_\s]+[A-Z]+$/i.test(col) ||
+      /^col(umn)?_?\d+$/i.test(col) ||
+      /^field_?\d+$/i.test(col);
+  });
+
+  const excelData = isDefaultHeaders
+    ? [
+      ...result.map((row: any) =>
+        columns.map((col: string) => String(row[col] || ''))
+      )
+    ]
+    : [
+      columns,
+      ...result.map((row: any) =>
+        columns.map((col: string) => String(row[col] || ''))
+      )
+    ];
+
+  return excelData;
+};

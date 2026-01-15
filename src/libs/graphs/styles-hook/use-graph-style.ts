@@ -11,7 +11,7 @@ export const useGraphStyles = makeStyles({
     width: '100%',
     height: 'calc(100% - 80px)',
     maxHeight: 'calc(100% - 80px)',
-    position: 'relative',
+    position: 'relative' as const,
     display: 'flex',
     flexDirection: 'column',
   },

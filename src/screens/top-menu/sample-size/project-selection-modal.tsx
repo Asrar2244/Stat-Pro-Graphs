@@ -79,8 +79,8 @@ export const ProjectSelectionModal: FC<ProjectSelectionModalProps> = ({
     }))
   );
 
-  // Get project names (keys) just like the explorer does
-  const projectNames = Object.keys(projects);
+  // Get project IDs (keys)
+  const projectIds = Object.keys(projects);
 
   const handleSelectProject = (projectId: number, projectName: string) => {
     onSelectProject(projectId, projectName);
@@ -88,14 +88,14 @@ export const ProjectSelectionModal: FC<ProjectSelectionModalProps> = ({
   };
 
   // Debug logging
-  console.log('[ProjectSelectionModal] Projects:', projectNames.map(name => ({ name, id: projects[name]?.id })));
+  console.log('[ProjectSelectionModal] Projects:', projectIds.map(id => ({ name: projects[id]?.projectName, id })));
 
   return (
     <Modal
       open={open}
       closeModal={onClose}
       toggleModal={onClose}
-      openModal={() => {}}
+      openModal={() => { }}
       title="Select Project to Save Report"
       size="medium"
       showCancel
@@ -103,9 +103,10 @@ export const ProjectSelectionModal: FC<ProjectSelectionModalProps> = ({
       showOk={false}
     >
       <div className={classes.projectList}>
-        {projectNames.length > 0 ? (
-          projectNames.map((projectName) => {
-            const project = projects[projectName];
+        {projectIds.length > 0 ? (
+          projectIds.map((projectId) => {
+            const project = projects[projectId];
+            const projectName = project.projectName;
             return (
               <div
                 key={project.id}

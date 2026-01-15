@@ -31,7 +31,7 @@ const numberFormat = (value: string | number): string => {
 };
 
 const checkColumnExistsQuery = (columns: Array<string>, tableName: string) => {
-  const col = columns.some(c => c.includes('"')) ? columns.join(",") : `'${columns.join("','")}'`;
+  const col = columns.map(c => `'${c.replace(/"/g, '')}'`).join(",");
   return tableName ? `SELECT name
 FROM pragma_table_info('${tableName}')
 WHERE name IN(${col})` : ""
@@ -42,7 +42,7 @@ const withOutRecordType = (view: Array<Array<string>>): Array<string> => {
     for (let j = 0; j < view[i].length; j++) {
       const cell = view[i][j];
       if (cell !== '' && !cell.startsWith('t-')) {
-        const sanitized = cell.includes('.') ? `"${cell}"` : cell;
+        const sanitized = cell.includes('.') || cell.includes('-') ? `"${cell}"` : cell;
         columns.push(sanitized);
       }
     }
@@ -133,7 +133,7 @@ const mergingDataWithRecordType = (
     for (let c = 0; c < viewDtl.length; c++) {
       const sanitizedCell = viewDtl[c].replace('t-', '');
       const value = result[i][sanitizedCell];
-      
+
       // Handle null/undefined values - don't display them
       if (value == null || value === '') {
         row.push('');

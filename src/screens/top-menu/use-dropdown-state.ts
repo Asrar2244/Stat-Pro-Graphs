@@ -1,76 +1,76 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export const useDropdownState = () => {
   const [testsOpen, setTestsOpen] = useState(false);
   const [graphsOpen, setGraphsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
-  const [pinned, setPinned] = useState(false);
+  const [pinned, setPinned] = useState(true);
 
-  const openTests = () => {
+  const openTests = useCallback(() => {
     setTestsOpen(true);
     if (graphsOpen) setGraphsOpen(false);
     if (helpOpen) setHelpOpen(false);
-  };
+  }, [graphsOpen, helpOpen]);
 
-  const closeTests = () => {
+  const closeTests = useCallback(() => {
     setTestsOpen(false);
-  };
+  }, []);
 
-  const toggleTests = () => {
+  const toggleTests = useCallback(() => {
     if (testsOpen) {
       setTestsOpen(false);
     } else {
-      if (graphsOpen) setGraphsOpen(false);
-      if (helpOpen) setHelpOpen(false);
+      setGraphsOpen(false);
+      setHelpOpen(false);
       setTestsOpen(true);
     }
-  };
+  }, [testsOpen]);
 
-  const openGraphs = () => {
+  const openGraphs = useCallback(() => {
     setGraphsOpen(true);
     if (testsOpen) setTestsOpen(false);
     if (helpOpen) setHelpOpen(false);
-  };
+  }, [testsOpen, helpOpen]);
 
-  const closeGraphs = () => {
+  const closeGraphs = useCallback(() => {
     setGraphsOpen(false);
-  };
+  }, []);
 
-  const toggleGraphs = () => {
+  const toggleGraphs = useCallback(() => {
     if (graphsOpen) {
       setGraphsOpen(false);
     } else {
-      if (testsOpen) setTestsOpen(false);
-      if (helpOpen) setHelpOpen(false);
+      setTestsOpen(false);
+      setHelpOpen(false);
       setGraphsOpen(true);
     }
-  };
+  }, [graphsOpen]);
 
-  const openHelp = () => {
+  const openHelp = useCallback(() => {
     setHelpOpen(true);
     if (testsOpen) setTestsOpen(false);
     if (graphsOpen) setGraphsOpen(false);
-  };
+  }, [testsOpen, graphsOpen]);
 
-  const closeHelp = () => {
+  const closeHelp = useCallback(() => {
     setHelpOpen(false);
-  };
+  }, []);
 
-  const toggleHelp = () => {
+  const toggleHelp = useCallback(() => {
     if (helpOpen) {
       setHelpOpen(false);
     } else {
-      if (testsOpen) setTestsOpen(false);
-      if (graphsOpen) setGraphsOpen(false);
+      setTestsOpen(false);
+      setGraphsOpen(false);
       setHelpOpen(true);
     }
-  };
+  }, [helpOpen]);
 
-  const closeAllDropdowns = () => {
+  const closeAllDropdowns = useCallback(() => {
     setTestsOpen(false);
     setGraphsOpen(false);
     setHelpOpen(false);
-  };
+  }, []);
 
   return {
     testsOpen,

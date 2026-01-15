@@ -34,7 +34,8 @@ export const useTableStyles = makeStyles({
     ...shorthands.padding(tokens.spacingVerticalS, 0, 0, 0),
   },
   cellStyle: {
-    ...shorthands.border('1px', 'solid', tokens.colorNeutralForeground1),
+    // Light grid lines like Excel - use very subtle stroke color and thinner border
+    ...shorthands.border('0.5px', 'solid', tokens.colorNeutralStroke3),
   },
   cellHeaders: {
     backgroundColor: tokens.colorNeutralBackground3,

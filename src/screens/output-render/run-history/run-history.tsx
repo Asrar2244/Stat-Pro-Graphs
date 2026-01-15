@@ -28,22 +28,22 @@ interface IHistory {
   setTotalRuns: (value: number) => void;
   selectedRun: (id: number, title: string) => void;
 }
-const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
+const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number; tabName?: string }> = ({
   history,
   selectedID,
+  tabName
 }) => {
   const classes = useRunHistoryClasses();
-  const { config } = useActiveNode([]);
   const { t } = useTranslation('outputToolBar');
-  const { data, isLoading } = useFetchOutput(config.tabName);
+  const { data, isLoading } = useFetchOutput(tabName || '');
   const { setRenderLatestRun, renderLatestRun } = useStartProStore();
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Filter data based on search query
   const filteredData = useMemo(() => {
     if (!data || !Array.isArray(data)) return [];
     if (!searchQuery.trim()) return data;
-    
+
     return data.filter((item) => {
       const searchLower = searchQuery.toLowerCase();
       return (
@@ -57,13 +57,13 @@ const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
       );
     });
   }, [data, searchQuery]);
-  
+
   useEffect(() => {
     if (Array.isArray(data)) {
-        history.setTotalRuns(data.length);
-        if (renderLatestRun || ((!selectedID || selectedID === 0) && data.length > 0)) {
-          const nice = friendlyTitleForOutput(data[0]?.outputType, data[0]?.outputFor);
-          history.selectedRun(data[0]?.id, nice);
+      history.setTotalRuns(data.length);
+      if (renderLatestRun || ((!selectedID || selectedID === 0) && data.length > 0)) {
+        const nice = friendlyTitleForOutput(data[0]?.outputType, data[0]?.outputFor);
+        history.selectedRun(data[0]?.id, nice);
         setRenderLatestRun(false);
       }
     }

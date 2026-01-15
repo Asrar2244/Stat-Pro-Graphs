@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useMeshPlotStore } from '../meshPlotSlice';
 import type { DataFormat, Variable } from '../meshPlotSlice';
 
@@ -14,7 +14,7 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
   const [xVariableList, setXVariableList] = useState<Map<string, boolean>>(new Map());
   const [yVariableList, setYVariableList] = useState<Map<string, boolean>>(new Map());
   const [zVariableList, setZVariableList] = useState<Map<string, boolean>>(new Map());
-  
+
   // Select all states
   const [selectAllAvailable, setSelectAllAvailable] = useState<boolean | string | undefined>(false);
   const [selectAllX, setSelectAllX] = useState<boolean | string | undefined>(false);
@@ -23,6 +23,30 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
 
   // Get store methods for updating X/Y/Z variables
   const { setXVariable, setYVariable, setZVariable } = useMeshPlotStore();
+
+  // Reset all lists when availableVariables changes (e.g., project switch)
+  useEffect(() => {
+    // Clear all variable lists
+    setAvailableList(new Map());
+    setXVariableList(new Map());
+    setYVariableList(new Map());
+    setZVariableList(new Map());
+
+    // Reset select all states
+    setSelectAllAvailable(false);
+    setSelectAllX(false);
+    setSelectAllY(false);
+    setSelectAllZ(false);
+
+    // Populate available list with new variables
+    if (availableVariables.length > 0) {
+      const newMap = new Map<string, boolean>();
+      availableVariables.forEach(variable => {
+        newMap.set(variable.name, false);
+      });
+      setAvailableList(newMap);
+    }
+  }, [availableVariables]);
 
   // Helper to get variable by name
   const getVariable = useCallback((name: string): Variable | undefined => {
@@ -59,26 +83,26 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
   const handleSendToX = useCallback(() => {
     const newXList = new Map(xVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     // For XYZ Triplets and XY Many Z, allow only 1 X variable
     const maxX = (dataFormat === 'XYZ Triplets' || dataFormat === 'XY Many Z') ? 1 : Infinity;
     const freeSlots = Math.max(0, maxX - newXList.size);
     let moved = 0;
-    
+
     for (const [variableName, checked] of availableList.entries()) {
       if (!checked) continue;
       if (moved >= freeSlots) break;
       if (!isValidForSlot(variableName, 'x')) continue;
-      
+
       newXList.set(variableName, false);
       newAvailableList.set(variableName, false);
       moved++;
     }
-    
+
     setXVariableList(newXList);
     setAvailableList(newAvailableList);
     setSelectAllAvailable(false);
-    
+
     // Update store
     const firstX = pickFirstVariable(newXList);
     setXVariable(firstX);
@@ -88,26 +112,26 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
   const handleSendToY = useCallback(() => {
     const newYList = new Map(yVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     // For XYZ Triplets and XY Many Z, allow only 1 Y variable
     const maxY = (dataFormat === 'XYZ Triplets' || dataFormat === 'XY Many Z') ? 1 : Infinity;
     const freeSlots = Math.max(0, maxY - newYList.size);
     let moved = 0;
-    
+
     for (const [variableName, checked] of availableList.entries()) {
       if (!checked) continue;
       if (moved >= freeSlots) break;
       if (!isValidForSlot(variableName, 'y')) continue;
-      
+
       newYList.set(variableName, false);
       newAvailableList.set(variableName, false);
       moved++;
     }
-    
+
     setYVariableList(newYList);
     setAvailableList(newAvailableList);
     setSelectAllAvailable(false);
-    
+
     // Update store
     const firstY = pickFirstVariable(newYList);
     setYVariable(firstY);
@@ -117,27 +141,27 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
   const handleSendToZ = useCallback(() => {
     const newZList = new Map(zVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     // For XYZ Triplets, allow only 1 Z variable; for Many Z and XY Many Z, allow exactly 2
-    const maxZ = (dataFormat === 'XYZ Triplets') ? 1 : 
-                 (dataFormat === 'Many Z' || dataFormat === 'XY Many Z') ? 2 : Infinity;
+    const maxZ = (dataFormat === 'XYZ Triplets') ? 1 :
+      (dataFormat === 'Many Z' || dataFormat === 'XY Many Z') ? 2 : Infinity;
     const freeSlots = Math.max(0, maxZ - newZList.size);
     let moved = 0;
-    
+
     for (const [variableName, checked] of availableList.entries()) {
       if (!checked) continue;
       if (moved >= freeSlots) break;
       if (!isValidForSlot(variableName, 'z')) continue;
-      
+
       newZList.set(variableName, false);
       newAvailableList.set(variableName, false);
       moved++;
     }
-    
+
     setZVariableList(newZList);
     setAvailableList(newAvailableList);
     setSelectAllAvailable(false);
-    
+
     // Update store
     const firstZ = pickFirstVariable(newZList);
     setZVariable(firstZ);
@@ -147,7 +171,7 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
   const handleRemoveFromX = useCallback(() => {
     const newXList = new Map(xVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     // Move selected X variables back to available
     for (const [variableName, checked] of xVariableList.entries()) {
       if (checked) {
@@ -155,11 +179,11 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
         newAvailableList.set(variableName, false);
       }
     }
-    
+
     setXVariableList(newXList);
     setAvailableList(newAvailableList);
     setSelectAllX(false);
-    
+
     // Update store
     const firstX = pickFirstVariable(newXList);
     setXVariable(firstX);
@@ -169,7 +193,7 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
   const handleRemoveFromY = useCallback(() => {
     const newYList = new Map(yVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     // Move selected Y variables back to available
     for (const [variableName, checked] of yVariableList.entries()) {
       if (checked) {
@@ -177,11 +201,11 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
         newAvailableList.set(variableName, false);
       }
     }
-    
+
     setYVariableList(newYList);
     setAvailableList(newAvailableList);
     setSelectAllY(false);
-    
+
     // Update store
     const firstY = pickFirstVariable(newYList);
     setYVariable(firstY);
@@ -191,7 +215,7 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
   const handleRemoveFromZ = useCallback(() => {
     const newZList = new Map(zVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     // Move selected Z variables back to available
     for (const [variableName, checked] of zVariableList.entries()) {
       if (checked) {
@@ -199,11 +223,11 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
         newAvailableList.set(variableName, false);
       }
     }
-    
+
     setZVariableList(newZList);
     setAvailableList(newAvailableList);
     setSelectAllZ(false);
-    
+
     // Update store
     const firstZ = pickFirstVariable(newZList);
     setZVariable(firstZ);
@@ -226,8 +250,8 @@ export const useVariableManagement = (dataFormat?: DataFormat, availableVariable
 
   const canSendZ = useMemo(() => {
     if (availableCheckedCount === 0) return false;
-    const maxZ = (dataFormat === 'XYZ Triplets') ? 1 : 
-                 (dataFormat === 'Many Z' || dataFormat === 'XY Many Z') ? 2 : Infinity;
+    const maxZ = (dataFormat === 'XYZ Triplets') ? 1 :
+      (dataFormat === 'Many Z' || dataFormat === 'XY Many Z') ? 2 : Infinity;
     return zCount < maxZ;
   }, [availableCheckedCount, zCount, dataFormat]);
 

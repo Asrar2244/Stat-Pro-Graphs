@@ -19,9 +19,9 @@ export const EMPTY_GRAPH_VIEW = 'emptyDataView';
 export const DATA = 'DATA';
 //Notification table status
 export const NOTIFICATION_STATUS = {
-  SUCCESS: 'SUCCESS',
-  ERROR: 'ERROR',
-  PROCESSING: 'PROCESSING',
+    SUCCESS: 'SUCCESS',
+    ERROR: 'ERROR',
+    PROCESSING: 'PROCESSING',
 };
 
 export const CONFIG_FILE = "config.json"

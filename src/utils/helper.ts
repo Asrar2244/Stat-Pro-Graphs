@@ -15,3 +15,15 @@ export const generateExcelColumn = (n: number) => {
   }
   return col;
 };
+
+export const isValidWorkspacePath = (path: string | undefined): boolean => {
+  if (!path || path === '') return false;
+
+  // Check if it looks like a time string (hh:mm:ss AM/PM)
+  const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9]:[0-5][0-9] (AM|PM)$/i;
+  if (timeRegex.test(path)) return false;
+
+  // Basic check for path-like structure (contains backslash or forward slash, or ends with .db)
+  // or just check that it's NOT a time string and is long enough
+  return path.includes('\\') || path.includes('/') || path.endsWith('.db') || path.length > 15;
+};

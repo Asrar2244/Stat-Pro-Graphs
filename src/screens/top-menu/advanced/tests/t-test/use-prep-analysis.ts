@@ -21,14 +21,19 @@ export const usePrepareAnalysis = ({
     const executeAnalysis = async (id: string): Promise<void> => {
         try {
             const tableName = config.tabName;
-            
-            // Validate that exactly one variable is selected
-            const selectedVars = dataFormat.dataList ? Array.from(dataFormat.dataList.keys()) : (dataFormat.sample || []);
-            if (selectedVars.length !== 1) {
-                setBlockUI({ value: true, msg: t('allowOnlyOneRecord', { defaultValue: 'Please select exactly one variable.' }) });
-                return;
+
+            // Check if we are using summarized data
+            const isSummarized = dataFormat.values?.mean && dataFormat.values?.size;
+
+            if (!isSummarized) {
+                // Validate that exactly one variable is selected
+                const selectedVars = dataFormat.dataList ? Array.from(dataFormat.dataList.keys()) : (dataFormat.sample || []);
+                if (selectedVars.length !== 1) {
+                    setBlockUI({ value: true, msg: t('allowOnlyOneRecord', { defaultValue: 'Please select exactly one variable.' }) });
+                    return;
+                }
             }
-            
+
             const parameters = {
                 test_name: "t_test_one_sample",
                 db_name: tableName,
@@ -37,7 +42,7 @@ export const usePrepareAnalysis = ({
                 ...postHocTests,
                 ...populationMean,
                 ...dataFormat,
-                DB: true,
+                DB: !isSummarized,
             };
             execute(config.tabName, parameters, {
                 queueFor,

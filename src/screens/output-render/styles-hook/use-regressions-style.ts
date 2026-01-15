@@ -33,12 +33,12 @@ export const useRegressions = makeStyles({
     '& .graph-wrapper': {
       maxHeight: '550px !important',
       height: 'auto !important',
-      position: 'relative !important',
+      position: 'relative' as const,
       display: 'block',
       overflow: 'visible',
       '& > div': {
         '&:not(.fullscreen-enabled)': {
-          position: 'relative !important',
+          position: 'relative' as const,
           height: 'auto !important',
           maxHeight: '550px !important',
           top: 'auto !important',
@@ -47,7 +47,7 @@ export const useRegressions = makeStyles({
           bottom: 'auto !important',
         },
         '&.fullscreen-enabled': {
-          position: 'fixed !important',
+          position: 'fixed' as const,
           height: '100vh !important',
           maxHeight: '100vh !important',
         },

@@ -79,13 +79,13 @@ const PairedTestsAnalysisComponent: FC<IModal> = ({ ...props }) => {
   const { id, config } = useActiveNode([props.open]);
   const { setBlockUI } = useStartProStore();
   const { setModel: setOptionsModel } = useTestsStats();
-  const [appFolder, setAppFolder] = useState("");
-  const [filePath, setFilePath] = useState("");
+  const [, setAppFolder] = useState("");
+  const [, setFilePath] = useState("");
 
   const { executeAnalysis } = usePrepareAnalysis({
     config,
     queueFor: t('title', { ns: 'pairedTTestAanalysis' }),
-    queueType: 'tTestModule',
+    queueType: 'pairedTTestModule',
   });
 
   useEffect(() => {

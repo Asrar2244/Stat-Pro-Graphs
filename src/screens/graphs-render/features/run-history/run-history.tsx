@@ -37,7 +37,7 @@ const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
   const { t } = useTranslation('outputToolBar');
   const { data, isLoading } = useFetchGraphs(config.tabName);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Resizable drawer state
   const [drawerWidth, setDrawerWidth] = useState<number>(280);
   const isDraggingRef = useRef(false);
@@ -75,24 +75,33 @@ const RunHistoryComponent: FC<{ history: IHistory; selectedID?: number }> = ({
     document.body.style.cursor = 'ew-resize';
     document.body.style.userSelect = 'none';
   };
-  
+
   // Filter data based on search query
   const filteredData = useMemo(() => {
     if (!data || !Array.isArray(data)) return [];
     if (!searchQuery.trim()) return data;
-    
+
     return data.filter((item) => {
       const searchLower = searchQuery.toLowerCase();
+
+      // Replicate the title generation logic from list-item.tsx
+      const displayTitle = item.config?.graphConfig?.global?.graphName
+        || item.config?.graphConfig?.subType
+        || item.graphType
+        || 'Graph';
+
+      const subTitle = item.config?.graphConfig?.subType || item.config?.graphConfig?.dataFormat || '';
+
       return (
-        item.title?.toLowerCase().includes(searchLower) ||
-        item.subTitle?.toLowerCase().includes(searchLower) ||
+        displayTitle?.toLowerCase().includes(searchLower) ||
+        subTitle?.toLowerCase().includes(searchLower) ||
         item.id?.toString().includes(searchLower) ||
         item.createdAt?.toLowerCase().includes(searchLower) ||
         item.updatedAt?.toLowerCase().includes(searchLower)
       );
     });
   }, [data, searchQuery]);
-  
+
   useEffect(() => {
     if (Array.isArray(data)) {
       history.setTotalRuns(data.length);

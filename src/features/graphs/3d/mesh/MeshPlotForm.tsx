@@ -18,12 +18,12 @@ import { useProjectVariables, useVariableManagement, useAvailableFormats } from 
 export const MeshPlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ projects }) => {
   const classes = useMeshPlotStyles();
   const isUpdatingDataFormat = useRef(false);
-  
+
   // Store state
-  const { 
-    selectedProject, 
+  const {
+    selectedProject,
     dataFormat,
-    setProject, 
+    setProject,
     setDataFormat,
     setAvailableVariables,
     setGraphConfig,
@@ -38,12 +38,22 @@ export const MeshPlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
     showGrid,
     gridOpacity,
   } = useMeshPlotStore();
-  
+
   // Load project variables
   const { variables, isLoading: isLoadingVariables, error: loadError, retry, canRetry, retryCount } = useProjectVariables(selectedProject);
 
+  // Filter out default empty columns and internal ID columns
+  const filteredVariables = useMemo(() => {
+    return variables.filter(v => {
+      const lowerName = v.name.toLowerCase();
+      return !v.name.startsWith('def_col_') &&
+        !lowerName.includes('statpro') &&
+        !lowerName.includes('start_pro');
+    });
+  }, [variables]);
+
   // Variable management - pass variables so we can filter by type
-  const variableManagement = useVariableManagement(dataFormat, variables);
+  const variableManagement = useVariableManagement(dataFormat, filteredVariables);
   const {
     availableList,
     xVariableList,
@@ -82,11 +92,11 @@ export const MeshPlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
   const requireX = useMemo(() => {
     return dataFormat === 'XYZ Triplets' || dataFormat === 'XY Many Z';
   }, [dataFormat]);
-  
+
   const requireY = useMemo(() => {
     return dataFormat === 'XYZ Triplets' || dataFormat === 'XY Many Z';
   }, [dataFormat]);
-  
+
   const requireZ = useMemo(() => {
     return true; // All formats require Z variables
   }, []);
@@ -97,38 +107,6 @@ export const MeshPlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
       setAvailableVariables(variables);
     }
   }, [variables.length, setAvailableVariables]);
-
-  // Update available list when variables are loaded (but preserve existing selections)
-  useEffect(() => {
-    if (variables.length === 0) return;
-    
-    // Only update if we don't have any variables in the available list yet
-    // This prevents clearing user selections when variables reload
-    if (availableList.size === 0) {
-      const newMap = new Map();
-      // Show all variables in available list - filtering happens at send time
-      variables.forEach(variable => {
-        newMap.set(variable.name, false);
-      });
-      setAvailableList(newMap);
-    } else {
-      // If we already have variables, only add new ones that aren't already present
-      const newMap = new Map(availableList);
-      let hasNewVariables = false;
-      
-      variables.forEach(variable => {
-        if (!newMap.has(variable.name)) {
-          newMap.set(variable.name, false);
-          hasNewVariables = true;
-        }
-      });
-      
-      // Only update if we found new variables
-      if (hasNewVariables) {
-        setAvailableList(newMap);
-      }
-    }
-  }, [variables.length, setAvailableList, availableList]);
 
   // Ensure dataFormat remains valid when available formats change
   useEffect(() => {
@@ -149,7 +127,7 @@ export const MeshPlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
     const xVars = Array.from(xVariableList.keys());
     const yVars = Array.from(yVariableList.keys());
     const zVars = Array.from(zVariableList.keys());
-    
+
     setGraphConfig({
       selectedProject: selectedProject || '',
       graphType: '3D Mesh Plot',
@@ -168,10 +146,10 @@ export const MeshPlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
       },
     });
   }, [
-    selectedProject, 
-    dataFormat, 
-    xVariableList, 
-    yVariableList, 
+    selectedProject,
+    dataFormat,
+    xVariableList,
+    yVariableList,
     zVariableList,
     setGraphConfig,
     // Include mesh configuration values

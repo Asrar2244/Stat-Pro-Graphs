@@ -29,7 +29,9 @@ export const usePrepareAnalysis = ({
   useEffect(() => {
     const columnMap = new Map<string, boolean>();
     columns.forEach((column) => {
-      if (!model.availableList.has(column.columnId)) columnMap.set(column.columnId, false);
+      if (!column.columnId.startsWith('def_col_') && !model.availableList.has(column.columnId)) {
+        columnMap.set(column.columnId, false);
+      }
     });
     setModel({
       availableList: columnMap,
@@ -69,7 +71,7 @@ export const usePrepareAnalysis = ({
         parameter2: 'value2'
       }
     };
-    
+
     await execute(
       config.tabName,
       parameters,

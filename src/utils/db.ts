@@ -1,6 +1,7 @@
 import DB from '@tauri-apps/plugin-sql';
 import { join, appLocalDataDir } from '@tauri-apps/api/path';
 import { CONFIGURATION_DB } from '@constants';
+import { platformInfo } from './app-apis';
 const { MODE } = import.meta.env;
 
 // Import table creation queries
@@ -16,6 +17,7 @@ const CREATE_PROJECTS_TABLE = `CREATE TABLE IF NOT EXISTS PROJECTS (
   isOpenedOutput SMALLINT NOT NULL DEFAULT 0,
   isOpenedGraphs SMALLINT NOT NULL DEFAULT 0,
   workspacePath TEXT NULL DEFAULT '',
+  isExternal SMALLINT NOT NULL DEFAULT 0,
   createdDateTime TEXT NOT NULL,
   modifiedDateTime TEXT NOT NULL
 )`;
@@ -49,26 +51,42 @@ const CREATE_EXECUTE_TASK_TABLE = `CREATE TABLE IF NOT EXISTS EXECUTE_TASK (
 
 export class Database {
   private db: Promise<DB>;
+  private dbName: string;
+  private isConfigDb: boolean = false;
+  private resolvedPath: string = '';
+
+  // Static map to track active connections per file path
+  private static refCounts: Map<string, number> = new Map();
+
   constructor(dbName: string) {
+    this.dbName = dbName;
+
+    // Initial check based on name
+    if (dbName === CONFIGURATION_DB || dbName.includes(`${CONFIGURATION_DB}.db`)) {
+      this.isConfigDb = true;
+    }
+
     this.db = this.loadSqlLiteFile(dbName);
   }
+
   //To loading database file
   private async loadSqlLiteFile(dbName: string) {
     let dbLocation = dbName;
-    
+
     if (dbName === CONFIGURATION_DB) {
+      this.isConfigDb = true; // Confirm it's the config DB
       try {
         // Use app-local data directory to store writable app data
         const appFolder = await appLocalDataDir();
-        const collectionsPath = await join(appFolder, 'start-pro', 'collections');
+        const collectionsPath = await join(appFolder, 'Stat-Pro', 'collections');
         dbLocation = await join(collectionsPath, `${dbName}.db`);
-        
+
         if (MODE === 'development') {
           console.log('Database - appFolder path:', appFolder);
           console.log('Database - final dbLocation:', dbLocation);
           console.log('Database - checking directory:', collectionsPath);
         }
-        
+
         // Try to ensure the collections directory exists
         try {
           const { exists, mkdir } = await import('@tauri-apps/plugin-fs');
@@ -83,7 +101,7 @@ export class Database {
             console.log('Database - using fallback dbLocation:', dbLocation);
           }
         }
-        
+
       } catch (error) {
         console.warn('Database - error getting home directory:', error);
         dbLocation = `${dbName}.db`;
@@ -91,23 +109,44 @@ export class Database {
           console.log('Database - using fallback dbLocation due to home dir error:', dbLocation);
         }
       }
+    } else {
+      // Additional check: If the provided path ends with the config DB name
+      if (String(dbName).endsWith(`${CONFIGURATION_DB}.db`) || String(dbName).includes(`collections${platformInfo?.() === 'windows' ? '\\' : '/'}${CONFIGURATION_DB}.db`)) {
+        this.isConfigDb = true;
+        if (MODE === 'development') {
+          console.log(`Database - Detected CONFIGURATION_DB via path: ${dbName}`);
+        }
+      }
+      // Use dbName as location directly (it's likely a full path or simple name)
+      // Note: For project DBs, dbName is usually the full 'workspacePath'
     }
 
+    // Normalize path for ref counting consistency
+    // Simple normalization: if it contains separators, assume it's a path.
+    // Ideally we'd use `resolve` but `join` gives us a good enough approximation for keys if consistent.
+    // For now, we use `dbLocation` as the key.
+    this.resolvedPath = dbLocation;
+
+    // INCREMENT REF COUNT
+    const currentCount = Database.refCounts.get(this.resolvedPath) || 0;
+    Database.refCounts.set(this.resolvedPath, currentCount + 1);
+
     if (MODE === 'development') {
-      console.log('Database - attempting to load sqlite:', `sqlite:${dbLocation}`);
+      console.log(`Database - attempting to load sqlite: sqlite:${dbLocation} (RefCount: ${currentCount + 1})`);
     }
 
     const database = await DB.load(`sqlite:${dbLocation}`);
-    
+
     if (MODE === 'development') {
       console.log('Database - successfully loaded database');
     }
-    
+
     // Ensure required tables exist for CONFIGURATION_DB
-    if (dbName === CONFIGURATION_DB) {
+    // Use the flag to be sure
+    if (this.isConfigDb) {
       await this.ensureTablesExist(database);
     }
-    
+
     return database;
   }
 
@@ -140,6 +179,8 @@ export class Database {
     const migrations = [
       // Add isOpenedGraphs column to PROJECTS table if it doesn't exist
       'ALTER TABLE PROJECTS ADD COLUMN isOpenedGraphs SMALLINT NOT NULL DEFAULT 0',
+      // Add isExternal column to PROJECTS table if it doesn't exist
+      'ALTER TABLE PROJECTS ADD COLUMN isExternal SMALLINT NOT NULL DEFAULT 0',
     ];
 
     for (const migration of migrations) {
@@ -149,10 +190,14 @@ export class Database {
           console.log('Migration applied:', migration.substring(0, 50) + '...');
         }
       } catch (error: any) {
-        // Ignore "duplicate column" errors - column already exists
-        if (!error?.message?.includes('duplicate column')) {
+        const msg = String(error?.message || error || '');
+        if (msg.toLowerCase().includes('duplicate column')) {
           if (MODE === 'development') {
-            console.log('Migration skipped (column may already exist):', error?.message);
+            console.log('Migration skipped: Column already exists.');
+          }
+        } else {
+          if (MODE === 'development') {
+            console.warn('Migration failed with unexpected error:', msg);
           }
         }
       }
@@ -192,5 +237,48 @@ export class Database {
       console.log(`Query: ${query} with parameters: ${parameters}`);
     }
     return (await this.db).execute(query, parameters);
+  }
+
+  /**
+   * Closes the database connection.
+   * @param force - If true, ignores reference counting and forces closure.
+   */
+  public async close(force: boolean = false): Promise<void> {
+    // 1. CONFIGURATION_DB Protection
+    // Always ignored unless forced (though ideally even forced is risky for config)
+    // We treat Config DB as permanent singleton usually.
+    if (this.isConfigDb && !force) {
+      if (MODE === 'development') {
+        console.log('Database - IGNORING close request for CONFIGURATION_DB (Protected Singleton)');
+      }
+      return;
+    }
+
+    // 2. Reference Counting Protection
+    const currentCount = Database.refCounts.get(this.resolvedPath) || 0;
+    const newCount = Math.max(0, currentCount - 1);
+    Database.refCounts.set(this.resolvedPath, newCount);
+
+    if (newCount > 0 && !force) {
+      if (MODE === 'development') {
+        console.log(`Database - Soft Close. Connection kept open. (RefCount: ${currentCount} -> ${newCount}) for ${this.resolvedPath}`);
+      }
+      return;
+    }
+
+    // 3. Actual Closure
+    // If count reaches 0 OR force is true
+    try {
+      await (await this.db).close();
+      if (MODE === 'development') {
+        console.log(`Database - connection closed successfully (RefCount: ${currentCount} -> ${newCount}${force ? ' [FORCED]' : ''})`);
+      }
+      // If we genuinely closed it, ensure map is clean, though newCount is already 0
+      if (newCount === 0) {
+        Database.refCounts.delete(this.resolvedPath);
+      }
+    } catch (error) {
+      console.warn('Database - error closing connection:', error);
+    }
   }
 }

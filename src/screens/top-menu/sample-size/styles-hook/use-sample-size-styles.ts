@@ -92,7 +92,7 @@ export const useSampleSizeStyles = makeStyles({
     transition: 'all 0.2s ease',
     '&:hover': {
       background: tokens.colorBrandBackground2,
-      borderColor: tokens.colorBrandStroke2,
+      borderColor: tokens.colorBrandStroke2 as any,
       transform: 'translateY(-1px)',
     },
     '&:active': {
@@ -101,7 +101,7 @@ export const useSampleSizeStyles = makeStyles({
     '&:disabled': {
       background: tokens.colorNeutralBackground3,
       color: tokens.colorNeutralForeground3,
-      borderColor: tokens.colorNeutralStroke2,
+      borderColor: tokens.colorNeutralStroke2 as any,
       transform: 'none',
     },
   },

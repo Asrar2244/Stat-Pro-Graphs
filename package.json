@@ -1,5 +1,5 @@
 {
-  "name": "start-pro",
+  "name": "stat-pro",
   "private": true,
   "version": "0.0.5",
   "type": "module",
@@ -14,6 +14,7 @@
     "test": "jest --coverage"
   },
   "dependencies": {
+    "@excel-view/library": "./dependencies/excel-view-library-1.0.0.tgz",
     "@faker-js/faker": "^9.7.0",
     "@fluentui/react-components": "9.63.0",
     "@hookform/resolvers": "^3.10.0",
@@ -26,6 +27,7 @@
     "axios": "1.8.3",
     "comlink": "4.4.1",
     "dayjs": "1.11.11",
+    "excel-lib": "file:dependencies\\excel-lib-1.0.0.tgz",
     "flexlayout-react": "0.7.15",
     "i18next": "23.13.0",
     "i18next-browser-languagedetector": "8.0.0",
@@ -44,8 +46,7 @@
     "react-virtualized": "9.22.5",
     "scheduler": "^0.25.0",
     "uuid": "10.0.0",
-    "zustand": "4.5.5",
-    "@excel-view/library": "./dependencies/excel-view-library-1.0.0.tgz"
+    "zustand": "4.5.5"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.27.2",

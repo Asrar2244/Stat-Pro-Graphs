@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useWindowFocus } from '@hooks';
 import { fetchRunListOutput } from '@backend';
 import { useStartProStore } from '@store/main-store';
+import { isValidWorkspacePath } from '@utils/helper';
 interface IFetch {
   isLoading: boolean;
   data: Array<any>;
@@ -17,7 +18,7 @@ export const useFetchOutput = (tabName: string): IFetch => {
     setData(newData);
   }, [tabName]);
   useEffect(() => {
-    if (tabName !== '' && focus) loadRunHistory();
+    if (tabName !== '' && isValidWorkspacePath(tabName) && focus) loadRunHistory();
   }, [tabName, focus]);
   const fetchData = async (): Promise<any> => {
     try {

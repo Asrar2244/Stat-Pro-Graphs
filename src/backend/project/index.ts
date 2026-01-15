@@ -1,11 +1,11 @@
 import { PROJECTS_TABLE } from '@constants';
 
 export const insertIntoProject = `INSERT INTO ${PROJECTS_TABLE}(projectName,inputFileName,businessObjectPath,sheetId,fileSize,
-    createdDateTime,modifiedDateTime,isActive,workspacePath)
-   VALUES(?,?,?,?,?,?,?,?,?)`;
+    createdDateTime,modifiedDateTime,isActive,workspacePath,isExternal)
+   VALUES(?,?,?,?,?,?,?,?,?,?)`;
 
 export const selectFromProject = `SELECT id, projectName,fileSize,isOpenedData,
-isOpenedOutput,isActive,modifiedDateTime,createdDateTime,workspacePath,sheetId,inputFileName FROM ${PROJECTS_TABLE} WHERE isActive=1`;
+isOpenedOutput,isActive,modifiedDateTime,createdDateTime,workspacePath,sheetId,inputFileName,isExternal FROM ${PROJECTS_TABLE} WHERE isActive=1`;
 
 export const updateDataFromProject = `UPDATE ${PROJECTS_TABLE} SET isOpenedData=1 WHERE id=?`;
 
@@ -20,3 +20,4 @@ export const updateOutputProjectClose = `UPDATE ${PROJECTS_TABLE} SET isOpenedOu
 export const updateGraphsProjectClose = `UPDATE ${PROJECTS_TABLE} SET isOpenedGraphs=0 where id=?`;
 
 export const deleteProject = `DELETE FROM ${PROJECTS_TABLE} WHERE id=?`;
+export const updateProjectName = `UPDATE ${PROJECTS_TABLE} SET projectName=? WHERE id=?`;

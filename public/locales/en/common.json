@@ -84,6 +84,8 @@
   "lifetime": "Lifetime License",
   "expired": "License Expired",
   "lookingProductLicense": "Looking for product license...",
+  "noValidLicense": "No Valid license found",
+  "daysRemaining": "License expires in {{days}} days",
   "systemToken": "System token for license",
   "notValid": "License not valid",
   "fetch": "Fetching...",

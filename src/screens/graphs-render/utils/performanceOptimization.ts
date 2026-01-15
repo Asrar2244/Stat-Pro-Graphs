@@ -52,7 +52,7 @@ export const smartSampling = (
   method: 'random' | 'systematic' | 'adaptive' = 'adaptive'
 ): OptimizedData => {
   const originalLength = xv.length;
-  
+
   if (originalLength <= targetSize) {
     return {
       xv,
@@ -64,7 +64,7 @@ export const smartSampling = (
   }
 
   let sampledX: number[], sampledY: number[];
-  
+
   switch (method) {
     case 'random':
       // Random sampling - good for general purpose
@@ -76,34 +76,34 @@ export const smartSampling = (
       sampledX = sortedIndices.map(i => xv[i]);
       sampledY = sortedIndices.map(i => yv[i]);
       break;
-      
+
     case 'systematic':
       // Systematic sampling - maintains data distribution
       const step = originalLength / targetSize;
-      const indices = Array.from({ length: targetSize }, (_, i) => 
+      const indices = Array.from({ length: targetSize }, (_, i) =>
         Math.floor(i * step)
       );
       sampledX = indices.map(i => xv[i]);
       sampledY = indices.map(i => yv[i]);
       break;
-      
+
     case 'adaptive':
     default:
       // Adaptive sampling - optimized for very large datasets
       const adaptiveStep = Math.max(1, Math.floor(originalLength / targetSize));
       const adaptiveIndices: number[] = [];
-      
+
       // Include first and last points
       adaptiveIndices.push(0);
       adaptiveIndices.push(originalLength - 1);
-      
+
       // Add systematic samples (more efficient for large datasets)
       for (let i = adaptiveStep; i < originalLength - 1; i += adaptiveStep) {
         if (adaptiveIndices.length < targetSize - 2) {
           adaptiveIndices.push(i);
         }
       }
-      
+
       // For very large datasets, use more systematic approach to avoid infinite loops
       if (originalLength > 100000) {
         // Use only systematic sampling for very large datasets
@@ -125,7 +125,7 @@ export const smartSampling = (
           attempts++;
         }
       }
-      
+
       adaptiveIndices.sort((a, b) => a - b);
       sampledX = adaptiveIndices.map(i => xv[i]);
       sampledY = adaptiveIndices.map(i => yv[i]);
@@ -150,7 +150,7 @@ export const dataDecimation = (
   factor: number = 2
 ): OptimizedData => {
   const originalLength = xv.length;
-  
+
   if (originalLength <= 1000) {
     return {
       xv,
@@ -163,13 +163,13 @@ export const dataDecimation = (
 
   const decimatedX: number[] = [];
   const decimatedY: number[] = [];
-  
+
   // Keep every nth point
   for (let i = 0; i < originalLength; i += factor) {
     decimatedX.push(xv[i]);
     decimatedY.push(yv[i]);
   }
-  
+
   // Always include the last point
   if (decimatedX[decimatedX.length - 1] !== xv[originalLength - 1]) {
     decimatedX.push(xv[originalLength - 1]);
@@ -194,7 +194,7 @@ export const progressiveRendering = (
   batchSize: number = 1000
 ): OptimizedData => {
   const originalLength = xv.length;
-  
+
   if (originalLength <= batchSize) {
     return {
       xv,
@@ -208,7 +208,7 @@ export const progressiveRendering = (
   // For progressive rendering, we'll return a subset for initial render
   // The full dataset can be loaded progressively
   const initialBatch = Math.min(batchSize, originalLength);
-  
+
   return {
     xv: xv.slice(0, initialBatch),
     yv: yv.slice(0, initialBatch),
@@ -229,7 +229,7 @@ export const optimizeDataForPerformance = (
 ): OptimizedData => {
   const perfConfig = { ...DEFAULT_PERFORMANCE_CONFIG, ...config };
   const dataSize = xv.length;
-  
+
   // Performance warning for very large datasets
   let performanceWarning: string | undefined;
   if (dataSize > perfConfig.performanceWarningThreshold) {
@@ -317,7 +317,7 @@ export const optimizeErrorCalculations = (
   sampleSize: number = 1000
 ): { optimized: boolean; sampleData?: { xv: number[]; yv: number[] } } => {
   const dataSize = xv.length;
-  
+
   // For very large datasets, use sampling for error calculations
   if (dataSize > sampleSize && errorCalculationMethod !== 'Dynamic (Data-driven)') {
     const sampled = smartSampling(xv, yv, sampleSize, 'adaptive');
@@ -329,7 +329,7 @@ export const optimizeErrorCalculations = (
       }
     };
   }
-  
+
   return { optimized: false };
 };
 
@@ -341,7 +341,7 @@ export const optimizeTraceForLargeData = (
   dataSize: number
 ): any => {
   const optimizedTrace = { ...traceConfig };
-  
+
   // Reduce marker size for large datasets
   if (dataSize > 1000) {
     if (optimizedTrace.marker) {
@@ -349,19 +349,19 @@ export const optimizeTraceForLargeData = (
       optimizedTrace.marker.opacity = Math.max(0.3, optimizedTrace.marker.opacity * 0.8);
     }
   }
-  
+
   // Disable hover for very large datasets
   if (dataSize > 10000) {
     optimizedTrace.hoverinfo = 'skip';
     delete optimizedTrace.hoverlabel;
   }
-  
+
   // Optimize line rendering for large datasets
   if (optimizedTrace.line && dataSize > 5000) {
     optimizedTrace.line.width = Math.max(1, optimizedTrace.line.width * 0.8);
     optimizedTrace.line.opacity = Math.max(0.5, optimizedTrace.line.opacity * 0.9);
   }
-  
+
   return optimizedTrace;
 };
 
@@ -370,7 +370,7 @@ export const optimizeTraceForLargeData = (
  */
 export const getPerformanceRecommendations = (dataSize: number): string[] => {
   const recommendations: string[] = [];
-  
+
   if (dataSize > 100000) {
     recommendations.push('Consider using data sampling or decimation for better performance');
     recommendations.push('Progressive rendering is recommended for datasets this large');
@@ -383,6 +383,6 @@ export const getPerformanceRecommendations = (dataSize: number): string[] => {
   } else if (dataSize > 5000) {
     recommendations.push('Performance is good, but consider optimization for very large datasets');
   }
-  
+
   return recommendations;
 };

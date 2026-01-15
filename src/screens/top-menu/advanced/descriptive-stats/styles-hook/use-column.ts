@@ -10,16 +10,34 @@ export const useMainStyles = makeStyles({
     justifyItems: 'center',
     marginTop: '1em',
     width: '100%',
+    height: '100%',
     '& fieldset': {
       width: '50%',
+      height: '100%',
+      marginBottom: 0,
+      display: 'flex',
+      flexDirection: 'column',
     },
   },
   sectionAvailable: {
     display: 'flex',
     width: '100%',
+    height: '100%',
     flexDirection: 'column',
+    paddingBottom: '40px',
+    boxSizing: 'border-box',
     gap: tokens.spacingHorizontalS,
+
+    // Target the wrapper div rendered by ListCheckboxWithSelectAll
+    '& > div:first-child': {
+      display: 'flex',
+      flexDirection: 'column',
+      flex: 1,
+      minHeight: 0,
+    },
+
     '& .select-size': {
+      width: '100%',
       display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -27,7 +45,9 @@ export const useMainStyles = makeStyles({
     '& .dependent-list': {
       display: 'flex',
       flexDirection: 'column',
-      height: '340px',
+      flex: 1,
+      minHeight: 0,
+      marginBottom: tokens.spacingVerticalS,
       overflowY: 'auto',
       ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralBackground1Pressed),
       scrollbarWidth: 'thin',
@@ -63,6 +83,7 @@ export const useMainStyles = makeStyles({
   removeButtonClass: {
     backgroundColor: tokens.colorPaletteRedBorder1,
     width: '100%',
+    marginBottom: '10px',
   },
   list: {
     height: '90%',
@@ -155,7 +176,8 @@ export const useMainStyles = makeStyles({
     justifyItems: 'center',
   },
   availableList: {
-    height: '32vh',
+    flex: 1,
+    minHeight: 0,
   },
   removeButtons: {
     backgroundColor: tokens.colorPaletteRedBorder1,

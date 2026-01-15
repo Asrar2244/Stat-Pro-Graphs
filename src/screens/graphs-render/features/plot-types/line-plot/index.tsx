@@ -2,7 +2,7 @@ import React, { FC, useContext, useRef, useState, useEffect } from 'react';
 import { GraphsRenderContext } from '../../../context';
 import { GraphCanvas, GraphCanvasRef } from '../../../plotly-canvas';
 import { GraphTools } from '@libs/graphs/tools';
-import { useFullScreenHandle } from 'react-full-screen';
+import { useFullScreenHandle, FullScreen } from 'react-full-screen';
 import { useGraphStyles } from '@libs/graphs/styles-hook/use-graph-style';
 import { useStartProStore } from '@store/main-store';
 
@@ -13,25 +13,25 @@ export const LinePlotGraph: FC = () => {
   const [isPlotlyReady, setIsPlotlyReady] = useState(false);
   const classes = useGraphStyles();
   const { projects } = useStartProStore();
-  
+
   if (!selectedRun?.config?.graphConfig) {
     return <div>No graph configuration found</div>;
   }
 
   const { graphConfig, workspacePath } = selectedRun.config;
-  
-  
+
+
   // Track graphProperties changes
   useEffect(() => {
   }, [graphProperties]);
-  
+
   // Fallback: if workspacePath missing (older runs), resolve from projects by selectedProject/tabName
   const resolvedWorkspacePath =
     workspacePath ||
     projects?.[graphConfig?.selectedProject || '']?.workspacePath ||
     projects?.[selectedRun?.tabName || '']?.workspacePath ||
     '';
-  
+
 
   // Monitor when plotly ref becomes available
   useEffect(() => {
@@ -63,12 +63,12 @@ export const LinePlotGraph: FC = () => {
 
   return (
     <div className={classes.graph}>
-      <div className={classes.graphCard}>
+      <FullScreen handle={handle} className={classes.graphCard}>
         <div className={classes.graphCanvas}>
-          <GraphCanvas 
+          <GraphCanvas
             ref={plotlyRef}
             key={`graph-${selectedRun?.id || 'new'}`}
-            graphConfig={graphConfig} 
+            graphConfig={graphConfig}
             workspacePath={resolvedWorkspacePath}
             liveProps={graphProperties}
           />
@@ -84,7 +84,7 @@ export const LinePlotGraph: FC = () => {
             />
           )}
         </div>
-      </div>
+      </FullScreen>
     </div>
   );
 };

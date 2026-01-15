@@ -68,18 +68,20 @@ const IndependentListRender: FC = () => {
 
   useEffect(() => {
     setPropKey(generateKey(independentList))
-  }, [...independentList.values()])
+  }, [independentList])
 
   const onRemoveHandler = (): void => {
+    const nextAvail = new Map(availableList);
+    const nextIndep = new Map(independentList);
     independentList.forEach((value: boolean, name: string) => {
       if (value) {
-        availableList.set(name, false);
-        independentList.delete(name);
+        nextAvail.set(name, false);
+        nextIndep.delete(name);
       }
     });
-    setModelBulk(availableList, 'availableList');
-    setModelBulk(independentList, 'independentList');
-    if (independentList.size === 0) {
+    setModelBulk(nextAvail, 'availableList');
+    setModelBulk(nextIndep, 'independentList');
+    if (nextIndep.size === 0) {
       setSelectAll(false);
     }
   };
@@ -124,17 +126,19 @@ const DependentListRender: FC = () => {
 
   useEffect(() => {
     setPropKey(generateKey(dependentList))
-  }, [...dependentList.values()])
+  }, [dependentList])
   const onRemoveHandler = (): void => {
+    const nextAvail = new Map(availableList);
+    const nextDep = new Map(dependentList);
     dependentList.forEach((value: boolean, name: string) => {
       if (value) {
-        availableList.set(name, false);
-        dependentList.delete(name);
+        nextAvail.set(name, false);
+        nextDep.delete(name);
       }
     });
-    setModelBulk(availableList, 'availableList');
-    setModelBulk(dependentList, 'dependentList');
-    if (dependentList.size === 0) setSelectAll(false);
+    setModelBulk(nextAvail, 'availableList');
+    setModelBulk(nextDep, 'dependentList');
+    if (nextDep.size === 0) setSelectAll(false);
   };
   return (
     <div className="section-available">
@@ -168,43 +172,48 @@ const AvailableListRender: FC = () => {
   const { t } = useTranslation('regLinearLeastSquare');
 
   const { setBlockUI } = useStartProStore();
-  const { availableList, dependentList, setModelBulk, setModel } = useLinearLeastSquares(
+  const { availableList, dependentList, independentList, setModelBulk } = useLinearLeastSquares(
     useShallow((state) => ({
       availableList: state.model.availableList,
       dependentList: state.model.dependentList,
       independentList: state.model.independentList,
       setModelBulk: state.setModelBulk,
-      setModel: state.setModel
     })),
   );
   const [propKey, setPropKey] = useState(generateKey(availableList))
 
   useEffect(() => {
     setPropKey(generateKey(availableList))
-  }, [...availableList.values()])
+  }, [availableList])
 
   const onSendHandler = (e: MouseEvent<HTMLButtonElement>): void => {
     const name = (e.currentTarget as HTMLButtonElement).dataset.name;
-    const movList = new Map<string, boolean>();
-    const availList = new Map<string, boolean>();
+    const selectedItems = new Map<string, boolean>();
+    const nextAvail = new Map<string, boolean>();
 
-    availableList.forEach((value, key) =>
-      (value ? movList : availList).set(key, value)
-    );
+    availableList.forEach((value, key) => {
+      if (value) {
+        selectedItems.set(key, false);
+      } else {
+        nextAvail.set(key, false);
+      }
+    });
+
     if (name === 'dependent') {
-      if (dependentList.size === 0 && movList.size === 1) {
-
-        setModel({ dependentList: movList });
+      if (dependentList.size === 0 && selectedItems.size === 1) {
+        setModelBulk(selectedItems, 'dependentList');
       } else {
         setBlockUI({ value: true, msg: t('allowOnlyOneRecord', { ns: 'errors' }) });
         return;
       }
     } else {
-      setModel({ independentList: movList });
+      const nextIndep = new Map<string, boolean>(independentList);
+      selectedItems.forEach((v, k) => nextIndep.set(k, v));
+      setModelBulk(nextIndep, 'independentList');
     }
 
-    setModelBulk(availList, 'availableList');
-    if (!availableList.size) setSelectAll(false);
+    setModelBulk(nextAvail, 'availableList');
+    if (nextAvail.size === 0) setSelectAll(false);
   };
 
   return (

@@ -86,7 +86,7 @@ interface LinePlotStore {
   selectedProject: string | null;
   subType: LineSubType | null;
   dataFormat: DataFormat | null;
-  
+
   // Variable management
   availableVariables: Variable[];
   xVariableList: Map<string, boolean>;
@@ -94,7 +94,7 @@ interface LinePlotStore {
   categoryVariableList: Map<string, boolean>;
   selectedXVariable: string | undefined;
   selectedYVariable: string | undefined;
-  
+
   // Line plot specific options
   lineStyle: 'solid' | 'dashed' | 'dotted' | 'dashdot';
   lineWidth: number;
@@ -102,10 +102,10 @@ interface LinePlotStore {
   stepDirection: 'vertical' | 'horizontal' | 'vertical-midpoint' | 'horizontal-midpoint';
   splineSmoothing: number;
   splineTension: number;
-  
+
   // Graph configuration
   graphConfig: LinePlotConfig | null;
-  
+
   // Actions
   setProject: (project: string) => void;
   setSubType: (subType: LineSubType) => void;
@@ -149,7 +149,7 @@ export const useLinePlotStore = create<LinePlotStore>()(
       splineSmoothing: 0.5,
       splineTension: 0.5,
       graphConfig: null,
-      
+
       // Actions
       setProject: (project) => set({ selectedProject: project }),
       setSubType: (subType) => set({ subType }),
@@ -167,7 +167,7 @@ export const useLinePlotStore = create<LinePlotStore>()(
       setSplineSmoothing: (smoothing) => set({ splineSmoothing: smoothing }),
       setSplineTension: (tension) => set({ splineTension: tension }),
       setGraphConfig: (config) => set({ graphConfig: config }),
-      
+
       reset: () => set({
         selectedProject: null,
         subType: null,

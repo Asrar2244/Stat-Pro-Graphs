@@ -10,10 +10,14 @@ const RunHistory = lazy(() =>
 const ToolBar = lazy(() => import('./tool-bar').then((modules) => ({ default: modules.ToolBar })));
 import { useTools } from './hooks/use-tools';
 import { useGetRunID } from './hooks/use-selected-run';
-export const OutputRender: FC = () => {
+export const OutputRender: FC<any> = (props) => {
   const classes = useOutputRender();
   const tools = useTools();
   const selectedRun = useGetRunID();
+
+  // Extract configuration from props (passed by AppBodyArea)
+  const { tabName, id: projectId } = props;
+
   return (
     <SuspenseLoad>
       <div className={classes.outputLayout} data-output-root="true">
@@ -21,6 +25,7 @@ export const OutputRender: FC = () => {
         <div className={classes['output-area']}>
           <OutputSelection
             id={selectedRun.id}
+            tabName={tabName}
             fontBold={tools.fontBold}
             fontItalic={tools.fontItalic}
             fontSize={tools.fontSize}
@@ -28,6 +33,7 @@ export const OutputRender: FC = () => {
             showHistory={tools.showRunHistory}
           />
           <RunHistory
+            tabName={tabName}
             selectedID={selectedRun.id}
             history={{
               showHistory: tools.showRunHistory,

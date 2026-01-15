@@ -7,14 +7,14 @@ import { SlRefresh } from 'react-icons/sl';
 import { FullScreenHandle } from 'react-full-screen';
 import { RiFullscreenLine } from 'react-icons/ri';
 
-export const ZoomGraph: FC<{ plotly: any; zoomIn: boolean }> = ({ plotly, zoomIn }) => {
-  const { zoom } = useZoomGraph(plotly);
+export const ZoomGraph: FC<{ plotly: any; zoomIn: boolean }> = ({ plotly, zoomIn: isZoomIn }) => {
+  const { zoomIn, zoomOut } = useZoomGraph(plotly);
   const { t } = useTranslation('common');
   const zoomHandler = () => {
-    if (zoomIn) {
-      zoom([2, 3], [2, 3]);
+    if (isZoomIn) {
+      zoomIn();
     } else {
-      zoom([1, 5], [1, 5]);
+      zoomOut();
     }
   };
   return (
@@ -46,7 +46,7 @@ export const FullScreen: FC<{ plotly: any; handle: FullScreenHandle }> = ({ plot
   const fullScreenHandler = (): void => {
     if (handle.active) {
       plotly.current.style.width = '100%';
-      plotly.current.style.height = '400px';
+      plotly.current.style.height = '100%';
       handle.exit();
     } else {
       plotly.current.style.width = '100%';

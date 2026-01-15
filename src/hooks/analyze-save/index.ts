@@ -187,13 +187,11 @@ export const useAnalyzeSave = () => {
           .then(() => {
             const { isEmptyDataView } = config;
             if (!isEmptyDataView) {
-              const projectId = Number(id?.split('-')[1]);
-              const data = Object.values(projects).find(
-                (item) => Number(item.id) === projectId,
-              ) as ISelector;
+              const tabProjectId = id?.split('-')[1];
+              const data = projects[tabProjectId as string] as ISelector; 
               const type = 'OUTPUT';
               if (data) {
-                openNewTab(data, projectId, type, t);
+                openNewTab(data, Number(tabProjectId), type, t);
               } else {
                 // Fallback: open with config if project lookup fails
                 openNewTab(config as any, config.id, type, t);

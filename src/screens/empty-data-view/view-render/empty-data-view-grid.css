@@ -1,0 +1,42 @@
+/* Light grid lines for empty data view - Excel-like appearance */
+.jss_worksheet > thead > tr > td {
+  border-top: 1px solid #e0e0e0 !important;
+  border-left: 1px solid #e0e0e0 !important;
+  border-right: 1px solid #e0e0e0 !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+
+.jss_worksheet > tbody > tr > td {
+  border-top: 1px solid #e0e0e0 !important;
+  border-left: 1px solid #e0e0e0 !important;
+  border-right: 1px solid transparent !important;
+  border-bottom: 1px solid transparent !important;
+}
+
+.jss_worksheet > tbody > tr > td:first-child {
+  border-right: 1px solid #e0e0e0 !important;
+}
+
+/* Ensure the worksheet itself has light borders */
+.jss_worksheet {
+  border-right: 1px solid #e0e0e0 !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+
+/* Light borders for selected cells */
+.jss_worksheet .highlight-top {
+  border-top: 1px solid #b0b0b0 !important;
+}
+
+.jss_worksheet .highlight-left {
+  border-left: 1px solid #b0b0b0 !important;
+}
+
+.jss_worksheet .highlight-right {
+  border-right: 1px solid #b0b0b0 !important;
+}
+
+.jss_worksheet .highlight-bottom {
+  border-bottom: 1px solid #b0b0b0 !important;
+}
+

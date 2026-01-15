@@ -106,8 +106,7 @@ export const useSaveSampleSize = () => {
         throw new Error('Project not found');
       }
 
-      const dbName = project.workspacePath || project.businessObjectPath || project.projectName;
-      
+      const dbName = project.workspacePath || project.id;
       // Create OUTPUT table if it doesn't exist and insert the result
       const db = new Database(dbName);
       

@@ -75,6 +75,11 @@ const TTestComponent = lazy(() =>
     default: modules.TTestComponent,
   })),
 );
+const PairedTTestComponent = lazy(() =>
+  import('./analyze/tests/paired-t-test').then((modules) => ({
+    default: modules.PairedTTestComponent,
+  })),
+);
 const SampleSizeOutput = lazy(() =>
   import('./sample-size').then((modules) => ({
     default: modules.SampleSizeOutput,
@@ -84,6 +89,7 @@ const SampleSizeOutput = lazy(() =>
 interface IOutputSelection extends IToolBar {
   id: number;
   showHistory: boolean;
+  tabName?: string;
 }
 const load: any = {
   regLinearLeastSquare: <LinearLeastSquareRegression />,
@@ -99,13 +105,13 @@ const load: any = {
   pairwiseComparisonModules: <PairwiseComparisonOfModules />,
   descriptiveStatistics: <DescriptiveStatistics />,
   tTestModule: <TTestComponent />,
+  pairedTTestModule: <PairedTTestComponent />,
   sampleSize: <SampleSizeOutput />
 };
-export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, ...props }) => {
-  const { config } = useActiveNode([]);
+export const OutputSelection: FC<IOutputSelection> = ({ id, showHistory, tabName, ...props }) => {
   const classes = useOutputSelection();
   const { t } = useTranslation('common');
-  const run = useSelectedRun(config.tabName, id);
+  const run = useSelectedRun(tabName || '', id);
   const { setBlockUI } = useStartProStore();
 
   // Surface backend errors as a popup/modal as well as inline

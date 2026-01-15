@@ -51,7 +51,7 @@ jest.mock('@faker-js/faker', () => ({
 }));
 
 jest.mock('@backend', () => ({
-    insertIntoProject: 'INSERT INTO project VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    insertIntoProject: 'INSERT INTO project VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 }));
 
 const mockUpdateNodeAttributes = jest.fn();

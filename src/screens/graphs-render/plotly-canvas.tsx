@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
+import { FC, useEffect, useRef, forwardRef, useImperativeHandle, useState, useMemo } from 'react';
 import { usePlotly } from '@hooks/plotly';
 import { Database } from '@utils';
 import { ensureGraphFolderAndSave } from './services/plotly-save';
@@ -6,10 +6,10 @@ import { EXCEL } from '@constants';
 import { GraphLoader } from './components/GraphLoader';
 
 // Import utility modules
-import { 
-  getLegendConfig, 
-  getTitleText, 
-  getAxisConfig, 
+import {
+  getLegendConfig,
+  getTitleText,
+  getAxisConfig,
   getAnnotations,
   getSeriesConfig,
   assessDataQuality,
@@ -37,13 +37,23 @@ export interface GraphCanvasRef {
 
 export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, workspacePath, liveProps }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const plot = usePlotly({ data: [], layout: { title: graphConfig?.subType || 'Scatter Plot', autosize: true } as any, config: { responsive: true } } as any);
+
+  // Memoize initial config to prevent usePlotly from resetting graph on every render
+  const initialLayout = useMemo(() => ({ title: graphConfig?.subType || 'Scatter Plot', autosize: true }), [graphConfig?.subType]);
+  const initialConfig = useMemo(() => ({ responsive: true }), []);
+  const initialData = useMemo(() => [], []);
+
+  const plot = usePlotly({ data: initialData, layout: initialLayout, config: initialConfig } as any);
   // Keep last successful plot payload to restore on visibility/resize
   const lastPlotRef = useRef<{ data: any[]; layout: any; config: any } | null>(null);
-  
+
   // Loading state for professional loader
   const [isLoading, setIsLoading] = useState(false);
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cached data state to prevent re-fetching on prop changes
+  const [fetchedData, setFetchedData] = useState<any>(null);
+  const fetchingRef = useRef<string | null>(null);
 
   // Expose the container ref and plotly instance to parent components
   useImperativeHandle(ref, () => ({
@@ -57,7 +67,33 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
   }, [liveProps?.canvasMode, liveProps?.global?.canvasMode]);
 
 
-  // Build data arrays from project DB based on selected variables
+  // Fetch data only when data-related config changes
+  useEffect(() => {
+    const runFetch = async () => {
+      if (!graphConfig?.selectedProject || !graphConfig?.variables) return;
+
+      // Unique key for current data requirements
+      const fetchKey = `${workspacePath}-${JSON.stringify(graphConfig.variables)}-${graphConfig.dataFormat}`;
+      if (fetchingRef.current === fetchKey && fetchedData) return; // Already fetched/fetching
+
+      fetchingRef.current = fetchKey;
+      setIsLoading(true);
+
+      try {
+        const result = await fetchGraphData({ graphConfig, workspacePath });
+        setFetchedData(result);
+      } catch (error) {
+        console.error('Failed to fetch graph data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    runFetch();
+  }, [graphConfig?.selectedProject, JSON.stringify(graphConfig?.variables), workspacePath, graphConfig?.dataFormat]);
+
+
+  // Generate traces and plot when data or props change
   useEffect(() => {
     // Clear any existing timeout when effect runs
     if (loadingTimeoutRef.current) {
@@ -65,27 +101,14 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       loadingTimeoutRef.current = null;
     }
     setIsLoading(false);
-    
-    const run = async () => {
-      if (!graphConfig?.selectedProject || !graphConfig?.variables) {
-        return;
-      }
-      
-      // Show loading state after 1.5 seconds if graph generation is still in progress
-      loadingTimeoutRef.current = setTimeout(() => {
-        setIsLoading(true);
-      }, 1500);
-      
-      // ✅ STEP 2: Fetch data using extracted service
-      let fetchResult;
-      try {
-        fetchResult = await fetchGraphData({ graphConfig, workspacePath });
-      } catch (error) {
-        return;
-      }
 
-      const { rows, xNames, yNames, zNames, categoryNames, normalizedFormat } = fetchResult;
-      
+    const generatePlot = async () => {
+      // Use cached data
+      if (!fetchedData) return;
+
+      let { rows, xNames, yNames, zNames, categoryNames, normalizedFormat } = fetchedData;
+      // Note: Data sampling is now done at the database level for optimal performance
+
       // Merge mesh3d properties from liveProps into graphConfig
       const enhancedGraphConfig = {
         ...graphConfig,
@@ -121,6 +144,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
           liveProps
         });
       } catch (error) {
+        console.error('Failed to generate traces:', error);
         return;
       }
 
@@ -158,8 +182,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       // Only override legend position if the user explicitly chose one; otherwise keep defaults
       const legendPos = userLegendPosition
         ? (userLegendPosition === 'front'
-            ? { x: 0.02, y: 0.98, xanchor: 'left' as const, yanchor: 'top' as const }
-            : { x: 1.02, y: 1, xanchor: 'left' as const, yanchor: 'top' as const })
+          ? { x: 0.02, y: 0.98, xanchor: 'left' as const, yanchor: 'top' as const }
+          : { x: 1.02, y: 1, xanchor: 'left' as const, yanchor: 'top' as const })
         : {} as any;
       // Local RGBA helper for background and plot colors (avoid order issues)
       const toRgba = (hex?: string, alpha?: number) => {
@@ -183,11 +207,11 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       const axisYTitle = liveProps?.global?.showAxisLabels && liveProps?.global?.axisYData
         ? { text: liveProps.global.axisYData }
         : undefined;
-      
+
       // Convert inches to pixels (~96 dpi heuristic)
       const inchToPx = (inch: number) => Math.max(0, Math.round(inch * 96));
       const gridOpacity = Math.max(0, Math.min(1, 1 - (liveProps?.global?.gridTransparencyPct || 0) / 100));
-      
+
       const hexToRgba = (hex?: string, alpha?: number) => {
         if (!hex) return undefined as any;
         const h = hex.replace('#', '');
@@ -212,8 +236,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       const axisLineWidthPx = Math.max(1, Math.round((liveProps?.global?.axisLineThicknessInch || 0.0104) * 96));
       // Get canvas mode from tools (check both direct and nested paths)
       const canvasMode = liveProps?.canvasMode || liveProps?.global?.canvasMode || 'light';
-      
-      
+
+
       // Define canvas mode colors
       const lightModeColors = {
         paperBg: '#ffffff',
@@ -221,34 +245,38 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         textColor: '#111111',
         axisTextColor: '#111111',
         gridColor: '#e5e5e5', // 2D grid color (light gray)
-        axisColor: '#444444'
+        axisColor: '#444444',
+        tickColor: '#444444',
+        minorTickColor: '#888888'
       };
-      
+
       const darkModeColors = {
         paperBg: '#000000',        // Pitch black background
         plotBg: '#000000',         // Pitch black plot area
         textColor: '#ffffff',      // Pure white text
         axisTextColor: '#ffffff',  // Pure white axis text
         gridColor: '#333333',      // Dark gray grid
-        axisColor: '#555555'       // Medium gray axes
+        axisColor: '#ffffff',      // White axes
+        tickColor: '#ffffff',      // White ticks
+        minorTickColor: '#888888'  // Grey minor ticks
       };
-      
+
       const modeColors = canvasMode === 'dark' ? darkModeColors : lightModeColors;
-      
-      const axisLineColor = hexToRgba(modeColors.axisColor, axisLineAlpha);
+
+      const axisLineColor = hexToRgba(liveProps?.global?.axisLineColor || modeColors.axisColor, axisLineAlpha);
 
       const titleVisible = liveProps?.global?.showTitle !== false;
-      
+
       // Check if we have 3D mesh traces
       const has3DMeshTraces = traces.some(trace => trace.type === 'scatter3d' || trace.type === 'mesh3d' || trace.type === 'surface');
-      
+
       // Function to determine text color based on background color
       const getTextColorForBackground = (bgColor: string): string => {
         if (!bgColor) return '#111111'; // Default dark text
-        
+
         // Parse background color to RGB values
         let r, g, b;
-        
+
         if (bgColor.startsWith('#')) {
           // Hex color
           const hex = bgColor.replace('#', '');
@@ -268,32 +296,48 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         } else {
           return '#111111'; // Default for unknown formats
         }
-        
+
         // Calculate luminance using relative luminance formula
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        
+
         // Return dark text for light backgrounds, light text for dark backgrounds
         return luminance > 0.5 ? '#111111' : '#FFFFFF';
       };
-      
-      // Override background colors with canvas mode colors
-      const finalPaperBg = modeColors.paperBg;
-      const finalPlotBg = modeColors.plotBg;
+
+      // Override background colors with canvas mode colors only if user hasn't set them
+      // FIX: Handle legacy saved properties where defaults were hardcoded to light mode values (#ffffff, etc.)
+      // If we are in dark mode, and the prop matches the old light default, ignore it and use dark mode default.
+
+      const isLegacyLightDefault = (val: string | undefined, defaultVal: string) => {
+        if (!val) return false;
+        return val.toLowerCase() === defaultVal.toLowerCase();
+      };
+
+      const userBg = liveProps?.global?.backgroundColor;
+      const shouldUseUserBg = userBg && !(canvasMode === 'dark' && isLegacyLightDefault(userBg, '#ffffff'));
+      const finalPaperBg = shouldUseUserBg ? toRgba(userBg, bgAlpha) : modeColors.paperBg;
+
+      const userPlotBg = liveProps?.global?.plotColor;
+      // Note: Plot color usually defaults to empty in old config too, or sometimes match paper.
+      // If it matches old default white, ignore it in dark mode.
+      const shouldUseUserPlotBg = userPlotBg && !(canvasMode === 'dark' && isLegacyLightDefault(userPlotBg, '#ffffff'));
+      const finalPlotBg = shouldUseUserPlotBg ? toRgba(userPlotBg, plotAlpha) : (shouldUseUserBg && !userPlotBg ? finalPaperBg : modeColors.plotBg);
+
       const textColor = modeColors.textColor;
       const axisTextColor = modeColors.axisTextColor;
-      
-      
+
+
       let layout: any = {
         title: titleVisible
           ? {
-              text: liveTitle || getTitleText(subType),
-              font: { size: 18, family: 'Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: textColor },
-              x: 0.5,
-              xanchor: 'center',
-              y: 0.98,
-              yanchor: 'top',
-              pad: { t: 8, b: 4, l: 0, r: 0 },
-            }
+            text: liveTitle || getTitleText(subType),
+            font: { size: 18, family: 'Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: textColor },
+            x: 0.5,
+            xanchor: 'center',
+            y: 0.98,
+            yanchor: 'top',
+            pad: { t: 8, b: 4, l: 0, r: 0 },
+          }
           : undefined,
         autosize: true,
         // Force Plotly to fully re-evaluate layout changes like RGBA grid colors
@@ -326,14 +370,14 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
           title: (() => {
             // Special handling for X Category point plots
             if (isPointPlot && normalizedFormat === 'X Category' && xNames?.length > 0) {
-              return { 
-                text: xNames[0], 
+              return {
+                text: xNames[0],
                 standoff: 12,
                 font: { color: modeColors.axisTextColor }
               };
             }
-            return axisXTitle ? { 
-              ...axisXTitle, 
+            return axisXTitle ? {
+              ...axisXTitle,
               standoff: 12,
               font: { color: modeColors.axisTextColor }
             } : undefined;
@@ -346,7 +390,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             if (isPointPlot && normalizedFormat === 'Y Category' && categoryNames?.length > 0) {
               return 'category';
             }
-            
+
             switch (liveProps?.global?.xScaleType) {
               case 'linear': return 'linear';
               case 'log10': return 'log';
@@ -368,7 +412,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             // Get unique category values from the data
             const categoryCol = categoryNames[0];
             const uniqueCategories = [...new Set(rows.map((row: any) => row[categoryCol]))];
-            
+
             return {
               tickmode: 'array',
               tickvals: uniqueCategories.map((_, index) => index), // Use 0-based indexing to match data
@@ -377,13 +421,18 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             };
           })() : {}),
           showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridXMajor),
-          gridcolor: hexToRgba(modeColors.gridColor, gridOpacity),
+          gridcolor: (() => {
+            // FIX: Legacy grid color check
+            const userGrid = liveProps?.global?.gridColor;
+            const shouldUseUserGrid = userGrid && !(canvasMode === 'dark' && isLegacyLightDefault(userGrid, '#e5e5e5'));
+            return hexToRgba(shouldUseUserGrid ? userGrid : modeColors.gridColor, gridOpacity);
+          })(),
           gridwidth: inchToPx(liveProps?.global?.gridThicknessInch || 0.01),
           griddash: gridDash,
           zeroline: false,
           minor: {
             showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridXMinor),
-            gridcolor: hexToRgba(liveProps?.global?.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
+            gridcolor: hexToRgba(modeColors.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
             gridwidth: Math.max(1, Math.floor(inchToPx((liveProps?.global?.gridThicknessInch || 0.01) / 2))),
             griddash: gridDash || 'dot',
             // Minor tick marks
@@ -399,7 +448,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             })(),
             ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickLength || 0.05))),
             tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickThickness || 0.005))),
-            tickcolor: hexToRgba(liveProps?.global?.minorTickColor || '#888888', Math.max(0, Math.min(1, 1 - ((liveProps?.global?.minorTickTransparency || 0) / 100)))),
+            tickcolor: (() => {
+              // FIX: Legacy minor tick color check
+              const userTick = liveProps?.global?.minorTickColor;
+              const shouldUseUserTick = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#888888'));
+              return hexToRgba(shouldUseUserTick ? userTick : modeColors.minorTickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.minorTickTransparency || 0) / 100))));
+            })(),
             nticks: liveProps?.global?.minorTickInterval || 5,
           },
           layer: liveProps?.global?.gridLayering === 'gridFront' ? 'above traces' : 'below traces',
@@ -420,7 +474,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
           // Tick marks properties
           ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickLength || 0.1))),
           tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickThickness || 0.01))),
-          tickcolor: hexToRgba(liveProps?.global?.majorTickColor || '#444444', Math.max(0, Math.min(1, 1 - ((liveProps?.global?.majorTickTransparency || 0) / 100)))),
+          tickcolor: (() => {
+            // FIX: Legacy tick color check
+            const userTick = liveProps?.global?.majorTickColor;
+            const shouldUse = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#444444'));
+            return hexToRgba(shouldUse ? userTick : modeColors.tickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.majorTickTransparency || 0) / 100))));
+          })(),
           ticks: (() => {
             const direction = liveProps?.global?.majorTickDirection || 'outward';
             switch (direction) {
@@ -432,44 +491,47 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             }
           })(),
           // Manual tick interval
-          ...(liveProps?.global?.majorTickInterval === 'manual' && liveProps?.global?.majorTickManualInterval 
+          ...(liveProps?.global?.majorTickInterval === 'manual' && liveProps?.global?.majorTickManualInterval
             ? { dtick: liveProps.global.majorTickManualInterval }
             : {}),
           // Break properties for X-axis
-          ...(liveProps?.global?.showBreak && 
-            typeof liveProps?.global?.omitRangeStart === 'number' && 
-            typeof liveProps?.global?.omitRangeEnd === 'number' 
+          ...(liveProps?.global?.showBreak &&
+            typeof liveProps?.global?.omitRangeStart === 'number' &&
+            typeof liveProps?.global?.omitRangeEnd === 'number'
             ? (() => {
-                return {
-                  rangebreaks: [{
-                    bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
-                  }]
-                };
-              })()
+              return {
+                rangebreaks: [{
+                  bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
+                }]
+              };
+            })()
             : {}),
           automargin: true,
+          tickfont: {
+            color: modeColors.axisTextColor
+          }
         },
         yaxis: {
           ...getAxisConfig(subType, 'y', canvasMode),
           title: (() => {
             // Special handling for Y Category point plots
             if (isPointPlot && normalizedFormat === 'Y Category' && yNames?.length > 0) {
-              return { 
-                text: yNames[0], 
+              return {
+                text: yNames[0],
                 standoff: 12,
                 font: { color: modeColors.axisTextColor }
               };
             }
             // Special handling for X Category point plots
             if (isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0) {
-              return { 
-                text: categoryNames[0], 
+              return {
+                text: categoryNames[0],
                 standoff: 12,
                 font: { color: modeColors.axisTextColor }
               };
             }
-            return axisYTitle ? { 
-              ...axisYTitle, 
+            return axisYTitle ? {
+              ...axisYTitle,
               standoff: 12,
               font: { color: modeColors.axisTextColor }
             } : undefined;
@@ -483,7 +545,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             if (isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0) {
               return 'category';
             }
-            
+
             switch (liveProps?.global?.yScaleType) {
               case 'linear': return 'linear';
               case 'log10': return 'log';
@@ -503,7 +565,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             // Get unique category values from the data
             const categoryCol = categoryNames[0];
             const uniqueCategories = [...new Set(rows.map((row: any) => row[categoryCol]))];
-            
+
             return {
               tickmode: 'array',
               tickvals: uniqueCategories.map((_, index) => index), // Use 0-based indexing to match data
@@ -512,13 +574,18 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             };
           })() : {}),
           showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridYMajor),
-          gridcolor: hexToRgba(modeColors.gridColor, gridOpacity),
+          gridcolor: (() => {
+            // FIX: Legacy grid color check for Y axis
+            const userGrid = liveProps?.global?.gridColor;
+            const shouldUseUserGrid = userGrid && !(canvasMode === 'dark' && isLegacyLightDefault(userGrid, '#e5e5e5'));
+            return hexToRgba(shouldUseUserGrid ? userGrid : modeColors.gridColor, gridOpacity);
+          })(),
           gridwidth: inchToPx(liveProps?.global?.gridThicknessInch || 0.01),
           griddash: gridDash,
           zeroline: false,
           minor: {
             showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridYMinor),
-            gridcolor: hexToRgba(liveProps?.global?.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
+            gridcolor: hexToRgba(modeColors.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
             gridwidth: Math.max(1, Math.floor(inchToPx((liveProps?.global?.gridThicknessInch || 0.01) / 2))),
             griddash: gridDash || 'dot',
             // Minor tick marks
@@ -534,7 +601,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             })(),
             ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickLength || 0.05))),
             tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickThickness || 0.005))),
-            tickcolor: hexToRgba(liveProps?.global?.minorTickColor || '#888888', Math.max(0, Math.min(1, 1 - ((liveProps?.global?.minorTickTransparency || 0) / 100)))),
+            tickcolor: (() => {
+              // FIX: Legacy minor tick color check for Y axis
+              const userTick = liveProps?.global?.minorTickColor;
+              const shouldUseUserTick = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#888888'));
+              return hexToRgba(shouldUseUserTick ? userTick : modeColors.minorTickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.minorTickTransparency || 0) / 100))));
+            })(),
             nticks: liveProps?.global?.minorTickInterval || 5,
           },
           layer: liveProps?.global?.gridLayering === 'gridFront' ? 'above traces' : 'below traces',
@@ -555,7 +627,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
           // Tick marks properties
           ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickLength || 0.1))),
           tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickThickness || 0.01))),
-          tickcolor: hexToRgba(liveProps?.global?.majorTickColor || '#444444', Math.max(0, Math.min(1, 1 - ((liveProps?.global?.majorTickTransparency || 0) / 100)))),
+          tickcolor: (() => {
+            // FIX: Legacy tick color check for Y axis
+            const userTick = liveProps?.global?.majorTickColor;
+            const shouldUse = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#444444'));
+            return hexToRgba(shouldUse ? userTick : modeColors.tickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.majorTickTransparency || 0) / 100))));
+          })(),
           ticks: (() => {
             const direction = liveProps?.global?.majorTickDirection || 'outward';
             switch (direction) {
@@ -567,22 +644,25 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             }
           })(),
           // Manual tick interval
-          ...(liveProps?.global?.majorTickInterval === 'manual' && liveProps?.global?.majorTickManualInterval 
+          ...(liveProps?.global?.majorTickInterval === 'manual' && liveProps?.global?.majorTickManualInterval
             ? { dtick: liveProps.global.majorTickManualInterval }
             : {}),
           // Break properties for Y-axis
-          ...(liveProps?.global?.showBreak && 
-            typeof liveProps?.global?.omitRangeStart === 'number' && 
-            typeof liveProps?.global?.omitRangeEnd === 'number' 
+          ...(liveProps?.global?.showBreak &&
+            typeof liveProps?.global?.omitRangeStart === 'number' &&
+            typeof liveProps?.global?.omitRangeEnd === 'number'
             ? (() => {
-                return {
-                  rangebreaks: [{
-                    bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
-                  }]
-                };
-              })()
+              return {
+                rangebreaks: [{
+                  bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
+                }]
+              };
+            })()
             : {}),
           automargin: true,
+          tickfont: {
+            color: modeColors.axisTextColor
+          }
         },
         // Mirror Y axis to requested side by adjusting side and overlaying the opposite if needed
         // For simplicity, move y-axis side only
@@ -656,18 +736,18 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       // Add 3D scene configuration for 3D mesh plots
       if (has3DMeshTraces) {
         // Get axis titles from properties or fall back to column names
-        const scene3DXTitle = (liveProps?.global?.showAxisLabels && liveProps?.global?.axisXData) 
-          ? liveProps.global.axisXData 
+        const scene3DXTitle = (liveProps?.global?.showAxisLabels && liveProps?.global?.axisXData)
+          ? liveProps.global.axisXData
           : (xNames[0] || 'X');
-        const scene3DYTitle = (liveProps?.global?.showAxisLabels && liveProps?.global?.axisYData) 
-          ? liveProps.global.axisYData 
+        const scene3DYTitle = (liveProps?.global?.showAxisLabels && liveProps?.global?.axisYData)
+          ? liveProps.global.axisYData
           : (yNames[0] || 'Y');
-        const scene3DZTitle = (liveProps?.global?.showAxisLabels && liveProps?.global?.axisZData) 
-          ? liveProps.global.axisZData 
+        const scene3DZTitle = (liveProps?.global?.showAxisLabels && liveProps?.global?.axisZData)
+          ? liveProps.global.axisZData
           : 'Z';
-        
+
         layout.scene = {
-          xaxis: { 
+          xaxis: {
             title: scene3DXTitle,
             // Ensure X-axis goes from low to high (left to right)
             autorange: true,
@@ -684,7 +764,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             backgroundcolor: canvasMode === 'dark' ? 'rgb(30, 30, 30)' : 'rgb(230, 230, 250)',
             showbackground: true
           },
-          yaxis: { 
+          yaxis: {
             title: scene3DYTitle,
             // Ensure Y-axis goes from low to high (front to back)
             autorange: true,
@@ -701,7 +781,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             backgroundcolor: canvasMode === 'dark' ? 'rgb(30, 30, 30)' : 'rgb(230, 230, 250)',
             showbackground: true
           },
-          zaxis: { 
+          zaxis: {
             title: scene3DZTitle,
             // Ensure Z-axis goes from low to high (bottom to top)
             autorange: true,
@@ -736,16 +816,16 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
 
       // Apply category plot layout configuration for X Category and Y Category formats
       if (isCategoryPlot && isCategoryFormat && (normalizedFormat === 'X Category' || normalizedFormat === 'Y Category')) {
-        
+
         // Use the imported category plot layout function
-        
+
         const categoryConfig = {
           rows,
           xCol: xNames?.[0],
           yCol: yNames?.[0],
           categoryCol: categoryNames?.[0]
         };
-        
+
         // Apply category plot layout
         layout = getCategoryPlotLayout(categoryConfig, layout);
       }
@@ -757,8 +837,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       }
 
       const allowDragResize = (liveProps?.global?.legendAllowDragResize ?? true) && !(liveProps?.global?.legendLock);
-      const config = { 
-        responsive: true, 
+      const config = {
+        responsive: true,
         edits: { legendPosition: allowDragResize, titleText: true, axisTitleText: true },
         // Replace Plotly logo with Stat Pro logo
         displaylogo: false,  // Hide the default Plotly logo
@@ -775,28 +855,33 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         //   x: 0.02, y: 0.02, showarrow: false
         // }
       } as any;
-      
-      
+
+
       if (containerRef.current) {
         (plot as any).graph.current = containerRef.current;
         const payload = { data: traces, layout, config } as any;
-        
-        
+
+
         // Check specifically for regression traces
         const regressionTraces = traces.filter(t => t.name?.includes('fit') || t.name?.includes('Regression') || t.name?.includes('Test Line'));
         if (regressionTraces.length > 0) {
         } else {
         }
-        
+
         lastPlotRef.current = payload;
-        plot.redraw(payload);
-        
-        
+
+        try {
+          plot.redraw(payload);
+        } catch (error) {
+          console.error('Failed to render graph:', error);
+        }
+
+
         // Attach inline editing listeners after initial draw
         try {
           applyInlineEditing();
-          
-          
+
+
           // Also wire canvas-level context menu to open properties via an option
           const root = containerRef.current as HTMLElement | null;
           if (root) {
@@ -831,23 +916,23 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
                   const csBody = window.getComputedStyle(document.body);
                   const bodyBg = csBody.getPropertyValue('background-color');
                   if (bodyBg) return bodyBg.trim();
-                } catch {}
+                } catch { }
                 return '#ffffff';
               };
               const parseRgb = (c: string): { r: number; g: number; b: number } => {
                 if (c.startsWith('#')) {
-                  const h = c.replace('#','');
-                  const r = parseInt(h.substring(0,2),16);
-                  const g = parseInt(h.substring(2,4),16);
-                  const b = parseInt(h.substring(4,6),16);
-                  return { r,g,b };
+                  const h = c.replace('#', '');
+                  const r = parseInt(h.substring(0, 2), 16);
+                  const g = parseInt(h.substring(2, 4), 16);
+                  const b = parseInt(h.substring(4, 6), 16);
+                  return { r, g, b };
                 }
-                const parts = c.replace(/rgba?\(|\)|\s/g,'').split(',');
-                return { r: parseInt(parts[0]||'255',10), g: parseInt(parts[1]||'255',10), b: parseInt(parts[2]||'255',10) };
+                const parts = c.replace(/rgba?\(|\)|\s/g, '').split(',');
+                return { r: parseInt(parts[0] || '255', 10), g: parseInt(parts[1] || '255', 10), b: parseInt(parts[2] || '255', 10) };
               };
               const bgCol = getPageBg();
-              const { r:pr, g:pg, b:pb } = parseRgb(bgCol);
-              const lum = (0.2126*pr + 0.7152*pg + 0.0722*pb) / 255;
+              const { r: pr, g: pg, b: pb } = parseRgb(bgCol);
+              const lum = (0.2126 * pr + 0.7152 * pg + 0.0722 * pb) / 255;
               const isDark = lum < 0.5;
               const bgColor = isDark ? '#1f1f1f' : '#ffffff';
               const textColor = isDark ? '#f3f3f3' : '#111111';
@@ -882,7 +967,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             (root as any).oncontextmenu = null;
             root.addEventListener('contextmenu', onContextMenu, true);
           }
-        } catch {}
+        } catch { }
       } else {
         // Retry with exponential backoff
         let retryCount = 0;
@@ -907,8 +992,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       const projectPath = workspacePath || '';
       await ensureGraphFolderAndSave(projectPath, { graphConfig, traces, layout });
     };
-    
-    run().catch((error) => {
+
+    generatePlot().catch((error) => {
     }).finally(() => {
       // Clear the loading timeout and hide loading state
       if (loadingTimeoutRef.current) {
@@ -917,7 +1002,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       }
       setIsLoading(false);
     });
-  }, [graphConfig, workspacePath, liveProps]);
+  }, [fetchedData, graphConfig, workspacePath, liveProps]);
 
   // When the container becomes visible again or resizes, redraw using cached payload
   useEffect(() => {
@@ -958,9 +1043,9 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
 
   return (
     <div style={{ width: '100%', height: '100%', minHeight: 400, position: 'relative' }} ref={containerRef}>
-              <GraphLoader 
-                isVisible={isLoading} 
-              />
+      <GraphLoader
+        isVisible={isLoading}
+      />
     </div>
   );
 });

@@ -4,6 +4,6 @@ export const useContainerLayout = makeStyles({
   layoutContainer: {
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between',
+    height: '100%',
   },
 });

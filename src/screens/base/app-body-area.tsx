@@ -19,11 +19,17 @@ import { WelcomePage } from '../welcome';
 import 'flexlayout-react/style/light.css';
 import { useState } from 'react';
 import { Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle, DialogActions, Checkbox, Button } from '@fluentui/react-components';
+import { SheetSelectionModal } from '../empty-data-view/view-render/sheet-selection-modal';
 
 const AppBody: FC = () => {
   const { t } = useTranslation('dockLayout');
-  const { model, setBlockUI } = useStartProStore(
-    useShallow((state) => ({ model: state.model, setBlockUI: state.setBlockUI })),
+  const { model, setBlockUI, globalSheetSelection, setGlobalSheetSelection } = useStartProStore(
+    useShallow((state) => ({
+      model: state.model,
+      setBlockUI: state.setBlockUI,
+      globalSheetSelection: state.globalSheetSelection,
+      setGlobalSheetSelection: state.setGlobalSheetSelection
+    })),
   );
   const classes = useLayout();
   const factory = (node: TabNode): ReactNode => {
@@ -57,8 +63,8 @@ const AppBody: FC = () => {
         );
       case `${EMPTY_GRAPH_VIEW}-render`:
         return (
-          <div className={classes.suppressOverFlow}>
-            <EmptyDataView {...node.getConfig()} />
+          <div className={classes.suppressOverFlow} key={node.getId()}>
+            <EmptyDataView {...node.getConfig()} key={node.getId()} nodeId={node.getId()} />
           </div>
         );
       case 'welcome':
@@ -161,7 +167,7 @@ const AppBody: FC = () => {
   };
 
   return (
-    <div className={classes.root}>
+    <div className={classes.appBodyRoot}>
       <Layout
         model={model}
         titleFactory={titleFactory}
@@ -204,7 +210,7 @@ const AppBody: FC = () => {
                     const cmap: any = (window as any).statproChangedRuns || {};
                     if (pendingClose.runId) delete cmap[pendingClose.runId];
                     (window as any).statproChangedRuns = cmap;
-                  } catch {}
+                  } catch { }
                   if (pendingClose.tabId) model.doAction(Actions.deleteTab(pendingClose.tabId));
                   setPendingClose({ tabId: null, runId: null });
                 }}>Discard</Button>
@@ -218,7 +224,7 @@ const AppBody: FC = () => {
                     const cmap: any = (window as any).statproChangedRuns || {};
                     if (pendingClose.runId) delete cmap[pendingClose.runId];
                     (window as any).statproChangedRuns = cmap;
-                  } catch {}
+                  } catch { }
                   if (pendingClose.tabId) model.doAction(Actions.deleteTab(pendingClose.tabId));
                   setPendingClose({ tabId: null, runId: null });
                 }}>Save selected</Button>
@@ -228,6 +234,12 @@ const AppBody: FC = () => {
           </DialogSurface>
         </Dialog>
       )}
+      <SheetSelectionModal
+        open={globalSheetSelection.open}
+        sheetNames={globalSheetSelection.sheetNames}
+        onClose={globalSheetSelection.onCancel}
+        onConfirm={globalSheetSelection.onConfirm}
+      />
     </div>
   );
 };

@@ -12,6 +12,11 @@ export const useUpdatedConfig = ({ dbName, tableName, config }: {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const fetchTableColumns = async () => {
         if (!dbName || !tableName) return [] as string[];
+        // Skip if tableName is "NA" or invalid - this means backend didn't generate output table
+        if (tableName === 'NA' || tableName === 'null' || tableName === 'undefined' || !tableName.trim()) {
+            console.warn('Invalid or missing output table name:', tableName);
+            return [] as string[];
+        }
         const db = new Database(dbName);
         const query = `PRAGMA table_info(${tableName});`;
         try {
@@ -19,7 +24,8 @@ export const useUpdatedConfig = ({ dbName, tableName, config }: {
             return config.showHeader ? tableInfo.map((row: any) => row.name) : tableInfo.map((row: any) => row.name).slice(1);
         } catch (error) {
             console.error("Error fetching column names:", error);
-            throw error;
+            // Return empty array instead of throwing to prevent breaking the UI
+            return [] as string[];
         }
     };
 

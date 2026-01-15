@@ -27,7 +27,9 @@ export const exporters = {
   regressionBayesian: 'bayesian',
   tests: "tests",
   options: "options",
-  pairedTTest: "paired-t-test"
+  pairedTTest: "paired-t-test",
+  openProject: 'openProjectAction',
+  importData: 'importDataAction',
 };
 
 export const topMenuConfig = {
@@ -42,34 +44,34 @@ export const topMenuConfig = {
           label: 'new',
           submenu: [
             {
-              id: 'new_data',
-              label: 'data',
-              execute: exporters.importBusinessObject,
-            },
-            {
               id: 'emptyDataView',
               label: 'emptyDataView',
               codeExecute: exporters.emptyDataView,
               isEmptyDataView: true,
             },
             {
-              id: 'new_command',
-              label: 'command',
+              id: 'new_data',
+              label: 'data',
+              execute: exporters.importBusinessObject,
             },
-            {
-              id: 'new_output',
-              label: 'output',
-            },
+
           ],
+        },
+
+        {
+          id: 'import_data',
+          label: 'Import Data',
+          codeExecute: exporters.importData,
         },
         {
           id: 'open',
           label: 'open',
+          codeExecute: exporters.openProject,
         },
-        {
-          id: 'data_capture',
-          label: 'dataCapture',
-        },
+        // {
+        //   id: 'data_capture',
+        //   label: 'dataCapture',
+        // },
       ],
     },
     {

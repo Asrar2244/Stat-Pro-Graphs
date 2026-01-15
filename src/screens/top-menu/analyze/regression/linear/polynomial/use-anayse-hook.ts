@@ -29,7 +29,9 @@ export const usePrepareAnalysis = ({
   useEffect(() => {
     const columnMap = new Map<string, boolean>();
     columns.forEach((column) => {
-      if (!model.availableList.has(column.columnId)) columnMap.set(column.columnId, false);
+      if (!column.columnId.startsWith('def_col_') && !model.availableList.has(column.columnId)) {
+        columnMap.set(column.columnId, false);
+      }
     });
     setModel({
       availableList: columnMap,
@@ -40,18 +42,18 @@ export const usePrepareAnalysis = ({
 
   const executeAnalysis = async (id: string): Promise<void> => {
     const tableName = config.tabName;
-    
+
     // Validate polynomial degree - ensure it's reasonable for the data
     const degree = 1; // Force degree to 1 to test if this fixes the backend error
     console.log('Original degree:', estimate.degree, 'Forced degree:', degree);
-    
+
     const dependentVars = Array.from(model.dependentList.entries())
       .filter(([_, selected]) => selected)
       .map(([name, _]) => name);
     const independentVars = Array.from(model.independentList.entries())
       .filter(([_, selected]) => selected)
       .map(([name, _]) => name);
-    
+
     // Validate variable selection
     if (dependentVars.length !== 1) {
       setBlockUI({ value: true, msg: 'Please select exactly one dependent variable.' });
@@ -61,7 +63,7 @@ export const usePrepareAnalysis = ({
       console.error('Polynomial regression requires exactly 1 independent variable, got:', independentVars.length);
       return;
     }
-    
+
     const parameters = {
       data_name: tableName,
       input_data_type: 'file',
@@ -78,7 +80,7 @@ export const usePrepareAnalysis = ({
       },
       sub_type: 'polynomial',
     };
-    
+
     // Debug: Log the current estimate values
     console.log('Polynomial estimate values:', {
       inference: estimate.inference,
@@ -86,16 +88,16 @@ export const usePrepareAnalysis = ({
       confidence: estimate.confidence,
       polynomialType: estimate.polynomialType
     });
-    
+
     // Debug: Log variable selection details
     console.log('Dependent list entries:', Array.from(model.dependentList.entries()));
     console.log('Independent list entries:', Array.from(model.independentList.entries()));
     console.log('Selected dependent vars:', dependentVars);
     console.log('Selected independent vars:', independentVars);
-    
+
     // Debug: Log the final parameters
     console.log('Polynomial parameters being sent:', parameters);
-    
+
     try {
       await execute(
         config.tabName,

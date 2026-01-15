@@ -23,12 +23,13 @@ export const GraphPlot: FC<IGraphProps> = ({ graph, dbFileName, dbTableName }) =
   // This ensures the graph doesn't appear in full screen mode when first opened
   useEffect(() => {
     if (plotly.current) {
+      const element = plotly.current as unknown as HTMLElement;
       if (!handle.active) {
-        plotly.current.style.width = '100%';
-        plotly.current.style.height = '400px';
+        element.style.width = '100%';
+        element.style.height = '400px';
       } else {
-        plotly.current.style.width = '100%';
-        plotly.current.style.height = '96vh';
+        element.style.width = '100%';
+        element.style.height = '96vh';
       }
     }
   }, [handle.active]);

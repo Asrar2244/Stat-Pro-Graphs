@@ -60,60 +60,68 @@ export const fetchGraphData = async (config: FetchDataConfig): Promise<FetchData
     throw new Error('Empty column list');
   }
 
-  const rows = await db.selectQuery(`SELECT ${colList} FROM ${EXCEL};`);
+  try {
+    // Fetch all rows - let Plotly's WebGL handle the rendering
+    const rows = await db.selectQuery(`SELECT ${colList} FROM ${EXCEL};`);
 
-  // Selected columns by role
-  const xNames = (graphConfig.variables?.x as string[]) || [];
-  const yNames = (graphConfig.variables?.y as string[]) || [];
-  const zNames = (graphConfig.variables?.z as string[]) || [];
-  const categoryNames = (graphConfig.variables?.category as string[]) || [];
+    // Selected columns by role
+    const xNames = (graphConfig.variables?.x as string[]) || [];
+    const yNames = (graphConfig.variables?.y as string[]) || [];
+    const zNames = (graphConfig.variables?.z as string[]) || [];
+    const categoryNames = (graphConfig.variables?.category as string[]) || [];
 
-  // Process data based on format (normalize Single X/Y to axis-anchored formats when both sides are provided)
-  let normalizedFormat = graphConfig?.dataFormat;
+    // Process data based on format (normalize Single X/Y to axis-anchored formats when both sides are provided)
+    let normalizedFormat = graphConfig?.dataFormat;
 
-  // Special handling for bidirectional asymmetric error bars - use XY Pairs format
-  const isBidirectionalAsymmetricErrorBar =
-    graphConfig?.subType?.toLowerCase().includes('bidirectional') &&
-    graphConfig?.subType?.toLowerCase().includes('asymmetric') &&
-    graphConfig?.subType?.toLowerCase().includes('error bar');
+    // Special handling for bidirectional asymmetric error bars - use XY Pairs format
+    const isBidirectionalAsymmetricErrorBar =
+      graphConfig?.subType?.toLowerCase().includes('bidirectional') &&
+      graphConfig?.subType?.toLowerCase().includes('asymmetric') &&
+      graphConfig?.subType?.toLowerCase().includes('error bar');
 
-  if (isBidirectionalAsymmetricErrorBar) {
-    normalizedFormat = 'XY Pairs';
+    if (isBidirectionalAsymmetricErrorBar) {
+      normalizedFormat = 'XY Pairs';
     }
 
-  // If Single X with both X and Y present → behave as X Many Y
-  if (normalizedFormat === 'Single X' && xNames?.length > 0 && yNames?.length > 0) {
-    normalizedFormat = 'X Many Y';
-  } else if (normalizedFormat === 'Single Y' && xNames?.length > 0 && yNames?.length > 0) {
-    normalizedFormat = 'Y Many X';
-  }
+    // If Single X with both X and Y present → behave as X Many Y
+    if (normalizedFormat === 'Single X' && xNames?.length > 0 && yNames?.length > 0) {
+      normalizedFormat = 'X Many Y';
+    } else if (normalizedFormat === 'Single Y' && xNames?.length > 0 && yNames?.length > 0) {
+      normalizedFormat = 'Y Many X';
+    }
 
-  // Respect whichever variables the user passed:
-  // - If Single X but only Y provided → treat as Single Y (plot Y vs index)
-  // - If Single Y but only X provided → treat as Single X (plot X vs index)
-  if (
-    normalizedFormat === 'Single X' &&
-    (!xNames || xNames.length === 0) &&
-    yNames &&
-    yNames.length > 0
-  ) {
-    normalizedFormat = 'Single Y';
-  } else if (
-    normalizedFormat === 'Single Y' &&
-    (!yNames || yNames.length === 0) &&
-    xNames &&
-    xNames.length > 0
-  ) {
-    normalizedFormat = 'Single X';
-  }
+    // Respect whichever variables the user passed:
+    // - If Single X but only Y provided → treat as Single Y (plot Y vs index)
+    // - If Single Y but only X provided → treat as Single X (plot X vs index)
+    if (
+      normalizedFormat === 'Single X' &&
+      (!xNames || xNames.length === 0) &&
+      yNames &&
+      yNames.length > 0
+    ) {
+      normalizedFormat = 'Single Y';
+    } else if (
+      normalizedFormat === 'Single Y' &&
+      (!yNames || yNames.length === 0) &&
+      xNames &&
+      xNames.length > 0
+    ) {
+      normalizedFormat = 'Single X';
+    }
 
-  return {
-    rows,
-    xNames,
-    yNames,
-    zNames,
-    categoryNames,
-    normalizedFormat
-  };
+    return {
+      rows,
+      xNames,
+      yNames,
+      zNames,
+      categoryNames,
+      normalizedFormat
+    };
+    // Note: Not closing DB connection here to avoid pool errors when multiple graphs load simultaneously
+    // The connection pool will manage cleanup automatically
+  } catch (error) {
+    console.error('Error fetching graph data:', error);
+    throw error;
+  }
 };
 

@@ -52,6 +52,10 @@ const Options = lazy(() => import('./advanced').then((module) => ({ default: mod
 
 const PairedTestsAnalysis = lazy(() => import('./advanced').then((module) => ({ default: module.PairedTestsAnalysis })));
 
+const SavePromptModal = lazy(() =>
+  import('./save-prompt-modal').then((module) => ({ default: module.SavePromptModal })),
+);
+
 
 // Scatter Plot Modal
 const ScatterPlotModal = lazy(() =>
@@ -110,12 +114,12 @@ export const withMenuEvents = <P extends object>(
       modal.openModal();
     };
     return (
-      <SuspenseLoad>
+      <>
         <WrappedComponent {...props} setMenuItem={setMenuItem} />
         {selectedMenu && (
           <MenuSelector modal={modal} selector={selectedMenu} translationNs={translationNs} />
         )}
-      </SuspenseLoad>
+      </>
     );
   };
 };
@@ -140,11 +144,13 @@ const MenuSelector: FC<{
     } else {
       setIsLicensed(false);
     }
-  }, [selector]);
+  }, [selector, licenseStatus.state]);
 
   if (isLicensed) {
     return <OpenDevTools {...modal} showCloseButton={true} />;
   }
+
+  const { model } = useStartProStore(useShallow((state: any) => ({ model: state.model })));
 
   // Scatter Plot wrapper with real data integration
   const ScatterWrapper: FC<IModal> = (m) => {
@@ -152,12 +158,11 @@ const MenuSelector: FC<{
     const projectNames = Object.keys(projects);
     const { openNewTabAction } = useMenuCodeExecutor();
     const { setRenderLatestRun } = useStartProStore();
-    
+
     // For now, use empty datasets array - this would be populated based on selected project
     const datasets: string[] = [];
-    
+
     const onCreateGraph = async (config: any) => {
-      console.log('Creating Scatter Plot with config:', config);
       try {
         const workspacePath = projects[config.selectedProject]?.workspacePath;
         // Persist a run immediately so history shows up
@@ -170,7 +175,7 @@ const MenuSelector: FC<{
           graphType: config?.graphType || 'Scatter Plot',
           properties: {},
         });
-        
+
         // Set flag to auto-select the latest run when Graphs tab opens
         setRenderLatestRun(true);
       } catch (e) {
@@ -178,7 +183,7 @@ const MenuSelector: FC<{
       }
 
       // Open the Graphs output screen under Explorer for the selected project
-      openNewTabAction({ 
+      openNewTabAction({
         id: GRAPHS, // Use GRAPHS constant
         isEmptyDataView: false,
         extraConfig: {
@@ -192,12 +197,11 @@ const MenuSelector: FC<{
           workspacePath: projects[config.selectedProject]?.workspacePath, // Pass workspacePath
         }
       });
-      
+
       // TODO: Pass the scatter plot configuration to the graph tab
       // This would typically involve storing the config in a store or passing it via tab config
-      console.log('Graph tab created. Config to be passed:', config);
     };
-    
+
     return <ScatterPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
@@ -208,12 +212,11 @@ const MenuSelector: FC<{
     const { openNewTabAction } = useMenuCodeExecutor();
     const { setRenderLatestRun } = useStartProStore();
     const { t } = useTranslation('common');
-    
+
     // For now, use empty datasets array - this would be populated based on selected project
     const datasets: string[] = [];
-    
+
     const onCreateGraph = async (config: any) => {
-      console.log('Creating Line Plot with config:', config);
       try {
         const workspacePath = projects[config.selectedProject]?.workspacePath;
         // Persist a run immediately so history shows up
@@ -226,9 +229,9 @@ const MenuSelector: FC<{
           graphType: config?.graphType || 'Line Plot',
           properties: {},
         });
-        
+
         // Open the Graphs output screen under Explorer for the selected project
-        openNewTabAction({ 
+        openNewTabAction({
           id: GRAPHS, // Use GRAPHS constant
           isEmptyDataView: false,
           extraConfig: {
@@ -243,11 +246,11 @@ const MenuSelector: FC<{
           }
         });
         setRenderLatestRun(true);
-        
+
         // TODO: Pass the line plot configuration to the graph tab
         // This would typically involve setting some state or context
         // that the graphs-render component can access to configure the plot
-        
+
       } catch (error) {
         console.error('Error creating Line Plot:', error);
       }
@@ -263,15 +266,14 @@ const MenuSelector: FC<{
     const { openNewTabAction } = useMenuCodeExecutor();
     const { setRenderLatestRun } = useStartProStore();
     const { t } = useTranslation('common');
-    
+
     // For now, use empty datasets array - this would be populated based on selected project
     const datasets: string[] = [];
-    
+
     const onCreateGraph = async (config: any) => {
-      console.log('Creating Line-Scatter Plot with config:', config);
       try {
         const workspacePath = projects[config.selectedProject]?.workspacePath;
-        
+
         // Persist a run immediately so history shows up
         const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
         await insertGraphRun(workspacePath, {
@@ -282,16 +284,16 @@ const MenuSelector: FC<{
           graphType: config?.graphType || 'Line-Scatter Plot',
           properties: {},
         });
-        
+
         // Set flag to auto-select the latest run when Graphs tab opens
         setRenderLatestRun(true);
-        
+
       } catch (error) {
         console.error('Error creating Line-Scatter Plot:', error);
       }
 
       // Open the Graphs output screen under Explorer for the selected project
-      openNewTabAction({ 
+      openNewTabAction({
         id: GRAPHS, // Use GRAPHS constant
         isEmptyDataView: false,
         extraConfig: {
@@ -305,11 +307,11 @@ const MenuSelector: FC<{
           workspacePath: projects[config.selectedProject]?.workspacePath, // Pass workspacePath
         }
       });
-      
+
       // TODO: Pass the line-scatter plot configuration to the graph tab
       // This would typically involve setting some state or context
       // that the graphs-render component can access to configure the plot
-      
+
     };
 
     return <LineScatterPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
@@ -322,15 +324,14 @@ const MenuSelector: FC<{
     const { openNewTabAction } = useMenuCodeExecutor();
     const { setRenderLatestRun } = useStartProStore();
     const { t } = useTranslation('common');
-    
+
     // For now, use empty datasets array - this would be populated based on selected project
     const datasets: string[] = [];
-    
+
     const onCreateGraph = async (config: any) => {
-      console.log('Creating 3D Mesh Plot with config:', config);
       try {
         const workspacePath = projects[config.selectedProject]?.workspacePath;
-        
+
         // Ensure 3D mesh configuration is properly structured with meshConfig in graphConfig
         const meshConfig = {
           ...config,
@@ -354,23 +355,7 @@ const MenuSelector: FC<{
             ...config.meshSettings // Include any additional mesh settings from the modal
           }
         };
-        
-        console.log('🎨 3D Mesh Executer - Received config:', {
-          originalConfig: config,
-          surfaceType: config.surfaceType,
-          colorScale: config.colorScale,
-          opacity: config.opacity,
-          showContours: config.showContours,
-          lighting: config.lighting,
-          smoothShading: config.smoothShading,
-          showGrid: config.showGrid,
-          selectedColorScale: config.colorScale,
-          colorScaleType: typeof config.colorScale,
-          colorScaleLength: config.colorScale?.length
-        });
-        
-        console.log('Enhanced 3D Mesh Config with meshConfig:', meshConfig);
-        
+
         // Persist a run immediately so history shows up
         const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
         await insertGraphRun(workspacePath, {
@@ -381,12 +366,12 @@ const MenuSelector: FC<{
           graphType: meshConfig?.graphType || '3D Mesh Plot',
           properties: {}, // Keep properties empty, store everything in graphConfig
         });
-        
+
         // Set flag to auto-select the latest run when Graphs tab opens
         setRenderLatestRun(true);
-        
+
         // Open the Graphs output screen under Explorer for the selected project
-        openNewTabAction({ 
+        openNewTabAction({
           id: GRAPHS, // Use GRAPHS constant
           isEmptyDataView: false,
           extraConfig: {
@@ -400,9 +385,7 @@ const MenuSelector: FC<{
             workspacePath: projects[config.selectedProject]?.workspacePath, // Pass workspacePath
           }
         });
-        
-        console.log('3D Mesh Plot tab created. Enhanced config to be passed:', meshConfig);
-        
+
       } catch (error) {
         console.error('Error creating 3D Mesh Plot:', error);
       }
@@ -412,7 +395,26 @@ const MenuSelector: FC<{
   };
 
   const runSelector = () => {
-    console.log('MenuSelector runSelector called with selector:', selector);
+    // CRITICAL: Synchronously get the active tab config directly from the model
+    // This bypasses the 500ms delay in hooks and prevents race conditions during tab switching
+    const activeTab: any = model.getActiveTabset()?.getSelectedNode()?.toJson();
+    const config = activeTab?.config;
+
+    // Intercept analysis actions if data is unsaved
+    const isAnalysisAction = selector !== exporters.importBusinessObject && selector !== exporters.openDevTools && selector !== exporters.options;
+
+    // Only prompt for NEW data views (isEmptyDataView === true) that are unsaved (draft)
+    // We look at the per-tab dataState stored in node configuration for perfect isolation
+    const activeDataState = config?.dataState;
+
+    const isUnsavedNewData = isAnalysisAction &&
+      config?.isEmptyDataView === true &&
+      activeDataState === 'draft';
+
+    if (isUnsavedNewData) {
+      return <SavePromptModal {...modal} />;
+    }
+
     switch (selector) {
       case exporters.importBusinessObject:
         return <BrowseFile {...modal} t={t} />;

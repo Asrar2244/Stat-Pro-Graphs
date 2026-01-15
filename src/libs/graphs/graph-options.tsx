@@ -4,6 +4,7 @@ import { Select } from '@fluentui/react-components';
 import { useTranslation } from 'react-i18next';
 import { useGraphOptionStyles } from './styles-hook/use-graph-options-style';
 import { PlotType, PlotData } from 'plotly.js';
+import { restyle } from 'plotly.js-dist';
 import { IModal } from '@hooks';
 type IModes = Pick<PlotData, 'mode'>;
 interface IGraphOptions extends IModal {
@@ -30,7 +31,7 @@ export const GraphOptions: FC<IGraphOptions> = ({ plotly, ...props }) => {
         type: data.type,
         mode: data?.mode,
         name: data.name,
-        color: data?.marker?.color || 'default',
+        color: data?.color || data?.line?.color || data?.marker?.color || 'default',
       });
     }
     setNodeProps(_nodeProps);
@@ -38,29 +39,34 @@ export const GraphOptions: FC<IGraphOptions> = ({ plotly, ...props }) => {
 
   const onSelectChanges =
     (item: any) =>
-    (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>): void => {
-      const { name, value } = event.target;
-      item[name] = value;
-      setNodeProps([...nodeProps]);
-    };
+      (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>): void => {
+        const { name, value } = event.target;
+        item[name] = value;
+        setNodeProps([...nodeProps]);
+      };
 
   const onApplyChanges = (): void => {
-    // if (graph) {
-    //   const completeData: Data[] = [];
-    //   for (let i = 0; i < nodeProps.length; i++) {
-    //     const { color, type, mode, name } = nodeProps[i];
-    //     const colors = color === 'default' ? {} : { marker: { color } };
-    //     completeData.push({
-    //       ... plotly.current.data[i],
-    //       ...colors,
-    //       type,
-    //       mode,
-    //       name,
-    //     });
-    //   }
-    //   plotly.redraw({ data: completeData });
-    //   props.closeModal();
-    // }
+    const gd = plotly.current;
+    if (!gd) return;
+
+    // Update each trace individually for better control
+    nodeProps.forEach((nodeProp, index) => {
+      const update: any = {
+        'marker.color': nodeProp.color,
+        'line.color': nodeProp.color,
+        color: nodeProp.color,
+        fillcolor: nodeProp.color, // For confidence interval fill
+        'error_y.color': nodeProp.color,
+        'error_x.color': nodeProp.color,
+        type: nodeProp.type,
+        mode: nodeProp.mode,
+        name: nodeProp.name,
+      };
+
+      restyle(gd, update, [index]);
+    });
+
+    props.closeModal();
   };
 
   return (
@@ -98,11 +104,11 @@ export const GraphOptions: FC<IGraphOptions> = ({ plotly, ...props }) => {
                       defaultValue={node.type}
                       onChange={onSelectChanges(node)}
                     >
-                      {/* {plotly.editedConfig?.graphs?.map((graph) => (
-                        <option key={graph} value={graph}>
-                          {graph}
+                      {['scatter', 'bar', 'histogram', 'scatter3d', 'mesh3d'].map((type) => (
+                        <option key={type} value={type}>
+                          {type}
                         </option>
-                      ))} */}
+                      ))}
                     </Select>
                   </td>
                   <td>
@@ -112,11 +118,11 @@ export const GraphOptions: FC<IGraphOptions> = ({ plotly, ...props }) => {
                       onChange={onSelectChanges(node)}
                       appearance="underline"
                     >
-                      {/* {plotly.editedConfig?.modes?.map((mode) => (
+                      {['lines', 'markers', 'lines+markers', 'none'].map((mode) => (
                         <option key={mode} value={mode}>
                           {mode}
                         </option>
-                      ))} */}
+                      ))}
                     </Select>
                   </td>
                   <td>

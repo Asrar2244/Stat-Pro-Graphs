@@ -26,28 +26,31 @@ export const safeTauriCall = async <T>(
 };
 
 // Development fallbacks for common paths
+// Note: These are only used in development/browser mode, not in production Tauri builds
 export const getDevFallbackPaths = () => {
   const isWindows = navigator.userAgent.indexOf('Win') !== -1;
   const isMac = navigator.userAgent.indexOf('Mac') !== -1;
   
-  // Use reasonable fallback paths since process.env is not available in Tauri frontend
+  // These fallback paths are for development only
+  // In production Tauri builds, the actual Tauri APIs should work
   if (isWindows) {
+    // Generic Windows development paths
     return {
-      home: 'C:\\Users\\User',
-      appDir: 'C:\\Users\\User\\AppData\\Local\\start-pro',
-      collections: 'C:\\Users\\User\\AppData\\Local\\start-pro\\collections',
+      home: 'C:\\Users\\Public',
+      appDir: 'C:\\Users\\Public\\AppData\\Local\\com.start.pro',
+      collections: 'C:\\Users\\Public\\AppData\\Local\\com.start.pro\\collections',
     };
   } else if (isMac) {
     return {
-      home: '/Users/user',
-      appDir: '/Users/user/Library/Application Support/start-pro',
-      collections: '/Users/user/Library/Application Support/start-pro/collections',
+      home: '/Users/Shared',
+      appDir: '/Users/Shared/Library/Application Support/com.start.pro',
+      collections: '/Users/Shared/Library/Application Support/com.start.pro/collections',
     };
   } else {
     return {
-      home: '/home/user',
-      appDir: '/home/user/.local/share/start-pro',
-      collections: '/home/user/.local/share/start-pro/collections',
+      home: '/tmp',
+      appDir: '/tmp/.local/share/com.start.pro',
+      collections: '/tmp/.local/share/com.start.pro/collections',
     };
   }
 };

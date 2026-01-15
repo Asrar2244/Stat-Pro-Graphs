@@ -215,33 +215,36 @@ pub fn get_project_size_breakdown(db_path: String) -> Result<Value, String> {
         Err(e) => return Err(format!("Failed to get table names: {}", e)),
     };
     
+    // CRITICAL: Fetch row counts for ALL tables in one go while connection is open
+    // Store them in a HashMap or Vec of tuples so we can close the connection
+    let mut table_stats: Vec<(String, i64)> = Vec::new();
+    let mut total_rows: i64 = 0;
+
+    for table_name in &table_names {
+        let query = format!("SELECT COUNT(*) FROM {}", table_name);
+        let row_count: i64 = match conn.query_row(&query, [], |row| row.get(0)) {
+            Ok(count) => count,
+            Err(_) => 0,
+        };
+        table_stats.push((table_name.clone(), row_count));
+        total_rows += row_count;
+    }
+    
+    // CRITICAL: Explicitly drop connection/statement to release file lock immediately
+    drop(stmt);
+    drop(conn); 
+    
+    // --- Connection is now closed, safe to do calculations ---
+
     // Calculate estimated size per table based on row count
     let mut data_size: i64 = 0;
     let mut output_size: i64 = 0;
     let mut graphs_size: i64 = 0;
     let mut other_size: i64 = 0;
     
-    let mut total_rows: i64 = 0;
+    let mut table_details: Vec<serde_json::Value> = Vec::new();
     
-    for table_name in &table_names {
-        // Get row count for the table
-        let query = format!("SELECT COUNT(*) FROM {}", table_name);
-        let row_count: i64 = match conn.query_row(&query, [], |row| row.get(0)) {
-            Ok(count) => count,
-            Err(_) => 0,
-        };
-        
-        total_rows += row_count;
-    }
-    
-    // Estimate size per table based on proportion of rows
-    for table_name in &table_names {
-        let query = format!("SELECT COUNT(*) FROM {}", table_name);
-        let row_count: i64 = match conn.query_row(&query, [], |row| row.get(0)) {
-            Ok(count) => count,
-            Err(_) => 0,
-        };
-        
+    for (table_name, row_count) in table_stats {
         // Estimate this table's size proportionally
         let estimated_size = if total_rows > 0 {
             (db_size as f64 * (row_count as f64 / total_rows as f64)) as i64
@@ -264,23 +267,7 @@ pub fn get_project_size_breakdown(db_path: String) -> Result<Value, String> {
         } else {
             other_size += estimated_size;
         }
-    }
-    
-    // Build detailed result with row counts per table
-    let mut table_details: Vec<serde_json::Value> = Vec::new();
-    for table_name in &table_names {
-        let query = format!("SELECT COUNT(*) FROM {}", table_name);
-        let row_count: i64 = match conn.query_row(&query, [], |row| row.get(0)) {
-            Ok(count) => count,
-            Err(_) => 0,
-        };
-        
-        let estimated_size = if total_rows > 0 {
-            (db_size as f64 * (row_count as f64 / total_rows as f64)) as i64
-        } else {
-            0
-        };
-        
+
         table_details.push(json!({
             "name": table_name,
             "rows": row_count,

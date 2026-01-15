@@ -199,22 +199,20 @@ export const getPlotProperties = (liveProps?: LiveProperties, graphConfig?: any)
 
   // Extract 3D mesh properties from graph config if available
   // Priority: root-level properties (from modal) > meshConfig properties (from form)
-  const mesh3dFromConfig = graphConfig ? {
-    surfaceType: graphConfig.surfaceType || graphConfig.meshConfig?.surfaceType,
-    opacity: graphConfig.opacity || graphConfig.meshConfig?.opacity,
-    colorScale: graphConfig.colorScale || graphConfig.meshConfig?.colorScale,
-    showContours: graphConfig.showContours || graphConfig.meshConfig?.showContours,
-    contourOpacity: graphConfig.contourOpacity || graphConfig.meshConfig?.contourOpacity,
-    lighting: graphConfig.lighting || graphConfig.meshConfig?.lighting,
-    smoothShading: graphConfig.smoothShading || graphConfig.meshConfig?.smoothShading,
-    showGrid: graphConfig.showGrid || graphConfig.meshConfig?.showGrid,
-    gridOpacity: graphConfig.gridOpacity || graphConfig.meshConfig?.gridOpacity
-  } : {};
-  
-  console.log('🔍 getPlotProperties - graphConfig:', graphConfig);
-  console.log('🔍 getPlotProperties - mesh3dFromConfig:', mesh3dFromConfig);
-  console.log('🔍 getPlotProperties - liveProps.plotSpecific.mesh3d:', liveProps.plotSpecific.mesh3d);
-  
+  // Modal config
+  const mesh3dFromConfig: any = {};
+  if (graphConfig) {
+    const p = graphConfig.meshConfig || {};
+    if (graphConfig.surfaceType || p.surfaceType) mesh3dFromConfig.surfaceType = graphConfig.surfaceType || p.surfaceType;
+    if (graphConfig.opacity !== undefined || p.opacity !== undefined) mesh3dFromConfig.opacity = graphConfig.opacity ?? p.opacity;
+    if (graphConfig.colorScale || p.colorScale) mesh3dFromConfig.colorScale = graphConfig.colorScale || p.colorScale;
+    if (graphConfig.showContours !== undefined || p.showContours !== undefined) mesh3dFromConfig.showContours = graphConfig.showContours ?? p.showContours;
+    if (graphConfig.contourOpacity !== undefined || p.contourOpacity !== undefined) mesh3dFromConfig.contourOpacity = graphConfig.contourOpacity ?? p.contourOpacity;
+    if (graphConfig.lighting !== undefined || p.lighting !== undefined) mesh3dFromConfig.lighting = graphConfig.lighting ?? p.lighting;
+    if (graphConfig.smoothShading !== undefined || p.smoothShading !== undefined) mesh3dFromConfig.smoothShading = graphConfig.smoothShading ?? p.smoothShading;
+    if (graphConfig.showGrid !== undefined || p.showGrid !== undefined) mesh3dFromConfig.showGrid = graphConfig.showGrid ?? p.showGrid;
+    if (graphConfig.gridOpacity !== undefined || p.gridOpacity !== undefined) mesh3dFromConfig.gridOpacity = graphConfig.gridOpacity ?? p.gridOpacity;
+  }
 
   const result = {
     scatter: {
@@ -231,12 +229,11 @@ export const getPlotProperties = (liveProps?: LiveProperties, graphConfig?: any)
     },
     mesh3d: {
       ...DEFAULT_PLOT_PROPERTIES.mesh3d,
-      ...liveProps.plotSpecific.mesh3d,
-      ...mesh3dFromConfig  // Modal config should override live props for 3D mesh
+      ...mesh3dFromConfig,
+      ...liveProps.plotSpecific.mesh3d
     }
   };
-  
-  console.log('🔍 getPlotProperties - Final mesh3d:', result.mesh3d);
+
   return result;
 };
 
@@ -279,8 +276,8 @@ export const applyRegressionProperties = (
   const updatedTrace = { ...trace };
 
   // Check if this is a confidence interval trace (has "CI" in name or has fillcolor)
-  const isConfidenceInterval = 
-    updatedTrace.name?.includes('CI') || 
+  const isConfidenceInterval =
+    updatedTrace.name?.includes('CI') ||
     updatedTrace.name?.includes('Confidence') ||
     updatedTrace.fillcolor;
 
@@ -291,7 +288,7 @@ export const applyRegressionProperties = (
       updatedTrace.visible = false;
     } else {
       updatedTrace.visible = true;
-      
+
       // Update fill opacity for confidence interval fill
       if (updatedTrace.fillcolor) {
         // Extract the base color and apply new opacity
@@ -306,7 +303,7 @@ export const applyRegressionProperties = (
         };
         updatedTrace.fillcolor = hexToRgba(baseColor, opacity);
       }
-      
+
       // Update line color for confidence interval boundary lines
       if (updatedTrace.line && updatedTrace.line.dash === 'dot') {
         updatedTrace.line = {
@@ -346,7 +343,7 @@ export const applyErrorBarProperties = (
       // Only update the properties we want to change, preserve everything else
       updatedTrace.error_y.width = properties.errorBarWidth;
       updatedTrace.error_y.thickness = properties.errorBarThickness;
-      
+
       // Apply opacity and visibility
       if (typeof properties.errorBarOpacity !== 'undefined') {
         updatedTrace.error_y.opacity = properties.errorBarOpacity;
@@ -354,7 +351,7 @@ export const applyErrorBarProperties = (
       if (typeof properties.showErrorBars !== 'undefined') {
         updatedTrace.error_y.visible = properties.showErrorBars;
       }
-      
+
       // Update cap properties if cap exists, preserve all other cap properties
       if (updatedTrace.error_y.cap) {
         // Preserve existing cap properties and only update what we need
@@ -365,23 +362,23 @@ export const applyErrorBarProperties = (
         if (!updatedTrace.error_y.cap.hasOwnProperty('visible')) {
           updatedTrace.error_y.cap.visible = true;
         }
-        
+
         // Only apply color if explicitly provided
         if (properties.errorBarColor) {
           updatedTrace.error_y.color = properties.errorBarColor;
           updatedTrace.error_y.cap.color = properties.errorBarColor;
         }
-        
-        } else {
-        }
+
+      } else {
+      }
     }
-    
+
     // Apply to X error bars
     if (updatedTrace.error_x) {
       // Only update the properties we want to change, preserve everything else
       updatedTrace.error_x.width = properties.errorBarWidth;
       updatedTrace.error_x.thickness = properties.errorBarThickness;
-      
+
       // Apply opacity and visibility
       if (typeof properties.errorBarOpacity !== 'undefined') {
         updatedTrace.error_x.opacity = properties.errorBarOpacity;
@@ -389,7 +386,7 @@ export const applyErrorBarProperties = (
       if (typeof properties.showErrorBars !== 'undefined') {
         updatedTrace.error_x.visible = properties.showErrorBars;
       }
-      
+
       // Update cap properties if cap exists, preserve all other cap properties
       if (updatedTrace.error_x.cap) {
         // Preserve existing cap properties and only update what we need
@@ -400,15 +397,15 @@ export const applyErrorBarProperties = (
         if (!updatedTrace.error_x.cap.hasOwnProperty('visible')) {
           updatedTrace.error_x.cap.visible = true;
         }
-        
+
         // Only apply color if explicitly provided
         if (properties.errorBarColor) {
           updatedTrace.error_x.color = properties.errorBarColor;
           updatedTrace.error_x.cap.color = properties.errorBarColor;
         }
-        
-        } else {
-        }
+
+      } else {
+      }
     }
   }
 

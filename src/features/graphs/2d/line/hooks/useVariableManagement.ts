@@ -1,12 +1,12 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLinePlotStore } from '../linePlotSlice';
 import type { DataFormat, Variable } from '../linePlotSlice';
-import { 
-  getMaxXCount, 
-  getMaxYCount, 
-  canSendToErrorBar, 
+import {
+  getMaxXCount,
+  getMaxYCount,
+  canSendToErrorBar,
   canSendToCategory,
-  getRequiredErrorBarCount 
+  getRequiredErrorBarCount
 } from '../utils/formatRequirements';
 import { isVariableValidForSlot } from '../utils/variableFilters';
 
@@ -24,7 +24,8 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
   const [yVariableList, setYVariableList] = useState<Map<string, boolean>>(new Map());
   const [errorBarVariableList, setErrorBarVariableList] = useState<Map<string, boolean>>(new Map());
   const [categoryVariableList, setCategoryVariableList] = useState<Map<string, boolean>>(new Map());
-  
+
+
   // Select all states
   const [selectAllAvailable, setSelectAllAvailable] = useState<boolean | string | undefined>(false);
   const [selectAllX, setSelectAllX] = useState<boolean | string | undefined>(false);
@@ -34,6 +35,32 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
 
   // Get store methods for updating X/Y variables
   const { setXVariable, setYVariable } = useLinePlotStore();
+
+  // Reset all lists when availableVariables changes (e.g., project switch)
+  useEffect(() => {
+    // Clear all variable lists
+    setAvailableList(new Map());
+    setXVariableList(new Map());
+    setYVariableList(new Map());
+    setErrorBarVariableList(new Map());
+    setCategoryVariableList(new Map());
+
+    // Reset select all states
+    setSelectAllAvailable(false);
+    setSelectAllX(false);
+    setSelectAllY(false);
+    setSelectAllErrorBar(false);
+    setSelectAllCategory(false);
+
+    // Populate available list with new variables
+    if (availableVariables.length > 0) {
+      const newMap = new Map<string, boolean>();
+      availableVariables.forEach(variable => {
+        newMap.set(variable.name, false);
+      });
+      setAvailableList(newMap);
+    }
+  }, [availableVariables]);
 
   // Helper to get variable by name
   const getVariable = useCallback((name: string): Variable | undefined => {
@@ -67,46 +94,46 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
   // Helper functions for replicate formats
   const canSendToXForReplicates = useMemo(() => {
     if (!['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) return true;
-    
+
     const currentXCount = xVariableList.size;
     const currentYCount = yVariableList.size;
     const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
-    
+
     // Can send to X if current X has its Y variables complete
     return currentYCount >= expectedYCount;
   }, [dataFormat, xVariableList.size, yVariableList.size]);
 
   const canSendToYForReplicates = useMemo(() => {
     if (!['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) return true;
-    
+
     // Can send to Y if X is selected and Y count is not complete
     const currentXCount = xVariableList.size;
     const currentYCount = yVariableList.size;
     const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
-    
+
     return currentXCount > 0 && currentYCount < expectedYCount;
   }, [dataFormat, xVariableList.size, yVariableList.size]);
 
   // Helper functions for Y Many X Replicates format (horizontal)
   const canSendToXForYReplicates = useMemo(() => {
     if (dataFormat !== 'Y Many X Replicates') return true;
-    
+
     const currentYCount = yVariableList.size;
     const currentXCount = xVariableList.size;
     const expectedXCount = currentYCount * 2; // Assuming 2 X variables per Y
-    
+
     // Can send to X if current Y has its X variables complete
     return currentXCount >= expectedXCount;
   }, [dataFormat, xVariableList.size, yVariableList.size]);
 
   const canSendToYForXReplicates = useMemo(() => {
     if (dataFormat !== 'Y Many X Replicates') return true;
-    
+
     // Can send to Y if Y is selected and X count is not complete
     const currentYCount = yVariableList.size;
     const currentXCount = xVariableList.size;
     const expectedXCount = currentYCount * 2; // Assuming 2 X variables per Y
-    
+
     return currentYCount > 0 && currentXCount < expectedXCount;
   }, [dataFormat, xVariableList.size, yVariableList.size]);
 
@@ -117,7 +144,7 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     const maxX = getMaxXCount(dataFormat);
     const freeSlots = maxX ? Math.max(0, maxX - newXList.size) : Infinity;
     let moved = 0;
-    
+
     // Special logic for replicate formats
     if (['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) {
       // For these formats, only allow one X variable at a time
@@ -125,13 +152,13 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
       const currentXCount = newXList.size;
       const currentYCount = yVariableList.size;
       const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
-      
+
       // If current X doesn't have its Y variables yet, don't allow more X
       if (currentYCount < expectedYCount) {
         return; // Don't allow more X variables until Y variables are complete
       }
     }
-    
+
     for (const [variableName, checked] of availableList.entries()) {
       if (!checked) continue;
       if (moved >= freeSlots) break;
@@ -142,11 +169,11 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
       newAvailableList.set(variableName, false);
       moved++;
     }
-    
+
     setXVariableList(newXList);
     setAvailableList(newAvailableList);
     setSelectAllAvailable(false);
-    
+
     // Update store
     const nextX = pickFirstVariable(newXList);
     setXVariable(nextX);
@@ -159,32 +186,32 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     const maxY = getMaxYCount(dataFormat);
     const freeSlots = maxY ? Math.max(0, maxY - newYList.size) : Infinity;
     let moved = 0;
-    
+
     // Special logic for replicate formats
     if (['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '')) {
       // For these formats, require X variables to be selected first
       if (xVariableList.size === 0) {
         return; // Don't allow Y selection until X is selected
       }
-      
+
       // Calculate how many Y variables are needed for current X variables
       const currentXCount = xVariableList.size;
       const currentYCount = newYList.size;
       const expectedYCount = currentXCount * 2; // Assuming 2 Y variables per X
-      
+
       // Only allow Y selection if we haven't reached the expected count
       if (currentYCount >= expectedYCount) {
         return; // Don't allow more Y variables until next X is selected
       }
-      
+
       // For these formats, only allow moving exactly 2 Y variables at a time
       const availableCheckedCount = Array.from(availableList.values()).filter(Boolean).length;
       const validVariables = Array.from(availableList.entries())
         .filter(([variableName, checked]) => checked && isValidForSlot(variableName, 'y'));
-      
+
       // Only move 2 Y variables at a time
       const variablesToMove = Math.min(2, validVariables.length, expectedYCount - currentYCount);
-      
+
       for (const [variableName, checked] of availableList.entries()) {
         if (!checked) continue;
         if (moved >= variablesToMove) break;
@@ -201,25 +228,25 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
       if (yVariableList.size === 0) {
         return; // Don't allow Y selection until Y is selected
       }
-      
+
       // Calculate how many Y variables are needed for current Y variables
       const currentYCount = yVariableList.size;
       const currentXCount = xVariableList.size;
       const expectedXCount = currentYCount * 2; // Assuming 2 X variables per Y
-      
+
       // Only allow Y selection if we haven't reached the expected count
       if (currentXCount >= expectedXCount) {
         return; // Don't allow more Y variables until next Y is selected
       }
-      
+
       // For this format, only allow moving exactly 2 Y variables at a time
       const availableCheckedCount = Array.from(availableList.values()).filter(Boolean).length;
       const validVariables = Array.from(availableList.entries())
         .filter(([variableName, checked]) => checked && isValidForSlot(variableName, 'y'));
-      
+
       // Only move 2 Y variables at a time
       const variablesToMove = Math.min(2, validVariables.length, expectedXCount - currentXCount);
-      
+
       for (const [variableName, checked] of availableList.entries()) {
         if (!checked) continue;
         if (moved >= variablesToMove) break;
@@ -243,11 +270,11 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
         moved++;
       }
     }
-    
+
     setYVariableList(newYList);
     setAvailableList(newAvailableList);
     setSelectAllAvailable(false);
-    
+
     // Update store
     const nextY = pickFirstVariable(newYList);
     setYVariable(nextY);
@@ -257,40 +284,40 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
   const handleSendToErrorBar = useCallback(() => {
     const newErrorBarList = new Map(errorBarVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     // Calculate required error bars based on current X/Y counts and data format
     const xCount = xVariableList.size;
     const yCount = yVariableList.size;
     const requiredCount = getRequiredErrorBarCount(xCount, yCount, dataFormat, subType);
     const currentCount = newErrorBarList.size;
     const freeSlots = Math.max(0, requiredCount - currentCount);
-    
+
     // Check if we can send error bars (based on subType)
     const availableCheckedCount = Array.from(availableList.values()).filter(Boolean).length;
     if (!canSendToErrorBar(availableCheckedCount, currentCount, xCount, yCount, dataFormat, subType)) {
       return;
     }
-    
+
     // For bidirectional error bars, allow sending multiple variables at once
     // Calculate how many variables we can actually move
     const checkedVariables = Array.from(availableList.entries()).filter(([, checked]) => checked);
     const validVariables = checkedVariables.filter(([variableName]) => isValidForSlot(variableName, 'errorBar'));
     const variablesToMove = Math.min(validVariables.length, freeSlots);
-    
+
     let moved = 0;
-    
+
     for (const [variableName, checked] of availableList.entries()) {
       if (!checked) continue;
       if (moved >= variablesToMove) break;
       // Only move numeric variables to ErrorBar
       if (!isValidForSlot(variableName, 'errorBar')) continue;
-      
+
       newErrorBarList.set(variableName, false);
       // Keep variable in available list but uncheck it
       newAvailableList.set(variableName, false);
       moved++;
     }
-    
+
     setErrorBarVariableList(newErrorBarList);
     setAvailableList(newAvailableList);
     setSelectAllAvailable(false);
@@ -300,30 +327,30 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
   const handleSendToCategory = useCallback(() => {
     const newCategoryList = new Map(categoryVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     // Check if we can send to category using validation logic
     const availableCheckedCount = Array.from(availableList.values()).filter(Boolean).length;
     const currentCount = newCategoryList.size;
     if (!canSendToCategory(availableCheckedCount, currentCount, dataFormat)) {
       return;
     }
-    
+
     const maxCategory = 1;
     const freeSlots = Math.max(0, maxCategory - currentCount);
     let moved = 0;
-    
+
     for (const [variableName, checked] of availableList.entries()) {
       if (!checked) continue;
       if (moved >= freeSlots) break;
       // IMPORTANT: Only move categorical (text/words) variables to Category
       if (!isValidForSlot(variableName, 'category')) continue;
-      
+
       newCategoryList.set(variableName, false);
       // Keep variable in available list but uncheck it
       newAvailableList.set(variableName, false);
       moved++;
     }
-    
+
     setCategoryVariableList(newCategoryList);
     setAvailableList(newAvailableList);
     setSelectAllAvailable(false);
@@ -333,18 +360,18 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
   const handleRemoveFromX = useCallback(() => {
     const newXList = new Map(xVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     xVariableList.forEach((checked, variableName) => {
       if (checked) {
         newXList.delete(variableName);
         newAvailableList.set(variableName, false);
       }
     });
-    
+
     setXVariableList(newXList);
     setAvailableList(newAvailableList);
     if (newXList.size === 0) setSelectAllX(false);
-    
+
     // Update store
     const nextX = pickFirstVariable(newXList);
     setXVariable(nextX);
@@ -354,18 +381,18 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
   const handleRemoveFromY = useCallback(() => {
     const newYList = new Map(yVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     yVariableList.forEach((checked, variableName) => {
       if (checked) {
         newYList.delete(variableName);
         newAvailableList.set(variableName, false);
       }
     });
-    
+
     setYVariableList(newYList);
     setAvailableList(newAvailableList);
     if (newYList.size === 0) setSelectAllY(false);
-    
+
     // Update store
     const nextY = pickFirstVariable(newYList);
     setYVariable(nextY);
@@ -375,14 +402,14 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
   const handleRemoveFromErrorBar = useCallback(() => {
     const newErrorBarList = new Map(errorBarVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     errorBarVariableList.forEach((checked, variableName) => {
       if (checked) {
         newErrorBarList.delete(variableName);
         newAvailableList.set(variableName, false);
       }
     });
-    
+
     setErrorBarVariableList(newErrorBarList);
     setAvailableList(newAvailableList);
     if (newErrorBarList.size === 0) setSelectAllErrorBar(false);
@@ -392,14 +419,14 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
   const handleRemoveFromCategory = useCallback(() => {
     const newCategoryList = new Map(categoryVariableList);
     const newAvailableList = new Map(availableList);
-    
+
     categoryVariableList.forEach((checked, variableName) => {
       if (checked) {
         newCategoryList.delete(variableName);
         newAvailableList.set(variableName, false);
       }
     });
-    
+
     setCategoryVariableList(newCategoryList);
     setAvailableList(newAvailableList);
     if (newCategoryList.size === 0) setSelectAllCategory(false);
@@ -412,14 +439,14 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     yVariableList,
     errorBarVariableList,
     categoryVariableList,
-    
+
     // Setters
     setAvailableList,
     setXVariableList,
     setYVariableList,
     setErrorBarVariableList,
     setCategoryVariableList,
-    
+
     // Select all states
     selectAllAvailable,
     selectAllX,
@@ -431,12 +458,12 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     setSelectAllY,
     setSelectAllErrorBar,
     setSelectAllCategory,
-    
+
     // Counts
     xCount,
     yCount,
     availableCheckedCount,
-    
+
     // Handlers
     handleSendToX,
     handleSendToY,
@@ -446,7 +473,7 @@ export const useVariableManagement = (dataFormat?: DataFormat, subType?: string,
     handleRemoveFromY,
     handleRemoveFromErrorBar,
     handleRemoveFromCategory,
-    
+
     // Helper functions for replicate formats
     canSendToXForReplicates,
     canSendToYForReplicates,

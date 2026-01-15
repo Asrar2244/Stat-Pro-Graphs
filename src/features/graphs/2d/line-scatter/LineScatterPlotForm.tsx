@@ -24,17 +24,17 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
   const classes = useLineScatterPlotStyles();
   const { errorBarValidationStyles, errorBarValidationTextStyles } = useLineScatterPlotFormStyles();
   const isUpdatingDataFormat = useRef(false);
-  
+
   // Store state
-  const { 
-    selectedProject, 
-    subType, 
+  const {
+    selectedProject,
+    subType,
     dataFormat,
     symbolValue,
     errorCalculationUpper,
     errorCalculationLower,
-    setProject, 
-    setSubType, 
+    setProject,
+    setSubType,
     setDataFormat,
     setAvailableVariables,
     setGraphConfig,
@@ -42,13 +42,22 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
     setErrorCalculationUpper,
     setErrorCalculationLower
   } = useLineScatterPlotStore();
-  
+
   // Load project variables
   const { variables, isLoading: isLoadingVariables, error: loadError, retry, canRetry, retryCount } = useProjectVariables(selectedProject);
 
+  // Filter out default empty columns and internal ID columns
+  const filteredVariables = useMemo(() => {
+    return variables.filter(v => {
+      const lowerName = v.name.toLowerCase();
+      return !v.name.startsWith('def_col_') &&
+        !lowerName.includes('statpro') &&
+        !lowerName.includes('start_pro');
+    });
+  }, [variables]);
 
   // Variable management - pass variables so we can filter by type
-  const variableManagement = useVariableManagement(dataFormat, subType, variables);
+  const variableManagement = useVariableManagement(dataFormat, subType, filteredVariables);
   const {
     availableList,
     xVariableList,
@@ -87,6 +96,34 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
     canSendToYForXReplicates,
   } = variableManagement;
 
+  // Reset all lists when project changes
+  useEffect(() => {
+    if (selectedProject) {
+      setAvailableList(new Map());
+      setXVariableList(new Map());
+      setYVariableList(new Map());
+      setErrorBarVariableList(new Map());
+      setCategoryVariableList(new Map());
+      setSelectAllAvailable(false);
+      setSelectAllX(false);
+      setSelectAllY(false);
+      setSelectAllErrorBar(false);
+      setSelectAllCategory(false);
+    }
+  }, [
+    selectedProject,
+    setAvailableList,
+    setXVariableList,
+    setYVariableList,
+    setErrorBarVariableList,
+    setCategoryVariableList,
+    setSelectAllAvailable,
+    setSelectAllX,
+    setSelectAllY,
+    setSelectAllErrorBar,
+    setSelectAllCategory,
+  ]);
+
   // Available formats based on subtype and symbol value
   const availableFormats = useAvailableFormats(subType, symbolValue);
 
@@ -105,14 +142,14 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
   const canSendX = canSendToX(availableCheckedCount, xCount, dataFormat);
   const canSendY = canSendToY(availableCheckedCount, yCount, dataFormat);
   const canSendErrorBar = canSendToErrorBar(
-    availableCheckedCount, 
-    errorBarVariableList.size, 
-    xCount, 
-    yCount, 
-    dataFormat, 
+    availableCheckedCount,
+    errorBarVariableList.size,
+    xCount,
+    yCount,
+    dataFormat,
     subType
   );
-  
+
   const canSendCategory = useMemo(() => {
     if (availableCheckedCount === 0) return false;
     if (!requireCategory) return false;
@@ -124,7 +161,7 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
     if (needsErrorBarsConfiguration(subType || '')) {
       // Check if the subplot name explicitly contains "asymmetric" (not just bidirectional)
       const isExplicitlyAsymmetric = subType?.toLowerCase().includes('asymmetric');
-      
+
       if (isExplicitlyAsymmetric) {
         // For explicitly asymmetric error bar types, clear symbol value
         if (symbolValue) {
@@ -169,10 +206,10 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
 
   // Update available variables when project variables change
   useEffect(() => {
-    if (variables.length > 0) {
-      setAvailableVariables(variables);
+    if (filteredVariables.length > 0) {
+      setAvailableVariables(filteredVariables);
     }
-  }, [variables, setAvailableVariables]);
+  }, [filteredVariables, setAvailableVariables]);
 
   // Update graph config when form state changes
   useEffect(() => {
@@ -188,7 +225,7 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
       errorBarVariable: Array.from(errorBarVariableList.entries()).find(([, selected]) => selected)?.[0],
       categoryVariable: Array.from(categoryVariableList.entries()).find(([, selected]) => selected)?.[0],
     };
-    
+
     setGraphConfig(config);
   }, [
     selectedProject,
@@ -210,11 +247,11 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
     const yVars = Array.from(yVariableList.keys());
     const errorBarVars = Array.from(errorBarVariableList.keys());
     const categoryVars = Array.from(categoryVariableList.keys());
-    
+
     const isAsymmetric = isAsymmetricErrorBar(subType);
     const isManualAsymmetric = symbolValue === 'Asymmetric Error Bar';
     const shouldUseAsymmetric = isAsymmetric || isManualAsymmetric;
-    
+
     setGraphConfig({
       selectedProject,
       graphType: 'Line-Scatter Plot',
@@ -227,16 +264,16 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
       errorBarVariable: errorBarVars[0], // Legacy single variable support
     });
   }, [
-    selectedProject, 
-    subType, 
-    dataFormat, 
-    xVariableList, 
-    yVariableList, 
-    errorBarVariableList, 
+    selectedProject,
+    subType,
+    dataFormat,
+    xVariableList,
+    yVariableList,
+    errorBarVariableList,
     categoryVariableList,
-    symbolValue, 
-    errorCalculationUpper, 
-    errorCalculationLower, 
+    symbolValue,
+    errorCalculationUpper,
+    errorCalculationLower,
     setGraphConfig
   ]);
 
@@ -251,9 +288,9 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
   if (loadError) {
     return (
       <div style={{ padding: '32px' }}>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
           gap: '12px',
           padding: '16px',
           backgroundColor: tokens.colorPaletteRedBackground2,
@@ -265,9 +302,9 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
             Failed to load variables: {loadError}
           </Text>
           {canRetry && (
-            <Button 
-              appearance="outline" 
-              size="small" 
+            <Button
+              appearance="outline"
+              size="small"
               onClick={retry}
             >
               Retry ({retryCount}/3)
@@ -281,7 +318,7 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
   return (
     <div className={classes.root}>
       <LineScatterHeader />
-      
+
       <ProjectAndType
         classes={classes}
         projects={projects}

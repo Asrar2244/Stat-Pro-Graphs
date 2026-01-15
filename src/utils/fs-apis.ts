@@ -1,9 +1,28 @@
 import { exists, remove, copyFile, mkdir } from '@tauri-apps/plugin-fs';
-import { join, extname, basename, dirname } from '@tauri-apps/api/path';
+import { join, extname, basename, dirname, homeDir } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/core';
 import { homeDirectory } from './app-apis';
 import { EXCEL_DIR } from '@constants';
 const { VITE_DOCKER_VOLUME_LOCATION } = import.meta.env;
+
+// Helper to get app local data directory
+// In Tauri v2, this resolves to: C:\Users\{user}\AppData\Local\com.start.pro on Windows
+const getAppLocalDataDir = async (): Promise<string> => {
+  try {
+    // Try invoking the path API directly
+    return await invoke<string>('plugin:path|app_local_data_dir');
+  } catch (error) {
+    // Fallback: construct it manually using homeDir
+    const home = await homeDir();
+    if (navigator.userAgent.indexOf('Win') !== -1) {
+      return await join(home, 'AppData', 'Local', 'com.start.pro');
+    } else if (navigator.userAgent.indexOf('Mac') !== -1) {
+      return await join(home, 'Library', 'Application Support', 'com.start.pro');
+    } else {
+      return await join(home, '.local', 'share', 'com.start.pro');
+    }
+  }
+};
 
 export const copyExcelFileToVolume = async (from: string, fileName: string): Promise<string> => {
   let copiedPath: string = from;
@@ -107,9 +126,45 @@ export const getDirPath = async (filePath: string): Promise<string> => {
 };
 
 export const createTempFolder = async (): Promise<string> => {
-  const tempDir = await join(await homeDirectory(), 'temp');
-  if (!(await exists(tempDir))) {
-    await mkdir(tempDir, { recursive: true });
+  // Strategy 1: Try getAppLocalDataDir first (has built-in Tauri permissions)
+  // This resolves to: C:\Users\{user}\AppData\Local\com.start.pro on Windows
+  try {
+    const appDataDir = await getAppLocalDataDir();
+    const tempDir = await join(appDataDir, 'temp');
+    
+    // Ensure temp directory exists
+    const tempExists = await exists(tempDir);
+    if (!tempExists) {
+      await mkdir(tempDir, { recursive: true });
+    }
+    
+    // Verify we can actually access this directory
+    await exists(tempDir); // This will throw if we don't have permission
+    return tempDir;
+  } catch (appDataError) {
+    console.warn('getAppLocalDataDir failed, trying homeDirectory:', appDataError);
+    
+    // Strategy 2: Fall back to homeDirectory (same as rest of app)
+    try {
+      const homeDir = await homeDirectory();
+      const tempDir = await join(homeDir, 'temp');
+      
+      // Ensure temp directory exists
+      const tempExists = await exists(tempDir);
+      if (!tempExists) {
+        await mkdir(tempDir, { recursive: true });
+      }
+      
+      return tempDir;
+    } catch (homeError) {
+      console.error('Both getAppLocalDataDir and homeDirectory failed:', {
+        appDataError,
+        homeError
+      });
+      throw new Error(
+        `Could not create temp folder. Please ensure the application has proper file system permissions. ` +
+        `Tried getAppLocalDataDir and homeDirectory. Last error: ${homeError}`
+      );
+    }
   }
-  return tempDir;
 };

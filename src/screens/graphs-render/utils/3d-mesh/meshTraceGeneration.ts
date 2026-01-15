@@ -69,7 +69,7 @@ const getPlotlyColorScale = (colorScaleName: string): any => {
       [0.545, 'rgb(0,255,255)'], [0.636, 'rgb(0,128,255)'], [0.727, 'rgb(0,0,255)'],
       [0.818, 'rgb(128,0,255)'], [1, 'rgb(255,0,255)']
     ],
-    
+
     // Scientific sequential scales
     'blues': [
       [0, 'rgb(247,251,255)'], [0.125, 'rgb(222,235,247)'], [0.25, 'rgb(198,219,239)'],
@@ -101,7 +101,7 @@ const getPlotlyColorScale = (colorScaleName: string): any => {
       [0.5, 'rgb(150,150,150)'], [0.667, 'rgb(99,99,99)'], [0.833, 'rgb(37,37,37)'],
       [1, 'rgb(0,0,0)']
     ],
-    
+
     // Diverging scales
     'rdbu': [
       [0, 'rgb(5,10,172)'], [0.125, 'rgb(106,137,247)'], [0.25, 'rgb(190,190,190)'],
@@ -126,7 +126,7 @@ const getPlotlyColorScale = (colorScaleName: string): any => {
       [0.6, 'rgb(217,240,163)'], [0.7, 'rgb(173,221,142)'], [0.8, 'rgb(120,198,121)'],
       [0.9, 'rgb(49,163,84)'], [1, 'rgb(0,104,55)']
     ],
-    
+
     // Professional scales
     'piyg': [
       [0, 'rgb(142,1,82)'], [0.1, 'rgb(197,27,125)'], [0.2, 'rgb(222,119,174)'],
@@ -146,7 +146,7 @@ const getPlotlyColorScale = (colorScaleName: string): any => {
       [0.6, 'rgb(199,234,229)'], [0.7, 'rgb(128,205,193)'], [0.8, 'rgb(53,151,143)'],
       [0.9, 'rgb(1,102,94)'], [1, 'rgb(0,60,48)']
     ],
-    
+
     // Medical/Scientific scales
     'bone': [
       [0, 'rgb(0,0,0)'], [0.111, 'rgb(21,21,30)'], [0.222, 'rgb(42,42,60)'],
@@ -166,7 +166,7 @@ const getPlotlyColorScale = (colorScaleName: string): any => {
       [0.667, 'rgb(210,0,0)'], [0.778, 'rgb(240,0,0)'], [0.889, 'rgb(255,0,0)'],
       [1, 'rgb(255,255,255)']
     ],
-    
+
     // Seasonal scales
     'spring': [
       [0, 'rgb(255,0,255)'], [0.2, 'rgb(255,51,204)'], [0.4, 'rgb(255,102,153)'],
@@ -184,7 +184,7 @@ const getPlotlyColorScale = (colorScaleName: string): any => {
       [0, 'rgb(0,0,255)'], [0.25, 'rgb(0,64,255)'], [0.5, 'rgb(0,128,255)'],
       [0.75, 'rgb(0,192,255)'], [1, 'rgb(0,255,255)']
     ],
-    
+
     // Professional data visualization scales
     'tab10': [
       [0, 'rgb(31,119,180)'], [0.1, 'rgb(255,127,14)'], [0.2, 'rgb(44,160,44)'],
@@ -210,11 +210,11 @@ const getPlotlyColorScale = (colorScaleName: string): any => {
       [0.75, 'rgb(188,128,189)'], [0.833, 'rgb(204,235,197)'], [1, 'rgb(255,237,111)']
     ]
   };
-  
+
   // Ensure the colorscale name is valid
   const normalizedName = colorScaleName.toLowerCase();
   const colorscale = colorscaleDefinitions[normalizedName];
-  
+
   return colorscale || colorscaleDefinitions['viridis'];
 };
 
@@ -225,12 +225,12 @@ const isRegularGrid = (x: number[], y: number[], tolerance: number = 1e-10): boo
   try {
     const xUnique = [...new Set(x)].sort((a, b) => a - b);
     const yUnique = [...new Set(y)].sort((a, b) => a - b);
-    
+
     // Check if we have a rectangular grid
     if (xUnique.length * yUnique.length !== x.length) {
       return false;
     }
-    
+
     // Check if x values are evenly spaced
     if (xUnique.length > 1) {
       const xSpacing = xUnique.slice(1).map((val, i) => val - xUnique[i]);
@@ -239,7 +239,7 @@ const isRegularGrid = (x: number[], y: number[], tolerance: number = 1e-10): boo
         return false;
       }
     }
-    
+
     // Check if y values are evenly spaced
     if (yUnique.length > 1) {
       const ySpacing = yUnique.slice(1).map((val, i) => val - yUnique[i]);
@@ -248,7 +248,7 @@ const isRegularGrid = (x: number[], y: number[], tolerance: number = 1e-10): boo
         return false;
       }
     }
-    
+
     return true;
   } catch {
     return false;
@@ -259,57 +259,57 @@ const isRegularGrid = (x: number[], y: number[], tolerance: number = 1e-10): boo
  * Create smooth surface interpolation for scattered data
  */
 const createSmoothSurface = (
-  x: number[], 
-  y: number[], 
-  z: number[], 
+  x: number[],
+  y: number[],
+  z: number[],
   gridResolution: number = 50,
   interpolationMethod: 'linear' | 'cubic' | 'nearest' = 'cubic'
 ): { xGrid: number[][], yGrid: number[][], zGrid: number[][] } => {
-  
+
   // Remove NaN values
-  const validIndices = x.map((_, i) => 
+  const validIndices = x.map((_, i) =>
     !isNaN(x[i]) && !isNaN(y[i]) && !isNaN(z[i])
   );
-  
+
   const xClean = x.filter((_, i) => validIndices[i]);
   const yClean = y.filter((_, i) => validIndices[i]);
   const zClean = z.filter((_, i) => validIndices[i]);
-  
+
   if (xClean.length === 0) {
     throw new Error('No valid data points after removing NaN values');
   }
-  
+
   // Create regular grid
   const xMin = Math.min(...xClean);
   const xMax = Math.max(...xClean);
   const yMin = Math.min(...yClean);
   const yMax = Math.max(...yClean);
-  
+
   // Add small buffer to avoid edge issues
   const xBuffer = (xMax - xMin) * 0.01;
   const yBuffer = (yMax - yMin) * 0.01;
-  
-  const xi = Array.from({ length: gridResolution }, (_, i) => 
+
+  const xi = Array.from({ length: gridResolution }, (_, i) =>
     xMin - xBuffer + (xMax + xBuffer - (xMin - xBuffer)) * i / (gridResolution - 1)
   );
-  const yi = Array.from({ length: gridResolution }, (_, i) => 
+  const yi = Array.from({ length: gridResolution }, (_, i) =>
     yMin - yBuffer + (yMax + yBuffer - (yMin - yBuffer)) * i / (gridResolution - 1)
   );
-  
+
   // Create meshgrid
   const xGrid: number[][] = [];
   const yGrid: number[][] = [];
   const zGrid: number[][] = [];
-  
+
   for (let i = 0; i < gridResolution; i++) {
     xGrid[i] = [];
     yGrid[i] = [];
     zGrid[i] = [];
-    
+
     for (let j = 0; j < gridResolution; j++) {
       xGrid[i][j] = xi[j];
       yGrid[i][j] = yi[i];
-      
+
       // Use existing interpolation function
       zGrid[i][j] = akimaInterpolation({
         xv: xClean,
@@ -320,21 +320,41 @@ const createSmoothSurface = (
       });
     }
   }
-  
+
   return { xGrid, yGrid, zGrid };
 };
+
+/**
+ * Create fallback 3D scatter plot
+ */
+function createFallbackScatter(xv: number[], yv: number[], label: string, color: string) {
+  return {
+    x: xv,
+    y: yv,
+    z: xv ? xv.map((x, i) => Math.sin(x * 0.1) * Math.cos(yv[i] * 0.1)) : [],
+    type: 'scatter3d',
+    mode: 'markers',
+    name: label,
+    marker: {
+      color: color || '#1f77b4',
+      size: 4,
+      opacity: 0.8
+    },
+    showlegend: true
+  };
+}
 
 /**
  * Create 3D mesh plot trace
  */
 export const create3DMeshTrace = (config: TraceConfig): any => {
   const { xv, yv, zv, label, color, graphConfig, rows } = config;
-  
+
   // Check if we have valid data
   if (!xv || xv.length === 0 || !yv || yv.length === 0) {
     return createFallbackScatter(xv || [], yv || [], label, color);
   }
-  
+
   const dataFormat = graphConfig?.dataFormat;
   // Extract mesh configuration from both nested meshConfig and root level properties
   // Prioritize meshConfig properties over root level properties
@@ -367,38 +387,38 @@ export const create3DMeshTrace = (config: TraceConfig): any => {
     ...(graphConfig?.interpolation !== undefined && { interpolation: graphConfig.interpolation })
   };
   const selectedColorScale = meshConfig.colorScale || 'viridis';
-  
+
   // Validate color scale name - comprehensive list of all supported scales
   const validColorScales = [
     // Original scientific scales
     'viridis', 'plasma', 'inferno', 'magma', 'cividis', 'turbo', 'jet',
     'hot', 'cool', 'rainbow',
-    
+
     // Scientific sequential scales
     'blues', 'greens', 'reds', 'oranges', 'purples', 'greys',
-    
+
     // Diverging scales
     'rdbu', 'rdylbu', 'spectral', 'rdylgn',
-    
+
     // Professional scales
     'piyg', 'prgn', 'brbg',
-    
+
     // Medical/Scientific scales
     'bone', 'copper', 'pink',
-    
+
     // Seasonal scales
     'spring', 'summer', 'autumn', 'winter',
-    
+
     // Professional data visualization scales
     'tab10', 'set1', 'set2', 'set3'
   ];
-  
+
   const isValidColorScale = validColorScales.includes(selectedColorScale.toLowerCase());
   const finalColorScale = isValidColorScale ? selectedColorScale : 'viridis';
-  
+
   // Use the validated colorscale
   const validatedColorScale = finalColorScale;
-  
+
   // Check if data needs smooth surface interpolation
   const needsSmoothing = !isRegularGrid(xv, yv);
   if (dataFormat === 'XYZ Triplets' || dataFormat === 'xyz-columns') {
@@ -413,7 +433,7 @@ export const create3DMeshTrace = (config: TraceConfig): any => {
   } else {
     return createFallbackScatter(xv, yv, label, color);
   }
-  
+
   // This should never be reached, but just in case
   return createFallbackScatter(xv, yv, label, color);
 };
@@ -421,280 +441,316 @@ export const create3DMeshTrace = (config: TraceConfig): any => {
 /**
  * Create SigmaPlot-style 3D mesh surface using proper grid-based interpolation
  */
-const createNaturalXYZMesh = (xv: number[], yv: number[], rows: any[], graphConfig: any, color: string, label: string, zv?: number[], selectedColorScale: string = 'viridis', meshConfig: any = {}, needsSmoothing: boolean = false) => {
+function createNaturalXYZMesh(xv: number[], yv: number[], rows: any[], graphConfig: any, color: string, label: string, zv?: number[], selectedColorScale: string = 'viridis', meshConfig: any = {}, needsSmoothing: boolean = false) {
   // Apply showSurface configuration - default to true if not specified
   const shouldShowSurface = meshConfig.showSurface !== false;
-  
+
   try {
-  // Use the provided Z values if available, otherwise extract from data
-  let zValues: number[] = [];
-  
-  if (zv && zv.length > 0) {
-    zValues = zv;
-  } else {
-    // Fallback: Get the actual Z values from the data
-    const zColumn = graphConfig?.variables?.z?.[0];
-    if (!zColumn || !rows) {
+    // Use the provided Z values if available, otherwise extract from data
+    let zValues: number[] = [];
+
+    if (zv && zv.length > 0) {
+      zValues = zv;
+    } else {
+      // Fallback: Get the actual Z values from the data
+      const zColumn = graphConfig?.variables?.z?.[0];
+      if (!zColumn || !rows) {
+        return createFallbackScatter(xv, yv, label, color);
+      }
+      zValues = rows.map((row: any) => Number(row[zColumn]));
+    }
+
+    // SigmaPlot approach: Create structured rectangular grid from data bounds
+    // For very large datasets, use smart sampling for performance
+    let processedXv = xv;
+    let processedYv = yv;
+    let processedZv = zValues;
+
+    if (xv.length > 1000) {
+      // Aggressive sampling for faster 3D mesh generation
+      const sampleRate = Math.max(0.2, 1000 / xv.length); // Sample 20% or enough to get ~1000 points
+      const step = Math.floor(1 / sampleRate);
+
+      processedXv = xv.filter((_, i) => i % step === 0);
+      processedYv = yv.filter((_, i) => i % step === 0);
+      processedZv = zValues.filter((_, i) => i % step === 0);
+    }
+
+    // SANITIZATION: Filter out any non-finite values from the processed arrays
+    // This is crucial for WebGL stability as any NaN/Infinity can crash the renderer
+    const validIndices = processedXv.map((_, i) => i).filter(i =>
+      Number.isFinite(processedXv[i]) &&
+      Number.isFinite(processedYv[i]) &&
+      Number.isFinite(processedZv[i])
+    );
+
+    if (validIndices.length === 0) {
       return createFallbackScatter(xv, yv, label, color);
     }
-    zValues = rows.map((row: any) => Number(row[zColumn]));
-  }
-  
-  // SigmaPlot approach: Create structured rectangular grid from data bounds
-  // For very large datasets, use smart sampling for performance
-  let processedXv = xv;
-  let processedYv = yv;
-  let processedZv = zValues;
-  
-  if (xv.length > 1000) {
-    // Aggressive sampling for faster 3D mesh generation
-    const sampleRate = Math.max(0.2, 1000 / xv.length); // Sample 20% or enough to get ~1000 points
-    const step = Math.floor(1 / sampleRate);
-    
-    processedXv = xv.filter((_, i) => i % step === 0);
-    processedYv = yv.filter((_, i) => i % step === 0);
-    processedZv = zValues.filter((_, i) => i % step === 0);
-    
+
+    const sanitizedXv = validIndices.map(i => processedXv[i]);
+    const sanitizedYv = validIndices.map(i => processedYv[i]);
+    const sanitizedZv = validIndices.map(i => processedZv[i]);
+
+    const xMin = Math.min(...sanitizedXv);
+    const xMax = Math.max(...sanitizedXv);
+    const yMin = Math.min(...sanitizedYv);
+    const yMax = Math.max(...sanitizedYv);
+
+    // Optimized grid sizing for faster 3D mesh generation
+    // Reduced resolution for better performance while maintaining quality
+    const dataDensity = Math.sqrt(sanitizedXv.length);
+    let gridSize = Math.min(Math.max(Math.floor(dataDensity * 0.8), 15), 30);
+
+    // For very large datasets (>1000 points), further optimize for performance
+    if (sanitizedXv.length > 1000) {
+      gridSize = Math.min(gridSize, 25); // Much smaller grid to preserve natural variations
     }
-  
-  const xMin = Math.min(...processedXv);
-  const xMax = Math.max(...processedXv);
-  const yMin = Math.min(...processedYv);
-  const yMax = Math.max(...processedYv);
-  
-  // Optimized grid sizing for faster 3D mesh generation
-  // Reduced resolution for better performance while maintaining quality
-  const dataDensity = Math.sqrt(xv.length);
-  let gridSize = Math.min(Math.max(Math.floor(dataDensity * 0.8), 15), 30);
-  
-  // For very large datasets (>1000 points), further optimize for performance
-  if (xv.length > 1000) {
-    gridSize = Math.min(gridSize, 25); // Much smaller grid to preserve natural variations
-  }
-  
-  // Create uniform rectangular grid (SigmaPlot's approach)
-  // Ensure proper ordering: low to high values
-  const xGrid = Array.from({ length: gridSize }, (_, i) => 
-    xMin + (xMax - xMin) * i / (gridSize - 1)
-  );
-  const yGrid = Array.from({ length: gridSize }, (_, i) => 
-    yMin + (yMax - yMin) * i / (gridSize - 1)
-  );
-  
-  // Ensure grids are properly sorted (low to high)
-  xGrid.sort((a, b) => a - b);
-  yGrid.sort((a, b) => a - b);
-  
-  // Natural surface interpolation that preserves data variations
-  let zMatrix: number[][] = [];
-  let finalXGrid = xGrid;
-  let finalYGrid = yGrid;
-  
-  if (needsSmoothing) {
-    try {
-      const smoothResult = createSmoothSurface(processedXv, processedYv, processedZv, gridSize, 'cubic');
-      zMatrix = smoothResult.zGrid;
-      finalXGrid = smoothResult.xGrid[0]; // Take first row for X grid
-      finalYGrid = smoothResult.yGrid.map(row => row[0]); // Take first column for Y grid
+
+    // Create uniform rectangular grid (SigmaPlot's approach)
+    // Ensure proper ordering: low to high values
+    // Ensure proper ordering and valid range: low to high values
+    const xGrid = Array.from({ length: gridSize }, (_, i) => {
+      const range = xMax - xMin;
+      return xMin + (range > 0 ? range : 1.0) * i / (gridSize - 1);
+    });
+    const yGrid = Array.from({ length: gridSize }, (_, i) => {
+      const range = yMax - yMin;
+      return yMin + (range > 0 ? range : 1.0) * i / (gridSize - 1);
+    });
+
+    // Ensure grids are properly sorted (low to high)
+    xGrid.sort((a, b) => a - b);
+    yGrid.sort((a, b) => a - b);
+
+    // Natural surface interpolation that preserves data variations
+    let zMatrix: number[][] = [];
+    let finalXGrid = xGrid;
+    let finalYGrid = yGrid;
+
+    if (needsSmoothing) {
+      try {
+        const smoothResult = createSmoothSurface(sanitizedXv, sanitizedYv, sanitizedZv, gridSize, 'cubic');
+        zMatrix = smoothResult.zGrid;
+        finalXGrid = smoothResult.xGrid[0]; // Take first row for X grid
+        finalYGrid = smoothResult.yGrid.map(row => row[0]); // Take first column for Y grid
       } catch (error) {
-      // Fallback to regular grid
+        // Fallback to regular grid
+        for (let i = 0; i < gridSize; i++) {
+          zMatrix[i] = [];
+          for (let j = 0; j < gridSize; j++) {
+            const gridX = xGrid[j];
+            const gridY = yGrid[i];
+            const interpolatedZ = rawDataInterpolation({ xv: sanitizedXv, yv: sanitizedYv, zv: sanitizedZv, targetX: gridX, targetY: gridY });
+            zMatrix[i][j] = interpolatedZ;
+          }
+        }
+      }
+    } else {
       for (let i = 0; i < gridSize; i++) {
         zMatrix[i] = [];
         for (let j = 0; j < gridSize; j++) {
           const gridX = xGrid[j];
           const gridY = yGrid[i];
-          const interpolatedZ = rawDataInterpolation({ xv: processedXv, yv: processedYv, zv: processedZv, targetX: gridX, targetY: gridY });
+
+          // Use raw data point interpolation to preserve natural variations
+          const interpolatedZ = rawDataInterpolation({ xv: sanitizedXv, yv: sanitizedYv, zv: sanitizedZv, targetX: gridX, targetY: gridY });
           zMatrix[i][j] = interpolatedZ;
+
+          // Debug first few interpolations
+          if (i < 2 && j < 2) {
+          }
         }
       }
     }
-  } else {
-    for (let i = 0; i < gridSize; i++) {
-      zMatrix[i] = [];
-      for (let j = 0; j < gridSize; j++) {
-        const gridX = xGrid[j];
-        const gridY = yGrid[i];
-        
-        // Use raw data point interpolation to preserve natural variations
-        const interpolatedZ = rawDataInterpolation({ xv: processedXv, yv: processedYv, zv: processedZv, targetX: gridX, targetY: gridY });
-        zMatrix[i][j] = interpolatedZ;
-        
-        // Debug first few interpolations
-        if (i < 2 && j < 2) {
-          }
+
+    // Sanitize matrix: replace NaN/Infinity with null to prevent Plotly crashes
+    const enhancedMatrix = zMatrix.map(row =>
+      row.map(val => (val !== null && isFinite(val) ? val : null))
+    );
+
+    // Robust zmin/zmax calculation
+    const zValuesFlat = enhancedMatrix.flat().filter(v => v !== null) as number[];
+    const zMinRaw = zValuesFlat.length > 0 ? Math.min(...zValuesFlat) : 0;
+    const zMaxRaw = zValuesFlat.length > 0 ? Math.max(...zValuesFlat) : 1;
+    const finalZMin = isFinite(zMinRaw) ? zMinRaw : 0;
+    const finalZMax = isFinite(zMaxRaw) ? zMaxRaw : (finalZMin + 1);
+
+    // Use surface type from configuration
+    const surfaceType = meshConfig.surfaceType || 'surface';
+    // For mesh and surface types, use 'surface' trace type
+    // Only use 'scatter3d' for wireframe
+    const traceType = surfaceType === 'wireframe' ? 'scatter3d' : 'surface';
+
+    // Apply showSurface configuration - if false, don't show the surface
+    const shouldShowSurface = meshConfig.showSurface !== false;
+
+
+    const trace = {
+      x: finalXGrid.map(v => Number.isFinite(v) ? v : 0),
+      y: finalYGrid.map(v => Number.isFinite(v) ? v : 0),
+      z: enhancedMatrix,
+      type: traceType,
+      name: label,
+      colorscale: getPlotlyColorScale(selectedColorScale),
+      smoothing: meshConfig.interpolation === 'linear' ? true : false,
+      visible: shouldShowSurface,
+      flatshading: meshConfig.smoothShading === false ? true : false,
+      zmin: finalZMin,
+      zmax: finalZMax === finalZMin ? finalZMin + 1 : finalZMax,
+      opacity: meshConfig.opacity || 0.8,
+      showlegend: true,
+      ...(meshConfig.lighting !== false ? {
+        lighting: {
+          ambient: 0.3,
+          diffuse: 0.8,
+          specular: 0.15,
+          roughness: 0.1,
+          fresnel: 0.1
+        }
+      } : {
+        lighting: {
+          ambient: 1.0,
+          diffuse: 0.0,
+          specular: 0.0,
+          roughness: 0.0,
+          fresnel: 0.0
+        }
+      }),
+      lightposition: {
+        x: 100,
+        y: 200,
+        z: 0
+      },
+      ...(meshConfig.showContours && {
+        contours: {
+          x: { show: true, opacity: meshConfig.contourOpacity || 0.5 },
+          y: { show: true, opacity: meshConfig.contourOpacity || 0.5 },
+          z: { show: true, opacity: meshConfig.contourOpacity || 0.5 }
+        }
+      }),
+      ...(meshConfig.showGrid && {
+        wireframe: {
+          show: true,
+          opacity: meshConfig.gridOpacity || 0.6,
+          color: 'white'
+        }
+      }),
+      colorbar: {
+        x: -0.1,
+        y: 0.5,
+        len: 0.8,
+        thickness: 20,
+        title: {
+          text: 'Z',
+          side: 'right'
+        }
       }
-    }
-  }
-  
-  // Skip heavy contrast processing for faster 3D mesh generation
-  const enhancedMatrix = zMatrix;
-  
-  // Use surface type from configuration
-  const surfaceType = meshConfig.surfaceType || 'surface';
-  // For mesh and surface types, use 'surface' trace type
-  // Only use 'scatter3d' for wireframe
-  const traceType = surfaceType === 'wireframe' ? 'scatter3d' : 'surface';
-  
-  // Apply showSurface configuration - if false, don't show the surface
-  const shouldShowSurface = meshConfig.showSurface !== false;
-  
-  const trace = {
-    x: finalXGrid,
-    y: finalYGrid,
-    z: enhancedMatrix,
-    type: traceType,
-    name: label,
-    colorscale: getPlotlyColorScale(selectedColorScale),
-    // Remove intensity - not needed for surface plots and causes white rendering
-    // Apply interpolation from database configuration
-    smoothing: meshConfig.interpolation === 'linear' ? true : false,
-    // Apply showSurface configuration
-    visible: shouldShowSurface,
-    // Apply smooth shading configuration
-    flatshading: meshConfig.smoothShading === false ? true : false, // Use smooth shading unless explicitly disabled
-    zmin: Math.min(...enhancedMatrix.flat()),
-    zmax: Math.max(...enhancedMatrix.flat()),
-    opacity: meshConfig.opacity || 0.8,
-    showlegend: true,
-    // Apply lighting configuration properly
-    ...(meshConfig.lighting !== false ? {
-      lighting: {
-        ambient: 0.3,
-        diffuse: 0.8,
-        specular: 0.15,
-        roughness: 0.1,
-        fresnel: 0.1
-      }
-    } : {
-      lighting: {
-        ambient: 1.0,
-        diffuse: 0.0,
-        specular: 0.0,
-        roughness: 0.0,
-        fresnel: 0.0
-      }
-    }),
-    lightposition: {
-      x: 100,
-      y: 200,
-      z: 0
-    },
-    // Apply contour configuration for 3D surface plots
-    ...(meshConfig.showContours && {
-      contours: {
-        x: { show: true, opacity: meshConfig.contourOpacity || 0.5 },
-        y: { show: true, opacity: meshConfig.contourOpacity || 0.5 },
-        z: { show: true, opacity: meshConfig.contourOpacity || 0.5 }
-      }
-    }),
-    // Apply grid configuration
-    ...(meshConfig.showGrid && {
-      wireframe: {
-        show: true,
-        opacity: meshConfig.gridOpacity || 0.6, // Increased opacity for better visibility
-        color: 'white' // Default Plotly 3D grid color (will be overridden by scene gridcolor)
-      }
-    }),
-    // Position colorbar on the left side
-    colorbar: {
-      x: -0.1,  // Position on the left side
-      y: 0.5,   // Center vertically
-      len: 0.8, // Length of colorbar
-      thickness: 20, // Width of colorbar
-      title: {
-        text: 'Z',
-        side: 'right'
-      }
-    }
-  };
-  
-  return trace;
-  
+    };
+
+    return trace;
   } catch (error) {
+    // Fallback to scatter plot if mesh creation fails
+    console.error("Error creating natural XYZ mesh:", error);
     return createFallbackScatter(xv, yv, label, color);
   }
-};
+}
 
 /**
  * Create Z Matrix mesh surface with professional interpolation
  */
-const createZMatrixMesh = (xv: number[], yv: number[], rows: any[], graphConfig: any, color: string, label: string, zv?: number[], selectedColorScale: string = 'viridis', meshConfig: any = {}, needsSmoothing: boolean = false) => {
+function createZMatrixMesh(xv: number[], yv: number[], rows: any[], graphConfig: any, color: string, label: string, zv?: number[], selectedColorScale: string = 'viridis', meshConfig: any = {}, needsSmoothing: boolean = false) {
   // Apply showSurface configuration - if false, don't show the surface
   const shouldShowSurface = meshConfig.showSurface !== false;
-  
+
   // For Z matrix format, create a professional grid surface using SigmaPlot approach
   const zColumns = graphConfig?.variables?.z || [];
-  
+
   if (!zColumns.length || !rows) {
     return createFallbackScatter(xv, yv, label, color);
   }
-  
+
   // SigmaPlot approach: Use first and last Z columns to create surface between them
   let zValues: number[] = [];
-  
+
   if (zColumns.length >= 2) {
     // SigmaPlot style: Use first and last Z columns
     const firstZColumn = zColumns[0];
     const lastZColumn = zColumns[zColumns.length - 1];
-    
+
     // Create surface between first and last Z values
     zValues = rows.map((row: any) => {
       const firstZ = Number(row[firstZColumn]);
       const lastZ = Number(row[lastZColumn]);
       return (firstZ + lastZ) / 2; // Average of first and last Z
     });
-    
-    } else {
+
+  } else {
     // Fallback: Use the first Z column for the surface
     const zColumn = zColumns[0];
     zValues = rows.map((row: any) => Number(row[zColumn]));
   }
-  
+
+  // SANITIZATION: Filter out non-finite values from inputs
+  const validIndices = xv.map((_, i) => i).filter(i =>
+    Number.isFinite(xv[i]) &&
+    Number.isFinite(yv[i]) &&
+    Number.isFinite(zValues[i])
+  );
+
+  if (validIndices.length === 0) {
+    return createFallbackScatter(xv, yv, label, color);
+  }
+
+  const sanitizedXv = validIndices.map(i => xv[i]);
+  const sanitizedYv = validIndices.map(i => yv[i]);
+  const sanitizedZValues = validIndices.map(i => zValues[i]);
+
   // Check if we have default scales (10,20,30... for X and 1,2,3... for Y)
-  const isDefaultXScale = xv.length > 0 && xv[0] === 10 && xv[1] === 20;
-  const isDefaultYScale = yv.length > 0 && yv[0] === 1 && yv[1] === 2;
-  
+  const isDefaultXScale = sanitizedXv.length > 0 && sanitizedXv[0] === 10 && sanitizedXv[1] === 20;
+  const isDefaultYScale = sanitizedYv.length > 0 && sanitizedYv[0] === 1 && sanitizedYv[1] === 2;
+
   let xGrid, yGrid;
-  
+
   if (isDefaultXScale && isDefaultYScale) {
     // Use the original default scales directly - don't create new grids
     xGrid = [...xv];  // Preserve original X scale: 10, 20, 30, ...
     yGrid = [...yv];  // Preserve original Y scale: 1, 2, 3, ...
   } else {
     // Create optimized grid for non-default scales
-    const dataDensity = Math.sqrt(xv.length);
+    const dataDensity = Math.sqrt(sanitizedXv.length);
     const gridSize = Math.min(Math.max(Math.floor(dataDensity * 1.0), 30), 80);
-    
-    const xMin = Math.min(...xv);
-    const xMax = Math.max(...xv);
-    const yMin = Math.min(...yv);
-    const yMax = Math.max(...yv);
-    
+
+    const xMin = Math.min(...sanitizedXv);
+    const xMax = Math.max(...sanitizedXv);
+    const yMin = Math.min(...sanitizedYv);
+    const yMax = Math.max(...sanitizedYv);
+
     // Ensure proper ordering: low to high values
-    xGrid = Array.from({ length: gridSize }, (_, i) => 
+    xGrid = Array.from({ length: gridSize }, (_, i) =>
       xMin + (xMax - xMin) * i / (gridSize - 1)
     );
-    yGrid = Array.from({ length: gridSize }, (_, i) => 
+    yGrid = Array.from({ length: gridSize }, (_, i) =>
       yMin + (yMax - yMin) * i / (gridSize - 1)
     );
-    
+
     // Sort grids to ensure low-to-high ordering
     xGrid.sort((a, b) => a - b);
     yGrid.sort((a, b) => a - b);
   }
-  
+
   // Create Z matrix using professional interpolation
   let zMatrix: number[][] = [];
   let finalXGrid = xGrid;
   let finalYGrid = yGrid;
-  
+
   if (needsSmoothing) {
     try {
-      const smoothResult = createSmoothSurface(xv, yv, zValues, 50, 'cubic');
+      const smoothResult = createSmoothSurface(sanitizedXv, sanitizedYv, sanitizedZValues, 50, 'cubic');
       zMatrix = smoothResult.zGrid;
       finalXGrid = smoothResult.xGrid[0]; // Take first row for X grid
       finalYGrid = smoothResult.yGrid.map(row => row[0]); // Take first column for Y grid
-      } catch (error) {
+    } catch (error) {
       // Fallback to regular grid
       const actualGridSize = xGrid.length;
       for (let i = 0; i < actualGridSize; i++) {
@@ -702,7 +758,7 @@ const createZMatrixMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
         for (let j = 0; j < actualGridSize; j++) {
           const gridX = xGrid[j];
           const gridY = yGrid[i];
-          zMatrix[i][j] = akimaInterpolation({ xv, yv, zv: zValues, targetX: gridX, targetY: gridY });
+          zMatrix[i][j] = akimaInterpolation({ xv: sanitizedXv, yv: sanitizedYv, zv: sanitizedZValues, targetX: gridX, targetY: gridY });
         }
       }
     }
@@ -713,18 +769,27 @@ const createZMatrixMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
       for (let j = 0; j < actualGridSize; j++) {
         const gridX = xGrid[j];
         const gridY = yGrid[i];
-        zMatrix[i][j] = akimaInterpolation({ xv, yv, zv: zValues, targetX: gridX, targetY: gridY });
+        zMatrix[i][j] = akimaInterpolation({ xv: sanitizedXv, yv: sanitizedYv, zv: sanitizedZValues, targetX: gridX, targetY: gridY });
       }
     }
   }
-  
-  // Apply light contrast enhancement for faster processing
-  const enhancedMatrix = zMatrix;
-  
+
+  // Sanitize matrix: replace NaN/Infinity with null to prevent Plotly crashes
+  const enhancedMatrix = zMatrix.map(row =>
+    row.map(val => (val !== null && isFinite(val) ? val : null))
+  );
+
+  // Robust zmin/zmax calculation
+  const zValuesFlat = enhancedMatrix.flat().filter(v => v !== null) as number[];
+  const zMinRaw = zValuesFlat.length > 0 ? Math.min(...zValuesFlat) : 0;
+  const zMaxRaw = zValuesFlat.length > 0 ? Math.max(...zValuesFlat) : 1;
+  const finalZMin = isFinite(zMinRaw) ? zMinRaw : 0;
+  const finalZMax = isFinite(zMaxRaw) ? zMaxRaw : (finalZMin + 1);
+
   // Use surface type from configuration
   const surfaceType = meshConfig.surfaceType || 'surface';
   const traceType = surfaceType === 'wireframe' ? 'scatter3d' : 'surface';
-  
+
   // Debug color scale application BEFORE returning
   // Test Z values for color scale effectiveness
   const flatMatrix = enhancedMatrix.flat();
@@ -732,10 +797,10 @@ const createZMatrixMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
   const zMax = Math.max(...flatMatrix);
   const zRange = zMax - zMin;
   const zVariation = zRange / zMax;
-  
+
   const finalTrace = {
-    x: finalXGrid,
-    y: finalYGrid,
+    x: finalXGrid.map(v => Number.isFinite(v) ? v : 0), // Extra safety for X grid
+    y: finalYGrid.map(v => Number.isFinite(v) ? v : 0), // Extra safety for Y grid
     z: enhancedMatrix,
     type: 'surface', // Force surface type for color scale support
     name: label,
@@ -747,8 +812,8 @@ const createZMatrixMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
     visible: shouldShowSurface,
     // Apply smooth shading configuration
     flatshading: meshConfig.smoothShading === false ? true : false, // Use smooth shading unless explicitly disabled
-    zmin: Math.min(...enhancedMatrix.flat()),
-    zmax: Math.max(...enhancedMatrix.flat()),
+    zmin: finalZMin,
+    zmax: finalZMax === finalZMin ? finalZMin + 1 : finalZMax,
     opacity: meshConfig.opacity || 0.8,
     showlegend: true,
     // Apply lighting configuration properly
@@ -802,128 +867,132 @@ const createZMatrixMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
       }
     }
   };
-  
+
   return finalTrace;
-};
+}
 
 /**
  * Create XY Many Z mesh surface with professional interpolation
  */
-const createXYManyZMesh = (xv: number[], yv: number[], rows: any[], graphConfig: any, color: string, label: string, zv?: number[], selectedColorScale: string = 'viridis', meshConfig: any = {}, needsSmoothing: boolean = false) => {
+function createXYManyZMesh(xv: number[], yv: number[], rows: any[], graphConfig: any, color: string, label: string, zv?: number[], selectedColorScale: string = 'viridis', meshConfig: any = {}, needsSmoothing: boolean = false) {
   // Apply showSurface configuration - if false, don't show the surface
   const shouldShowSurface = meshConfig.showSurface !== false;
-  
+
   // For XY Many Z format, create professional surface with multiple Z columns
   const zColumns = graphConfig?.variables?.z || [];
-  
+
   if (!zColumns.length || !rows) {
     return createFallbackScatter(xv, yv, label, color);
   }
-  
+
   // SigmaPlot approach: Use first and last Z columns to create surface between them
   let zValues: number[] = [];
-  
+
   if (zv && zv.length > 0) {
     zValues = zv;
   } else if (zColumns.length >= 2) {
     // SigmaPlot style: Use first and last Z columns
     const firstZColumn = zColumns[0];
     const lastZColumn = zColumns[zColumns.length - 1];
-    
+
     // Create surface between first and last Z values
     zValues = rows.map((row: any) => {
       const firstZ = Number(row[firstZColumn]);
       const lastZ = Number(row[lastZColumn]);
       return (firstZ + lastZ) / 2; // Average of first and last Z
     });
-    
-    } else {
+
+  } else {
     // Fallback: Use the first Z column for the surface
     const zColumn = zColumns[0];
     zValues = rows.map((row: any) => Number(row[zColumn]));
   }
-  
+
+  // SANITIZATION: Filter out non-finite values from inputs
+  const validIndices = xv.map((_, i) => i).filter(i =>
+    Number.isFinite(xv[i]) &&
+    Number.isFinite(yv[i]) &&
+    Number.isFinite(zValues[i])
+  );
+
+  if (validIndices.length === 0) {
+    return createFallbackScatter(xv, yv, label, color);
+  }
+
+  const sanitizedXv = validIndices.map(i => xv[i]);
+  const sanitizedYv = validIndices.map(i => yv[i]);
+  const sanitizedZValues = validIndices.map(i => zValues[i]);
+
   // SigmaPlot approach for XY Many Z: Use actual X and Y data directly (like Many Z uses default scales)
   // This is the key difference - XY Many Z should use the actual selected X,Y variables as-is
   let xGrid, yGrid;
-  
+
   // For XY Many Z format, use the actual X and Y data directly (SigmaPlot approach)
   // This is equivalent to how Many Z format preserves default scales (10,20,30... and 1,2,3...)
-  xGrid = [...xv];  // Use actual X data directly
-  yGrid = [...yv];  // Use actual Y data directly
-  
+  xGrid = [...sanitizedXv];  // Use actual X data directly
+  yGrid = [...sanitizedYv];  // Use actual Y data directly
+
   // Create professional mesh surface from XYZ data
-  const dataPoints = xv.map((x, i) => ({ x, y: yv[i], z: zValues[i] }));
-  
+  const dataPoints = sanitizedXv.map((x, i) => ({ x, y: sanitizedYv[i], z: sanitizedZValues[i] }));
+
   // Create Z matrix using the actual data points (SigmaPlot approach)
   let zMatrix: number[][] = [];
   let finalXGrid = xGrid;
   let finalYGrid = yGrid;
-  
+
   if (needsSmoothing) {
     try {
       // Use the actual data length as grid size for better resolution
-      const actualGridSize = Math.min(xv.length, 50); // Limit to 50 for performance
-      const smoothResult = createSmoothSurface(xv, yv, zValues, actualGridSize, 'cubic');
+      const actualGridSize = Math.min(sanitizedXv.length, 50); // Limit to 50 for performance
+      const smoothResult = createSmoothSurface(sanitizedXv, sanitizedYv, sanitizedZValues, actualGridSize, 'cubic');
       zMatrix = smoothResult.zGrid;
       finalXGrid = smoothResult.xGrid[0]; // Take first row for X grid
       finalYGrid = smoothResult.yGrid.map(row => row[0]); // Take first column for Y grid
-      } catch (error) {
-      // Fallback: Create Z matrix directly from actual data points
-      const uniqueX = [...new Set(xv)].sort((a, b) => a - b);
-      const uniqueY = [...new Set(yv)].sort((a, b) => a - b);
-      
-      zMatrix = uniqueY.map(y => 
-        uniqueX.map(x => {
-          const index = xv.findIndex((val, i) => val === x && yv[i] === y);
-          return index >= 0 ? zValues[index] : 0;
-        })
-      );
-      
+    } catch (error) {
       finalXGrid = uniqueX;
       finalYGrid = uniqueY;
     }
   } else {
     // Create Z matrix directly from actual data points
-    const uniqueX = [...new Set(xv)].sort((a, b) => a - b);
-    const uniqueY = [...new Set(yv)].sort((a, b) => a - b);
-    
-    zMatrix = uniqueY.map(y => 
+    const uniqueX = [...new Set(sanitizedXv)].sort((a, b) => a - b);
+    const uniqueY = [...new Set(sanitizedYv)].sort((a, b) => a - b);
+
+    zMatrix = uniqueY.map(y =>
       uniqueX.map(x => {
-        const index = xv.findIndex((val, i) => val === x && yv[i] === y);
-        return index >= 0 ? zValues[index] : 0;
+        const index = sanitizedXv.findIndex((val, i) => val === x && sanitizedYv[i] === y);
+        return index >= 0 ? sanitizedZValues[index] : 0;
       })
     );
-    
+
     finalXGrid = uniqueX;
     finalYGrid = uniqueY;
   }
-  
-  // No smoothing - preserve all sharp features and natural variations
-  const smoothedMatrix = zMatrix;
-  
+
+  // Robust zmin/zmax calculation
+  const zValuesFlat = zMatrix.flat().filter(v => v !== null && isFinite(v)) as number[];
+  const zMinRaw = zValuesFlat.length > 0 ? Math.min(...zValuesFlat) : 0;
+  const zMaxRaw = zValuesFlat.length > 0 ? Math.max(...zValuesFlat) : 1;
+  const finalZMin = isFinite(zMinRaw) ? zMinRaw : 0;
+  const finalZMax = isFinite(zMaxRaw) ? zMaxRaw : (finalZMin + 1);
+
   // Use surface type from configuration
   const surfaceType = meshConfig.surfaceType || 'surface';
   const traceType = surfaceType === 'wireframe' ? 'scatter3d' : 'surface';
-  
+
   const finalTrace = {
-    x: finalXGrid,
-    y: finalYGrid,
-    z: smoothedMatrix,
+    x: finalXGrid.map(v => Number.isFinite(v) ? v : 0), // Extra safety for X grid
+    y: finalYGrid.map(v => Number.isFinite(v) ? v : 0), // Extra safety for Y grid
+    z: zMatrix.map(row => row.map(val => (val !== null && isFinite(val) ? val : null))),
     type: traceType,
     name: label,
     colorscale: getPlotlyColorScale(selectedColorScale),
-    // Apply interpolation from database configuration
     smoothing: meshConfig.interpolation === 'linear' ? true : false,
-    // Apply showSurface configuration
     visible: shouldShowSurface,
-    // Apply smooth shading configuration
-    flatshading: meshConfig.smoothShading === false ? true : false, // Use smooth shading unless explicitly disabled
-    zmin: Math.min(...smoothedMatrix.flat()),
-    zmax: Math.max(...smoothedMatrix.flat()),
+    flatshading: meshConfig.smoothShading === false ? true : false,
+    zmin: finalZMin,
+    zmax: finalZMax === finalZMin ? finalZMin + 1 : finalZMax,
     opacity: meshConfig.opacity || 0.8,
     showlegend: true,
-    // Apply lighting configuration properly
     ...(meshConfig.lighting !== false ? {
       lighting: {
         ambient: 0.3,
@@ -946,7 +1015,6 @@ const createXYManyZMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
       y: 200,
       z: 0
     },
-    // Apply contour configuration for 3D surface plots
     ...(meshConfig.showContours && {
       contours: {
         x: { show: true, opacity: meshConfig.contourOpacity || 0.5 },
@@ -954,46 +1022,24 @@ const createXYManyZMesh = (xv: number[], yv: number[], rows: any[], graphConfig:
         z: { show: true, opacity: meshConfig.contourOpacity || 0.5 }
       }
     }),
-    // Apply grid configuration
     ...(meshConfig.showGrid && {
       wireframe: {
         show: true,
-        opacity: meshConfig.gridOpacity || 0.6, // Increased opacity for better visibility
-        color: 'white' // Default Plotly 3D grid color (will be overridden by scene gridcolor)
+        opacity: meshConfig.gridOpacity || 0.6,
+        color: 'white'
       }
     }),
-    // Position colorbar on the left side
     colorbar: {
-      x: -0.1,  // Position on the left side
-      y: 0.5,   // Center vertically
-      len: 0.8, // Length of colorbar
-      thickness: 20, // Width of colorbar
+      x: -0.1,
+      y: 0.5,
+      len: 0.8,
+      thickness: 20,
       title: {
         text: 'Z',
         side: 'right'
       }
     }
   };
-  
-  return finalTrace;
-};
 
-/**
- * Create fallback 3D scatter plot
- */
-const createFallbackScatter = (xv: number[], yv: number[], label: string, color: string) => {
-  return {
-    x: xv,
-    y: yv,
-    z: xv.map((x, i) => Math.sin(x * 0.1) * Math.cos(yv[i] * 0.1)),
-    type: 'scatter3d',
-    mode: 'markers',
-    name: label,
-    marker: {
-      color: color || '#1f77b4',
-      size: 4,
-      opacity: 0.8
-    },
-    showlegend: true
-  };
-};
+  return finalTrace;
+}

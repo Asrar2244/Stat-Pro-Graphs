@@ -1,5 +1,5 @@
-import { ChangeEvent, FC, useEffect, useState, MouseEvent } from 'react';
-import { Field, Dropdown, Option, OptionOnSelectData, SelectionEvents, Input, Tab, TabList, SelectTabData, SelectTabEvent, Checkbox, Radio, RadioGroup, tokens, makeStyles, Button } from "@fluentui/react-components";
+import { ChangeEvent, FC, useEffect, useState, FormEvent } from 'react';
+import { Field, Dropdown, Option, OptionOnSelectData, SelectionEvents, Input, Tab, TabList, SelectTabData, SelectTabEvent, Checkbox, Radio, RadioGroup, tokens, Button, RadioGroupOnChangeData } from "@fluentui/react-components";
 import { MdKeyboardDoubleArrowRight, MdOutlineRemove } from 'react-icons/md';
 import { useTranslation } from "react-i18next";
 import { Fieldset } from "@libs/fieldset";
@@ -54,7 +54,7 @@ export const Model: FC = () => {
 const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
   const classes = useCommonStyles();
   const { t } = useTranslation(['T_TestsAnalysys', 'common']);
-  const { model: { dataFormat }, setModelBulk, setModel } = useTTestsStats(
+  const { model: { dataFormat, populationMean }, setModelBulk, setModel } = useTTestsStats(
     useShallow((state) => ({
       model: state.model,
       setModelBulk: state.setModelBulk,
@@ -65,10 +65,10 @@ const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
   // Initialize availableList and dataList from columns
   useEffect(() => {
     if (!columns || columns.length === 0) return;
-    
+
     const columnMap = new Map<string, boolean>();
     let dataListMap = new Map<string, boolean>();
-    
+
     // Initialize dataList from existing data (backward compatibility with sample array)
     if (dataFormat.sample && dataFormat.sample.length > 0 && (!dataFormat.dataList || dataFormat.dataList.size === 0)) {
       dataFormat.sample.forEach((colId) => {
@@ -77,24 +77,25 @@ const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
     } else if (dataFormat.dataList && dataFormat.dataList.size > 0) {
       dataListMap = new Map(dataFormat.dataList);
     }
-    
+
     // Initialize availableList with ALL columns (including those in dataList)
     columns.forEach((column) => {
       columnMap.set(column.columnId, false);
     });
-    
+
     // Only update if there are changes
     const currentAvailableSize = dataFormat.availableList?.size || 0;
     const currentDataSize = dataListMap.size;
     const newAvailableSize = columnMap.size;
-    
+
     if (currentAvailableSize !== newAvailableSize || currentDataSize !== dataListMap.size) {
       setModel({
         dataFormat: {
           ...dataFormat,
           availableList: columnMap,
           dataList: dataListMap,
-        }
+        },
+        populationMean
       });
     }
   }, [columns.length]);
@@ -133,7 +134,8 @@ const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
           ...dataFormat,
           dataList: newDataList,
           sample: [],
-        }
+        },
+        populationMean
       });
     }
   };
@@ -157,8 +159,7 @@ const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
     setModelBulk({ ...dataFormat, sample: [""], values: { ...dataFormat.values, [colName]: val } }, "dataFormat");
   };
 
-  const availableList = dataFormat.availableList || new Map<string, boolean>();
-  const dataList = dataFormat.dataList || new Map<string, boolean>();
+
 
   return (
     <Fieldset title={t("dataFormat")}>
@@ -169,7 +170,7 @@ const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
             <Dropdown
               size="small"
               onOptionSelect={onFormatSelect}
-              defaultValue={formatOptions[0].label}
+              value={formatOptions.find(opt => opt.columnId === selectedDataFormat)?.label || "Raw"}
               selectedOptions={[selectedDataFormat]}
             >
               {formatOptions.map((option) => (
@@ -214,10 +215,10 @@ const DataFormatSelection: FC<{ columns: IColumn[] }> = ({ columns }) => {
   );
 };
 
-const AvailableListRender: FC<{ columns: IColumn[] }> = ({ columns }) => {
+const AvailableListRender: FC<{ columns: IColumn[] }> = () => {
   const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
   const { t } = useTranslation(['T_TestsAnalysys', 'regLinearLeastSquare']);
-  const { model: { dataFormat }, setModelBulk, setModel } = useTTestsStats(
+  const { model: { dataFormat, populationMean }, setModelBulk, setModel } = useTTestsStats(
     useShallow((state) => ({
       model: state.model,
       setModelBulk: state.setModelBulk,
@@ -235,13 +236,13 @@ const AvailableListRender: FC<{ columns: IColumn[] }> = ({ columns }) => {
 
   const onSendHandler = (): void => {
     const selected = Array.from(availableList.entries()).filter(([, v]) => v).map(([k]) => k);
-    
+
     // Check if more than one variable is selected
     if (selected.length > 1) {
       setBlockUI({ value: true, msg: t('allowOnlyOneRecord', { ns: 'errors', defaultValue: 'Please select exactly one variable.' }) });
       return;
     }
-    
+
     // Check if dataList already has a variable
     if (dataList.size >= 1 && selected.length > 0) {
       setBlockUI({ value: true, msg: t('allowOnlyOneRecord', { ns: 'errors', defaultValue: 'Please select exactly one variable.' }) });
@@ -269,7 +270,8 @@ const AvailableListRender: FC<{ columns: IColumn[] }> = ({ columns }) => {
         availableList: newAvailableList,
         dataList: newDataList,
         sample: sampleArray,
-      }
+      },
+      populationMean
     });
     setSelectAll(false);
   };
@@ -304,7 +306,7 @@ const AvailableListRender: FC<{ columns: IColumn[] }> = ({ columns }) => {
 const DataListRender: FC = () => {
   const [selectAll, setSelectAll] = useState<boolean | string | undefined>(false);
   const { t } = useTranslation(['T_TestsAnalysys', 'regLinearLeastSquare']);
-  const { model: { dataFormat }, setModelBulk, setModel } = useTTestsStats(
+  const { model: { dataFormat, populationMean }, setModelBulk, setModel } = useTTestsStats(
     useShallow((state) => ({
       model: state.model,
       setModelBulk: state.setModelBulk,
@@ -339,7 +341,8 @@ const DataListRender: FC = () => {
         availableList: newAvailableList,
         dataList: newDataList,
         sample: sampleArray,
-      }
+      },
+      populationMean
     });
     if (newDataList.size === 0) setSelectAll(false);
   };
@@ -435,8 +438,8 @@ const AssumptionChecking: FC = () => {
     setModelBulk({ ...assumptionChecking, "P_value_reject": value }, "assumptionChecking");
   };
 
-  const onRadioChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
+  const onRadioChangeHandler = (_ev: FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
+    const value = data.value as string;
     const availableValues = ["shaprio_walk", "kolmo_with_correction"];
     let payLoad: Record<string, boolean> = {};
     availableValues.forEach(v => {

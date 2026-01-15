@@ -29,7 +29,7 @@ const TestsAnalysisComponent: FC<IModal> = ({ ...props }) => {
 
   const { executeAnalysis } = usePrepareAnalysis({
     config,
-    queueFor: t('title', { ns: 'T-testAnalysis' }),
+    queueFor: t('title', { ns: 'T_TestsAnalysys' }),
     queueType: 'tTestModule',
   });
 

@@ -1,7 +1,6 @@
 import { FC, lazy, useEffect, useState, useMemo } from 'react';
 import { SuspenseLoad } from '@libs';
 import { useGraphsRender } from './styles/use-graphs-render-style';
-import { useActiveNode } from '@hooks';
 import { useFetchGraphs } from './hooks/use-fetch-graphs';
 import { friendlyTitleForGraph } from './utils/title';
 import { useStartProStore } from '@store/main-store';
@@ -20,31 +19,47 @@ const ToolBar = lazy(() => import('./tool-bar').then((modules) => ({ default: mo
 import { useTools } from './hooks/use-tools';
 import { updateGraphRunConfig, updateGraphRunProperties } from '@backend/graphs';
 
-export const GraphsRender: FC = () => {
+export const GraphsRender: FC<any> = (props) => {
+  // HMR Trigger: UI Refresh 123
   const classes = useGraphsRender();
   const tools = useTools();
   const [propertiesByRun, setPropertiesByRun] = useState<Record<number, typeof tools.graphProperties>>({});
-  
-  const { config } = useActiveNode([]);
-  const { data } = useFetchGraphs(config.tabName);
+
+  // Extract configuration from props (passed by AppBodyArea)
+  const { tabName, id: projectId } = props;
+  const { data } = useFetchGraphs(tabName || '');
   const { setRenderLatestRun, renderLatestRun, selectedGraphRun, setSelectedGraphRun } = useStartProStore();
-  
+
   // Auto-select latest run when renderLatestRun flag is set
   useEffect(() => {
-    
-    if (Array.isArray(data) && data.length > 0 && renderLatestRun) {
-      const nice = friendlyTitleForGraph(data[0]?.graphType, data[0]?.config?.graphConfig?.subType);
-      const subTitle = data[0]?.config?.graphConfig?.subType || data[0]?.config?.graphConfig?.dataFormat;
-      setSelectedGraphRun(data[0]?.id, nice, subTitle);
-      setRenderLatestRun(false);
-    }
-  }, [data, renderLatestRun, selectedGraphRun.id, setSelectedGraphRun, setRenderLatestRun]);
-  
+    (async () => {
+      if (Array.isArray(data) && data.length > 0 && renderLatestRun) {
+        const latestGraph = data[0];
+        const nice = friendlyTitleForGraph(latestGraph?.graphType, latestGraph?.config?.graphConfig?.subType);
+        const subTitle = latestGraph?.config?.graphConfig?.subType || latestGraph?.config?.graphConfig?.dataFormat;
+
+        // Fetch the full config from database to ensure we have all the data
+        try {
+          const { fetchSingleGraph } = await import('@backend/graphs');
+          const fullGraph = await fetchSingleGraph(tabName, latestGraph.id);
+          console.log(`🎯 Auto-selecting latest graph ID ${latestGraph.id} with config:`, fullGraph?.config);
+          setSelectedGraphRun(latestGraph.id, nice, subTitle, fullGraph?.config);
+        } catch (e) {
+          console.error('Failed to fetch full graph config for auto-selection:', e);
+          // Fallback to basic selection without config
+          setSelectedGraphRun(latestGraph.id, nice, subTitle);
+        }
+
+        setRenderLatestRun(false);
+      }
+    })();
+  }, [data, renderLatestRun, selectedGraphRun.id, setSelectedGraphRun, setRenderLatestRun, tabName]);
+
   // Ensure default Graph Name starts as the plotted graph name, without changing existing default behavior
   // Only set when our current name is empty or the initial placeholder
   useEffect(() => {
     const currentProps = propertiesByRun[selectedGraphRun.id] || tools.graphProperties;
-    const currentName = currentProps.global.graphName;
+    const currentName = currentProps?.global?.graphName;
     const defaultLike = !currentName || currentName === 'Untitled Graph';
     const plottedName = selectedGraphRun?.title;
     if (defaultLike && plottedName) {
@@ -66,7 +81,7 @@ export const GraphsRender: FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const dbName = config.tabName;
+        const dbName = tabName;
         const runId = selectedGraphRun.id;
         if (!runId) return;
         const { fetchSingleGraph } = await import('@backend/graphs');
@@ -75,14 +90,30 @@ export const GraphsRender: FC = () => {
         if (row?.config) {
           setSelectedGraphRun(selectedGraphRun.id, selectedGraphRun.title, selectedGraphRun.subTitle, row.config);
         }
-        
-        const saved = row?.properties;
+
+        let saved = row?.properties || {};
+        const meshConfig = row?.config?.graphConfig?.meshConfig;
+
+        // If we have mesh configuration in the graph config, ensure it's synced to properties
+        if (meshConfig) {
+          saved = {
+            ...saved,
+            plotSpecific: {
+              ...(saved.plotSpecific || {}),
+              mesh3d: {
+                ...meshConfig,
+                ...(saved.plotSpecific?.mesh3d || {})
+              }
+            }
+          };
+        }
+
         if (saved && Object.keys(saved).length > 0) {
           setPropertiesByRun(prev => ({ ...prev, [runId]: saved }));
         }
-      } catch {}
+      } catch { }
     })();
-  }, [selectedGraphRun.id, config.tabName]);
+  }, [selectedGraphRun.id, tabName]);
 
   // Accessors for per-run properties
   const currentProps = useMemo(() => {
@@ -99,13 +130,13 @@ export const GraphsRender: FC = () => {
           ...(tools.graphProperties.plotSpecific.mesh3d),
           ...(baseProps.plotSpecific?.mesh3d),
           // Preserve original color scale from baseProps if it exists
-          originalColorScale: baseProps.plotSpecific?.mesh3d?.originalColorScale || tools.graphProperties.plotSpecific.mesh3d?.originalColorScale
+          originalColorScale: (baseProps.plotSpecific?.mesh3d as any)?.originalColorScale || (tools.graphProperties.plotSpecific.mesh3d as any)?.originalColorScale
         }
       }
     };
     return result;
   }, [propertiesByRun, selectedGraphRun.id, tools.canvasMode, tools.graphProperties]);
-  
+
 
   const updateGraphPropertyPerRun = <K extends keyof typeof tools.graphProperties.global>(
     key: K,
@@ -126,10 +157,10 @@ export const GraphsRender: FC = () => {
       const w: any = window as any;
       w.statproChangedRuns = w.statproChangedRuns || {};
       w.statproChangedRuns[selectedGraphRun.id] = selectedGraphRun.title || `Graph ${selectedGraphRun.id}`;
-    } catch {}
+    } catch { }
     // Persist immediately to properties only
     try {
-      const dbName = (propertiesByRun[selectedGraphRun.id]?.global.tabName as any) || config.tabName;
+      const dbName = (propertiesByRun[selectedGraphRun.id]?.global.tabName as any) || tabName;
       const selectedId = selectedGraphRun.id;
       const next = {
         ...(propertiesByRun[selectedGraphRun.id] || tools.graphProperties),
@@ -139,7 +170,7 @@ export const GraphsRender: FC = () => {
         },
       };
       updateGraphRunProperties(dbName, selectedId, next);
-    } catch {}
+    } catch { }
   };
 
   // Wire window-level custom event so canvas double-click edits can update state
@@ -169,7 +200,7 @@ export const GraphsRender: FC = () => {
       try {
         const runId = e?.detail?.id;
         if (!runId) return;
-        const dbName = config.tabName;
+        const dbName = tabName;
         const { Database } = await import('@utils');
         const db: any = new (Database as any)(dbName);
         await db.executeQuery('DELETE FROM GRAPHS WHERE id = ?', [runId]);
@@ -181,14 +212,14 @@ export const GraphsRender: FC = () => {
     };
     window.addEventListener('statpro:deleteGraphRun', handler as any);
     return () => window.removeEventListener('statpro:deleteGraphRun', handler as any);
-  }, [config.tabName, setRenderLatestRun]);
+  }, [tabName, setRenderLatestRun]);
 
   // Handle Save selected groups request from close dialog
   useEffect(() => {
     const handler = (e: any) => {
       const { runId, groups } = e.detail || {};
       if (!runId) return;
-      const dbName = config.tabName;
+      const dbName = tabName;
       const base = propertiesByRun[runId] || tools.graphProperties;
       const next = { ...base, global: { ...base.global } } as any;
       if (!groups?.title) {
@@ -225,7 +256,7 @@ export const GraphsRender: FC = () => {
       try {
         updateGraphRunConfig(dbName, runId, { graphConfig: next });
         updateGraphRunProperties(dbName, runId, next);
-      } catch {}
+      } catch { }
     };
     window.addEventListener('statpro:saveGraphProperties', handler as any);
     return () => window.removeEventListener('statpro:saveGraphProperties', handler as any);
@@ -236,7 +267,7 @@ export const GraphsRender: FC = () => {
     key: keyof NonNullable<typeof tools.graphProperties.plotSpecific[T]>,
     value: any,
   ) => {
-    
+
     setPropertiesByRun((prev) => {
       const base = prev[selectedGraphRun.id] || tools.graphProperties;
       const updated = {
@@ -256,13 +287,13 @@ export const GraphsRender: FC = () => {
           },
         },
       };
-      
-      
+
+
       return updated;
     });
     // Persist immediately
     try {
-      const dbName = config.tabName;
+      const dbName = tabName;
       const selectedId = selectedGraphRun.id;
       const base = propertiesByRun[selectedId] || tools.graphProperties;
       const next = {
@@ -280,12 +311,12 @@ export const GraphsRender: FC = () => {
         },
       } as any;
       updateGraphRunProperties(dbName, selectedId, next);
-    } catch {}
+    } catch { }
   };
 
   const resetAllPropertiesPerRun = () => {
     try {
-      const dbName = config.tabName;
+      const dbName = tabName;
       const selectedId = selectedGraphRun.id;
       const defaults = tools.graphProperties;
       const current = propertiesByRun[selectedId] || tools.graphProperties;
@@ -299,7 +330,7 @@ export const GraphsRender: FC = () => {
       };
       setPropertiesByRun((prev) => ({ ...prev, [selectedId]: next }));
       updateGraphRunProperties(dbName, selectedId, next);
-    } catch {}
+    } catch { }
   };
 
   const updateLegendTextEntryPerRun = (originalLabel: string, newText: string) => {
@@ -321,7 +352,7 @@ export const GraphsRender: FC = () => {
     });
     // Persist immediately
     try {
-      const dbName = config.tabName;
+      const dbName = tabName;
       const selectedId = selectedGraphRun.id;
       const base = propertiesByRun[selectedId] || tools.graphProperties;
       const next = {
@@ -335,9 +366,9 @@ export const GraphsRender: FC = () => {
         },
       } as any;
       updateGraphRunProperties(dbName, selectedId, next);
-    } catch {}
+    } catch { }
   };
-  
+
   return (
     <SuspenseLoad>
       <div className={classes.graphsLayout} data-graphs-root="true">
@@ -373,7 +404,7 @@ export const GraphsRender: FC = () => {
               updateLegendSeriesColor: (label: string, color: string) => {
                 // Persist per-run legend series color
                 try {
-                  const dbName = config.tabName;
+                  const dbName = tabName;
                   const selectedId = selectedGraphRun.id;
                   const base = propertiesByRun[selectedId] || tools.graphProperties;
                   const next = {
@@ -388,7 +419,7 @@ export const GraphsRender: FC = () => {
                   } as any;
                   setPropertiesByRun(prev => ({ ...prev, [selectedId]: next }));
                   updateGraphRunProperties(dbName, selectedId, next);
-                } catch {}
+                } catch { }
               },
               updateLegendTextEntry: updateLegendTextEntryPerRun,
               getCurrentPlotType: tools.getCurrentPlotType,

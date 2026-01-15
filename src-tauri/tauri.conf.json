@@ -1,31 +1,30 @@
 {
-  "productName": "start-pro",
-  "version": "0.0.0",
-  "identifier": "com.start.pro",
+  "productName": "Stat-Pro",
+  "version": "1.2.7",
+  "identifier": "com.stat.pro",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
-
   "app": {
     "macOSPrivateApi": true,
-      "security": {
-        "assetProtocol": {
-          "enable": false,
-          "scope": []
-        },
-        "capabilities": [],
-        "dangerousDisableAssetCspModification": false,
-        "freezePrototype": false,
-        "pattern": {
-          "use": "brownfield"
-        }
+    "security": {
+      "assetProtocol": {
+        "enable": false,
+        "scope": []
       },
+      "capabilities": [],
+      "dangerousDisableAssetCspModification": false,
+      "freezePrototype": false,
+      "pattern": {
+        "use": "brownfield"
+      }
+    },
     "windows": [
       {
-        "title": "start-pro",
+        "title": "Stat-Pro",
         "height": 800,
         "visible": false,
         "label": "main",
@@ -39,7 +38,7 @@
         "transparent": true
       },
       {
-        "title": "start-pro",
+        "title": "Stat-Pro",
         "width": 450,
         "height": 300,
         "url": "/splash-screen/splash.html",
@@ -53,7 +52,9 @@
     ]
   },
   "bundle": {
-    "resources":["backend"],
+    "resources": [
+      "backend"
+    ],
     "active": true,
     "targets": "all",
     "icon": [
@@ -62,6 +63,11 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico"
+      }
+    }
   }
 }

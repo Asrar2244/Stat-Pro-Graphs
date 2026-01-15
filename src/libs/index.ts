@@ -20,3 +20,4 @@ export * from './div-show-scroll';
 export * from './pagination';
 export * from './card-table-render';
 export * from './card-column-render';
+export * from './raw-table-render';

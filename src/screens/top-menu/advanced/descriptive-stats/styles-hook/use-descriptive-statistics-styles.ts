@@ -6,8 +6,11 @@ export const useCommonStyles = makeStyles({
     flexDirection: 'column',
     gap: tokens.spacingHorizontalM,
     width: '55em',
+    maxHeight: '90vh',
     '& .details': {
-      height: '45vh',
+      height: '70vh',
+      display: 'flex',
+      flexDirection: 'column',
     },
     '& .select-size': {
       width: 'max-content',

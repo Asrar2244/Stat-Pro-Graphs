@@ -10,6 +10,15 @@ export const EstimationOfModule: FC = () => {
   const context = useContext(OutputRenderContext);
   const { t } = useTranslation('estimationModuleOutput');
   const classes = useRegressions();
+
+  // Robustly extract the table name from the backend result
+  const result = context?.selectedRun?.result as any;
+  const dbTableName = (
+    result?.output_table_name ||
+    result?.table_name ||
+    (typeof result === 'string' ? result : '')
+  ) as string;
+
   return (
     <div className={classes.regressionsLayout}>
       {configurations.tables.map((table) => (
@@ -18,8 +27,7 @@ export const EstimationOfModule: FC = () => {
           t={t}
           table={table as ITableCreator}
           dbFileName={context?.selectedRun?.tabName as string}
-          // From backend its coming in this structure, need to check
-          dbTableName={context?.selectedRun?.result as unknown as string}
+          dbTableName={dbTableName}
         />
       ))}
     </div>

@@ -28,7 +28,8 @@ export const useGetInitialConfig = (): ISetInitial => {
                 isOpenedOutput,
                 workspacePath,
                 sheetId,
-                inputFileName
+                inputFileName,
+                isExternal
               } = result[i];
               bulkProjectData[projectName] = {
                 fileSize,
@@ -40,7 +41,9 @@ export const useGetInitialConfig = (): ISetInitial => {
                 workspacePath,
                 id,
                 sheetId,
-                inputFileName
+                inputFileName,
+                isExternal,
+                projectName
               };
             }
             setBulkProjects(bulkProjectData);

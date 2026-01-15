@@ -24,17 +24,17 @@ export const LinePlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
   const classes = useLinePlotStyles();
   const { errorBarValidationStyles, errorBarValidationTextStyles } = useLinePlotFormStyles();
   const isUpdatingDataFormat = useRef(false);
-  
+
   // Store state
-  const { 
-    selectedProject, 
-    subType, 
+  const {
+    selectedProject,
+    subType,
     dataFormat,
     symbolValue,
     errorCalculationUpper,
     errorCalculationLower,
-    setProject, 
-    setSubType, 
+    setProject,
+    setSubType,
     setDataFormat,
     setAvailableVariables,
     setGraphConfig,
@@ -42,12 +42,22 @@ export const LinePlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
     setErrorCalculationUpper,
     setErrorCalculationLower
   } = useLinePlotStore();
-  
+
   // Load project variables
   const { variables, isLoading: isLoadingVariables, error: loadError, retry, canRetry, retryCount } = useProjectVariables(selectedProject);
 
+  // Filter out default empty columns before passing to variable management
+  const filteredVariables = useMemo(() => {
+    return variables.filter(v => {
+      const lowerName = v.name.toLowerCase();
+      return !v.name.startsWith('def_col_') &&
+        !lowerName.includes('statpro') &&
+        !lowerName.includes('start_pro');
+    });
+  }, [variables]);
+
   // Variable management - pass variables so we can filter by type
-  const variableManagement = useVariableManagement(dataFormat, subType, variables);
+  const variableManagement = useVariableManagement(dataFormat, subType, filteredVariables);
   const {
     availableList,
     xVariableList,
@@ -57,6 +67,8 @@ export const LinePlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
     setAvailableList,
     setXVariableList,
     setYVariableList,
+    setErrorBarVariableList,
+    setCategoryVariableList,
     selectAllAvailable,
     selectAllX,
     selectAllY,
@@ -102,14 +114,14 @@ export const LinePlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
   const canSendX = canSendToX(availableCheckedCount, xCount, dataFormat);
   const canSendY = canSendToY(availableCheckedCount, yCount, dataFormat);
   const canSendErrorBar = canSendToErrorBar(
-    availableCheckedCount, 
-    errorBarVariableList.size, 
-    xCount, 
-    yCount, 
-    dataFormat, 
+    availableCheckedCount,
+    errorBarVariableList.size,
+    xCount,
+    yCount,
+    dataFormat,
     subType
   );
-  
+
   const canSendCategory = useMemo(() => {
     if (availableCheckedCount === 0) return false;
     if (!requireCategory) return false;
@@ -147,38 +159,6 @@ export const LinePlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
     }
   }, [variables.length, setAvailableVariables]);
 
-  // Update available list when variables are loaded (but preserve existing selections)
-  useEffect(() => {
-    if (variables.length === 0) return;
-    
-    // Only update if we don't have any variables in the available list yet
-    // This prevents clearing user selections when variables reload
-    if (availableList.size === 0) {
-      const newMap = new Map();
-      // Show all variables in available list - filtering happens at send time
-      variables.forEach(variable => {
-        newMap.set(variable.name, false);
-      });
-      setAvailableList(newMap);
-    } else {
-      // If we already have variables, only add new ones that aren't already present
-      const newMap = new Map(availableList);
-      let hasNewVariables = false;
-      
-      variables.forEach(variable => {
-        if (!newMap.has(variable.name)) {
-          newMap.set(variable.name, false);
-          hasNewVariables = true;
-        }
-      });
-      
-      // Only update if we found new variables
-      if (hasNewVariables) {
-        setAvailableList(newMap);
-      }
-    }
-  }, [variables.length, setAvailableList, availableList]);
-
   // Ensure dataFormat remains valid when subType changes
   useEffect(() => {
     if (!availableFormats.length) return;
@@ -199,12 +179,12 @@ export const LinePlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
     const yVars = Array.from(yVariableList.keys());
     const errorBarVars = Array.from(errorBarVariableList.keys());
     const categoryVars = Array.from(categoryVariableList.keys());
-    
-    
+
+
     const isAsymmetric = isAsymmetricErrorBar(subType);
     const isManualAsymmetric = symbolValue === 'Asymmetric Error Bar';
     const shouldUseAsymmetric = isAsymmetric || isManualAsymmetric;
-    
+
     setGraphConfig({
       selectedProject,
       graphType: 'Line Plot',
@@ -217,16 +197,16 @@ export const LinePlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
       errorBarVariable: errorBarVars[0], // Legacy single variable support
     });
   }, [
-    selectedProject, 
-    subType, 
-    dataFormat, 
-    xVariableList, 
-    yVariableList, 
-    errorBarVariableList, 
+    selectedProject,
+    subType,
+    dataFormat,
+    xVariableList,
+    yVariableList,
+    errorBarVariableList,
     categoryVariableList,
-    symbolValue, 
-    errorCalculationUpper, 
-    errorCalculationLower, 
+    symbolValue,
+    errorCalculationUpper,
+    errorCalculationLower,
     setGraphConfig
   ]);
 
@@ -263,7 +243,7 @@ export const LinePlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
             📊 Error Bar Requirement: {(() => {
               const required = getRequiredErrorBarCount(xVariableList.size, yVariableList.size, dataFormat);
               const current = errorBarVariableList.size;
-              
+
               if (required === 0) return 'No error bars needed for this format';
               if (current === required) return `✅ ${required} error bar variable${required > 1 ? 's' : ''} selected (correct)`;
               if (current < required) return `⚠️ Need ${required} error bar variable${required > 1 ? 's' : ''}, currently have ${current}`;
@@ -274,12 +254,12 @@ export const LinePlotForm: FC<{ projects: string[]; datasets: string[] }> = ({ p
       )}
 
       {/* Error Bars Configuration */}
-          {subType && needsErrorBarsConfiguration(subType) && (
-              <ErrorBarsConfiguration 
-                errorBarVariableList={errorBarVariableList}
+      {subType && needsErrorBarsConfiguration(subType) && (
+        <ErrorBarsConfiguration
+          errorBarVariableList={errorBarVariableList}
           setErrorBarVariableList={variableManagement.setErrorBarVariableList}
-              />
-          )}
+        />
+      )}
 
       {/* Loading State */}
       {isLoadingVariables && (

@@ -1,6 +1,6 @@
 import { FC, useContext } from 'react';
 import { OutputRenderContext } from '../../../context';
-import { CardTableRender } from '@libs';
+import { CardTableRender, RawTableRender } from '@libs';
 import configurations from './configuration/t-test.configuration.json';
 import { useTranslation } from 'react-i18next';
 import { ITableCreator } from '@utils';
@@ -11,27 +11,20 @@ export const TTestComponent: FC = () => {
     const context = useContext(OutputRenderContext);
     const { t } = useTranslation('t_test_output');
     const classes = useCommonStyles();
+
+    // Robustly extract the table name from the backend result
+    const result = context?.selectedRun?.result as any;
+    const dbTableName = (
+        result?.output_table_name ||
+        result?.table_name ||
+        (typeof result === 'string' ? result : '')
+    ) as string;
+
     return (
-        <div className={classes.commonWrapper} style={{ gap: 0, borderRadius: 0 }}>
-            {configurations.tables.map((table) => (
-                <CardTableRender
-                    key={table.name}
-                    t={t}
-                    table={table as ITableCreator}
-                    dbFileName={context?.selectedRun?.tabName as string}
-                    dbTableName={context?.selectedRun?.result as unknown as string}
-                />
-            ))}
-            {configurations.customScreen?.map((screen) => (
-                <TestResultScreen
-                    config={screen}
-                    key={screen.name}
-                    t={t}
-                    dbFileName={context?.selectedRun?.tabName as string}
-                    dbTableName={context?.selectedRun?.result as unknown as string}
-                    namespaces={['T_TestsAnalysys']}
-                />
-            ))}
-        </div>
+        <RawTableRender
+            dbFileName={context?.selectedRun?.tabName as string}
+            dbTableName={dbTableName}
+            title={t('title', { ns: 'T_TestsAnalysys' })}
+        />
     );
 };

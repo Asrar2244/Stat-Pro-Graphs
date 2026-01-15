@@ -22,9 +22,10 @@ export const useFetchRecords = (tabName: string, pageSize?: number): IFetch => {
     }
   }, []);
   const fetchData = async (startIndex: number, stopIndex: number): Promise<any> => {
+    let db: Database | null = null;
     try {
       setLoading(true);
-      const db = new Database(tabName);
+      db = new Database(tabName);
       const result = await db.selectQuery(
         `SELECT * FROM ${EXCEL}
             LIMIT ${startIndex},${stopIndex - startIndex}`,
@@ -34,6 +35,9 @@ export const useFetchRecords = (tabName: string, pageSize?: number): IFetch => {
     } catch (e: any) {
       setBlockUI({ value: true, msg: e.message });
     } finally {
+      if (db) {
+        await db.close();
+      }
       setLoading(false);
     }
   };

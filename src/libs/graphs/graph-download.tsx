@@ -66,7 +66,7 @@ const DownloadConfig: FC<IDownloadTools & { format: string; description: string 
   const classes = useToolsStyles();
   const { t } = useTranslation('common');
   const toaster = useToaster();
-  
+
   // Update width and height when plotly element is available
   useEffect(() => {
     const updateDimensions = () => {
@@ -78,93 +78,93 @@ const DownloadConfig: FC<IDownloadTools & { format: string; description: string 
         setHeight(plotlyGraphElement.clientHeight?.toString() || '600');
       }
     };
-    
+
     updateDimensions();
-    
+
     // Also update on window resize
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
   }, [plotly]);
-  
-  const onClickDownload = (format: string) => (): void => {
+
+  const onClickDownload = (format: string) => async (): Promise<void> => {
     // Get the actual Plotly graph DOM element
-    // plotly is GraphCanvasRef: { current: HTMLDivElement, plotly: plotlyInstance }
-    // The Plotly graph element is in plotly.plotly.graph.current
     let plotlyGraphElement: HTMLElement | null = null;
-    
+
     // Try multiple ways to get the Plotly graph element
     if (plotly?.plotly?.graph?.current) {
-      // Standard path: plotly instance has graph ref
       plotlyGraphElement = plotly.plotly.graph.current;
     } else if (plotly?.plotly?.graph) {
-      // If graph is the element directly (not a ref)
       plotlyGraphElement = plotly.plotly.graph;
     } else if (plotly?.current) {
-      // Fallback to container element
-      // Look for the actual Plotly graph div inside the container
       const container = plotly.current;
       const plotlyDiv = container.querySelector('.js-plotly-plot, [class*="plotly"], [id*="plotly"]') as HTMLElement;
       plotlyGraphElement = plotlyDiv || container;
     }
-    
+
     if (!plotlyGraphElement) {
-      console.error('Plotly element not available for download', { 
-        plotly, 
-        hasPlotly: !!plotly?.plotly,
-        hasGraph: !!plotly?.plotly?.graph,
-        hasGraphCurrent: !!plotly?.plotly?.graph?.current,
-        hasCurrent: !!plotly?.current
-      });
-      alert('Graph is not ready for download. Please wait for the graph to load.');
+      toaster.error({ body: 'Graph is not ready for download.' });
       return;
     }
-    
-    // Download with same dimensions as canvas
+
     const currentWidth = plotlyGraphElement.clientWidth || parseInt(width || '800');
     const currentHeight = plotlyGraphElement.clientHeight || parseInt(height || '600');
-    
+
     const downloadOptions: any = {
       format,
-      filename: filename || 'graph',
       width: width ? parseInt(width) : currentWidth,
       height: height ? parseInt(height) : currentHeight,
       scale: 1,
     };
-    
-    // Add format-specific options
+
     if (format === 'jpeg' || format === 'webp') {
       downloadOptions.quality = 0.95;
     }
-    
+
     try {
-      console.log('Downloading graph:', {
-        format,
-        filename: downloadOptions.filename,
-        width: downloadOptions.width,
-        height: downloadOptions.height,
-        element: plotlyGraphElement,
-        elementTag: plotlyGraphElement.tagName,
-        elementClasses: plotlyGraphElement.className
+      // 1. Ask user for save location
+      const { save } = await import('@tauri-apps/plugin-dialog');
+      const suggestedName = filename || 'graph';
+
+      const filePath = await save({
+        defaultPath: `${suggestedName}.${format}`,
+        filters: [{
+          name: 'Image',
+          extensions: [format]
+        }]
       });
-      
-      // Trigger download
-      downloadImage(plotlyGraphElement, downloadOptions);
-      
-      // Show success notification with filename
-      const downloadedFileName = `${downloadOptions.filename}.${format}`;
+
+      if (!filePath) {
+        // User cancelled
+        return;
+      }
+
+      // 2. Generate image data
+      // @ts-ignore - Plotly types might be missing toImage on default export
+      const { toImage } = await import('plotly.js-dist');
+      const dataUrl = await toImage(plotlyGraphElement, downloadOptions);
+
+      // 3. Convert data URL to binary
+      // dataUrl is like "data:image/png;base64,iVBOR..."
+      const base64Data = dataUrl.split(',')[1];
+      const binaryString = atob(base64Data);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // 4. Write to file
+      const { writeFile } = await import('@tauri-apps/plugin-fs');
+      await writeFile(filePath, bytes);
+
+      // 5. Success message
       toaster.success({
-        body: t('graphDownloaded', { filename: downloadedFileName }) || `Graph downloaded: ${downloadedFileName}`,
+        body: t('graphDownloaded', { filename: filePath }) || `Saved to: ${filePath}`,
       }, {
         timeout: 5000,
         pauseOnHover: true,
       });
-      
-      console.log('Graph download initiated:', {
-        filename: downloadedFileName,
-        format,
-        width: downloadOptions.width,
-        height: downloadOptions.height
-      });
+
     } catch (error) {
       console.error('Error downloading graph:', error);
       toaster.error({
@@ -194,11 +194,11 @@ const DownloadConfig: FC<IDownloadTools & { format: string; description: string 
       {format !== 'svg' ? (
         <>
           {format === 'png' && (
-            <div style={{ 
-              backgroundColor: '#e6f3ff', 
-              border: '1px solid #0078d4', 
-              borderRadius: '4px', 
-              padding: '8px', 
+            <div style={{
+              backgroundColor: '#e6f3ff',
+              border: '1px solid #0078d4',
+              borderRadius: '4px',
+              padding: '8px',
               marginBottom: '12px',
               fontSize: '12px',
               color: '#0078d4'

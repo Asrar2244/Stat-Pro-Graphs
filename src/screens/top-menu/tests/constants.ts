@@ -6,17 +6,19 @@ export const analysisOptions: TestOption[] = [
     label: 'Regression',
     value: 'regression',
     children: [
-      { label: 'Linear', value: 'linear', children: [
-        { label: 'Least Squares', value: 'leastSquares', execute: 'least-square' },
-        { label: 'Ridge', value: 'ridge', execute: 'ridge' },
-        { label: 'Forward Stepwise', value: 'forwardStepwise', execute: 'forward-stepwise' },
-        { label: 'Backward Stepwise', value: 'backwardStepwise', execute: 'backward-stepwise' },
-        { label: 'Stepwise', value: 'stepwise', execute: 'stepwise' },
-        { label: 'Best Subset', value: 'bestSubset', execute: 'best-subset' },
-        { label: 'Multiple Linear', value: 'multipleLinear', execute: 'multiple-linear' },
-        { label: 'Polynomial', value: 'polynomial', execute: 'polynomial' },
-        { label: 'Bayesian', value: 'bayesian', execute: 'bayesian' },
-      ] },
+      {
+        label: 'Linear', value: 'linear', children: [
+          { label: 'Least Squares', value: 'leastSquares', execute: 'least-square' },
+          { label: 'Ridge', value: 'ridge', execute: 'ridge' },
+          { label: 'Forward Stepwise', value: 'forwardStepwise', execute: 'forward-stepwise' },
+          { label: 'Backward Stepwise', value: 'backwardStepwise', execute: 'backward-stepwise' },
+          { label: 'Stepwise', value: 'stepwise', execute: 'stepwise' },
+          { label: 'Best Subset', value: 'bestSubset', execute: 'best-subset' },
+          { label: 'Multiple Linear', value: 'multipleLinear', execute: 'multiple-linear' },
+          { label: 'Polynomial', value: 'polynomial', execute: 'polynomial' },
+          { label: 'Bayesian', value: 'bayesian', execute: 'bayesian' },
+        ]
+      },
     ],
   },
   {
@@ -27,23 +29,26 @@ export const analysisOptions: TestOption[] = [
       { label: 'Pairwise Comparison', value: 'pairwiseComparison', execute: 'pairwise-comparison' },
     ],
   },
+  {
+    label: 'Statistics',
+    value: 'statistics',
+    children: [
+      { label: 'Descriptive Statistics', value: 'descriptiveStat', execute: 'basic-statistics-column-wise' },
+      { label: 'One Sample t-test', value: 't-test', execute: 'tests' },
+      { label: 'paired-t-test', value: 'paired-t-test', execute: 'paired-t-test' },
+    ]
+  }
 ];
 
 // Helper: Advanced analysis options
 export const advancedOptions: TestOption[] = [
-  {
-    label: 'Descriptive Statistics',
-    value: 'descriptiveStat',
-    execute: 'basic-statistics-column-wise',
-  },
-  {
-    label: 't-test',
-    value: 't-test',
-    execute: 'tests',
-  },
-  {
-    label: 'paired-t-test',
-    value: 'paired-t-test',
-    execute: 'paired-t-test',
-  },
-]; 
+  { label: 'Least Squares', value: 'leastSquares', execute: 'least-square' },
+  { label: 'Ridge', value: 'ridge', execute: 'ridge' },
+  { label: 'Forward Stepwise', value: 'forwardStepwise', execute: 'forward-stepwise' },
+  { label: 'Backward Stepwise', value: 'backwardStepwise', execute: 'backward-stepwise' },
+  { label: 'Stepwise', value: 'stepwise', execute: 'stepwise' },
+  { label: 'Best Subset', value: 'bestSubset', execute: 'best-subset' },
+  { label: 'Multiple Linear', value: 'multipleLinear', execute: 'multiple-linear' },
+  { label: 'Polynomial', value: 'polynomial', execute: 'polynomial' },
+  { label: 'Bayesian', value: 'bayesian', execute: 'bayesian' },
+];

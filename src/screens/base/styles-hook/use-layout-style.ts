@@ -102,9 +102,14 @@ export const useLayout = makeStyles({
     textTransform: 'uppercase',
     marginTop: '-4px',
   },
+  appBodyRoot: {
+    flexGrow: 1,
+    width: '100%',
+    overflow: 'hidden',
+  },
   suppressOverFlow: {
     overflow: 'hidden',
     width: '100%',
-    height: 'calc(100vh - var(--ribbon-offset, 42px))',
+    height: '100%',
   },
 });

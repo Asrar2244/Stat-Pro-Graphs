@@ -114,7 +114,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
 
   // Wire variable assignment to the store so the modal always has X/Y at Create time
   const { setXVariable, setYVariable } = useLineScatterPlotStore();
-  
+
   const {
     variableSelectionContainerStyles,
     columnStyles,
@@ -123,7 +123,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
     removeButtonHoverStyles,
     removeButtonLeaveStyles
   } = useVariableSelectionStyles();
-  
+
   // Calculate max allowed error bars based on data format and X/Y counts
   const maxErrorBars = getRequiredErrorBarCount(xCount, yCount, dataFormat as any, subType);
 
@@ -220,23 +220,23 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
               <>
                 {(dataFormat === 'XY Pair' || dataFormat === 'XY Pairs' || dataFormat === 'XY Category' || dataFormat === 'X Many Y' || dataFormat === 'Y Many X' || dataFormat === 'X Many Y Replicates' || dataFormat === 'Y Many X Replicates' || dataFormat === 'Many Y Replicates' || dataFormat === 'Category Many Y' || dataFormat === 'Category Many X') && (
                   <>
-                    <Button 
-                      icon={<MdKeyboardDoubleArrowRight />} 
-                      iconPosition="after" 
-                      onClick={onSendToX} 
-                      className={classes.actionBtn} 
-                      disabled={['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '') ? !canSendToXForReplicates : 
-                                dataFormat === 'Y Many X Replicates' ? !canSendToXForYReplicates : !canSendToX}
+                    <Button
+                      icon={<MdKeyboardDoubleArrowRight />}
+                      iconPosition="after"
+                      onClick={onSendToX}
+                      className={classes.actionBtn}
+                      disabled={['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '') ? !canSendToXForReplicates :
+                        dataFormat === 'Y Many X Replicates' ? !canSendToXForYReplicates : !canSendToX}
                     >
                       Send to X
                     </Button>
-                    <Button 
-                      icon={<MdKeyboardDoubleArrowRight />} 
-                      iconPosition="after" 
-                      onClick={onSendToY} 
-                      className={classes.actionBtn} 
-                      disabled={['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '') ? !canSendToYForReplicates : 
-                                dataFormat === 'Y Many X Replicates' ? !canSendToYForXReplicates : !canSendToY}
+                    <Button
+                      icon={<MdKeyboardDoubleArrowRight />}
+                      iconPosition="after"
+                      onClick={onSendToY}
+                      className={classes.actionBtn}
+                      disabled={['X Many Y Replicates', 'Many Y Replicates'].includes(dataFormat || '') ? !canSendToYForReplicates :
+                        dataFormat === 'Y Many X Replicates' ? !canSendToYForXReplicates : !canSendToY}
                     >
                       Send to Y
                     </Button>
@@ -306,10 +306,10 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
             />
 
             <div className={classes.actions}>
-              <Button 
-                icon={<MdOutlineRemove />} 
-                iconPosition="before" 
-                size="small" 
+              <Button
+                icon={<MdOutlineRemove />}
+                iconPosition="before"
+                size="small"
                 onClick={onRemoveX}
                 disabled={xVariableList.size === 0}
                 className={classes.actionButton}
@@ -339,10 +339,10 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
             />
 
             <div className={classes.actions}>
-              <Button 
-                icon={<MdOutlineRemove />} 
-                iconPosition="before" 
-                size="small" 
+              <Button
+                icon={<MdOutlineRemove />}
+                iconPosition="before"
+                size="small"
                 onClick={onRemoveY}
                 disabled={yVariableList.size === 0}
                 className={classes.actionButton}
@@ -373,10 +373,10 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
             />
 
             <div className={classes.actions}>
-              <Button 
-                icon={<MdOutlineRemove />} 
-                iconPosition="before" 
-                size="small" 
+              <Button
+                icon={<MdOutlineRemove />}
+                iconPosition="before"
+                size="small"
                 onClick={handleRemoveFromErrorBar}
                 disabled={errorBarVariableList.size === 0}
                 className={classes.actionButton}
@@ -406,10 +406,10 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
             />
 
             <div className={classes.actions}>
-              <Button 
-                icon={<MdOutlineRemove />} 
-                iconPosition="before" 
-                size="small" 
+              <Button
+                icon={<MdOutlineRemove />}
+                iconPosition="before"
+                size="small"
                 onClick={handleRemoveFromCategory}
                 disabled={categoryVariableList.size === 0}
                 className={classes.actionButton}

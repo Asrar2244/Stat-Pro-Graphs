@@ -3,7 +3,7 @@ import { Modal } from '@libs';
 import { SampleSizeModal } from './main';
 import ChiSquareSampleSizeModal from './chi-square-sample-size';
 import { useSampleSizeStore } from './use-sample-size-store';
-import { SampleSizeTestType } from './types';
+// import { SampleSizeTestType } from './types';
 
 interface SampleSizeModalWrapperProps {
   open: boolean;

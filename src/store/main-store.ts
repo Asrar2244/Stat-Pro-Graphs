@@ -12,14 +12,16 @@ export interface IProjectDetails {
   workspacePath: string;
   id: string;
   inputFileName: string;
-  sheetId: string
+  projectName: string;
+  sheetId: string;
+  isExternal: number;
 }
 
 interface IBlockUIProps { value: boolean; msg: string; hideOk?: boolean }
 
 interface IStartProStore {
   projects: {
-    [projectName: string]: IProjectDetails;
+    [projectId: string]: IProjectDetails; // CRITICAL: Key by ID to prevent name-based collapsing
   };
   blockUI: IBlockUIProps;
   newProject?: {
@@ -42,10 +44,22 @@ interface IStartProStore {
   setGraphDataCache: (key: string, data: any) => void;
   getGraphDataCache: (key: string) => any;
   model: Model;
-  setBulkProjects: (projects: { [projectName: string]: IProjectDetails }) => void;
+  setBulkProjects: (projects: { [projectId: string]: IProjectDetails }) => void;
   setNewProject: (key: string, value: string) => void;
   setBlockUI: (value: IBlockUIProps) => void;
-  deleteProject: (projectName: string) => void;
+  deleteProject: (projectId: string) => void;
+  globalSheetSelection: {
+    open: boolean;
+    sheetNames: string[];
+    onConfirm: (sheetName: string) => void;
+    onCancel: () => void;
+  };
+  setGlobalSheetSelection: (config: {
+    open: boolean;
+    sheetNames: string[];
+    onConfirm: (sheetName: string) => void;
+    onCancel: () => void;
+  }) => void;
 }
 
 export const useStartProStore = create<IStartProStore>((set, get) => ({
@@ -54,6 +68,15 @@ export const useStartProStore = create<IStartProStore>((set, get) => ({
   blockUI: { value: false, msg: "" },
   selectedGraphRun: { id: 0, title: '', subTitle: undefined },
   graphDataCache: {},
+  globalSheetSelection: {
+    open: false,
+    sheetNames: [],
+    onConfirm: () => { },
+    onCancel: () => { },
+  },
+  setGlobalSheetSelection(config) {
+    set({ globalSheetSelection: config });
+  },
   setRenderLatestRun(x) {
     set(() => {
       return { renderLatestRun: x }
@@ -89,10 +112,10 @@ export const useStartProStore = create<IStartProStore>((set, get) => ({
       return { newProject: { ...newPro, [key]: value } };
     });
   },
-  deleteProject(projectName): void {
+  deleteProject(projectId): void {
     set((state) => {
       const updatedProjects = { ...state.projects };
-      delete updatedProjects[projectName];
+      delete updatedProjects[projectId];
       return { projects: updatedProjects };
     });
   },

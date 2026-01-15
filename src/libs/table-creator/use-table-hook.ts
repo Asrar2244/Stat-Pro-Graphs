@@ -120,19 +120,31 @@ export const useTableFetch = ({
       setLoading(false);
       return;
     }
-    const { query, viewNew, checkColumnsExistsQuery } = await statements;
-    if (query !== '') {
+    const { query: rawQuery, columns: rawColumns, viewNew, checkColumnsExistsQuery } = await statements;
+    if (rawQuery !== '') {
       const db = new Database(dbName);
       const existedColumns = checkColumnsExistsQuery ? await db.selectQuery(checkColumnsExistsQuery) : [];
       if (existedColumns.length > 0) {
-        const result = await db.selectQuery(
-          `${query} ${totalRecords > 0 ? `LIMIT ${startIndex},${stopIndex}` : ''}`,
-        );
-        if (!rawData) {
-          const templateView = await tableWorker.mergingData(viewNew ?? view, result, recordType);
-          setTemplateView(templateView);
+        // Filter columns to only those that actually exist in the database table
+        const existedColumnNames = existedColumns.map((c: any) => c.name);
+        const filteredColumns = rawColumns.filter((col: string) => {
+          const unquoted = col.replace(/"/g, '');
+          return existedColumnNames.includes(unquoted);
+        });
+
+        if (filteredColumns.length > 0) {
+          const filteredQuery = `SELECT ${filteredColumns.join(',')} FROM ${tableName} WHERE ${filteredColumns.join(' IS NOT NULL OR ')} IS NOT NULL`;
+          const result = await db.selectQuery(
+            `${filteredQuery} ${totalRecords > 0 ? `LIMIT ${startIndex},${stopIndex}` : ''}`,
+          );
+          if (!rawData) {
+            const templateView = await tableWorker.mergingData(viewNew ?? view, result, recordType);
+            setTemplateView(templateView);
+          } else {
+            setTemplateView(result);
+          }
         } else {
-          setTemplateView(result);
+          setTemplateView([]);
         }
       }
       else {

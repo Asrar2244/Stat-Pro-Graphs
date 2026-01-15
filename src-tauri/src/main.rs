@@ -81,7 +81,8 @@ fn main() {
             tauri_json_file::get_project_size,
             tauri_json_file::get_project_size_breakdown,
             excel_csv_file::save_excel_to_file,
-            excel_csv_file::save_csv_to_file
+            excel_csv_file::save_csv_to_file,
+            excel_csv_file::save_csv_chunk_to_file
         ])
         .setup({
             // Clone reference for the setup closure
@@ -96,14 +97,13 @@ fn main() {
                         .to_path_buf();
 
                     #[cfg(target_os = "windows")]
-                    path.push("backend/windows/main.exe");
+                    path.push("backend/windows/statprobackend.exe");
 
                     #[cfg(target_os = "macos")]
-                    path.push("backend/macos/main");
+                    path.push("backend/macos/statprobackend");
 
                     #[cfg(target_os = "linux")]
-                    path.push("backend/linux/main");
-
+                    path.push("backend/linux/statprobackend");
                     path
                 };
                 println!("Attempting to launch backend at: {:?}", exe_path);
@@ -121,20 +121,51 @@ fn main() {
                 // Store the child process in the shared state
                 *child_process.lock().unwrap() = Some(child);
 
-                // Window settings - show the main window and close splash screen
+                // Wait for backend to be ready before showing main window
                 let main_window = _app.get_webview_window("main").unwrap();
+                let splashscreen = _app.get_webview_window("splashscreen");
                 
-                // Close splash screen first
-                if let Some(splashscreen) = _app.get_webview_window("splashscreen") {
-                    splashscreen.close().unwrap();
-                }
-                
-                #[cfg(not(target_os = "macos"))]
-                main_window.set_decorations(false).unwrap();
-                main_window.maximize().unwrap();
-                main_window.show().unwrap();
-                #[cfg(target_os = "macos")]
-                main_window.set_fullscreen(true).unwrap();
+                // Spawn a task to wait for backend readiness
+                tauri::async_runtime::spawn(async move {
+                    // Wait for backend to be ready (max 30 seconds)
+                    let max_attempts = 60; // 60 attempts * 500ms = 30 seconds
+                    let mut attempts = 0;
+                    let mut backend_ready = false;
+                    
+                    while attempts < max_attempts {
+                        // Try to connect to backend root - accept ANY response as success
+                        // We just want to know if the server is listening on the port
+                        match reqwest::get("http://127.0.0.1:5000/").await {
+                            Ok(_) => {
+                                backend_ready = true;
+                                println!("Backend is ready (responding to requests)!");
+                                break;
+                            }
+                            Err(e) => {
+                                // If connection refused, backend is not ready
+                                println!("Waiting for backend: {}", e);
+                                tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
+                                attempts += 1;
+                            }
+                        }
+                    }
+                    
+                    if !backend_ready {
+                        println!("Warning: Backend did not respond after 30 seconds, showing app anyway");
+                    }
+                    
+                    // Close splash screen and show main window
+                    if let Some(splash) = splashscreen {
+                        let _ = splash.close();
+                    }
+                    
+                    #[cfg(not(target_os = "macos"))]
+                    let _ = main_window.set_decorations(false);
+                    let _ = main_window.maximize();
+                    let _ = main_window.show();
+                    #[cfg(target_os = "macos")]
+                    let _ = main_window.set_fullscreen(true);
+                });
 
                 Ok(())
             }
@@ -152,7 +183,7 @@ fn main() {
 
                     #[cfg(target_os = "windows")]
                     let _ = Command::new("taskkill")
-                        .args(&["/IM", "main.exe", "/F"])
+                        .args(&["/IM", "statprobackend.exe", "/F"])
                         .spawn();
 
                     #[cfg(target_os = "macos")]

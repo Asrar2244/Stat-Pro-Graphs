@@ -1,20 +1,23 @@
-import { makeStyles, tokens } from '@fluentui/react-components';
+import { makeStyles, tokens, shorthands } from '@fluentui/react-components';
 export const useOpenDevToolsLayout = makeStyles({
   card: {
     margin: 'auto',
-    width: '400px',
-    maxWidth: '100%',
+    width: '90%',
+    minWidth: '450px',
+    maxWidth: '800px',
   },
   details: {
     display: 'flex!important',
     flexDirection: 'column',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-
     gap: tokens.spacingVerticalXS,
   },
   description: {
     width: '100%',
+    maxWidth: '100%',
+    marginBottom: tokens.spacingVerticalM,
+    boxSizing: 'border-box',
   },
   license: {
     display: 'flex',
@@ -40,7 +43,6 @@ export const useOpenDevToolsLayout = makeStyles({
     width: '60%',
     gap: tokens.spacingVerticalXS,
   },
-
   activeButton: {
     fontFamily: 'monospace',
     textTransform: 'uppercase',
@@ -53,15 +55,25 @@ export const useOpenDevToolsLayout = makeStyles({
     gap: tokens.spacingVerticalXS,
   },
   textArea: {
-    width: '98%',
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0, // Allows textarea to shrink properly
     textTransform: 'unset',
     backgroundColor: tokens.colorNeutralBackground1,
     color: tokens.colorNeutralBackgroundInverted,
     outline: 'none',
-    border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
-    borderBottom: `${tokens.strokeWidthThick} solid ${tokens.colorNeutralStroke1}`,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalS),
+    fontFamily: 'monospace',
+    fontSize: tokens.fontSizeBase200,
+    resize: 'vertical',
+    boxSizing: 'border-box',
+    wordWrap: 'break-word',
+    overflowWrap: 'break-word',
+    flex: '1 1 auto',
     ':focus': {
-      borderBottom: `${tokens.strokeWidthThick} solid ${tokens.colorBrandBackground}`,
+      ...shorthands.border(tokens.strokeWidthThick, 'solid', tokens.colorBrandBackground),
     },
   },
   informationList: {
@@ -72,7 +84,7 @@ export const useOpenDevToolsLayout = makeStyles({
     alignItems: 'center',
   },
   activeBtn: {
-    width: '20%',
+    minWidth: '100px',
   },
   ulInfo: {
     display: 'flex',
@@ -80,5 +92,125 @@ export const useOpenDevToolsLayout = makeStyles({
     listStyle: 'none',
     padding: 0,
     margin: 0,
+    gap: tokens.spacingHorizontalXS,
+  },
+  // New styles for two-section layout
+  tokenSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    maxWidth: '100%',
+    gap: tokens.spacingVerticalS,
+    marginBottom: tokens.spacingVerticalL,
+    ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    backgroundColor: tokens.colorNeutralBackground2,
+    boxSizing: 'border-box',
+    flex: '1 1 auto',
+    minWidth: 0, // Allows flexbox to shrink below content size
+    '@media (max-width: 600px)': {
+      ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalS),
+    },
+  },
+  activationSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    maxWidth: '100%',
+    gap: tokens.spacingVerticalS,
+    marginBottom: tokens.spacingVerticalM,
+    ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    backgroundColor: tokens.colorNeutralBackground2,
+    boxSizing: 'border-box',
+    flex: '1 1 auto',
+    minWidth: 0, // Allows flexbox to shrink below content size
+    '@media (max-width: 600px)': {
+      ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalS),
+    },
+  },
+  sectionTitle: {
+    fontSize: tokens.fontSizeBase300,
+    fontWeight: tokens.fontWeightSemibold,
+    marginBottom: tokens.spacingVerticalXS,
+  },
+  tokenArea: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    maxWidth: '100%',
+    gap: tokens.spacingVerticalS,
+    boxSizing: 'border-box',
+    flex: '1 1 auto',
+    minWidth: 0,
+  },
+  tokenButtonContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    minHeight: '100px',
+  },
+  tokenDisplayArea: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    maxWidth: '100%',
+    gap: tokens.spacingVerticalS,
+    boxSizing: 'border-box',
+    flex: '1 1 auto',
+    minWidth: 0,
+  },
+  tokenActions: {
+    display: 'flex',
+    flexDirection: 'row',
+    width: '100%',
+    maxWidth: '100%',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    flexWrap: 'wrap',
+    boxSizing: 'border-box',
+    '@media (max-width: 600px)': {
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      gap: tokens.spacingVerticalS,
+    },
+  },
+  activationArea: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    maxWidth: '100%',
+    gap: tokens.spacingVerticalS,
+    boxSizing: 'border-box',
+    flex: '1 1 auto',
+    minWidth: 0,
+  },
+  activationActions: {
+    display: 'flex',
+    flexDirection: 'row',
+    width: '100%',
+    maxWidth: '100%',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    flexWrap: 'wrap',
+    boxSizing: 'border-box',
+    '@media (max-width: 600px)': {
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      gap: tokens.spacingVerticalS,
+    },
+  },
+  successMessage: {
+    color: tokens.colorPaletteGreenForeground1,
+    fontSize: tokens.fontSizeBase200,
+  },
+  reportIssue: {
+    marginTop: tokens.spacingVerticalM,
+    ...shorthands.padding(tokens.spacingVerticalS, 0, 0, 0),
   },
 });

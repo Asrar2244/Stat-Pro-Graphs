@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import { Button, Input, Label, Checkbox } from '@fluentui/react-components';
 import { useSampleSizeStyles } from './styles-hook/use-sample-size-styles';
 import { useSampleSizeEnhanced } from './use-sample-size-enhanced';

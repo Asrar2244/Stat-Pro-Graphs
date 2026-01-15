@@ -24,6 +24,7 @@ import { applyMesh3DProperties } from '../mesh3DProperties';
 import { transformArrayForScale } from '../axisTransforms';
 import { is3DMeshTrace } from '../common/plotlyCommon';
 import { plotWithCategory } from '../categoryScatterPlot';
+import { optimizeTraceForWebGL } from '../webglOptimization';
 
 export interface OrchestrateTracesConfig {
   graphConfig: any;
@@ -69,13 +70,11 @@ export const orchestrateTraceGeneration = async (
 
   // Get plot properties for live customization
   const plotProperties = getPlotProperties(liveProps, graphConfig);
-  console.log('🔍 Trace Orchestrator - Plot properties:', plotProperties);
-  console.log('🔍 Trace Orchestrator - Graph config:', graphConfig);
 
   // Store legend labels in graph config
   if (legendLabels.length > 0) {
     graphConfig.legendLabels = legendLabels;
-    
+
     // Save legend labels back to the database
     try {
       const { updateGraphRunConfig } = await import('@backend/graphs');
@@ -221,20 +220,17 @@ export const orchestrateTraceGeneration = async (
         // TODO: Fix the applyErrorBarProperties function to properly preserve all cap properties
         if (false && (finalTrace.error_y || finalTrace.error_x) && plotProperties.errorBar) {
           finalTrace = applyErrorBarProperties(finalTrace, plotProperties.errorBar);
-          
-          } else {
-          }
+
+        } else {
+        }
 
         // Apply 3D mesh properties if trace is a 3D mesh
         if (isCurrentTrace3D && plotProperties.mesh3d) {
-          console.log('🔍 Trace Orchestrator - Applying 3D mesh properties:', plotProperties.mesh3d);
-          console.log('🔍 Trace Orchestrator - Original trace:', finalTrace);
           finalTrace = applyMesh3DProperties(finalTrace, plotProperties.mesh3d);
-          console.log('🔍 Trace Orchestrator - Updated trace:', finalTrace);
         }
 
         traces.push(finalTrace);
-        } catch (error) {
+      } catch (error) {
         const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
         const fallbackTrace = {
           x: tx || xv,
@@ -250,7 +246,7 @@ export const orchestrateTraceGeneration = async (
       // Add regression traces if subType includes "regression"
       const subType = graphConfig?.subType || '';
       const isRegressionSubType = subType.toLowerCase().includes('regression');
-      
+
       if (isRegressionSubType || graphConfig?.showRegression) {
         try {
           const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
@@ -258,7 +254,7 @@ export const orchestrateTraceGeneration = async (
           // Get user's confidence interval preferences from plot properties
           const showCI = plotProperties.regression?.showConfidenceInterval ?? true;
           const ciOpacity = plotProperties.regression?.confidenceIntervalOpacity ?? 0.2;
-          
+
           const regressionTraces = createRegressionTracesIfNeeded(
             tx,
             ty,
@@ -272,15 +268,15 @@ export const orchestrateTraceGeneration = async (
           if (regressionTraces && regressionTraces.length > 0) {
             const finalRegressionTraces = plotProperties.regression
               ? regressionTraces.map(trace =>
-                  applyRegressionProperties(trace, plotProperties.regression!)
-                )
+                applyRegressionProperties(trace, plotProperties.regression!)
+              )
               : regressionTraces;
 
             traces.push(...finalRegressionTraces);
           } else {
-            }
-        } catch (error) {
           }
+        } catch (error) {
+        }
       }
 
       // Add dotted lines for dot plots
@@ -289,14 +285,14 @@ export const orchestrateTraceGeneration = async (
           optimizedData.originalLength > 10000
             ? []
             : createDotPlotDottedLines(
-                optimizedData.xv,
-                optimizedData.yv,
-                color,
-                graphConfig?.subType || '',
-                processedSeries.length > 1
-                  ? undefined
-                  : plotProperties.errorBar?.errorBarColor
-              );
+              optimizedData.xv,
+              optimizedData.yv,
+              color,
+              graphConfig?.subType || '',
+              processedSeries.length > 1
+                ? undefined
+                : plotProperties.errorBar?.errorBarColor
+            );
         traces.push(...dottedLines);
       } catch (error) {
         // Silently handle error

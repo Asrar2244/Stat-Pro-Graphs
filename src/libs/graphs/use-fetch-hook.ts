@@ -17,7 +17,7 @@ interface ITableFetch {
 export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch): IDataResult => {
   const [loading, setLoading] = useState<boolean>(true);
   const [totalRecords, setTotalRecords] = useState<number>(0);
-  
+
   const fallbackPlotFromInput = async (dbNameLocal: string, outputTable: string) => {
     try {
       const db = new Database(dbNameLocal);
@@ -44,7 +44,7 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
       try {
         relayout(plotly.current, layout);
         addTraces(plotly.current, [{ ...baseTrace, x: [], y: [] }]);
-      } catch {}
+      } catch { }
 
       // Load first page from input table
       const inputRows = await db.selectQuery(`SELECT "${indepName}", "${depName}" FROM input LIMIT 0, ${DEFAULT_GRAPH_PAGE_SIZE}`);
@@ -63,7 +63,7 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
     }
     return false;
   };
-  
+
   const waitForGraph = async (maxRetries = 20, intervalMs = 100): Promise<boolean> => {
     let retries = 0;
     while (retries < maxRetries) {
@@ -73,6 +73,7 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
     }
     return !!plotly.current;
   };
+
   const statements = useMemo(async () => {
     setLoading(true);
     if (!dbName || !tableName) {
@@ -80,15 +81,40 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
       setTotalRecords(0);
       return { query: '', dynamicQuery: '', newTraces: {} } as any;
     }
+
+    // Fallback: If graph.traces is empty, try to use current plotly data
+    let tracesToUse = graph.traces;
+    if ((!tracesToUse || Object.keys(tracesToUse).length === 0) && plotly?.current?.data) {
+      // Convert plotly data array to compatible traces object
+      tracesToUse = (plotly.current.data as any[]).reduce((acc, trace, idx) => {
+        acc[trace.name || `trace_${idx}`] = trace;
+        return acc;
+      }, {} as any);
+    }
+
+    if (!tracesToUse || Object.keys(tracesToUse).length === 0) {
+      // No traces defined yet - cannot generate query
+      setLoading(false);
+      return { query: '', dynamicQuery: '', newTraces: {} } as any;
+    }
+
     const { initialQuery, dynamic } = await graphWorker.generateQueryForColumns(
-      graph.traces,
+      tracesToUse,
       tableName,
     );
+
+    // Sanity check for malformed queries (e.g. empty column list)
+    if (initialQuery.match(/SELECT\s+FROM/i) || initialQuery.match(/SELECT\s*,/i)) {
+      console.warn('⚠️ Generated invalid query (likely no columns):', initialQuery);
+      setLoading(false);
+      return { query: '' } as any;
+    }
+
     const db = new Database(dbName);
     const recordColumns = await db.selectQuery(initialQuery);
     console.log('🔍 Graph data fetch - Initial query:', initialQuery);
     console.log('🔍 Graph data fetch - Record columns:', recordColumns);
-    
+
     if (recordColumns.length === 0) {
       console.log('⚠️ No data found in output table, trying fallback to input table');
       // Try plotting directly from input as a fallback for first graph
@@ -103,12 +129,20 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
     }
     const { query, pagingQuery, newTraces, dynamicQuery } =
       await graphWorker.generateColumnsToFetch(
-        graph,
+        { ...graph, traces: tracesToUse },
         recordColumns,
         EXCEL,
         tableName,
         dynamic?.columns,
       );
+
+    // Final sanity check on main query
+    if (query && (query.match(/SELECT\s+FROM/i) || query.match(/SELECT\s*,/i))) {
+      console.warn('⚠️ Generated invalid computed query:', query);
+      setLoading(false);
+      return { query: '' } as any;
+    }
+
     // Ensure the Plotly element is ready before adding initial traces
     await waitForGraph();
     addInitialTrace(newTraces);
@@ -151,7 +185,8 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
       dynamicQuery,
       newTraces,
     };
-  }, []);
+  }, [dbName, tableName, graph]); // Added dependencies to ensure updates trigger re-fetch
+
 
   const addInitialTrace = (newTraces: any) => {
     console.log('🔍 Adding initial traces:', newTraces);
@@ -160,7 +195,7 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
       console.warn('⚠️ Plotly element not ready, skipping initial trace');
       return;
     }
-    
+
     const traceArray: any = [];
     const layout: any = { ...plotly.current?.layout };
     Object.keys(newTraces).forEach((key: string, index: number) => {
@@ -184,7 +219,7 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
 
       traceArray.push(newTraces[key]);
     });
-    
+
     try {
       relayout(plotly.current, layout);
       addTraces(

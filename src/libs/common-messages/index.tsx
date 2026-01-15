@@ -13,6 +13,55 @@ export const CommonMessages: FC = () => {
     useShallow((state) => ({ licenseStatus: state.licenseStatus })),
   );
 
+    // Helper function to get license display text
+    const getLicenseDisplayText = (): string => {
+      if (!licenseStatus.state) {
+        return t('lookingProductLicense', { ns: 'common' });
+      }
+  
+      // Use displayText if available (computed from license check)
+      if (licenseStatus.displayText) {
+        if (licenseStatus.displayText === 'lifetime') {
+          return t('lifetime', { ns: 'common' });
+        }
+        if (licenseStatus.displayText === 'expired') {
+          return t('expired', { ns: 'common' });
+        }
+        if (licenseStatus.displayText === 'noValidLicense') {
+          return t('noValidLicense', { ns: 'common' });
+        }
+        if (licenseStatus.displayText === 'lookingProductLicense') {
+          return t('lookingProductLicense', { ns: 'common' });
+        }
+        // Handle days remaining
+        if (licenseStatus.displayText === 'daysRemaining') {
+          const days = licenseStatus.daysRemaining ?? 0;
+          return t('daysRemaining', { ns: 'common', days });
+        }
+      }
+  
+      // Fallback to state-based display
+      if (licenseStatus.state === 'lifetime') {
+        return t('lifetime', { ns: 'common' });
+      }
+      if (licenseStatus.state === 'expired') {
+        return t('expired', { ns: 'common' });
+      }
+      if (licenseStatus.state === 'lookingProductLicense') {
+        return t('lookingProductLicense', { ns: 'common' });
+      }
+      if (licenseStatus.state === '30Days') {
+        // Show actual days remaining if available
+        if (licenseStatus.daysRemaining !== null && licenseStatus.daysRemaining !== undefined) {
+          return t('daysRemaining', { ns: 'common', days: licenseStatus.daysRemaining });
+        }
+        // Fallback to default message
+        return t('30Days', { ns: 'common' });
+      }
+  
+      return t('noValidLicense', { ns: 'common' });
+    };
+
   return (
     <div className={classes.loaderBox}>
       {common?.spinner && <Spinner size="extra-tiny" />}
@@ -26,7 +75,7 @@ export const CommonMessages: FC = () => {
         className={classes.licenseStatus}
         style={{ color: licenseColors[licenseStatus.state as keyof typeof licenseColors] }}
       >
-        ({t(licenseStatus.state as string)})
+       ({getLicenseDisplayText()})
       </Text>
     </div>
   );

@@ -38,13 +38,13 @@ export const insertGraphRun = async (workspacePath: string, run: GraphRunInput) 
   const sql = `INSERT INTO ${GRAPHS}(name, createdAt, config, tabName, graphType, modifiedDateTime, properties) VALUES(?, ?, ?, ?, ?, ?, ?);`;
   const params = [run.name, run.createdAt, JSON.stringify(run.config), run.tabName, run.graphType, new Date().toISOString(), JSON.stringify(run.properties || {})];
   await db.executeQueryWithParams(sql, params as any);
-  
+
   // Notify workspace that project size should be updated
-  const event = new CustomEvent('statpro:projectUpdated', { 
-    detail: { projectName: run.tabName, workspacePath } 
+  const event = new CustomEvent('statpro:projectUpdated', {
+    detail: { projectName: run.tabName, workspacePath }
   });
   window.dispatchEvent(event);
-  
+
   // Automatically set flag to display the latest graph
   try {
     const { useStartProStore } = await import('@store/main-store');

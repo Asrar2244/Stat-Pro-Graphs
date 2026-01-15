@@ -198,11 +198,11 @@ export const useTools = () => {
   const [showGraphProperties, setShowGraphProperties] = useState(false);
   const [totalRuns, setTotalRuns] = useState(0);
   const [canvasMode, setCanvasMode] = useState<'light' | 'dark'>('light');
-  
+
   // Graph properties state
   const [graphProperties, setGraphProperties] = useState<GraphProperties>({
     global: {
-      backgroundColor: '#ffffff',
+      backgroundColor: '', // Was #ffffff - changed to empty to allow theme fallback
       plotColor: '',
       seriesColor: '',
       backgroundTransparencyPct: 0,
@@ -254,14 +254,14 @@ export const useTools = () => {
       gridYMinor: false,
       gridLineStyle: 'solid',
       gridThicknessInch: 0.01,
-      gridColor: '#e5e5e5', // 2D grid color (light gray)
+      gridColor: '', // Was #e5e5e5 - changed to empty to allow theme fallback
       gridGapColor: '#ffffff',
       gridTransparencyPct: 0,
       gridLayering: 'plotFront',
 
       // Axis Lines defaults
       yAxisSide: 'left',
-      axisLineColor: '#444444',
+      axisLineColor: '', // Was #444444 - changed to empty to allow theme fallback
       axisLineThicknessInch: 0.0104, // ~1px
       axisLineTransparencyPct: 0,
 
@@ -291,7 +291,7 @@ export const useTools = () => {
       // Tick Marks defaults - Major
       majorTickLength: 0.1, // inches
       majorTickThickness: 0.01, // inches
-      majorTickColor: '#444444',
+      majorTickColor: '', // Was #444444 - changed to empty to allow theme fallback
       majorTickTransparency: 0, // 0%
       majorTickDirection: 'outward',
       majorTickInterval: 'automatic',
@@ -300,7 +300,7 @@ export const useTools = () => {
       // Tick Marks defaults - Minor
       minorTickLength: 0.05, // inches
       minorTickThickness: 0.005, // inches
-      minorTickColor: '#888888',
+      minorTickColor: '', // Was #888888 - changed to empty to allow theme fallback
       minorTickTransparency: 0, // 0%
       minorTickDirection: 'outward',
       minorTickInterval: 5, // 5 per major tick interval
@@ -328,14 +328,14 @@ export const useTools = () => {
         pointBorderWidth: 1,
         pointColor: '',
       },
-       errorBar: {
-         errorBarThickness: 2,
-         errorBarWidth: 0.5,
-         errorBarOpacity: 0.7,
-         errorBarCapSize: 10,  // Increased from 3 to 10 for better visibility
-         showErrorBars: true,
-         errorBarColor: '#1f77b4',
-       },
+      errorBar: {
+        errorBarThickness: 2,
+        errorBarWidth: 0.5,
+        errorBarOpacity: 0.7,
+        errorBarCapSize: 10,  // Increased from 3 to 10 for better visibility
+        showErrorBars: true,
+        errorBarColor: '#1f77b4',
+      },
       pointPlot: {
         pointSize: 12,
         pointOpacity: 0.85,
@@ -460,14 +460,14 @@ export const useTools = () => {
     if (!subType) {
       return null;
     }
-    
+
     const subTypeLower = subType.toLowerCase();
-    
+
     // Check for 3D mesh first - it's completely different from 2D plots
     if (subTypeLower.includes('3d mesh') || subTypeLower === '3d mesh plot') {
       return null; // 3D mesh has no plot-specific properties in the 2D property system
     }
-    
+
     // Priority order: regression first, then others
     if (subTypeLower.includes('regression') || subTypeLower.includes('fit')) {
       return 'regression';
@@ -484,7 +484,7 @@ export const useTools = () => {
     if (subTypeLower.includes('scatter') || subTypeLower.includes('xy')) {
       return 'scatter';
     }
-    
+
     // Default to scatter for most plot types
     return 'scatter';
   };
@@ -501,17 +501,17 @@ export const useTools = () => {
     if (!subType) {
       return { hasScatter: false, hasRegression: false, hasErrorBars: false, hasPointPlot: false, hasDotPlot: false, is3DMesh: false };
     }
-    
+
     const subTypeLower = subType.toLowerCase();
-    
+
     // Check for any 3D graph types (mesh, surface, scatter3d, bar3d, line3d, contour3d, volume, etc.)
-    const is3DMesh = subTypeLower.includes('3d') || 
-                     subTypeLower.includes('mesh') || 
-                     subTypeLower.includes('surface') ||
-                     subTypeLower.includes('scatter3d') ||
-                     subTypeLower.includes('volume') ||
-                     subTypeLower.includes('contour3d');
-    
+    const is3DMesh = subTypeLower.includes('3d') ||
+      subTypeLower.includes('mesh') ||
+      subTypeLower.includes('surface') ||
+      subTypeLower.includes('scatter3d') ||
+      subTypeLower.includes('volume') ||
+      subTypeLower.includes('contour3d');
+
     // If it's a 3D graph, don't show any 2D plot features
     if (is3DMesh) {
       return {
@@ -523,7 +523,7 @@ export const useTools = () => {
         is3DMesh: true
       };
     }
-    
+
     return {
       hasScatter: subTypeLower.includes('scatter') || subTypeLower.includes('xy'),
       hasRegression: subTypeLower.includes('regression') || subTypeLower.includes('fit'),
