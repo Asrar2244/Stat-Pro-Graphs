@@ -90,6 +90,17 @@ const LineScatterPlotModal = lazy(() =>
   ),
 );
 
+// Area Plot Modal
+const AreaPlotModal = lazy(() =>
+  import('../../features/graphs/2d/area').then(
+    (m) => ({ default: m.AreaPlotModal }),
+    (error) => {
+      console.error('Failed to load AreaPlotModal:', error);
+      throw error;
+    }
+  ),
+);
+
 // 3D Mesh Plot Modal
 const MeshPlotModal = lazy(() =>
   import('../../features/graphs/3d/mesh').then(
@@ -317,6 +328,58 @@ const MenuSelector: FC<{
     return <LineScatterPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
+  // Area Plot wrapper with real data integration
+  const AreaWrapper: FC<IModal> = (m) => {
+    const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+    const projectNames = Object.keys(projects);
+    const { openNewTabAction } = useMenuCodeExecutor();
+    const { setRenderLatestRun } = useStartProStore();
+    const { t } = useTranslation('common');
+
+    // For now, use empty datasets array
+    const datasets: string[] = [];
+
+    const onCreateGraph = async (config: any) => {
+      try {
+        const workspacePath = projects[config.selectedProject]?.workspacePath;
+        // Persist a run immediately so history shows up
+        const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
+        await insertGraphRun(workspacePath, {
+          name: config?.subType || 'Area Plot',
+          createdAt: new Date().toISOString(),
+          config: { graphConfig: config, workspacePath },
+          tabName: config?.selectedProject || '',
+          graphType: config?.graphType || 'Area Plot',
+          properties: {},
+        });
+
+        // Set flag to auto-select the latest run when Graphs tab opens
+        setRenderLatestRun(true);
+
+      } catch (error) {
+        console.error('Error creating Area Plot:', error);
+      }
+
+      // Open the Graphs output screen under Explorer for the selected project
+      openNewTabAction({
+        id: GRAPHS, // Use GRAPHS constant
+        isEmptyDataView: false,
+        extraConfig: {
+          tabName: projects[config.selectedProject]?.workspacePath, // Pass workspacePath as tabName
+          name: config.selectedProject, // Pass project name
+          type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }), // Pass type
+          bareType: GRAPHS, // Pass bareType
+          id: projects[config.selectedProject]?.id, // Pass project ID
+          lastModified: new Date().toISOString(), // Current timestamp
+          isActive: 1, // Set as active
+          workspacePath: projects[config.selectedProject]?.workspacePath, // Pass workspacePath
+        }
+      });
+    };
+
+    return <AreaPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
+  };
+
   // 3D Mesh Plot wrapper with real data integration
   const MeshWrapper: FC<IModal> = (m) => {
     const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
@@ -450,6 +513,8 @@ const MenuSelector: FC<{
         return <LineWrapper {...modal} />;
       case 'open-line-scatter-plot-modal':
         return <LineScatterWrapper {...modal} />;
+      case 'open-area-plot-modal':
+        return <AreaWrapper {...modal} />;
       case '3d-mesh':
         return <MeshWrapper {...modal} />;
       case exporters.tests:

@@ -14,23 +14,23 @@ export const processScatterData = (config: DataProcessingConfig): ProcessedSerie
 
   // Normalize data format
   let normalizedFormat = graphConfig?.dataFormat;
-  
+
   // Special handling for bidirectional asymmetric error bars - use XY Pairs format
-  const isBidirectionalAsymmetricErrorBar = graphConfig?.subType?.toLowerCase().includes('bidirectional') && 
-                                           graphConfig?.subType?.toLowerCase().includes('asymmetric') &&
-                                           graphConfig?.subType?.toLowerCase().includes('error bar');
-  
+  const isBidirectionalAsymmetricErrorBar = graphConfig?.subType?.toLowerCase().includes('bidirectional') &&
+    graphConfig?.subType?.toLowerCase().includes('asymmetric') &&
+    graphConfig?.subType?.toLowerCase().includes('error bar');
+
   if (isBidirectionalAsymmetricErrorBar) {
     normalizedFormat = 'XY Pairs';
-    }
-  
+  }
+
   // If Single X with both X and Y present → behave as X Many Y
   if (normalizedFormat === 'Single X' && xNames?.length > 0 && yNames?.length > 0) {
     normalizedFormat = 'X Many Y';
   } else if (normalizedFormat === 'Single Y' && xNames?.length > 0 && yNames?.length > 0) {
     normalizedFormat = 'Y Many X';
   }
-  
+
   // Respect whichever variables the user passed:
   // - If Single X but only Y provided → treat as Single Y (plot Y vs index)
   // - If Single Y but only X provided → treat as Single X (plot X vs index)
@@ -66,6 +66,7 @@ export const processScatterData = (config: DataProcessingConfig): ProcessedSerie
     case 'XY Pair':  // Handle singular form
       return processXYPairsData(config);
     case 'YX Pairs':
+    case 'YX Pair':  // Handle singular form
       return processYXPairsData(config);
     // Replicate formats
     case 'X Single Y Replicate':
@@ -107,7 +108,7 @@ const processSingleXData = (config: DataProcessingConfig): ProcessedSeries[] => 
     const xCol = xNames[0];
     const xv = rows.map((r: any) => Number(r[xCol]));
     const yv = rows.map((_, index) => index + 1); // Row indices as Y values
-    
+
     const label = `${xCol} (X) vs Row Index (Y)`;
     series.push({ xv, yv, label });
   }
@@ -126,7 +127,7 @@ const processSingleYData = (config: DataProcessingConfig): ProcessedSeries[] => 
     const yCol = yNames[0];
     const xv = rows.map((_, index) => index + 1); // Row indices as X values
     const yv = rows.map((r: any) => Number(r[yCol]));
-    
+
     const label = `Row Index (X) vs ${yCol} (Y)`;
     series.push({ xv, yv, label });
   }
@@ -146,7 +147,7 @@ const processXManyYData = (config: DataProcessingConfig): ProcessedSeries[] => {
   if (xNames?.length >= 1 && yNames?.length >= 1) {
     const xCol = xNames[0];
     const isPointPlot = graphConfig?.subType?.toLowerCase().includes('point plot');
-    
+
     if (isPointPlot) {
       // For point plots: X becomes index, each Y variable gets plotted at corresponding X position
       // Get unique X values and sort them
@@ -156,10 +157,10 @@ const processXManyYData = (config: DataProcessingConfig): ProcessedSeries[] => {
       yNames.forEach((yCol, yIndex) => {
         const xv: number[] = [];
         const yv: number[] = [];
-        
+
         // Use the X value at the same index as the Y variable
         const targetXValue = xValues[yIndex] || (yIndex + 1); // Y1 at X[0], Y2 at X[1], etc.
-        
+
         // Get ALL Y values for this Y column (don't filter by X)
         rows.forEach(row => {
           const yValue = parseValue(row[yCol]);
@@ -168,16 +169,16 @@ const processXManyYData = (config: DataProcessingConfig): ProcessedSeries[] => {
             yv.push(yValue);
           }
         });
-        
+
         const label = `${yCol} (Y) at X=${targetXValue}`;
-        series.push({ 
+        series.push({
           xv, // All points at the same X position
           yv, // All Y values for this Y variable
-          label, 
-          errorBarVariable: graphConfig?.errorBarVariable 
+          label,
+          errorBarVariable: graphConfig?.errorBarVariable
         });
-        
-        });
+
+      });
     } else {
       // Standard X Many Y processing for non-point plots
       const xv = rows.map((r: any) => Number(r[xCol]));
@@ -206,7 +207,7 @@ const processYManyXData = (config: DataProcessingConfig): ProcessedSeries[] => {
   if (xNames?.length >= 1 && yNames?.length >= 1) {
     const yCol = yNames[0];
     const isPointPlot = graphConfig?.subType?.toLowerCase().includes('point plot');
-    
+
     if (isPointPlot) {
       // For point plots: Y becomes index, each X variable gets plotted at corresponding Y position
       // Get unique Y values and sort them
@@ -216,10 +217,10 @@ const processYManyXData = (config: DataProcessingConfig): ProcessedSeries[] => {
       xNames.forEach((xCol, xIndex) => {
         const xv: number[] = [];
         const yv: number[] = [];
-        
+
         // Use the Y value at the same index as the X variable
         const targetYValue = yValues[xIndex] || (xIndex + 1); // X1 at Y[0], X2 at Y[1], etc.
-        
+
         // Get ALL X values for this X column (don't filter by Y)
         rows.forEach(row => {
           const xValue = parseValue(row[xCol]);
@@ -228,16 +229,16 @@ const processYManyXData = (config: DataProcessingConfig): ProcessedSeries[] => {
             yv.push(targetYValue); // Same Y value for all points
           }
         });
-        
+
         const label = `${xCol} (X) at Y=${targetYValue}`;
-        series.push({ 
+        series.push({
           xv, // All X values for this X variable
           yv, // All points at the same Y position
-          label, 
-          errorBarVariable: graphConfig?.errorBarVariable 
+          label,
+          errorBarVariable: graphConfig?.errorBarVariable
         });
-        
-        });
+
+      });
     } else {
       // Standard Y Many X processing for non-point plots
       const yv = rows.map((r: any) => Number(r[yCol]));
@@ -268,24 +269,24 @@ const processXYPairsData = (config: DataProcessingConfig): ProcessedSeries[] => 
       for (let i = 0; i < xNames.length; i++) {
         const xCol = xNames[i];
         const yCol = yNames[i];
-        
+
         const xv = rows.map((r: any) => Number(r[xCol]));
         const yv = rows.map((r: any) => Number(r[yCol]));
-        
+
         const label = `${yCol} (Y) vs ${xCol} (X)`;
         series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-        }
+      }
     } else {
       // Single XY pair - create one series
       const xCol = xNames[0];
       const yCol = yNames[0];
-      
+
       const xv = rows.map((r: any) => Number(r[xCol]));
       const yv = rows.map((r: any) => Number(r[yCol]));
-      
+
       const label = `${yCol} (Y) vs ${xCol} (X)`;
       series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-      }
+    }
   }
 
   return series;
@@ -304,31 +305,31 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
       const xCol = xNames[0];
       const yCol = yNames[0];
       const categoryCol = categoryNames[0];
-      
+
       // Group data by category
       const categoryData = groupByCategory(rows, categoryCol);
       const categories = Object.keys(categoryData);
-      
+
       // Create a series for each category
       categories.forEach((category, categoryIndex) => {
         const categoryRows = categoryData[category];
         const xv: number[] = [];
         const yv: number[] = [];
-        
+
         categoryRows.forEach(row => {
           const xVal = parseValue(row[xCol]);
           const yVal = parseValue(row[yCol]);
-          
+
           if (xVal !== null && yVal !== null) {
             xv.push(xVal);
             yv.push(yVal);
           }
         });
-        
+
         if (xv.length > 0) {
           const label = `${category} (${yCol} vs ${xCol})`;
           series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-          }
+        }
       });
     }
   } else if (normalizedFormat === 'X Category') {
@@ -337,11 +338,11 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
       const xCol = xNames[0];
       const categoryCol = categoryNames[0];
       const isPointPlot = graphConfig?.subType?.toLowerCase().includes('point plot');
-      
+
       // Group data by category
       const categoryData = groupByCategory(rows, categoryCol);
       const categories = Object.keys(categoryData);
-      
+
       if (isPointPlot) {
         // For point plots: Group X values by category and plot each category at different Y positions
         // Create a series for each category
@@ -349,25 +350,25 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
           const categoryRows = categoryData[category];
           const xv: number[] = [];
           const yv: number[] = [];
-          
+
           categoryRows.forEach(row => {
             const xVal = parseValue(row[xCol]);
-            
+
             if (xVal !== null) {
               xv.push(xVal);
               yv.push(categoryIndex); // Use category index as Y position
             }
           });
-          
+
           if (xv.length > 0) {
             const label = `${category} (${xCol})`;
-            series.push({ 
-              xv, 
-              yv, 
-              label, 
+            series.push({
+              xv,
+              yv,
+              label,
               errorBarVariable: graphConfig?.errorBarVariable
             });
-            }
+          }
         });
       } else {
         // Standard X Category processing for non-point plots
@@ -376,10 +377,10 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
           const categoryRows = categoryData[category];
           const xv: number[] = [];
           const yv: number[] = [];
-          
+
           categoryRows.forEach(row => {
             const xVal = parseValue(row[xCol]);
-            
+
             if (xVal !== null) {
               xv.push(xVal);
               // Use category index as Y position (with small jitter to avoid overlapping)
@@ -387,11 +388,11 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
               yv.push(categoryIndex + jitter);
             }
           });
-          
+
           if (xv.length > 0) {
             const label = `${category} (${xCol})`;
             series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-            }
+          }
         });
       }
     }
@@ -401,11 +402,11 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
       const yCol = yNames[0];
       const categoryCol = categoryNames[0];
       const isPointPlot = graphConfig?.subType?.toLowerCase().includes('point plot');
-      
+
       // Group data by category
       const categoryData = groupByCategory(rows, categoryCol);
       const categories = Object.keys(categoryData);
-      
+
       if (isPointPlot) {
         // For point plots: Group Y values by category and plot each category at different X positions
         // Create a series for each category
@@ -413,25 +414,25 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
           const categoryRows = categoryData[category];
           const xv: number[] = [];
           const yv: number[] = [];
-          
+
           categoryRows.forEach(row => {
             const yVal = parseValue(row[yCol]);
-            
+
             if (yVal !== null) {
               xv.push(categoryIndex); // Use category index as X position
               yv.push(yVal);
             }
           });
-          
+
           if (yv.length > 0) {
             const label = `${category} (${yCol})`;
-            series.push({ 
-              xv, 
-              yv, 
-              label, 
+            series.push({
+              xv,
+              yv,
+              label,
               errorBarVariable: graphConfig?.errorBarVariable
             });
-            }
+          }
         });
       } else {
         // Standard Y Category processing for non-point plots
@@ -440,10 +441,10 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
           const categoryRows = categoryData[category];
           const xv: number[] = [];
           const yv: number[] = [];
-          
+
           categoryRows.forEach(row => {
             const yVal = parseValue(row[yCol]);
-            
+
             if (yVal !== null) {
               // Use category index as X position (with small jitter to avoid overlapping)
               const jitter = (Math.random() - 0.5) * 0.2; // ±0.1 jitter
@@ -451,11 +452,11 @@ const processCategoryScatterData = (config: DataProcessingConfig, normalizedForm
               yv.push(yVal);
             }
           });
-          
+
           if (yv.length > 0) {
             const label = `${category} (${yCol})`;
             series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-            }
+          }
         });
       }
     }
@@ -475,16 +476,16 @@ const processManyXData = (config: DataProcessingConfig): ProcessedSeries[] => {
 
   if (xNames?.length >= 1) {
     const isPointPlot = graphConfig?.subType?.toLowerCase().includes('point plot');
-    
+
     if (isPointPlot) {
       // For point plots: Each X variable gets plotted at a specific Y position
       xNames.forEach((xCol, xIndex) => {
         const xv: number[] = [];
         const yv: number[] = [];
-        
+
         // Use the X variable index as the Y position
         const targetYValue = xIndex + 1; // X1 at Y=1, X2 at Y=2, etc.
-        
+
         // Get ALL X values for this X column (don't filter by anything)
         rows.forEach(row => {
           const xValue = parseValue(row[xCol]);
@@ -493,22 +494,22 @@ const processManyXData = (config: DataProcessingConfig): ProcessedSeries[] => {
             yv.push(targetYValue); // Same Y value for all points
           }
         });
-        
+
         const label = `${xCol} (X) at Y=${targetYValue}`;
-        series.push({ 
+        series.push({
           xv, // All X values for this X variable
           yv, // All points at the same Y position
-          label, 
-          errorBarVariable: graphConfig?.errorBarVariable 
+          label,
+          errorBarVariable: graphConfig?.errorBarVariable
         });
-        
-        });
+
+      });
     } else {
       // Standard Many X processing for non-point plots
       xNames.forEach((xCol, index) => {
         const xv = rows.map((r: any) => Number(r[xCol]));
         const yv = rows.map((r: any, i: number) => i + 1); // Use row index as Y values (starting from 1)
-        
+
         const label = `Row Index (Y) vs ${xCol} (X)`;
         series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
       });
@@ -529,16 +530,16 @@ const processManyYData = (config: DataProcessingConfig): ProcessedSeries[] => {
 
   if (yNames?.length >= 1) {
     const isPointPlot = graphConfig?.subType?.toLowerCase().includes('point plot');
-    
+
     if (isPointPlot) {
       // For point plots: Each Y variable gets plotted at a specific X position
       yNames.forEach((yCol, yIndex) => {
         const xv: number[] = [];
         const yv: number[] = [];
-        
+
         // Use the Y variable index as the X position
         const targetXValue = yIndex + 1; // Y1 at X=1, Y2 at X=2, etc.
-        
+
         // Get ALL Y values for this Y column (don't filter by anything)
         rows.forEach(row => {
           const yValue = parseValue(row[yCol]);
@@ -547,22 +548,22 @@ const processManyYData = (config: DataProcessingConfig): ProcessedSeries[] => {
             yv.push(yValue);
           }
         });
-        
+
         const label = `${yCol} (Y) at X=${targetXValue}`;
-        series.push({ 
+        series.push({
           xv, // All points at the same X position
           yv, // All Y values for this Y variable
-          label, 
-          errorBarVariable: graphConfig?.errorBarVariable 
+          label,
+          errorBarVariable: graphConfig?.errorBarVariable
         });
-        
-        });
+
+      });
     } else {
       // Standard Many Y processing for non-point plots
       yNames.forEach((yCol, index) => {
         const xv = rows.map((r: any, i: number) => i + 1); // Use row index as X values (starting from 1)
         const yv = rows.map((r: any) => Number(r[yCol]));
-        
+
         const label = `${yCol} (Y) vs Row Index (X)`;
         series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
       });
@@ -586,24 +587,24 @@ const processYXPairsData = (config: DataProcessingConfig): ProcessedSeries[] => 
       for (let i = 0; i < xNames.length; i++) {
         const xCol = xNames[i];
         const yCol = yNames[i];
-        
+
         const xv = rows.map((r: any) => Number(r[xCol]));
         const yv = rows.map((r: any) => Number(r[yCol]));
-        
+
         const label = `${yCol} (Y) vs ${xCol} (X)`;
         series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-        }
+      }
     } else {
       // Single YX pair - create one series
       const xCol = xNames[0];
       const yCol = yNames[0];
-      
+
       const xv = rows.map((r: any) => Number(r[xCol]));
       const yv = rows.map((r: any) => Number(r[yCol]));
-      
+
       const label = `${yCol} (Y) vs ${xCol} (X)`;
       series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
-      }
+    }
   }
 
   return series;
@@ -619,10 +620,10 @@ const processXSingleYReplicateData = (config: DataProcessingConfig): ProcessedSe
   if (xNames?.length >= 1 && yNames?.length >= 1) {
     const xCol = xNames[0];
     const yCol = yNames[0];
-    
+
     const xv = rows.map((r: any) => Number(r[xCol]));
     const yv = rows.map((r: any) => Number(r[yCol]));
-    
+
     const label = `${yCol} (Y) vs ${xCol} (X) - Replicates`;
     series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
   }
@@ -641,7 +642,7 @@ const processYReplicateData = (config: DataProcessingConfig): ProcessedSeries[] 
     const yCol = yNames[0];
     const xv = rows.map((r: any, i: number) => i + 1); // Use row index as X values
     const yv = rows.map((r: any) => Number(r[yCol]));
-    
+
     const label = `${yCol} (Y) vs Row Index (X) - Replicates`;
     series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
   }
@@ -683,7 +684,7 @@ const processManyYReplicatesData = (config: DataProcessingConfig): ProcessedSeri
     yNames.forEach((yCol, index) => {
       const xv = rows.map((r: any, i: number) => i + 1); // Use row index as X values
       const yv = rows.map((r: any) => Number(r[yCol]));
-      
+
       const label = `${yCol} (Y) vs Row Index (X) - Replicates`;
       series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
     });
@@ -726,7 +727,7 @@ const processManyXReplicatesData = (config: DataProcessingConfig): ProcessedSeri
     xNames.forEach((xCol, index) => {
       const xv = rows.map((r: any) => Number(r[xCol]));
       const yv = rows.map((r: any, i: number) => i + 1); // Use row index as Y values
-      
+
       const label = `Row Index (Y) vs ${xCol} (X) - Replicates`;
       series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
     });
@@ -746,7 +747,7 @@ const processXReplicatesData = (config: DataProcessingConfig): ProcessedSeries[]
     const xCol = xNames[0];
     const xv = rows.map((r: any) => Number(r[xCol]));
     const yv = rows.map((r: any, i: number) => i + 1); // Use row index as Y values
-    
+
     const label = `Row Index (Y) vs ${xCol} (X) - Replicates`;
     series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
   }
@@ -764,10 +765,10 @@ const processYSingleXReplicatesData = (config: DataProcessingConfig): ProcessedS
   if (xNames?.length >= 1 && yNames?.length >= 1) {
     const xCol = xNames[0];
     const yCol = yNames[0];
-    
+
     const xv = rows.map((r: any) => Number(r[xCol]));
     const yv = rows.map((r: any) => Number(r[yCol]));
-    
+
     const label = `${yCol} (Y) vs ${xCol} (X) - Replicates`;
     series.push({ xv, yv, label, errorBarVariable: graphConfig?.errorBarVariable });
   }
@@ -784,12 +785,12 @@ const processCategoryManyYData = (config: DataProcessingConfig): ProcessedSeries
 
   if (yNames?.length >= 1 && categoryNames?.length >= 1) {
     const categoryCol = categoryNames[0];
-    
+
     // Create a series for each Y variable grouped by category
     yNames.forEach((yCol, index) => {
       const xv = rows.map((r: any) => String(r[categoryCol]));
       const yv = rows.map((r: any) => Number(r[yCol]));
-      
+
       const label = `${yCol} (Y) vs ${categoryCol} (Category)`;
       series.push({ xv: xv.map((_, i) => i + 1), yv, label, errorBarVariable: graphConfig?.errorBarVariable });
     });
@@ -807,12 +808,12 @@ const processCategoryManyXData = (config: DataProcessingConfig): ProcessedSeries
 
   if (xNames?.length >= 1 && categoryNames?.length >= 1) {
     const categoryCol = categoryNames[0];
-    
+
     // Create a series for each X variable grouped by category
     xNames.forEach((xCol, index) => {
       const xv = rows.map((r: any) => Number(r[xCol]));
       const yv = rows.map((r: any) => String(r[categoryCol]));
-      
+
       const label = `${categoryCol} (Category) vs ${xCol} (X)`;
       series.push({ xv, yv: xv.map((_, i) => i + 1), label, errorBarVariable: graphConfig?.errorBarVariable });
     });
@@ -826,7 +827,7 @@ const processCategoryManyXData = (config: DataProcessingConfig): ProcessedSeries
  */
 const groupByCategory = (rows: any[], categoryCol: string): Record<string, any[]> => {
   const grouped: Record<string, any[]> = {};
-  
+
   rows.forEach(row => {
     const category = String(row[categoryCol] || 'Unknown');
     if (!grouped[category]) {
@@ -834,7 +835,7 @@ const groupByCategory = (rows: any[], categoryCol: string): Record<string, any[]
     }
     grouped[category].push(row);
   });
-  
+
   return grouped;
 };
 
@@ -845,7 +846,7 @@ const parseValue = (value: any): number | null => {
   if (value === null || value === undefined || value === '') {
     return null;
   }
-  
+
   const num = typeof value === 'number' ? value : parseFloat(value);
   return Number.isFinite(num) ? num : null;
 };

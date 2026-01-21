@@ -11,6 +11,7 @@ import { parseLinePlotSubType, getLinePlotMode, getLineShape } from './line/line
 import { create3DMeshTrace } from './3d-mesh/meshTraceGeneration';
 import { generateLineScatterTraces } from './line-scatter/lineScatterTraceGeneration';
 import { processLineScatterData } from './line-scatter/lineScatterDataProcessing';
+import { hexToRgba } from './common/plotlyCommon';
 // Force rebuild
 
 export interface TraceConfig {
@@ -736,6 +737,59 @@ export const createLineScatterTrace = (config: TraceConfig): any => {
 };
 
 /**
+ * Create area series trace
+ */
+export const createAreaTrace = (config: TraceConfig): any => {
+  const { xv, yv, label, color, subType } = config;
+
+  const lowerSubType = subType.toLowerCase();
+  const isVertical = lowerSubType.includes('vertical');
+
+  // Handle missing axis data (Single X or Single Y) by generating index sequence
+  let finalX = xv;
+  let finalY = yv;
+
+  const dataFormat = config.graphConfig?.dataFormat || '';
+
+  // Force index generation if explicit 'Single' or 'Many' format is used, even if data was pre-filled
+  if (dataFormat === 'Single Y' || dataFormat === 'Many Y') {
+    // Single Y or Many Y: X should be index 1, 2, 3...
+    finalX = Array.from({ length: finalY.length }, (_, i) => i + 1);
+  } else if (dataFormat === 'Single X' || dataFormat === 'Many X') {
+    // Single X or Many X: Y should be index 1, 2, 3... (Vertical Area usually)
+    finalY = Array.from({ length: finalX.length }, (_, i) => i + 1);
+  } else if ((!finalX || finalX.length === 0) && (finalY && finalY.length > 0)) {
+    // Fallback: Single Y case (missing X)
+    finalX = Array.from({ length: finalY.length }, (_, i) => i + 1);
+  } else if ((!finalY || finalY.length === 0) && (finalX && finalX.length > 0)) {
+    // Fallback: Single X case (missing Y)
+    finalY = Array.from({ length: finalX.length }, (_, i) => i + 1);
+  }
+
+  // Basic area trace
+  const trace: any = {
+    x: finalX,
+    y: finalY,
+    name: label,
+    type: 'scatter',
+    mode: 'lines',
+    fill: isVertical ? 'tozerox' : 'tozeroy', // Vertical area fills to X axis
+    line: {
+      color: color,
+      width: 2
+    },
+    marker: {
+      color: color
+    },
+    // Use a transparent fill color derived from the line color for better visibility when overlapping
+    fillcolor: color && color.startsWith('#') ? hexToRgba(color, 0.4) : color,
+    opacity: 1 // Keep the overall trace opaque (lines/markers), transparency is in fillcolor
+  };
+
+  return trace;
+};
+
+/**
  * Create trace based on plot type - automatically determines line vs scatter
  */
 export const createTrace = (config: TraceConfig): any => {
@@ -750,6 +804,16 @@ export const createTrace = (config: TraceConfig): any => {
 
   if (is3DMeshPlot) {
     return create3DMeshTrace(config);
+  }
+
+  // Check if this is an Area Plot
+  const isAreaPlot = lowerSubType.includes('area') &&
+    !lowerSubType.includes('scatter') &&
+    !lowerSubType.includes('line') &&
+    !lowerSubType.includes('bar'); // Avoid confusion if other types have 'area' in name
+
+  if (isAreaPlot || config.graphConfig?.graphType === 'Area Plot') {
+    return createAreaTrace(config);
   }
 
   // Check if this is a line-scatter plot

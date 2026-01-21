@@ -85,9 +85,14 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
     // Fallback: If graph.traces is empty, try to use current plotly data
     let tracesToUse = graph.traces;
     if ((!tracesToUse || Object.keys(tracesToUse).length === 0) && plotly?.current?.data) {
-      // Convert plotly data array to compatible traces object
+      // Convert plotly data array to compatible traces object, BUT only if they look like strings (column names)
       tracesToUse = (plotly.current.data as any[]).reduce((acc, trace, idx) => {
-        acc[trace.name || `trace_${idx}`] = trace;
+        // Only accept if x or y is NOT an array (implies it might still be a column name string)
+        const isDataPopulated = Array.isArray(trace.x) || Array.isArray(trace.y);
+
+        if (!isDataPopulated) {
+          acc[trace.name || `trace_${idx}`] = trace;
+        }
         return acc;
       }, {} as any);
     }
@@ -112,21 +117,17 @@ export const useTableFetch = ({ dbName, tableName, graph, plotly }: ITableFetch)
 
     const db = new Database(dbName);
     const recordColumns = await db.selectQuery(initialQuery);
-    console.log('🔍 Graph data fetch - Initial query:', initialQuery);
-    console.log('🔍 Graph data fetch - Record columns:', recordColumns);
 
     if (recordColumns.length === 0) {
-      console.log('⚠️ No data found in output table, trying fallback to input table');
       // Try plotting directly from input as a fallback for first graph
       const didFallback = await fallbackPlotFromInput(dbName, tableName);
       if (didFallback) {
-        console.log('✅ Fallback to input table successful');
         return { query: '', dynamicQuery: '', newTraces: {} } as any;
       }
-      console.log('❌ Fallback to input table failed');
       setLoading(false);
       return { query: '' } as any;
     }
+
     const { query, pagingQuery, newTraces, dynamicQuery } =
       await graphWorker.generateColumnsToFetch(
         { ...graph, traces: tracesToUse },

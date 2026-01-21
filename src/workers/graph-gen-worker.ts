@@ -2,7 +2,7 @@
 import { IGraph, IGraphAxis } from '@utils';
 type PropertyType<T, K extends keyof T> = T[K];
 interface IDynamicTableTrace {
-  columns?: Set<sting>;
+  columns?: Set<string>;
 }
 const sanitizedCell = (column: string): string => {
   return `"${column}"`;
@@ -10,21 +10,27 @@ const sanitizedCell = (column: string): string => {
 const checkDynamicTable = (
   trace: IGraphAxis,
   axis: string,
-  columnSet: Set<sting>,
+  columnSet: Set<string>,
   dynamicTableCols: IDynamicTableTrace,
 ) => {
+  // Ensure we only add strings (column names), not data arrays or objects
+  const value = trace[axis];
+  if (typeof value !== 'string' || !value) {
+    return;
+  }
+
   if (trace.dynamicTableColumns) {
-    const existsDynamicCol = trace.dynamicTableColumns.find((col) => col === trace[axis]);
+    const existsDynamicCol = trace.dynamicTableColumns.find((col) => col === value);
     if (existsDynamicCol) {
       if (!dynamicTableCols.columns) {
-        dynamicTableCols.columns = new Set<sting>();
+        dynamicTableCols.columns = new Set<string>();
       }
-      dynamicTableCols.columns.add(trace[axis]);
+      dynamicTableCols.columns.add(value);
     } else {
-      columnSet.add(sanitizedCell(trace[axis] as string));
+      columnSet.add(sanitizedCell(value));
     }
   } else {
-    columnSet.add(sanitizedCell(trace[axis] as string));
+    columnSet.add(sanitizedCell(value));
   }
 };
 //Create a query for columns given in the configurations object
@@ -68,7 +74,7 @@ const generatedNewTraces = (
     const column = fetchedColumns[i];
     Object.keys(column).forEach((key: string) => {
       if (column[key]) {
-        columnSet.add(sanitizedCell(column[key] as string));
+        columnSet.add(sanitizedCell(key));
         Object.keys(traces).forEach((tKey: string) => {
           if (!newTraces[tKey] && traces[tKey]) {
             const { x, y, z, ...others } = traces[tKey];
@@ -140,10 +146,10 @@ const generatedMultipleTraces = (
         if (dynamicColumns && dynamicColumns.size > 0) {
           const haskey = dynamicColumns.has(column[key]);
           if (!haskey) {
-            columnSet.add(sanitizedCell(column[key] as string));
+            columnSet.add(sanitizedCell(key));
           }
         } else {
-          columnSet.add(sanitizedCell(column[key] as string));
+          columnSet.add(sanitizedCell(key));
         }
         commonAxisData.push(column[key] as string);
       } else {
@@ -151,10 +157,10 @@ const generatedMultipleTraces = (
           if (dynamicColumns && dynamicColumns.size > 0) {
             const haskey = dynamicColumns.has(column[key]);
             if (!haskey) {
-              columnSet.add(sanitizedCell(column[key] as string));
+              columnSet.add(sanitizedCell(key));
             }
           } else {
-            columnSet.add(sanitizedCell(column[key] as string));
+            columnSet.add(sanitizedCell(key));
           }
           if (!newTraces[column[key]]) {
             newTraces[column[key]] = { ...others, name: column[key], yaxis: column[key] };

@@ -5,6 +5,7 @@ import { GraphTools } from '@libs/graphs/tools';
 import { useFullScreenHandle, FullScreen } from 'react-full-screen';
 import { useGraphStyles } from '@libs/graphs/styles-hook/use-graph-style';
 import { useStartProStore } from '@store/main-store';
+import { EXCEL } from '@constants';
 
 export const LinePlotGraph: FC = () => {
   const { selectedRun, graphProperties } = useContext(GraphsRenderContext);
@@ -80,7 +81,7 @@ export const LinePlotGraph: FC = () => {
               plotly={plotlyRef.current}
               graph={graphObject}
               dbFileName={workspacePath || ''}
-              dbTableName="EXCEL"
+              dbTableName={EXCEL}
             />
           )}
         </div>

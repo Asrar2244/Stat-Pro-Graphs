@@ -181,6 +181,12 @@ export interface PlotSpecificProperties {
     showGrid: boolean;
     gridOpacity: number;
   };
+  area?: {
+    lineWidth: number;
+    fillOpacity: number;
+    showPoints: boolean;
+    pointSize: number;
+  };
 }
 
 export interface GraphProperties {
@@ -369,6 +375,12 @@ export const useTools = () => {
         showGrid: true,
         gridOpacity: 0.5,
       },
+      area: {
+        lineWidth: 2,
+        fillOpacity: 0.4,
+        showPoints: false,
+        pointSize: 6,
+      },
     },
   });
 
@@ -481,7 +493,7 @@ export const useTools = () => {
     if (subTypeLower.includes('dot')) {
       return 'dotPlot';
     }
-    if (subTypeLower.includes('scatter') || subTypeLower.includes('xy')) {
+    if (subTypeLower.includes('scatter') || subTypeLower.includes('xy') || subTypeLower.includes('area')) {
       return 'scatter';
     }
 
@@ -496,10 +508,11 @@ export const useTools = () => {
     hasErrorBars: boolean;
     hasPointPlot: boolean;
     hasDotPlot: boolean;
+    hasArea: boolean;
     is3DMesh: boolean;
   } => {
     if (!subType) {
-      return { hasScatter: false, hasRegression: false, hasErrorBars: false, hasPointPlot: false, hasDotPlot: false, is3DMesh: false };
+      return { hasScatter: false, hasRegression: false, hasErrorBars: false, hasPointPlot: false, hasDotPlot: false, hasArea: false, is3DMesh: false };
     }
 
     const subTypeLower = subType.toLowerCase();
@@ -520,6 +533,7 @@ export const useTools = () => {
         hasErrorBars: false,
         hasPointPlot: false,
         hasDotPlot: false,
+        hasArea: false,
         is3DMesh: true
       };
     }
@@ -530,6 +544,7 @@ export const useTools = () => {
       hasErrorBars: subTypeLower.includes('error') || subTypeLower.includes('bar'),
       hasPointPlot: subTypeLower.includes('point'),
       hasDotPlot: subTypeLower.includes('dot'),
+      hasArea: subTypeLower.includes('area'),
       is3DMesh: false
     };
   };

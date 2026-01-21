@@ -107,6 +107,19 @@ export interface Mesh3DProperties {
   originalColorScale?: string;
 }
 
+export interface AreaPlotProperties {
+  /** Line width in pixels */
+  lineWidth: number;
+  /** Area fill opacity (0-1) */
+  fillOpacity: number;
+  /** Area fill color (optional override) */
+  fillColor?: string;
+  /** Show data points if it's a scatter-area */
+  showPoints: boolean;
+  /** Point size */
+  pointSize: number;
+}
+
 export interface PlotSpecificProperties {
   scatter?: ScatterPointProperties;
   regression?: RegressionLineProperties;
@@ -114,6 +127,7 @@ export interface PlotSpecificProperties {
   pointPlot?: PointPlotProperties;
   dotPlot?: DotPlotProperties;
   mesh3d?: Mesh3DProperties;
+  area?: AreaPlotProperties;
 }
 
 export interface LiveProperties {
@@ -186,6 +200,12 @@ export const DEFAULT_PLOT_PROPERTIES: PlotSpecificProperties = {
     smoothShading: true,
     showGrid: true,
     gridOpacity: 0.5
+  },
+  area: {
+    lineWidth: 2,
+    fillOpacity: 0.4,
+    showPoints: false,
+    pointSize: 6
   }
 };
 
@@ -231,6 +251,10 @@ export const getPlotProperties = (liveProps?: LiveProperties, graphConfig?: any)
       ...DEFAULT_PLOT_PROPERTIES.mesh3d,
       ...mesh3dFromConfig,
       ...liveProps.plotSpecific.mesh3d
+    },
+    area: {
+      ...DEFAULT_PLOT_PROPERTIES.area,
+      ...liveProps.plotSpecific.area
     }
   };
 
@@ -407,6 +431,73 @@ export const applyErrorBarProperties = (
       } else {
       }
     }
+  }
+
+  return updatedTrace;
+};
+
+/**
+ * Apply area plot properties to a trace
+ */
+export const applyAreaProperties = (
+  trace: any,
+  properties: AreaPlotProperties
+): any => {
+  const updatedTrace = { ...trace };
+
+  // Apply line width
+  if (updatedTrace.line) {
+    updatedTrace.line = {
+      ...updatedTrace.line,
+      width: properties.lineWidth
+    };
+  }
+
+  // Apply fill color/opacity
+  if (updatedTrace.fillcolor || updatedTrace.fill) {
+    // Get marker color if it exists, otherwise line color, otherwise default
+    const baseColor = updatedTrace.marker?.color || updatedTrace.line?.color || '#1f77b4';
+
+    // Simple hex to rgba conversion helper (duplicated from regression for local use)
+    const hexToRgbaLocal = (color: string, alpha: number) => {
+      if (typeof color !== 'string') return color;
+
+      if (color.startsWith('rgba')) {
+        return color.replace(/,?\s*[\d.]+\)$/, `, ${alpha})`);
+      }
+      if (color.startsWith('#')) {
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+      return color;
+    };
+
+    updatedTrace.fillcolor = hexToRgbaLocal(baseColor, properties.fillOpacity);
+  }
+
+  // Apply markers (points)
+  if (properties.showPoints) {
+    if (updatedTrace.mode && !updatedTrace.mode.includes('markers')) {
+      updatedTrace.mode = updatedTrace.mode + '+markers';
+    } else if (!updatedTrace.mode) {
+      updatedTrace.mode = 'lines+markers';
+    }
+
+    updatedTrace.marker = {
+      ...updatedTrace.marker,
+      size: properties.pointSize,
+      opacity: 1 // Area markers usually fully opaque
+    };
+  } else if (updatedTrace.mode && updatedTrace.mode.includes('markers')) {
+    updatedTrace.marker = {
+      ...updatedTrace.marker,
+      size: 0,
+      opacity: 0
+    };
+    // Don't modify mode directly to avoid breaking Plotly's internal state if it expects markers
+    // Just hide them via marker properties
   }
 
   return updatedTrace;

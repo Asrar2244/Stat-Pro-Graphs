@@ -16,6 +16,10 @@ const LinePlotGraph = lazy(() =>
   import('../plot-types/line-plot/index').then(module => ({ default: module.LinePlotGraph })),
 );
 
+const AreaPlotGraph = lazy(() =>
+  import('../plot-types/area-plot/index').then(module => ({ default: module.AreaPlotGraph })),
+);
+
 interface IGraphSelection extends IToolBar {
   id: number;
   showHistory: boolean;
@@ -27,6 +31,7 @@ const loadByType = (graphType?: string) => {
   const t = (graphType || '').toLowerCase();
   if (t.includes('scatter')) return <ScatterPlotGraph />;
   if (t.includes('line')) return <LinePlotGraph />;
+  if (t.includes('area')) return <AreaPlotGraph />;
   if (t.includes('3d mesh') || t.includes('3d-mesh')) return <ScatterPlotGraph />; // Use ScatterPlotGraph for 3D mesh
   return <></>;
 };
@@ -37,7 +42,7 @@ export const GraphSelection: FC<IGraphSelection> = ({ id, showHistory, ...props 
   const { t } = useTranslation('common');
   const run = useSelectedRun(config.tabName, id);
   const forceStyle = !showHistory ? { width: '100%' } : { width: 'calc(100% - 360px)' };
-  
+
   return (
     <div className={classes.selectionLayout} style={forceStyle}>
       <GraphsRenderContext.Provider

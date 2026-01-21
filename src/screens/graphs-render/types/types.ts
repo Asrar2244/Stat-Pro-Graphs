@@ -21,6 +21,7 @@ export interface IGraphProperties {
     hasErrorBars: boolean;
     hasPointPlot: boolean;
     hasDotPlot: boolean;
+    hasArea: boolean;
     is3DMesh: boolean;
   };
   currentSubType?: string;

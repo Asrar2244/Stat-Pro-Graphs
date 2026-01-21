@@ -18,7 +18,8 @@ import {
   getPlotProperties,
   applyScatterProperties,
   applyRegressionProperties,
-  applyErrorBarProperties
+  applyErrorBarProperties,
+  applyAreaProperties
 } from '../common';
 import { applyMesh3DProperties } from '../mesh3DProperties';
 import { transformArrayForScale } from '../axisTransforms';
@@ -72,20 +73,29 @@ export const orchestrateTraceGeneration = async (
   const plotProperties = getPlotProperties(liveProps, graphConfig);
 
   // Store legend labels in graph config
+  // Store legend labels in graph config
   if (legendLabels.length > 0) {
-    graphConfig.legendLabels = legendLabels;
+    // Check if legend labels have actually changed to prevent infinite loop
+    const currentLabels = graphConfig.legendLabels || [];
+    const hasChanged =
+      legendLabels.length !== currentLabels.length ||
+      legendLabels.some((label, index) => label !== currentLabels[index]);
 
-    // Save legend labels back to the database
-    try {
-      const { updateGraphRunConfig } = await import('@backend/graphs');
-      const currentRunId = graphConfig.runId || graphConfig.id;
-      if (currentRunId) {
-        await updateGraphRunConfig(graphConfig.selectedProject, currentRunId, {
-          graphConfig: { ...graphConfig, legendLabels }
-        });
+    if (hasChanged) {
+      graphConfig.legendLabels = legendLabels;
+
+      // Save legend labels back to the database
+      try {
+        const { updateGraphRunConfig } = await import('@backend/graphs');
+        const currentRunId = graphConfig.runId || graphConfig.id;
+        if (currentRunId) {
+          await updateGraphRunConfig(graphConfig.selectedProject, currentRunId, {
+            graphConfig: { ...graphConfig, legendLabels }
+          });
+        }
+      } catch (error) {
+        // Silently handle error
       }
-    } catch (error) {
-      // Silently handle error
     }
   }
 
@@ -209,11 +219,18 @@ export const orchestrateTraceGeneration = async (
           ? trace
           : optimizeTraceForLargeData(trace, optimizedData.originalLength);
 
-        // Apply plot-specific scatter properties
-        let finalTrace =
-          plotProperties.scatter && !isPointPlot && !isDotPlot && !isCurrentTrace3D
-            ? applyScatterProperties(optimizedTrace, plotProperties.scatter!)
-            : optimizedTrace;
+        // Apply plot-specific properties
+        let finalTrace = optimizedTrace;
+        const subTypeLower = (graphConfig?.subType || '').toLowerCase();
+        const isAreaPlot = subTypeLower.includes('area');
+
+        if (!isCurrentTrace3D) {
+          if (isAreaPlot && plotProperties.area) {
+            finalTrace = applyAreaProperties(finalTrace, plotProperties.area);
+          } else if (plotProperties.scatter && !isPointPlot && !isDotPlot) {
+            finalTrace = applyScatterProperties(finalTrace, plotProperties.scatter);
+          }
+        }
 
         // Apply error bar properties if trace has error bars
         // TEMPORARILY DISABLED: Error bar property application is breaking caps

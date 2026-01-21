@@ -8,8 +8,8 @@ export const graph2DOptions: GraphOption[] = [
       { label: 'Scatter Plot', value: 'scatter', execute: 'open-scatter-plot-modal', icon: MdScatterPlot },
       { label: 'Line Chart', value: 'line', execute: 'open-line-plot-modal', icon: MdShowChart },
       { label: 'Line/Scatter', value: 'line-scatter', execute: 'open-line-scatter-plot-modal', icon: MdTimeline },
+      { label: 'Area Chart', value: 'area', execute: 'open-area-plot-modal', icon: MdAreaChart },
       { label: 'Bar Chart', value: 'bar', execute: 'bar-chart', icon: MdBarChart },
-      { label: 'Area Chart', value: 'area', execute: 'area-chart', icon: MdAreaChart },
     ]
   },
   {
