@@ -204,7 +204,7 @@ export const applyMesh3DProperties = (trace: any, properties: Mesh3DProperties):
   const updatedTrace = { ...trace };
 
   // Apply surface type
-  if (properties.surfaceType !== undefined) {
+  if (properties.surfaceType !== undefined && trace.type !== 'scatter3d') {
     if (properties.surfaceType === 'wireframe') {
       updatedTrace.type = 'surface';
       updatedTrace.hidesurface = true;
@@ -231,6 +231,16 @@ export const applyMesh3DProperties = (trace: any, properties: Mesh3DProperties):
     };
 
     updatedTrace.colorscale = getPlotlyColorScale(properties.colorScale);
+
+    // For scatter3d, also apply to marker
+    if (trace.type === 'scatter3d' && updatedTrace.marker) {
+      updatedTrace.marker = {
+        ...updatedTrace.marker,
+        colorscale: getPlotlyColorScale(properties.colorScale)
+      };
+      // Clean up root colorscale to avoid confusion
+      delete updatedTrace.colorscale;
+    }
   }
 
   // Construct contours object

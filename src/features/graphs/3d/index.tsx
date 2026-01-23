@@ -1,2 +1,2 @@
-export * from './scatter-3d';
+export * from './scatter';
 

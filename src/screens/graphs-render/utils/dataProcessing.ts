@@ -9,15 +9,16 @@ import { determinePlotType } from './common/plotTypeDetection';
 // Import plot-specific data processors
 import { processScatterData } from './scatter/scatterDataProcessing';
 import { processLineData } from './line/lineDataProcessing';
-import { process3DMeshData } from './3d-mesh/meshDataProcessing';
 import { processLineScatterData } from './line-scatter/lineScatterDataProcessing';
+import { process3DMeshData } from './3d-mesh/meshDataProcessing';
+import { process3DScatterData } from './3d-scatter/scatterDataProcessing';
 
 /**
  * Main data processing function that routes to appropriate plot type
  */
 export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeries[] => {
   const plotType = determinePlotType(config.graphConfig);
-  
+
   switch (plotType) {
     case 'scatter':
       return processScatterData(config);
@@ -27,6 +28,8 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
       return processLineScatterData(config);
     case '3d-mesh':
       return process3DMeshData(config);
+    case '3d-scatter':
+      return process3DScatterData(config);
     default:
       return processScatterData(config);
   }

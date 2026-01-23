@@ -112,6 +112,17 @@ const MeshPlotModal = lazy(() =>
   ),
 );
 
+// 3D Scatter Plot Modal
+const Scatter3DPlotModal = lazy(() =>
+  import('../../features/graphs/3d/scatter').then(
+    (m) => ({ default: m.ScatterPlotModal }),
+    (error) => {
+      console.error('Failed to load Scatter3DPlotModal:', error);
+      throw error;
+    }
+  ),
+);
+
 export const withMenuEvents = <P extends object>(
   translationNs: string,
   WrappedComponent: React.ComponentType<P>,
@@ -457,6 +468,67 @@ const MenuSelector: FC<{
     return <MeshPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
+  // 3D Scatter Plot wrapper with real data integration
+  const Scatter3DWrapper: FC<IModal> = (m) => {
+    const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+    const projectNames = Object.keys(projects);
+    const { openNewTabAction } = useMenuCodeExecutor();
+    const { setRenderLatestRun } = useStartProStore();
+    const { t } = useTranslation('common');
+
+    // For now, use empty datasets array
+    const datasets: string[] = [];
+
+    const onCreateGraph = async (config: any) => {
+      try {
+        const workspacePath = projects[config.selectedProject]?.workspacePath;
+
+        // Ensure 3D scatter configuration is properly structured
+        const scatterConfig = {
+          ...config,
+          graphType: '3D Scatter Plot',
+          subType: '3D Scatter Plot',
+          dataFormat: config.dataFormat || 'XYZ Triplets',
+          // scatterConfig removed as per user request
+          // scatterConfig: { ... }
+        };
+
+        // Persist a run immediately so history shows up
+        const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
+        await insertGraphRun(workspacePath, {
+          name: scatterConfig?.subType || '3D Scatter Plot',
+          createdAt: new Date().toISOString(),
+          config: { graphConfig: scatterConfig, workspacePath },
+          tabName: scatterConfig?.selectedProject || '',
+          graphType: scatterConfig?.graphType || '3D Scatter Plot',
+          properties: {},
+        });
+
+        setRenderLatestRun(true);
+
+        openNewTabAction({
+          id: GRAPHS,
+          isEmptyDataView: false,
+          extraConfig: {
+            tabName: projects[config.selectedProject]?.workspacePath,
+            name: config.selectedProject,
+            type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }),
+            bareType: GRAPHS,
+            id: projects[config.selectedProject]?.id,
+            lastModified: new Date().toISOString(),
+            isActive: 1,
+            workspacePath: projects[config.selectedProject]?.workspacePath,
+          }
+        });
+
+      } catch (error) {
+        console.error('Error creating 3D Scatter Plot:', error);
+      }
+    };
+
+    return <Scatter3DPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
+  };
+
   const runSelector = () => {
     // CRITICAL: Synchronously get the active tab config directly from the model
     // This bypasses the 500ms delay in hooks and prevents race conditions during tab switching
@@ -517,6 +589,8 @@ const MenuSelector: FC<{
         return <AreaWrapper {...modal} />;
       case '3d-mesh':
         return <MeshWrapper {...modal} />;
+      case '3d-scatter':
+        return <Scatter3DWrapper {...modal} />;
       case exporters.tests:
         return <TestsAnalysis {...modal} />
       case exporters.options:

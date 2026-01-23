@@ -792,13 +792,33 @@ export const createAreaTrace = (config: TraceConfig): any => {
 /**
  * Create trace based on plot type - automatically determines line vs scatter
  */
+import { create3DScatterTrace } from './3d-scatter/scatterTraceGeneration';
+
+/**
+ * Create trace based on plot type - automatically determines line vs scatter
+ */
 export const createTrace = (config: TraceConfig): any => {
-  const { subType, label } = config;
+  const { subType, label, graphConfig } = config;
   const lowerSubType = subType.toLowerCase();
 
   // Check if this is a 3D mesh plot
   const is3DMeshPlot = lowerSubType.includes('3d mesh') ||
-    lowerSubType.includes('3d-mesh') ||
+    subType === '3D Mesh Plot' ||
+    config.graphConfig?.graphType === '3D Mesh Plot';
+
+  if (is3DMeshPlot) {
+    return create3DMeshTrace(config);
+  }
+
+  // Check if this is a 3D scatter plot
+  const is3DScatterPlot = lowerSubType.includes('3d scatter') ||
+    subType === '3D Scatter Plot' ||
+    config.graphConfig?.graphType === '3D Scatter Plot';
+
+  if (is3DScatterPlot) {
+    return create3DScatterTrace(config);
+  }
+  lowerSubType.includes('3d-mesh') ||
     subType === '3D Mesh Plot' ||
     config.graphConfig?.graphType === '3D Mesh Plot';
 

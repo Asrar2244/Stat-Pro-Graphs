@@ -35,22 +35,28 @@ export const GraphsRender: FC<any> = (props) => {
     (async () => {
       if (Array.isArray(data) && data.length > 0 && renderLatestRun) {
         const latestGraph = data[0];
-        const nice = friendlyTitleForGraph(latestGraph?.graphType, latestGraph?.config?.graphConfig?.subType);
-        const subTitle = latestGraph?.config?.graphConfig?.subType || latestGraph?.config?.graphConfig?.dataFormat;
 
-        // Fetch the full config from database to ensure we have all the data
-        try {
-          const { fetchSingleGraph } = await import('@backend/graphs');
-          const fullGraph = await fetchSingleGraph(tabName, latestGraph.id);
-          console.log(`🎯 Auto-selecting latest graph ID ${latestGraph.id} with config:`, fullGraph?.config);
-          setSelectedGraphRun(latestGraph.id, nice, subTitle, fullGraph?.config);
-        } catch (e) {
-          console.error('Failed to fetch full graph config for auto-selection:', e);
-          // Fallback to basic selection without config
-          setSelectedGraphRun(latestGraph.id, nice, subTitle);
+        // Only update if we aren't already on this graph
+        if (selectedGraphRun.id !== latestGraph.id) {
+          const nice = friendlyTitleForGraph(latestGraph?.graphType, latestGraph?.config?.graphConfig?.subType);
+          const subTitle = latestGraph?.config?.graphConfig?.subType || latestGraph?.config?.graphConfig?.dataFormat;
+
+          // Fetch the full config from database to ensure we have all the data
+          try {
+            const { fetchSingleGraph } = await import('@backend/graphs');
+            const fullGraph = await fetchSingleGraph(tabName, latestGraph.id);
+            console.log(`🎯 Auto-selecting latest graph ID ${latestGraph.id} with config:`, fullGraph?.config);
+            setSelectedGraphRun(latestGraph.id, nice, subTitle, fullGraph?.config);
+          } catch (e) {
+            console.error('Failed to fetch full graph config for auto-selection:', e);
+            // Fallback to basic selection without config
+            setSelectedGraphRun(latestGraph.id, nice, subTitle);
+          }
+
+          // Only clear the flag if we actually performed the switch
+          // This prevents clearing the flag while data is still stale (start of race condition)
+          setRenderLatestRun(false);
         }
-
-        setRenderLatestRun(false);
       }
     })();
   }, [data, renderLatestRun, selectedGraphRun.id, setSelectedGraphRun, setRenderLatestRun, tabName]);
@@ -86,8 +92,10 @@ export const GraphsRender: FC<any> = (props) => {
         if (!runId) return;
         const { fetchSingleGraph } = await import('@backend/graphs');
         const row = await fetchSingleGraph(dbName, runId);
-        // Update selectedGraphRun with config from database
-        if (row?.config) {
+
+        // Avoid loop: Use a more robust check before updating config
+        // Only update if we have a config and it's meaningfully different or missing
+        if (row?.config && JSON.stringify(row.config) !== JSON.stringify(selectedGraphRun.config)) {
           setSelectedGraphRun(selectedGraphRun.id, selectedGraphRun.title, selectedGraphRun.subTitle, row.config);
         }
 
