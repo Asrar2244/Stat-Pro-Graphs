@@ -12,6 +12,7 @@ import { processLineData } from './line/lineDataProcessing';
 import { processLineScatterData } from './line-scatter/lineScatterDataProcessing';
 import { process3DMeshData } from './3d-mesh/meshDataProcessing';
 import { process3DScatterData } from './3d-scatter/scatterDataProcessing';
+import { processBoxData } from './box/boxDataProcessing';
 
 /**
  * Main data processing function that routes to appropriate plot type
@@ -30,6 +31,8 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
       return process3DMeshData(config);
     case '3d-scatter':
       return process3DScatterData(config);
+    case 'box':
+      return processBoxData(config);
     default:
       return processScatterData(config);
   }

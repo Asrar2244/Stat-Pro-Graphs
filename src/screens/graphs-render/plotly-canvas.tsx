@@ -327,6 +327,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       const axisTextColor = modeColors.axisTextColor;
 
 
+      const isBoxPlot = subType.toLowerCase().includes('box');
+
       let layout: any = {
         title: titleVisible
           ? {
@@ -342,6 +344,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         autosize: true,
         // Force Plotly to fully re-evaluate layout changes like RGBA grid colors
         datarevision: Date.now(),
+        // Enable grouping for Box Plots to prevent overlapping
+        boxmode: isBoxPlot ? 'group' : undefined,
         showlegend: showLegend,
         legend: {
           ...getLegendConfig(subType, canvasMode),
@@ -386,6 +390,17 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
           linecolor: axisLineColor,
           linewidth: axisLineWidthPx,
           type: ((): any => {
+            // Special handling for Box Plots - grouping axis should default to category
+            // to ensure proper box width rendering regardless of numerical range
+            if (isBoxPlot) {
+              const isVerticalBox = subType.toLowerCase().includes('vertical') || !subType.toLowerCase().includes('horizontal');
+              // For vertical box plots, X axis is the grouping axis
+              // We force 'category' because we override the data to be Series Labels (strings)
+              if (isVerticalBox) {
+                return 'category';
+              }
+            }
+
             // Special handling for Y Category point plots
             if (isPointPlot && normalizedFormat === 'Y Category' && categoryNames?.length > 0) {
               return 'category';
@@ -541,6 +556,15 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
           linewidth: axisLineWidthPx,
           side: (liveProps?.global?.yAxisSide === 'right') ? 'right' : 'left',
           type: ((): any => {
+            // Special handling for Box Plots - grouping axis should default to category
+            if (isBoxPlot) {
+              const isHorizontalBox = subType.toLowerCase().includes('horizontal');
+              // For horizontal box plots, Y axis is the grouping axis
+              if (isHorizontalBox) {
+                return 'category';
+              }
+            }
+
             // Special handling for X Category point plots
             if (isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0) {
               return 'category';

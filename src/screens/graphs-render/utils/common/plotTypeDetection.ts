@@ -67,6 +67,12 @@ export const determinePlotType = (graphConfig: any): PlotType['type'] => {
     return 'line';
   }
 
+  // Check if this is a box plot
+  const isBoxPlot = graphType === 'Box Plot' || lowerSubType.includes('box plot');
+  if (isBoxPlot) {
+    return 'box';
+  }
+
   // Default to scatter plot
   return 'scatter';
 };

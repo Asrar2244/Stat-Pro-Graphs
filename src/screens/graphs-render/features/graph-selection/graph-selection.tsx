@@ -20,6 +20,10 @@ const AreaPlotGraph = lazy(() =>
   import('../plot-types/area-plot/index').then(module => ({ default: module.AreaPlotGraph })),
 );
 
+const BoxPlotGraph = lazy(() =>
+  import('../plot-types/box-plot/index').then(module => ({ default: module.BoxPlotGraph })),
+);
+
 interface IGraphSelection extends IToolBar {
   id: number;
   showHistory: boolean;
@@ -32,6 +36,7 @@ const loadByType = (graphType?: string) => {
   if (t.includes('scatter')) return <ScatterPlotGraph />;
   if (t.includes('line')) return <LinePlotGraph />;
   if (t.includes('area')) return <AreaPlotGraph />;
+  if (t.includes('box')) return <BoxPlotGraph />;
   if (t.includes('3d mesh') || t.includes('3d-mesh')) return <ScatterPlotGraph />; // Use ScatterPlotGraph for 3D mesh
   return <></>;
 };

@@ -211,7 +211,7 @@ export const orchestrateTraceGeneration = async (
           rows,
           zv: series.zv,
           graphConfig: graphConfig
-        });
+        }, seriesIndex);
 
         // Optimize trace for large datasets (skip for 3D mesh traces)
         const isCurrentTrace3D = is3DMeshTrace(trace);

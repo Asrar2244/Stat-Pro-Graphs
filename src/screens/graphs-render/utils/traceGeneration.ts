@@ -793,13 +793,19 @@ export const createAreaTrace = (config: TraceConfig): any => {
  * Create trace based on plot type - automatically determines line vs scatter
  */
 import { create3DScatterTrace } from './3d-scatter/scatterTraceGeneration';
+import { createBoxTrace } from './box/boxTraceGeneration';
 
 /**
  * Create trace based on plot type - automatically determines line vs scatter
  */
-export const createTrace = (config: TraceConfig): any => {
+export const createTrace = (config: TraceConfig, traceIndex: number = 0): any => {
   const { subType, label, graphConfig } = config;
   const lowerSubType = subType.toLowerCase();
+
+  // Check if this is a Box Plot
+  if (graphConfig?.graphType === 'Box Plot' || lowerSubType.includes('box plot') || config.subType?.toLowerCase().includes('box')) {
+    return createBoxTrace(config, traceIndex);
+  }
 
   // Check if this is a 3D mesh plot
   const is3DMeshPlot = lowerSubType.includes('3d mesh') ||
@@ -879,7 +885,7 @@ export const createTrace = (config: TraceConfig): any => {
  * Create multiple traces for different plot types
  */
 export const createTraces = (configs: TraceConfig[]): any[] => {
-  return configs.map(config => createTrace(config));
+  return configs.map((config, index) => createTrace(config, index));
 };
 
 /**

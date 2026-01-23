@@ -123,6 +123,17 @@ const Scatter3DPlotModal = lazy(() =>
   ),
 );
 
+// Box Plot Modal
+const BoxPlotModal = lazy(() =>
+  import('../../features/graphs/2d/box').then(
+    (m) => ({ default: m.BoxPlotModal }),
+    (error) => {
+      console.error('Failed to load BoxPlotModal:', error);
+      throw error;
+    }
+  ),
+);
+
 export const withMenuEvents = <P extends object>(
   translationNs: string,
   WrappedComponent: React.ComponentType<P>,
@@ -529,6 +540,58 @@ const MenuSelector: FC<{
     return <Scatter3DPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
+  // Box Plot wrapper with real data integration
+  const BoxPlotWrapper: FC<IModal> = (m) => {
+    const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+    const projectNames = Object.keys(projects);
+    const { openNewTabAction } = useMenuCodeExecutor();
+    const { setRenderLatestRun } = useStartProStore();
+    const { t } = useTranslation('common');
+
+    // For now, use empty datasets array
+    const datasets: string[] = [];
+
+    const onCreateGraph = async (config: any) => {
+      try {
+        const workspacePath = projects[config.selectedProject]?.workspacePath;
+
+        // Persist a run immediately so history shows up
+        const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
+
+        await insertGraphRun(workspacePath, {
+          name: config?.subType || 'Box Plot',
+          createdAt: new Date().toISOString(),
+          config: { graphConfig: config, workspacePath },
+          tabName: config?.selectedProject || '',
+          graphType: config?.graphType || 'Box Plot',
+          properties: {},
+        });
+
+        setRenderLatestRun(true);
+
+        openNewTabAction({
+          id: GRAPHS,
+          isEmptyDataView: false,
+          extraConfig: {
+            tabName: projects[config.selectedProject]?.workspacePath,
+            name: config.selectedProject,
+            type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }),
+            bareType: GRAPHS,
+            id: projects[config.selectedProject]?.id,
+            lastModified: new Date().toISOString(),
+            isActive: 1,
+            workspacePath: projects[config.selectedProject]?.workspacePath,
+          }
+        });
+
+      } catch (error) {
+        console.error('Error creating Box Plot:', error);
+      }
+    };
+
+    return <BoxPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
+  };
+
   const runSelector = () => {
     // CRITICAL: Synchronously get the active tab config directly from the model
     // This bypasses the 500ms delay in hooks and prevents race conditions during tab switching
@@ -597,6 +660,8 @@ const MenuSelector: FC<{
         return <Options {...modal} />
       case exporters.pairedTTest:
         return <PairedTestsAnalysis {...modal} />
+      case 'open-box-plot-modal':
+        return <BoxPlotWrapper {...modal} />;
       default:
         return null;
     }

@@ -3,8 +3,8 @@
  */
 
 export interface TraceConfig {
-  xv: number[];
-  yv: number[];
+  xv: (number | string)[];
+  yv: (number | string)[];
   zv?: number[]; // Z values for 3D mesh plots
   label: string;
   color: string;
@@ -38,8 +38,8 @@ export interface SeriesConfig {
 }
 
 export interface ProcessedSeries {
-  xv: number[];
-  yv: number[];
+  xv: (number | string)[];
+  yv: (number | string)[];
   zv?: number[];
   label: string;
   color?: string;
@@ -79,7 +79,7 @@ export interface DataProcessingConfig {
 }
 
 export interface PlotType {
-  type: 'scatter' | 'line' | 'line-scatter' | '3d-mesh' | '3d-scatter';
+  type: 'scatter' | 'line' | 'line-scatter' | '3d-mesh' | '3d-scatter' | 'box';
   dataFormat: string;
   subType: string;
 }
