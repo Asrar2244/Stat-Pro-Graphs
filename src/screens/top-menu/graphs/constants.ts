@@ -1,5 +1,5 @@
 import type { GraphOption } from './types';
-import { MdScatterPlot, MdShowChart, MdBarChart, MdAreaChart, MdHistory, MdBolt, MdHeatPump, MdDashboard, MdMap, MdVolumeUp, MdRadar, MdAccountTree, MdBubbleChart, MdTimeline } from 'react-icons/md';
+import { MdScatterPlot, MdShowChart, MdBarChart, MdAreaChart, MdHistory, MdBolt, MdHeatPump, MdDashboard, MdMap, MdVolumeUp, MdRadar, MdAccountTree, MdBubbleChart, MdTimeline, MdPieChart } from 'react-icons/md';
 
 export const graph2DOptions: GraphOption[] = [
   {
@@ -10,13 +10,14 @@ export const graph2DOptions: GraphOption[] = [
       { label: 'Line/Scatter', value: 'line-scatter', execute: 'open-line-scatter-plot-modal', icon: MdTimeline },
       { label: 'Area Chart', value: 'area', execute: 'open-area-plot-modal', icon: MdAreaChart },
       { label: 'Bar Chart', value: 'bar', execute: 'bar-chart', icon: MdBarChart },
+      { label: 'Pie Chart', value: 'pie', execute: 'open-pie-plot-modal', icon: MdPieChart },
     ]
   },
   {
     label: 'Statistical',
     children: [
-      { label: 'Histogram', value: 'histogram', execute: 'histogram', icon: MdHistory },
       { label: 'Box Plot', value: 'box', execute: 'open-box-plot-modal', icon: MdBolt },
+      { label: 'Histogram', value: 'histogram', execute: 'histogram', icon: MdHistory },
       { label: 'Violin Plot', value: 'violin', execute: 'violin-plot', icon: MdBolt },
       { label: 'Heatmap', value: 'heatmap', execute: 'heatmap', icon: MdHeatPump },
     ]

@@ -228,7 +228,7 @@ export const optimizeDataForPerformance = (
   errorBarVariable?: string
 ): OptimizedData => {
   const perfConfig = { ...DEFAULT_PERFORMANCE_CONFIG, ...config };
-  const dataSize = xv.length;
+  const dataSize = Math.max(xv.length, yv.length);
 
   // Performance warning for very large datasets
   let performanceWarning: string | undefined;

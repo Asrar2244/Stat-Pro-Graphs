@@ -24,6 +24,10 @@ const BoxPlotGraph = lazy(() =>
   import('../plot-types/box-plot/index').then(module => ({ default: module.BoxPlotGraph })),
 );
 
+const PiePlotGraph = lazy(() =>
+  import('../plot-types/pie-plot/index').then(module => ({ default: module.PiePlotGraph })),
+);
+
 interface IGraphSelection extends IToolBar {
   id: number;
   showHistory: boolean;
@@ -37,6 +41,7 @@ const loadByType = (graphType?: string) => {
   if (t.includes('line')) return <LinePlotGraph />;
   if (t.includes('area')) return <AreaPlotGraph />;
   if (t.includes('box')) return <BoxPlotGraph />;
+  if (t.includes('pie')) return <PiePlotGraph />;
   if (t.includes('3d mesh') || t.includes('3d-mesh')) return <ScatterPlotGraph />; // Use ScatterPlotGraph for 3D mesh
   return <></>;
 };

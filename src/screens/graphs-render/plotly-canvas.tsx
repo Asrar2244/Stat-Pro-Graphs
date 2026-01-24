@@ -119,6 +119,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       };
 
 
+      console.log('[PieDebug] Fetched Data for Plot:', { rowsLength: rows?.length, normalizedFormat, xNames, yNames });
+
       // Process data by format
       const processedSeries = processDataByFormat({
         graphConfig: { ...enhancedGraphConfig, dataFormat: normalizedFormat },
@@ -688,14 +690,24 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             color: modeColors.axisTextColor
           }
         },
+
         // Mirror Y axis to requested side by adjusting side and overlaying the opposite if needed
         // For simplicity, move y-axis side only
         // Note: traces remain anchored to 'y' axis by default
-        margin: { l: liveProps?.global?.marginSize ?? 20, r: 16, t: 64, b: liveProps?.global?.padding ?? 16 },
+        margin: {
+          l: liveProps?.global?.marginSize ?? 20, r: 16, t: 64, b: liveProps?.global?.padding ?? 16
+        },
         automargin: true,
         paper_bgcolor: finalPaperBg,
         plot_bgcolor: finalPlotBg,
       };
+
+      // Remove axes for Pie Charts to prevent "Unrecognized subplot: xy" warning
+      if (subType.toLowerCase().includes('pie')) {
+        delete layout.xaxis;
+        delete layout.yaxis;
+        delete layout.boxmode; // Clean up other non-pie props if needed
+      }
 
       // Enable in-plot editing of title and axis titles
       // Plotly supports editing when config.edits.* is enabled; but we also capture double-clicks

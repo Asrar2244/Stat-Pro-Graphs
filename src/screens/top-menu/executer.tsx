@@ -134,6 +134,17 @@ const BoxPlotModal = lazy(() =>
   ),
 );
 
+// Pie Plot Modal
+const PiePlotModal = lazy(() =>
+  import('../../features/graphs/2d/pie').then(
+    (m) => ({ default: m.PiePlotModal }),
+    (error) => {
+      console.error('Failed to load PiePlotModal:', error);
+      throw error;
+    }
+  ),
+);
+
 export const withMenuEvents = <P extends object>(
   translationNs: string,
   WrappedComponent: React.ComponentType<P>,
@@ -592,6 +603,56 @@ const MenuSelector: FC<{
     return <BoxPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
+  // Pie Plot wrapper with real data integration
+  const PieWrapper: FC<IModal> = (m) => {
+    const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+    const projectNames = Object.keys(projects);
+    const { openNewTabAction } = useMenuCodeExecutor();
+    const { setRenderLatestRun } = useStartProStore();
+    const { t } = useTranslation('common');
+
+    const datasets: string[] = [];
+
+    const onCreateGraph = async (config: any) => {
+      try {
+        const workspacePath = projects[config.selectedProject]?.workspacePath;
+
+        const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
+
+        await insertGraphRun(workspacePath, {
+          name: config?.subType || 'Pie Chart',
+          createdAt: new Date().toISOString(),
+          config: { graphConfig: config, workspacePath },
+          tabName: config?.selectedProject || '',
+          graphType: config?.graphType || 'Pie Chart',
+          properties: {},
+        });
+
+        setRenderLatestRun(true);
+
+        openNewTabAction({
+          id: GRAPHS,
+          isEmptyDataView: false,
+          extraConfig: {
+            tabName: projects[config.selectedProject]?.workspacePath,
+            name: config.selectedProject,
+            type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }),
+            bareType: GRAPHS,
+            id: projects[config.selectedProject]?.id,
+            lastModified: new Date().toISOString(),
+            isActive: 1,
+            workspacePath: projects[config.selectedProject]?.workspacePath,
+          }
+        });
+
+      } catch (error) {
+        console.error('Error creating Pie Chart:', error);
+      }
+    };
+
+    return <PiePlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
+  };
+
   const runSelector = () => {
     // CRITICAL: Synchronously get the active tab config directly from the model
     // This bypasses the 500ms delay in hooks and prevents race conditions during tab switching
@@ -662,6 +723,8 @@ const MenuSelector: FC<{
         return <PairedTestsAnalysis {...modal} />
       case 'open-box-plot-modal':
         return <BoxPlotWrapper {...modal} />;
+      case 'open-pie-plot-modal':
+        return <PieWrapper {...modal} />;
       default:
         return null;
     }

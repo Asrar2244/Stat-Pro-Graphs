@@ -178,8 +178,11 @@ export const orchestrateTraceGeneration = async (
       // Apply axis transforms for special scales
       const xScale = liveProps?.global?.xScaleType;
       const yScale = liveProps?.global?.yScaleType;
-      const tx = transformArrayForScale({ array: optimizedData.xv as any, scale: xScale });
-      const ty = transformArrayForScale({ array: optimizedData.yv as any, scale: yScale });
+
+      const isPie = graphConfig?.graphType === 'Pie Chart' || series.subType?.toLowerCase().includes('pie');
+
+      const tx = isPie ? optimizedData.xv : transformArrayForScale({ array: optimizedData.xv as any, scale: xScale });
+      const ty = isPie ? optimizedData.yv : transformArrayForScale({ array: optimizedData.yv as any, scale: yScale });
 
       try {
         const customLabel = liveProps?.global?.legendTextEntries?.[label] || label;
@@ -227,7 +230,7 @@ export const orchestrateTraceGeneration = async (
         if (!isCurrentTrace3D) {
           if (isAreaPlot && plotProperties.area) {
             finalTrace = applyAreaProperties(finalTrace, plotProperties.area);
-          } else if (plotProperties.scatter && !isPointPlot && !isDotPlot) {
+          } else if (plotProperties.scatter && !isPointPlot && !isDotPlot && finalTrace.type !== 'pie') {
             finalTrace = applyScatterProperties(finalTrace, plotProperties.scatter);
           }
         }
@@ -316,6 +319,10 @@ export const orchestrateTraceGeneration = async (
       }
     });
   }
+
+
+
+  console.log('[PieDebug] Generated Traces:', traces);
 
   return {
     traces,

@@ -17,6 +17,7 @@ const IMPLEMENTED_GRAPHS = [
   '3d-mesh',
   '3d-scatter',
   'open-box-plot-modal',
+  'open-pie-plot-modal',
 ];
 
 export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClose, setMenuItem: propSetMenuItem, pinned: propPinned, setPinned: propSetPinned }) => {

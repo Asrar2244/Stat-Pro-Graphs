@@ -73,6 +73,12 @@ export const determinePlotType = (graphConfig: any): PlotType['type'] => {
     return 'box';
   }
 
+  // Check if this is a pie chart
+  const isPieChart = graphType === 'Pie Chart' || lowerSubType.includes('pie');
+  if (isPieChart) {
+    return 'pie';
+  }
+
   // Default to scatter plot
   return 'scatter';
 };

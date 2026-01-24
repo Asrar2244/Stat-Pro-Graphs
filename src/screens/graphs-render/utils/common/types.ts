@@ -79,7 +79,7 @@ export interface DataProcessingConfig {
 }
 
 export interface PlotType {
-  type: 'scatter' | 'line' | 'line-scatter' | '3d-mesh' | '3d-scatter' | 'box';
+  type: 'scatter' | 'line' | 'line-scatter' | '3d-mesh' | '3d-scatter' | 'box' | 'pie';
   dataFormat: string;
   subType: string;
 }
