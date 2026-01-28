@@ -795,6 +795,7 @@ export const createAreaTrace = (config: TraceConfig): any => {
 import { create3DScatterTrace } from './3d-scatter/scatterTraceGeneration';
 import { createBoxTrace } from './box/boxTraceGeneration';
 import { createPieTrace } from './pie/pieTraceGeneration';
+import { createBarTrace } from './bar/barTraceGeneration';
 
 /**
  * Create trace based on plot type - automatically determines line vs scatter
@@ -806,6 +807,11 @@ export const createTrace = (config: TraceConfig, traceIndex: number = 0): any =>
   // Check if this is a Pie Plot
   if (graphConfig?.graphType === 'Pie Chart' || lowerSubType.includes('pie')) {
     return createPieTrace(config);
+  }
+
+  // Check if this is a Bar Plot
+  if (graphConfig?.graphType === 'Bar Plot' || lowerSubType.includes('bar')) {
+    return createBarTrace(config);
   }
 
   // Check if this is a Box Plot

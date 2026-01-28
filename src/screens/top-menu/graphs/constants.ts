@@ -9,7 +9,7 @@ export const graph2DOptions: GraphOption[] = [
       { label: 'Line Chart', value: 'line', execute: 'open-line-plot-modal', icon: MdShowChart },
       { label: 'Line/Scatter', value: 'line-scatter', execute: 'open-line-scatter-plot-modal', icon: MdTimeline },
       { label: 'Area Chart', value: 'area', execute: 'open-area-plot-modal', icon: MdAreaChart },
-      { label: 'Bar Chart', value: 'bar', execute: 'bar-chart', icon: MdBarChart },
+      { label: 'Bar Chart', value: 'bar', execute: 'open-bar-plot-modal', icon: MdBarChart },
       { label: 'Pie Chart', value: 'pie', execute: 'open-pie-plot-modal', icon: MdPieChart },
     ]
   },

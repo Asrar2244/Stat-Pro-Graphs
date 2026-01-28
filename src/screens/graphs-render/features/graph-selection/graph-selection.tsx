@@ -42,6 +42,7 @@ const loadByType = (graphType?: string) => {
   if (t.includes('area')) return <AreaPlotGraph />;
   if (t.includes('box')) return <BoxPlotGraph />;
   if (t.includes('pie')) return <PiePlotGraph />;
+  if (t.includes('bar') || t.includes('column')) return <ScatterPlotGraph />; // Use ScatterPlotGraph (generic wrapper) for Bar plots
   if (t.includes('3d mesh') || t.includes('3d-mesh')) return <ScatterPlotGraph />; // Use ScatterPlotGraph for 3D mesh
   return <></>;
 };

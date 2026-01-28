@@ -121,6 +121,11 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
 
       console.log('[PieDebug] Fetched Data for Plot:', { rowsLength: rows?.length, normalizedFormat, xNames, yNames });
 
+      // LOG THE FIRST ROW
+      if (rows && rows.length > 0) {
+        console.log('[PieDebug] First Row Sample:', rows[0]);
+      }
+
       // Process data by format
       const processedSeries = processDataByFormat({
         graphConfig: { ...enhancedGraphConfig, dataFormat: normalizedFormat },
@@ -131,6 +136,13 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         categoryNames,
         errorBarNames: graphConfig.variables?.errorBar || []
       });
+
+      console.log('[PieDebug] Processed Series:', processedSeries.map(s => ({
+        label: s.label,
+        xvLength: s.xv?.length,
+        yvLength: s.yv?.length,
+        subType: s.subType
+      })));
 
       // ✅ STEP 3: Generate traces using extracted orchestrator
       let orchestrationResult;
@@ -151,6 +163,17 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       }
 
       const { traces, legendLabels, categoryPlotResult } = orchestrationResult;
+
+      console.log('[PieDebug] Orchestration Result:', {
+        tracesLength: traces.length,
+        legendLabels,
+        traceSamples: traces.map(t => ({
+          name: t.name,
+          xLength: t.x?.length,
+          yLength: t.y?.length,
+          type: t.type
+        }))
+      });
 
       // NOTE: All trace generation (quality assessment, optimization, transformations,
       // category plots, regression lines, dot plot lines) is now handled by the orchestrator
@@ -348,6 +371,15 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         datarevision: Date.now(),
         // Enable grouping for Box Plots to prevent overlapping
         boxmode: isBoxPlot ? 'group' : undefined,
+        // Bar mode configuration
+        barmode: (() => {
+          const lower = subType.toLowerCase();
+          if (lower.includes('stacked') || lower.includes('stack')) return 'stack';
+          if (lower.includes('group')) return 'group';
+          if (lower.includes('overlay')) return 'overlay';
+          if (graphConfig?.graphType === 'Bar Plot' || lower.includes('bar')) return 'group';
+          return undefined;
+        })(),
         showlegend: showLegend,
         legend: {
           ...getLegendConfig(subType, canvasMode),

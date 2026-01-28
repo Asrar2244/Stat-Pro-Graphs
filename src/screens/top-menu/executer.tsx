@@ -145,6 +145,17 @@ const PiePlotModal = lazy(() =>
   ),
 );
 
+// Bar Plot Modal
+const BarPlotModal = lazy(() =>
+  import('../../features/graphs/2d/bar').then(
+    (m) => ({ default: m.BarPlotModal }),
+    (error) => {
+      console.error('Failed to load BarPlotModal:', error);
+      throw error;
+    }
+  ),
+);
+
 export const withMenuEvents = <P extends object>(
   translationNs: string,
   WrappedComponent: React.ComponentType<P>,
@@ -653,6 +664,56 @@ const MenuSelector: FC<{
     return <PiePlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
+  // Bar Plot wrapper with real data integration
+  const BarPlotWrapper: FC<IModal> = (m) => {
+    const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+    const projectNames = Object.keys(projects);
+    const { openNewTabAction } = useMenuCodeExecutor();
+    const { setRenderLatestRun } = useStartProStore();
+    const { t } = useTranslation('common');
+
+    const datasets: string[] = [];
+
+    const onCreateGraph = async (config: any) => {
+      try {
+        const workspacePath = projects[config.selectedProject]?.workspacePath;
+
+        const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
+
+        await insertGraphRun(workspacePath, {
+          name: config?.subType || 'Bar Plot',
+          createdAt: new Date().toISOString(),
+          config: { graphConfig: config, workspacePath },
+          tabName: config?.selectedProject || '',
+          graphType: config?.graphType || 'Bar Plot',
+          properties: {},
+        });
+
+        setRenderLatestRun(true);
+
+        openNewTabAction({
+          id: GRAPHS,
+          isEmptyDataView: false,
+          extraConfig: {
+            tabName: projects[config.selectedProject]?.workspacePath,
+            name: config.selectedProject,
+            type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }),
+            bareType: GRAPHS,
+            id: projects[config.selectedProject]?.id,
+            lastModified: new Date().toISOString(),
+            isActive: 1,
+            workspacePath: projects[config.selectedProject]?.workspacePath,
+          }
+        });
+
+      } catch (error) {
+        console.error('Error creating Bar Plot:', error);
+      }
+    };
+
+    return <BarPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
+  };
+
   const runSelector = () => {
     // CRITICAL: Synchronously get the active tab config directly from the model
     // This bypasses the 500ms delay in hooks and prevents race conditions during tab switching
@@ -725,6 +786,8 @@ const MenuSelector: FC<{
         return <BoxPlotWrapper {...modal} />;
       case 'open-pie-plot-modal':
         return <PieWrapper {...modal} />;
+      case 'open-bar-plot-modal':
+        return <BarPlotWrapper {...modal} />;
       default:
         return null;
     }
