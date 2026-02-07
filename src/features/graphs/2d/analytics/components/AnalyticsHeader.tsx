@@ -84,7 +84,7 @@ export const AnalyticsHeader: FC<AnalyticsHeaderProps> = ({
                     </Dropdown>
                 </Field>
 
-                {subType === 'ROC_CURVE' && (
+                {(subType === 'ROC_CURVE') && (
                     <Field label="Data Format" required className={styles.field}>
                         <Dropdown
                             value={dataFormat}

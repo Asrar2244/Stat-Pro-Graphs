@@ -35,12 +35,13 @@ interface UseVariableManagementResult {
     handleRemoveFromErrorBar: (variables: string[]) => void;
     handleRemoveFromCategory: (variables: string[]) => void;
 
-    // Bulk actions
-    selectAllAvailable: () => void;
-    selectAllX: () => void;
-    selectAllY: () => void;
-    selectAllErrorBar: () => void;
-    selectAllCategory: () => void;
+    // Selection states
+    selectAllAvailable: boolean | string | undefined;
+    selectAllX: boolean | string | undefined;
+    selectAllY: boolean | string | undefined;
+    selectAllErrorBar: boolean | string | undefined;
+    selectAllCategory: boolean | string | undefined;
+
     setSelectAllAvailable: (selected: boolean | string | undefined) => void;
     setSelectAllX: (selected: boolean | string | undefined) => void;
     setSelectAllY: (selected: boolean | string | undefined) => void;
@@ -69,7 +70,12 @@ export const useVariableManagement = (
     const [errorBarVariableList, setErrorBarVariableList] = useState<Map<string, boolean>>(new Map());
     const [categoryVariableList, setCategoryVariableList] = useState<Map<string, boolean>>(new Map());
 
-    // Note: selectAll states are handled by useCallback functions below
+    // Select all states
+    const [selectAllAvailable, setSelectAllAvailable] = useState<boolean | string | undefined>(false);
+    const [selectAllX, setSelectAllX] = useState<boolean | string | undefined>(false);
+    const [selectAllY, setSelectAllY] = useState<boolean | string | undefined>(false);
+    const [selectAllErrorBar, setSelectAllErrorBar] = useState<boolean | string | undefined>(false);
+    const [selectAllCategory, setSelectAllCategory] = useState<boolean | string | undefined>(false);
 
     // Initialize available list when variables change
     useMemo(() => {
@@ -173,93 +179,54 @@ export const useVariableManagement = (
         moveVariables(categoryVariableList, availableList, variables, setCategoryVariableList, setAvailableList);
     }, [categoryVariableList, availableList, moveVariables]);
 
-    // Bulk selection functions
-    const selectAllAvailable = useCallback(() => {
+    const handleSetSelectAllAvailable = useCallback((selected: boolean | string | undefined) => {
+        if (typeof selected !== 'boolean') return;
         setAvailableList(prev => {
             const newMap = new Map(prev);
-            newMap.forEach((_, key) => newMap.set(key, true));
+            newMap.forEach((_, key) => newMap.set(key, selected));
             return newMap;
         });
+        setSelectAllAvailable(selected);
     }, []);
 
-    const selectAllX = useCallback(() => {
-        setXVariableList(prev => {
-            const newMap = new Map(prev);
-            newMap.forEach((_, key) => newMap.set(key, true));
-            return newMap;
-        });
-    }, []);
-
-    const selectAllY = useCallback(() => {
-        setYVariableList(prev => {
-            const newMap = new Map(prev);
-            newMap.forEach((_, key) => newMap.set(key, true));
-            return newMap;
-        });
-    }, []);
-
-    const selectAllErrorBar = useCallback(() => {
-        setErrorBarVariableList(prev => {
-            const newMap = new Map(prev);
-            newMap.forEach((_, key) => newMap.set(key, true));
-            return newMap;
-        });
-    }, []);
-
-    const selectAllCategory = useCallback(() => {
-        setCategoryVariableList(prev => {
-            const newMap = new Map(prev);
-            newMap.forEach((_, key) => newMap.set(key, true));
-            return newMap;
-        });
-    }, []);
-
-    const setSelectAllAvailable = useCallback((selected: boolean | string | undefined) => {
-        // Only set all to true if explicitly true, not if 'mixed' or undefined
-        if (selected === true) {
-            setAvailableList(prev => {
-                const newMap = new Map(prev);
-                newMap.forEach((_, key) => newMap.set(key, true));
-                return newMap;
-            });
-        }
-        // For 'mixed' or false, don't change the individual selections
-    }, []);
-
-    const setSelectAllX = useCallback((selected: boolean | string | undefined) => {
+    const handleSetSelectAllX = useCallback((selected: boolean | string | undefined) => {
         if (typeof selected !== 'boolean') return;
         setXVariableList(prev => {
             const newMap = new Map(prev);
             newMap.forEach((_, key) => newMap.set(key, selected));
             return newMap;
         });
+        setSelectAllX(selected);
     }, []);
 
-    const setSelectAllY = useCallback((selected: boolean | string | undefined) => {
+    const handleSetSelectAllY = useCallback((selected: boolean | string | undefined) => {
         if (typeof selected !== 'boolean') return;
         setYVariableList(prev => {
             const newMap = new Map(prev);
             newMap.forEach((_, key) => newMap.set(key, selected));
             return newMap;
         });
+        setSelectAllY(selected);
     }, []);
 
-    const setSelectAllErrorBar = useCallback((selected: boolean | string | undefined) => {
+    const handleSetSelectAllErrorBar = useCallback((selected: boolean | string | undefined) => {
         if (typeof selected !== 'boolean') return;
         setErrorBarVariableList(prev => {
             const newMap = new Map(prev);
             newMap.forEach((_, key) => newMap.set(key, selected));
             return newMap;
         });
+        setSelectAllErrorBar(selected);
     }, []);
 
-    const setSelectAllCategory = useCallback((selected: boolean | string | undefined) => {
+    const handleSetSelectAllCategory = useCallback((selected: boolean | string | undefined) => {
         if (typeof selected !== 'boolean') return;
         setCategoryVariableList(prev => {
             const newMap = new Map(prev);
             newMap.forEach((_, key) => newMap.set(key, selected));
             return newMap;
         });
+        setSelectAllCategory(selected);
     }, []);
 
     const validationHelpers = useMemo(() => {
@@ -305,17 +272,17 @@ export const useVariableManagement = (
         handleRemoveFromErrorBar,
         handleRemoveFromCategory,
 
-        // Bulk actions
+        // Select all states
         selectAllAvailable,
         selectAllX,
         selectAllY,
         selectAllErrorBar,
         selectAllCategory,
-        setSelectAllAvailable,
-        setSelectAllX,
-        setSelectAllY,
-        setSelectAllErrorBar,
-        setSelectAllCategory,
+        setSelectAllAvailable: handleSetSelectAllAvailable,
+        setSelectAllX: handleSetSelectAllX,
+        setSelectAllY: handleSetSelectAllY,
+        setSelectAllErrorBar: handleSetSelectAllErrorBar,
+        setSelectAllCategory: handleSetSelectAllCategory,
 
         // Validation helpers
         ...validationHelpers,

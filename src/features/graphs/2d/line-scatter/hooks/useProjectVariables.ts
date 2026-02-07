@@ -25,7 +25,7 @@ export const useProjectVariables = (selectedProject?: string): UseProjectVariabl
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
-  
+
   const { projects: projectStore } = useStartProStore(
     useShallow((state) => ({ projects: state.projects }))
   );
@@ -43,7 +43,7 @@ export const useProjectVariables = (selectedProject?: string): UseProjectVariabl
         setIsLoading(true);
       }
       setError(null);
-      
+
       try {
         const project = projectStore[selectedProject];
         if (!project) {
@@ -55,26 +55,26 @@ export const useProjectVariables = (selectedProject?: string): UseProjectVariabl
         // Load variables from the project's database
         const db = new Database(project.workspacePath);
         const columnQuery = `PRAGMA table_info(${EXCEL});`;
-        
+
         const columns = await db.selectQuery(columnQuery);
-        
+
         if (!columns || columns.length === 0) {
           setError('No data columns found in the selected project');
           setVariables([]);
           return;
         }
-        
+
         // Determine variable types based on column type from database
         const processedVariables = await Promise.all(
           columns.map(async (col: any) => {
             // Check column type from SQLite
             const colType = col.type?.toUpperCase() || '';
             let varType: 'numeric' | 'categorical' = 'numeric';
-            
+
             // SQLite TEXT types are categorical
             if (colType.includes('TEXT') || colType.includes('VARCHAR') || colType.includes('CHAR')) {
               varType = 'categorical';
-            } 
+            }
             // Numeric types
             else if (colType.includes('INT') || colType.includes('REAL') || colType.includes('NUMERIC') || colType.includes('FLOAT') || colType.includes('DOUBLE')) {
               varType = 'numeric';
@@ -96,7 +96,7 @@ export const useProjectVariables = (selectedProject?: string): UseProjectVariabl
                 varType = 'numeric';
               }
             }
-            
+
             return {
               id: col.name,
               name: col.name,
@@ -104,36 +104,42 @@ export const useProjectVariables = (selectedProject?: string): UseProjectVariabl
             };
           })
         );
-        
+
         setVariables(processedVariables);
         setRetryCount(0); // Reset retry count on success
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        setError(`Failed to load variables: ${errorMessage}`);
+        let errorMessage = 'Unknown error';
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (typeof err === 'string') {
+          errorMessage = err;
+        } else if (err && typeof err === 'object' && 'message' in err) {
+          errorMessage = String((err as any).message);
+        }
+
+        setError(errorMessage); // Removed redundant prefix
         setVariables([]);
-        
+
       } finally {
         setIsLoading(false);
         setIsRetrying(false);
       }
     };
 
-    loadVariables();
-  }, [selectedProject]); // Removed workspacePath dependency that was causing unnecessary reloads
+    loadVariables(retryCount > 0);
+  }, [selectedProject, retryCount]); // Now depends on retryCount to trigger reload
 
   // Retry function for manual retry
   const retry = () => {
     if (retryCount < 3) { // Max 3 retries
       setRetryCount(prev => prev + 1);
-      // Force reload by updating a dependency
-      window.location.reload();
     }
   };
 
-  return { 
-    variables, 
-    isLoading: isLoading || isRetrying, 
-    error, 
+  return {
+    variables,
+    isLoading: isLoading || isRetrying,
+    error,
     retry,
     canRetry: retryCount < 3 && !!error,
     retryCount

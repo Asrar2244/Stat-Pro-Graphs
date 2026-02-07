@@ -185,6 +185,22 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
     setYVariable(next);
   };
 
+  const onRemoveErrorBar = (): void => {
+    if (!errorBarVariableList) return;
+    const selectedVariables = Array.from(errorBarVariableList.entries())
+      .filter(([, checked]) => checked)
+      .map(([name]) => name);
+    handleRemoveFromErrorBar?.(selectedVariables);
+  };
+
+  const onRemoveCategory = (): void => {
+    if (!categoryVariableList) return;
+    const selectedVariables = Array.from(categoryVariableList.entries())
+      .filter(([, checked]) => checked)
+      .map(([name]) => name);
+    handleRemoveFromCategory?.(selectedVariables);
+  };
+
   return (
     <div className={classes.variableContainer}>
       <div className={classes.variableHeader}>
@@ -199,7 +215,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
 
       <div style={variableSelectionContainerStyles as React.CSSProperties}>
         {/* Available Variables - Leftmost position */}
-        <div className={classes.column} style={columnStyles}>
+        <div className={classes.column} style={(columnStyles as React.CSSProperties)}>
           <div className={classes.columnHeader}>
             <MdInfoOutline size={18} color={tokens.colorNeutralForeground2} />
             <Text size={300} weight="bold" className={classes.columnHeaderTitle}>AVAILABLE VARIABLE(S)</Text>
@@ -289,7 +305,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
 
         {/* X Variables */}
         {requireX && (
-          <div className={classes.column} style={columnStyles}>
+          <div className={classes.column} style={(columnStyles as React.CSSProperties)}>
             <div className={classes.columnHeader}>
               <MdTrendingUp size={18} color={tokens.colorPaletteRedForeground1} />
               <Text size={300} weight="bold" className={classes.columnHeaderTitle}>X VARIABLE(S)</Text>
@@ -322,7 +338,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
 
         {/* Y Variables */}
         {requireY && (
-          <div className={classes.column} style={columnStyles}>
+          <div className={classes.column} style={(columnStyles as React.CSSProperties)}>
             <div className={classes.columnHeader}>
               <MdTrendingDown size={18} color={tokens.colorPaletteGreenForeground1} />
               <Text size={300} weight="bold" className={classes.columnHeaderTitle}>Y VARIABLE(S)</Text>
@@ -355,7 +371,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
 
         {/* Error Bar Variables */}
         {requireErrorBar && errorBarVariableList && (
-          <div className={classes.column} style={columnStyles}>
+          <div className={classes.column} style={(columnStyles as React.CSSProperties)}>
             <div className={classes.columnHeader}>
               <MdCheckCircle size={18} color={tokens.colorPaletteYellowForeground1} />
               <Text size={300} weight="bold" className={classes.columnHeaderTitle}>ERROR BAR VARIABLE(S)</Text>
@@ -377,7 +393,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                 icon={<MdOutlineRemove />}
                 iconPosition="before"
                 size="small"
-                onClick={handleRemoveFromErrorBar}
+                onClick={onRemoveErrorBar}
                 disabled={errorBarVariableList.size === 0}
                 className={classes.actionButton}
               >
@@ -389,9 +405,9 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
 
         {/* Category Variables */}
         {requireCategory && categoryVariableList && (
-          <div className={classes.column} style={columnStyles}>
+          <div className={classes.column} style={(columnStyles as React.CSSProperties)}>
             <div className={classes.columnHeader}>
-              <MdCheckCircle size={18} color={tokens.colorPalettePurpleForeground1} />
+              <MdCheckCircle size={18} color={tokens.colorPalettePurpleForeground2} />
               <Text size={300} weight="bold" className={classes.columnHeaderTitle}>CATEGORY VARIABLE(S)</Text>
               <div className={classes.columnHeaderBadge}>{categoryVariableList.size}</div>
             </div>
@@ -410,7 +426,7 @@ export const VariableSelection: FC<VariableSelectionProps> = (props) => {
                 icon={<MdOutlineRemove />}
                 iconPosition="before"
                 size="small"
-                onClick={handleRemoveFromCategory}
+                onClick={onRemoveCategory}
                 disabled={categoryVariableList.size === 0}
                 className={classes.actionButton}
               >

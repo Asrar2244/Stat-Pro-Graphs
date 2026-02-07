@@ -86,7 +86,7 @@ export const AnalyticsModal: FC<AnalyticsModalProps> = ({ open, projects, onClos
             return;
         }
 
-        // 2. Data Range Validation for ROC
+        // 2. Data Range Validation for ROC (MUST be probabilities 0-1)
         if (subType === 'ROC_CURVE' && dataFormat !== 'XY Pairs') {
             const predictorCols = variablesRecord['predictor'] || [];
             const project = projectStore[selectedProject];
@@ -132,7 +132,8 @@ export const AnalyticsModal: FC<AnalyticsModalProps> = ({ open, projects, onClos
                 analyticsData: {
                     type: computer.type,
                     plotConfig,
-                    variables: variablesRecord
+                    variables: variablesRecord,
+                    options: { ...analyticsConfig, dataFormat }
                 },
                 ...plotConfig.data,
             };

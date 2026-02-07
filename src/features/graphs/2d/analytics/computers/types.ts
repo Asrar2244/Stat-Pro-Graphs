@@ -70,4 +70,7 @@ export interface Annotation {
     bordercolor?: string;
     borderwidth?: number;
     borderpad?: number;
+    arrowhead?: number;
+    ax?: number;
+    ay?: number;
 }

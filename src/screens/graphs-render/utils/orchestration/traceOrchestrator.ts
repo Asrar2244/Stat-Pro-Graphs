@@ -85,28 +85,18 @@ export const orchestrateTraceGeneration = async (
     if (Array.isArray(plotConfig.data)) {
       // Multi-trace logic (e.g. X Many Y)
       traces = plotConfig.data.map((traceData: any) => ({
-        type: plotConfig.plotType === 'line' ? 'scatter' : plotConfig.plotType,
-        mode: plotConfig.plotType === 'line' ? 'lines' : 'markers',
-        x: traceData.x,
-        y: traceData.y,
+        type: traceData.type || (plotConfig.plotType === 'line' ? 'scatter' : plotConfig.plotType),
+        mode: traceData.mode || (plotConfig.plotType === 'line' ? 'lines' : 'markers'),
+        ...traceData, // Spread all properties (markers, lines, name, x, y)
         name: traceData.name || graphConfig.subType,
-        line: {
-          width: 2
-          // Let Plotly handle colors automatically for multiple traces
-        },
       }));
     } else {
       // Single trace logic (Legacy/Single X/Y)
       traces = [{
-        type: plotConfig.plotType === 'line' ? 'scatter' : plotConfig.plotType,
-        mode: plotConfig.plotType === 'line' ? 'lines' : 'markers',
-        x: plotConfig.data.x,
-        y: plotConfig.data.y,
+        type: plotConfig.data.type || (plotConfig.plotType === 'line' ? 'scatter' : plotConfig.plotType),
+        mode: plotConfig.data.mode || (plotConfig.plotType === 'line' ? 'lines' : 'markers'),
+        ...plotConfig.data,
         name: plotConfig.data.name || graphConfig.subType,
-        line: {
-          color: liveProps?.global?.seriesColor || '#1f77b4',
-          width: 2
-        },
       }];
     }
 

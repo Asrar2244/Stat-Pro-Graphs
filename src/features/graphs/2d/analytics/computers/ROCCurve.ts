@@ -9,7 +9,7 @@ export const ROCCurveComputer: AnalyticsComputer = {
         return [
             {
                 id: 'target',
-                label: isXYPairs ? 'FPR Variable (X-axis)' : 'Target Variable (Actual)',
+                label: isXYPairs ? 'FPR Variable (X-axis)' : 'Target Variable (X)',
                 description: isXYPairs ? 'Column containing pre-computed False Positive Rate values (0-1)' : 'Binary variable reflecting the ground truth (0/1 or True/False)',
                 type: isXYPairs ? 'numeric' : 'categorical',
                 minCount: 1,
@@ -17,8 +17,8 @@ export const ROCCurveComputer: AnalyticsComputer = {
             },
             {
                 id: 'predictor',
-                label: isXYPairs ? 'TPR Variable (Y-axis)' : 'Predictor Variable (Probability)',
-                description: isXYPairs ? 'Column containing pre-computed True Positive Rate values (0-1)' : 'Numerical probability score or confidence level (must be between 0 and 1)',
+                label: isXYPairs ? 'TPR Variable (Y-axis)' : 'Predictor Variables (Many Y)',
+                description: isXYPairs ? 'Column containing pre-computed True Positive Rate values (0-1)' : 'Numerical probability scores or confidence levels (must be between 0 and 1)',
                 type: 'numeric',
                 minCount: 1,
                 maxCount: undefined // Allow multiple predictors for comparison in both modes

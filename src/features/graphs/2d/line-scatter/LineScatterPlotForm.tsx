@@ -124,8 +124,15 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
     setSelectAllCategory,
   ]);
 
+  // Auto-select starting project if none is selected
+  useEffect(() => {
+    if (!selectedProject && projects.length > 0) {
+      setProject(projects[0]);
+    }
+  }, [selectedProject, projects, setProject]);
+
   // Available formats based on subtype and symbol value
-  const availableFormats = useAvailableFormats(subType, symbolValue);
+  const availableFormats = useAvailableFormats(subType);
 
   // Plot type flags
   const { showVariableSelection } = getPlotTypeFlags(subType);
@@ -170,8 +177,8 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
           setErrorCalculationLower(undefined);
         }
       } else if (!symbolValue) {
-        // For all other error bar types (including bidirectional), set default to "Worksheet Columns"
-        setSymbolValue('Worksheet Columns');
+        // For all other error bar types (including bidirectional), set default to "Worksheet"
+        setSymbolValue('Worksheet');
       }
     }
   }, [subType, symbolValue, setSymbolValue, setErrorCalculationUpper, setErrorCalculationLower]);
@@ -249,7 +256,7 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
     const categoryVars = Array.from(categoryVariableList.keys());
 
     const isAsymmetric = isAsymmetricErrorBar(subType);
-    const isManualAsymmetric = symbolValue === 'Asymmetric Error Bar';
+    const isManualAsymmetric = symbolValue === 'Asymmetric Error Bar Column';
     const shouldUseAsymmetric = isAsymmetric || isManualAsymmetric;
 
     setGraphConfig({
@@ -258,7 +265,7 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
       subType,
       dataFormat,
       variables: { x: xVars, y: yVars, errorBar: errorBarVars, category: categoryVars },
-      symbolValue: shouldUseAsymmetric ? 'Asymmetric Error Bar' : symbolValue,
+      symbolValue: shouldUseAsymmetric ? 'Asymmetric Error Bar Column' : symbolValue,
       errorCalculationUpper: shouldUseAsymmetric ? undefined : errorCalculationUpper,
       errorCalculationLower: shouldUseAsymmetric ? undefined : errorCalculationLower,
       errorBarVariable: errorBarVars[0], // Legacy single variable support
@@ -277,44 +284,6 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
     setGraphConfig
   ]);
 
-  if (isLoadingVariables) {
-    return (
-      <div style={{ padding: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-        <Spinner size="large" />
-      </div>
-    );
-  }
-
-  if (loadError) {
-    return (
-      <div style={{ padding: '32px' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '16px',
-          backgroundColor: tokens.colorPaletteRedBackground2,
-          borderRadius: '4px',
-          border: `1px solid ${tokens.colorPaletteRedBorder1}`
-        }}>
-          <MdWarning color={tokens.colorPaletteRedForeground1} />
-          <Text color={tokens.colorPaletteRedForeground1}>
-            Failed to load variables: {loadError}
-          </Text>
-          {canRetry && (
-            <Button
-              appearance="outline"
-              size="small"
-              onClick={retry}
-            >
-              Retry ({retryCount}/3)
-            </Button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={classes.root}>
       <LineScatterHeader />
@@ -322,12 +291,55 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
       <ProjectAndType
         classes={classes}
         projects={projects}
-        selectedProject={selectedProject}
+        selectedProject={selectedProject || null}
         setProject={setProject}
         subType={subType}
         setSubType={setSubType}
         subTypes={SUB_TYPES}
       />
+
+      {/* Loading State */}
+      {isLoadingVariables && (
+        <div style={{ padding: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Spinner size="medium" label={`Loading variables from ${selectedProject}...`} />
+        </div>
+      )}
+
+      {/* Error State */}
+      {loadError && (
+        <div style={{ padding: '16px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px',
+            backgroundColor: tokens.colorPaletteRedBackground2,
+            borderRadius: '4px',
+            border: `1px solid ${tokens.colorPaletteRedBorder1}`
+          }}>
+            <MdWarning color={tokens.colorPaletteRedForeground1} size={20} />
+            <div style={{ flex: 1 }}>
+              <Text color={tokens.colorPaletteRedForeground1} weight="semibold">
+                Failed to load variables
+              </Text>
+              <br />
+              <Text color={tokens.colorPaletteRedForeground1} size={200}>
+                {loadError}
+              </Text>
+            </div>
+            {canRetry && (
+              <Button
+                appearance="outline"
+                size="small"
+                onClick={retry}
+                disabled={isLoadingVariables}
+              >
+                Retry {retryCount > 0 ? `(${retryCount}/3)` : ''}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       <DataFormatSection
         classes={classes}
@@ -371,15 +383,15 @@ export const LineScatterPlotForm: FC<{ projects: string[]; datasets: string[] }>
           setYVariableList={setYVariableList}
           xVariableList={xVariableList}
           selectAllX={selectAllX}
-          setSelectAllX={setSelectAllX}
+          setSelectAllX={setSelectAllX as any}
           setXVariableList={setXVariableList}
           errorBarVariableList={errorBarVariableList}
-          selectAllErrorBar={selectAllErrorBar}
-          setSelectAllErrorBar={setSelectAllErrorBar}
+          selectAllErrorBar={selectAllErrorBar as any}
+          setSelectAllErrorBar={setSelectAllErrorBar as any}
           setErrorBarVariableList={setErrorBarVariableList}
           categoryVariableList={categoryVariableList}
-          selectAllCategory={selectAllCategory}
-          setSelectAllCategory={setSelectAllCategory}
+          selectAllCategory={selectAllCategory as any}
+          setSelectAllCategory={setSelectAllCategory as any}
           setCategoryVariableList={setCategoryVariableList}
           handleSendToX={handleSendToX}
           handleSendToY={handleSendToY}
