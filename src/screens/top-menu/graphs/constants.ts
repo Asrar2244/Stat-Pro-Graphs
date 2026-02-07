@@ -17,6 +17,7 @@ export const graph2DOptions: GraphOption[] = [
     label: 'Statistical',
     children: [
       { label: 'Box Plot', value: 'box', execute: 'open-box-plot-modal', icon: MdBolt },
+      { label: 'Data Analytics', value: 'analytics', execute: 'open-analytics-modal', icon: MdScatterPlot },
       { label: 'Histogram', value: 'histogram', execute: 'histogram', icon: MdHistory },
       { label: 'Violin Plot', value: 'violin', execute: 'violin-plot', icon: MdBolt },
       { label: 'Heatmap', value: 'heatmap', execute: 'heatmap', icon: MdHeatPump },

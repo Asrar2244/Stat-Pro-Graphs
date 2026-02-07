@@ -19,6 +19,7 @@ const IMPLEMENTED_GRAPHS = [
   'open-box-plot-modal',
   'open-pie-plot-modal',
   'open-bar-plot-modal',
+  'open-analytics-modal',
 ];
 
 export const GraphsDropdownPanel: FC<GraphsDropdownPanelProps> = ({ open, onClose, setMenuItem: propSetMenuItem, pinned: propPinned, setPinned: propSetPinned }) => {

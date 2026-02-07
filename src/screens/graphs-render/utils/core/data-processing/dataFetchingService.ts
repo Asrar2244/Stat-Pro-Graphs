@@ -26,29 +26,44 @@ export interface FetchDataResult {
 export const fetchGraphData = async (config: FetchDataConfig): Promise<FetchDataResult> => {
   const { graphConfig, workspacePath } = config;
 
-  if (!graphConfig?.selectedProject || !graphConfig?.variables) {
+
+
+  const isAnalytics = graphConfig.graphType === 'Data Analytics';
+
+  if (!graphConfig?.selectedProject || (!isAnalytics && !graphConfig?.variables) || (isAnalytics && !graphConfig?.analyticsData?.variables)) {
     throw new Error('Invalid graph configuration');
   }
 
   const db = new Database(workspacePath || graphConfig.selectedProject);
-  const cols = [
-    ...(graphConfig.variables?.x || []),
-    ...(graphConfig.variables?.y || []),
-    ...(graphConfig.variables?.z || []),
-    ...(graphConfig.variables?.category || [])
-  ];
+  let cols: string[] = [];
 
-  // Add error bar variables if needed
-  const errorBarVars = graphConfig.variables?.errorBar || [];
-  errorBarVars.forEach((errorBarVar: string) => {
-    if (!cols.includes(errorBarVar)) {
-      cols.push(errorBarVar);
+  if (isAnalytics) {
+    const analyticsVars = graphConfig.analyticsData.variables;
+    Object.values(analyticsVars).forEach((varList: any) => {
+      if (Array.isArray(varList)) {
+        cols.push(...varList);
+      }
+    });
+  } else {
+    cols = [
+      ...(graphConfig.variables?.x || []),
+      ...(graphConfig.variables?.y || []),
+      ...(graphConfig.variables?.z || []),
+      ...(graphConfig.variables?.category || [])
+    ];
+
+    // Add error bar variables if needed
+    const errorBarVars = graphConfig.variables?.errorBar || [];
+    errorBarVars.forEach((errorBarVar: string) => {
+      if (!cols.includes(errorBarVar)) {
+        cols.push(errorBarVar);
+      }
+    });
+
+    // Legacy support: add single errorBarVariable if it exists and not already added
+    if (graphConfig?.errorBarVariable && !cols.includes(graphConfig.errorBarVariable)) {
+      cols.push(graphConfig.errorBarVariable);
     }
-  });
-
-  // Legacy support: add single errorBarVariable if it exists and not already added
-  if (graphConfig?.errorBarVariable && !cols.includes(graphConfig.errorBarVariable)) {
-    cols.push(graphConfig.errorBarVariable);
   }
 
   if (cols.length === 0) {

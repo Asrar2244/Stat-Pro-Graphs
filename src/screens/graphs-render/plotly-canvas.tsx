@@ -70,7 +70,10 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
   // Fetch data only when data-related config changes
   useEffect(() => {
     const runFetch = async () => {
-      if (!graphConfig?.selectedProject || !graphConfig?.variables) return;
+      // Allow Data Analytics to proceed (uses pre-computed data)
+      const isAnalytics = graphConfig?.graphType === 'Data Analytics';
+      if (!isAnalytics && (!graphConfig?.selectedProject || !graphConfig?.variables)) return;
+      if (isAnalytics && !graphConfig?.selectedProject) return;
 
       // Unique key for current data requirements
       const fetchKey = `${workspacePath}-${JSON.stringify(graphConfig.variables)}-${graphConfig.dataFormat}`;
@@ -164,6 +167,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
 
       const { traces, legendLabels, categoryPlotResult } = orchestrationResult;
 
+
+
       console.log('[PieDebug] Orchestration Result:', {
         tracesLength: traces.length,
         legendLabels,
@@ -187,6 +192,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       if (traces.length === 0) {
         return;
       }
+
+
 
       // Create layout based on sub-type
       const subType = graphConfig?.subType || '';
@@ -354,139 +361,186 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
 
       const isBoxPlot = subType.toLowerCase().includes('box');
 
-      let layout: any = {
-        title: titleVisible
-          ? {
-            text: liveTitle || getTitleText(subType),
-            font: { size: 18, family: 'Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: textColor },
-            x: 0.5,
-            xanchor: 'center',
-            y: 0.98,
-            yanchor: 'top',
-            pad: { t: 8, b: 4, l: 0, r: 0 },
-          }
-          : undefined,
-        autosize: true,
-        // Force Plotly to fully re-evaluate layout changes like RGBA grid colors
-        datarevision: Date.now(),
-        // Enable grouping for Box Plots to prevent overlapping
-        boxmode: isBoxPlot ? 'group' : undefined,
-        // Bar mode configuration
-        barmode: (() => {
-          const lower = subType.toLowerCase();
-          if (lower.includes('stacked') || lower.includes('stack')) return 'stack';
-          if (lower.includes('group')) return 'group';
-          if (lower.includes('overlay')) return 'overlay';
-          if (graphConfig?.graphType === 'Bar Plot' || lower.includes('bar')) return 'group';
-          return undefined;
-        })(),
-        showlegend: showLegend,
-        legend: {
-          ...getLegendConfig(subType, canvasMode),
-          title: legendTitle ? { text: legendTitle } : undefined,
-          traceorder: 'normal',
-          ...(orientation ? { orientation } : {}),
-          borderwidth: framed ? 1 : 0,
-          bordercolor: framed ? modeColors.axisColor : undefined,
-          bgcolor: framed ? hexToRgba(modeColors.paperBg, 0.85) : undefined,
-          font: {
-            color: modeColors.textColor,
-            size: 12,
-            family: 'Arial, sans-serif'
+
+      let layout: any;
+      try {
+        layout = {
+          title: titleVisible
+            ? {
+              text: liveTitle || getTitleText(subType),
+              font: { size: 18, family: 'Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: textColor },
+              x: 0.5,
+              xanchor: 'center',
+              y: 0.98,
+              yanchor: 'top',
+              pad: { t: 8, b: 4, l: 0, r: 0 },
+            }
+            : undefined,
+          autosize: true,
+          // Force Plotly to fully re-evaluate layout changes like RGBA grid colors
+          datarevision: Date.now(),
+          // Enable grouping for Box Plots to prevent overlapping
+          boxmode: isBoxPlot ? 'group' : undefined,
+          // Bar mode configuration
+          barmode: (() => {
+            const lower = subType.toLowerCase();
+            if (lower.includes('stacked') || lower.includes('stack')) return 'stack';
+            if (lower.includes('group')) return 'group';
+            if (lower.includes('overlay')) return 'overlay';
+            if (graphConfig?.graphType === 'Bar Plot' || lower.includes('bar')) return 'group';
+            return undefined;
+          })(),
+          showlegend: showLegend,
+          legend: {
+            ...getLegendConfig(subType, canvasMode),
+            title: legendTitle ? { text: legendTitle } : undefined,
+            traceorder: 'normal',
+            ...(orientation ? { orientation } : {}),
+            borderwidth: framed ? 1 : 0,
+            bordercolor: framed ? modeColors.axisColor : undefined,
+            bgcolor: framed ? hexToRgba(modeColors.paperBg, 0.85) : undefined,
+            font: {
+              color: modeColors.textColor,
+              size: 12,
+              family: 'Arial, sans-serif'
+            },
+            borderpad,
+            ...legendPos,
+            // Legend Items properties
+            ...(liveProps?.global?.legendWidth && { width: liveProps.global.legendWidth }),
+            ...(liveProps?.global?.legendHeight && { height: liveProps.global.legendHeight }),
+            ...(liveProps?.global?.symbolPlacement && {
+              traceorder: liveProps.global.symbolPlacement === 'before' ? 'normal' : 'reversed'
+            }),
           },
-          borderpad,
-          ...legendPos,
-          // Legend Items properties
-          ...(liveProps?.global?.legendWidth && { width: liveProps.global.legendWidth }),
-          ...(liveProps?.global?.legendHeight && { height: liveProps.global.legendHeight }),
-          ...(liveProps?.global?.symbolPlacement && {
-            traceorder: liveProps.global.symbolPlacement === 'before' ? 'normal' : 'reversed'
-          }),
-        },
-        xaxis: {
-          ...getAxisConfig(subType, 'x', canvasMode),
-          title: (() => {
-            // Special handling for X Category point plots
-            if (isPointPlot && normalizedFormat === 'X Category' && xNames?.length > 0) {
-              return {
-                text: xNames[0],
+          xaxis: {
+            ...getAxisConfig(subType, 'x', canvasMode),
+            title: (() => {
+              // Special handling for X Category point plots
+              if (isPointPlot && normalizedFormat === 'X Category' && xNames?.length > 0) {
+                return {
+                  text: xNames[0],
+                  standoff: 12,
+                  font: { color: modeColors.axisTextColor }
+                };
+              }
+              return axisXTitle ? {
+                ...axisXTitle,
                 standoff: 12,
                 font: { color: modeColors.axisTextColor }
-              };
-            }
-            return axisXTitle ? {
-              ...axisXTitle,
-              standoff: 12,
-              font: { color: modeColors.axisTextColor }
-            } : undefined;
-          })(),
-          showline: true,
-          linecolor: axisLineColor,
-          linewidth: axisLineWidthPx,
-          type: ((): any => {
-            // Special handling for Box Plots - grouping axis should default to category
-            // to ensure proper box width rendering regardless of numerical range
-            if (isBoxPlot) {
-              const isVerticalBox = subType.toLowerCase().includes('vertical') || !subType.toLowerCase().includes('horizontal');
-              // For vertical box plots, X axis is the grouping axis
-              // We force 'category' because we override the data to be Series Labels (strings)
-              if (isVerticalBox) {
+              } : undefined;
+            })(),
+            showline: true,
+            linecolor: axisLineColor,
+            linewidth: axisLineWidthPx,
+            type: ((): any => {
+              // Special handling for Box Plots - grouping axis should default to category
+              // to ensure proper box width rendering regardless of numerical range
+              if (isBoxPlot) {
+                const isVerticalBox = subType.toLowerCase().includes('vertical') || !subType.toLowerCase().includes('horizontal');
+                // For vertical box plots, X axis is the grouping axis
+                // We force 'category' because we override the data to be Series Labels (strings)
+                if (isVerticalBox) {
+                  return 'category';
+                }
+              }
+
+              // Special handling for Y Category point plots
+              if (isPointPlot && normalizedFormat === 'Y Category' && categoryNames?.length > 0) {
                 return 'category';
               }
-            }
 
-            // Special handling for Y Category point plots
-            if (isPointPlot && normalizedFormat === 'Y Category' && categoryNames?.length > 0) {
-              return 'category';
-            }
+              switch (liveProps?.global?.xScaleType) {
+                case 'linear': return 'linear';
+                case 'log10': return 'log';
+                case 'loge': return 'log';
+                case 'category': return 'category';
+                case 'datetime': return 'date';
+                // Probability/probit/logit/weibull/reciprocal would require transforms; default to linear for now
+                default: return 'linear';
+              }
+            })(),
+            // Range handling
+            ...(liveProps?.global?.xRangeStartMode === 'constant' && typeof liveProps?.global?.xRangeStart === 'number' && liveProps?.global?.xRangeEndMode === 'constant' && typeof liveProps?.global?.xRangeEnd === 'number'
+              ? { range: [liveProps.global.xRangeStart, liveProps.global.xRangeEnd] }
+              : {}),
+            ...(liveProps?.global?.xPad5 ? { rangepadding: 5 } : {}),
+            ...(liveProps?.global?.xNearestTick ? { tickmode: 'auto' } : {}),
+            // Special category tick configuration for Y Category point plots
+            ...(isPointPlot && normalizedFormat === 'Y Category' && categoryNames?.length > 0 ? (() => {
+              // Get unique category values from the data
+              const categoryCol = categoryNames[0];
+              const uniqueCategories = [...new Set(rows.map((row: any) => row[categoryCol]))];
 
-            switch (liveProps?.global?.xScaleType) {
-              case 'linear': return 'linear';
-              case 'log10': return 'log';
-              case 'loge': return 'log';
-              case 'category': return 'category';
-              case 'datetime': return 'date';
-              // Probability/probit/logit/weibull/reciprocal would require transforms; default to linear for now
-              default: return 'linear';
-            }
-          })(),
-          // Range handling
-          ...(liveProps?.global?.xRangeStartMode === 'constant' && typeof liveProps?.global?.xRangeStart === 'number' && liveProps?.global?.xRangeEndMode === 'constant' && typeof liveProps?.global?.xRangeEnd === 'number'
-            ? { range: [liveProps.global.xRangeStart, liveProps.global.xRangeEnd] }
-            : {}),
-          ...(liveProps?.global?.xPad5 ? { rangepadding: 5 } : {}),
-          ...(liveProps?.global?.xNearestTick ? { tickmode: 'auto' } : {}),
-          // Special category tick configuration for Y Category point plots
-          ...(isPointPlot && normalizedFormat === 'Y Category' && categoryNames?.length > 0 ? (() => {
-            // Get unique category values from the data
-            const categoryCol = categoryNames[0];
-            const uniqueCategories = [...new Set(rows.map((row: any) => row[categoryCol]))];
-
-            return {
-              tickmode: 'array',
-              tickvals: uniqueCategories.map((_, index) => index), // Use 0-based indexing to match data
-              ticktext: uniqueCategories,
-              title: categoryCol
-            };
-          })() : {}),
-          showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridXMajor),
-          gridcolor: (() => {
-            // FIX: Legacy grid color check
-            const userGrid = liveProps?.global?.gridColor;
-            const shouldUseUserGrid = userGrid && !(canvasMode === 'dark' && isLegacyLightDefault(userGrid, '#e5e5e5'));
-            return hexToRgba(shouldUseUserGrid ? userGrid : modeColors.gridColor, gridOpacity);
-          })(),
-          gridwidth: inchToPx(liveProps?.global?.gridThicknessInch || 0.01),
-          griddash: gridDash,
-          zeroline: false,
-          minor: {
-            showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridXMinor),
-            gridcolor: hexToRgba(modeColors.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
-            gridwidth: Math.max(1, Math.floor(inchToPx((liveProps?.global?.gridThicknessInch || 0.01) / 2))),
-            griddash: gridDash || 'dot',
-            // Minor tick marks
+              return {
+                tickmode: 'array',
+                tickvals: uniqueCategories.map((_, index) => index), // Use 0-based indexing to match data
+                ticktext: uniqueCategories,
+                title: categoryCol
+              };
+            })() : {}),
+            showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridXMajor),
+            gridcolor: (() => {
+              // FIX: Legacy grid color check
+              const userGrid = liveProps?.global?.gridColor;
+              const shouldUseUserGrid = userGrid && !(canvasMode === 'dark' && isLegacyLightDefault(userGrid, '#e5e5e5'));
+              return hexToRgba(shouldUseUserGrid ? userGrid : modeColors.gridColor, gridOpacity);
+            })(),
+            gridwidth: inchToPx(liveProps?.global?.gridThicknessInch || 0.01),
+            griddash: gridDash,
+            zeroline: false,
+            minor: {
+              showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridXMinor),
+              gridcolor: hexToRgba(modeColors.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
+              gridwidth: Math.max(1, Math.floor(inchToPx((liveProps?.global?.gridThicknessInch || 0.01) / 2))),
+              griddash: gridDash || 'dot',
+              // Minor tick marks
+              ticks: (() => {
+                const direction = liveProps?.global?.minorTickDirection || 'outward';
+                switch (direction) {
+                  case 'none': return '';
+                  case 'inward': return 'inside';
+                  case 'outward': return 'outside';
+                  case 'both': return 'outside';
+                  default: return 'outside';
+                }
+              })(),
+              ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickLength || 0.05))),
+              tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickThickness || 0.005))),
+              tickcolor: (() => {
+                // FIX: Legacy minor tick color check
+                const userTick = liveProps?.global?.minorTickColor;
+                const shouldUseUserTick = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#888888'));
+                return hexToRgba(shouldUseUserTick ? userTick : modeColors.minorTickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.minorTickTransparency || 0) / 100))));
+              })(),
+              nticks: liveProps?.global?.minorTickInterval || 5,
+            },
+            layer: liveProps?.global?.gridLayering === 'gridFront' ? 'above traces' : 'below traces',
+            tickprefix: liveProps?.global?.majorTickPrefix || undefined,
+            ticksuffix: liveProps?.global?.majorTickSuffix || undefined,
+            showticklabels: liveProps?.global?.majorTickShowLeft || liveProps?.global?.majorTickShowRight,
+            tickformat: ((): any => {
+              const mode = liveProps?.global?.majorTickPrecisionMode;
+              const prec = liveProps?.global?.majorTickPrecision ?? 2;
+              const numeric = liveProps?.global?.majorTickNumericType;
+              if (numeric === 'percent') return mode === 'manual' ? `.${prec}%` : '.%';
+              if (numeric === 'scientific') return mode === 'manual' ? `.${prec}e` : '.e';
+              if (numeric === 'engineering') return mode === 'manual' ? `.${prec}s` : '.s';
+              return mode === 'manual' ? `.${prec}f` : undefined;
+            })(),
+            exponentformat: liveProps?.global?.majorTickExponentFormat,
+            tickformatstops: liveProps?.global?.majorTickFactor && liveProps.global.majorTickFactor !== '1' ? [{ enabled: true, dtickrange: [null, null], value: liveProps.global.majorTickFactor }] : undefined,
+            // Tick marks properties
+            ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickLength || 0.1))),
+            tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickThickness || 0.01))),
+            tickcolor: (() => {
+              // FIX: Legacy tick color check
+              const userTick = liveProps?.global?.majorTickColor;
+              const shouldUse = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#444444'));
+              return hexToRgba(shouldUse ? userTick : modeColors.tickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.majorTickTransparency || 0) / 100))));
+            })(),
             ticks: (() => {
-              const direction = liveProps?.global?.minorTickDirection || 'outward';
+              const direction = liveProps?.global?.majorTickDirection || 'outward';
               switch (direction) {
                 case 'none': return '';
                 case 'inward': return 'inside';
@@ -495,160 +549,160 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
                 default: return 'outside';
               }
             })(),
-            ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickLength || 0.05))),
-            tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickThickness || 0.005))),
-            tickcolor: (() => {
-              // FIX: Legacy minor tick color check
-              const userTick = liveProps?.global?.minorTickColor;
-              const shouldUseUserTick = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#888888'));
-              return hexToRgba(shouldUseUserTick ? userTick : modeColors.minorTickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.minorTickTransparency || 0) / 100))));
-            })(),
-            nticks: liveProps?.global?.minorTickInterval || 5,
+            // Manual tick interval
+            ...(liveProps?.global?.majorTickInterval === 'manual' && liveProps?.global?.majorTickManualInterval
+              ? { dtick: liveProps.global.majorTickManualInterval }
+              : {}),
+            // Break properties for X-axis
+            ...(liveProps?.global?.showBreak &&
+              typeof liveProps?.global?.omitRangeStart === 'number' &&
+              typeof liveProps?.global?.omitRangeEnd === 'number'
+              ? (() => {
+                return {
+                  rangebreaks: [{
+                    bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
+                  }]
+                };
+              })()
+              : {}),
+            automargin: true,
+            tickfont: {
+              color: modeColors.axisTextColor
+            }
           },
-          layer: liveProps?.global?.gridLayering === 'gridFront' ? 'above traces' : 'below traces',
-          tickprefix: liveProps?.global?.majorTickPrefix || undefined,
-          ticksuffix: liveProps?.global?.majorTickSuffix || undefined,
-          showticklabels: liveProps?.global?.majorTickShowLeft || liveProps?.global?.majorTickShowRight,
-          tickformat: ((): any => {
-            const mode = liveProps?.global?.majorTickPrecisionMode;
-            const prec = liveProps?.global?.majorTickPrecision ?? 2;
-            const numeric = liveProps?.global?.majorTickNumericType;
-            if (numeric === 'percent') return mode === 'manual' ? `.${prec}%` : '.%';
-            if (numeric === 'scientific') return mode === 'manual' ? `.${prec}e` : '.e';
-            if (numeric === 'engineering') return mode === 'manual' ? `.${prec}s` : '.s';
-            return mode === 'manual' ? `.${prec}f` : undefined;
-          })(),
-          exponentformat: liveProps?.global?.majorTickExponentFormat,
-          tickformatstops: liveProps?.global?.majorTickFactor && liveProps.global.majorTickFactor !== '1' ? [{ enabled: true, dtickrange: [null, null], value: liveProps.global.majorTickFactor }] : undefined,
-          // Tick marks properties
-          ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickLength || 0.1))),
-          tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickThickness || 0.01))),
-          tickcolor: (() => {
-            // FIX: Legacy tick color check
-            const userTick = liveProps?.global?.majorTickColor;
-            const shouldUse = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#444444'));
-            return hexToRgba(shouldUse ? userTick : modeColors.tickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.majorTickTransparency || 0) / 100))));
-          })(),
-          ticks: (() => {
-            const direction = liveProps?.global?.majorTickDirection || 'outward';
-            switch (direction) {
-              case 'none': return '';
-              case 'inward': return 'inside';
-              case 'outward': return 'outside';
-              case 'both': return 'outside';
-              default: return 'outside';
-            }
-          })(),
-          // Manual tick interval
-          ...(liveProps?.global?.majorTickInterval === 'manual' && liveProps?.global?.majorTickManualInterval
-            ? { dtick: liveProps.global.majorTickManualInterval }
-            : {}),
-          // Break properties for X-axis
-          ...(liveProps?.global?.showBreak &&
-            typeof liveProps?.global?.omitRangeStart === 'number' &&
-            typeof liveProps?.global?.omitRangeEnd === 'number'
-            ? (() => {
-              return {
-                rangebreaks: [{
-                  bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
-                }]
-              };
-            })()
-            : {}),
-          automargin: true,
-          tickfont: {
-            color: modeColors.axisTextColor
-          }
-        },
-        yaxis: {
-          ...getAxisConfig(subType, 'y', canvasMode),
-          title: (() => {
-            // Special handling for Y Category point plots
-            if (isPointPlot && normalizedFormat === 'Y Category' && yNames?.length > 0) {
-              return {
-                text: yNames[0],
+          yaxis: {
+            ...getAxisConfig(subType, 'y', canvasMode),
+            title: (() => {
+              // Special handling for Y Category point plots
+              if (isPointPlot && normalizedFormat === 'Y Category' && yNames?.length > 0) {
+                return {
+                  text: yNames[0],
+                  standoff: 12,
+                  font: { color: modeColors.axisTextColor }
+                };
+              }
+              // Special handling for X Category point plots
+              if (isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0) {
+                return {
+                  text: categoryNames[0],
+                  standoff: 12,
+                  font: { color: modeColors.axisTextColor }
+                };
+              }
+              return axisYTitle ? {
+                ...axisYTitle,
                 standoff: 12,
                 font: { color: modeColors.axisTextColor }
-              };
-            }
-            // Special handling for X Category point plots
-            if (isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0) {
-              return {
-                text: categoryNames[0],
-                standoff: 12,
-                font: { color: modeColors.axisTextColor }
-              };
-            }
-            return axisYTitle ? {
-              ...axisYTitle,
-              standoff: 12,
-              font: { color: modeColors.axisTextColor }
-            } : undefined;
-          })(),
-          showline: true,
-          linecolor: axisLineColor,
-          linewidth: axisLineWidthPx,
-          side: (liveProps?.global?.yAxisSide === 'right') ? 'right' : 'left',
-          type: ((): any => {
-            // Special handling for Box Plots - grouping axis should default to category
-            if (isBoxPlot) {
-              const isHorizontalBox = subType.toLowerCase().includes('horizontal');
-              // For horizontal box plots, Y axis is the grouping axis
-              if (isHorizontalBox) {
+              } : undefined;
+            })(),
+            showline: true,
+            linecolor: axisLineColor,
+            linewidth: axisLineWidthPx,
+            side: (liveProps?.global?.yAxisSide === 'right') ? 'right' : 'left',
+            type: ((): any => {
+              // Special handling for Box Plots - grouping axis should default to category
+              if (isBoxPlot) {
+                const isHorizontalBox = subType.toLowerCase().includes('horizontal');
+                // For horizontal box plots, Y axis is the grouping axis
+                if (isHorizontalBox) {
+                  return 'category';
+                }
+              }
+
+              // Special handling for X Category point plots
+              if (isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0) {
                 return 'category';
               }
-            }
 
-            // Special handling for X Category point plots
-            if (isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0) {
-              return 'category';
-            }
+              switch (liveProps?.global?.yScaleType) {
+                case 'linear': return 'linear';
+                case 'log10': return 'log';
+                case 'loge': return 'log';
+                case 'category': return 'category';
+                case 'datetime': return 'date';
+                default: return 'linear';
+              }
+            })(),
+            ...(liveProps?.global?.yRangeStartMode === 'constant' && typeof liveProps?.global?.yRangeStart === 'number' && liveProps?.global?.yRangeEndMode === 'constant' && typeof liveProps?.global?.yRangeEnd === 'number'
+              ? { range: [liveProps.global.yRangeStart, liveProps.global.yRangeEnd] }
+              : {}),
+            ...(liveProps?.global?.yPad5 ? { rangepadding: 5 } : {}),
+            ...(liveProps?.global?.yNearestTick ? { tickmode: 'auto' } : {}),
+            // Special category tick configuration for X Category point plots
+            ...(isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0 ? (() => {
+              // Get unique category values from the data
+              const categoryCol = categoryNames[0];
+              const uniqueCategories = [...new Set(rows.map((row: any) => row[categoryCol]))];
 
-            switch (liveProps?.global?.yScaleType) {
-              case 'linear': return 'linear';
-              case 'log10': return 'log';
-              case 'loge': return 'log';
-              case 'category': return 'category';
-              case 'datetime': return 'date';
-              default: return 'linear';
-            }
-          })(),
-          ...(liveProps?.global?.yRangeStartMode === 'constant' && typeof liveProps?.global?.yRangeStart === 'number' && liveProps?.global?.yRangeEndMode === 'constant' && typeof liveProps?.global?.yRangeEnd === 'number'
-            ? { range: [liveProps.global.yRangeStart, liveProps.global.yRangeEnd] }
-            : {}),
-          ...(liveProps?.global?.yPad5 ? { rangepadding: 5 } : {}),
-          ...(liveProps?.global?.yNearestTick ? { tickmode: 'auto' } : {}),
-          // Special category tick configuration for X Category point plots
-          ...(isPointPlot && normalizedFormat === 'X Category' && categoryNames?.length > 0 ? (() => {
-            // Get unique category values from the data
-            const categoryCol = categoryNames[0];
-            const uniqueCategories = [...new Set(rows.map((row: any) => row[categoryCol]))];
-
-            return {
-              tickmode: 'array',
-              tickvals: uniqueCategories.map((_, index) => index), // Use 0-based indexing to match data
-              ticktext: uniqueCategories,
-              title: categoryCol
-            };
-          })() : {}),
-          showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridYMajor),
-          gridcolor: (() => {
-            // FIX: Legacy grid color check for Y axis
-            const userGrid = liveProps?.global?.gridColor;
-            const shouldUseUserGrid = userGrid && !(canvasMode === 'dark' && isLegacyLightDefault(userGrid, '#e5e5e5'));
-            return hexToRgba(shouldUseUserGrid ? userGrid : modeColors.gridColor, gridOpacity);
-          })(),
-          gridwidth: inchToPx(liveProps?.global?.gridThicknessInch || 0.01),
-          griddash: gridDash,
-          zeroline: false,
-          minor: {
-            showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridYMinor),
-            gridcolor: hexToRgba(modeColors.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
-            gridwidth: Math.max(1, Math.floor(inchToPx((liveProps?.global?.gridThicknessInch || 0.01) / 2))),
-            griddash: gridDash || 'dot',
-            // Minor tick marks
+              return {
+                tickmode: 'array',
+                tickvals: uniqueCategories.map((_, index) => index), // Use 0-based indexing to match data
+                ticktext: uniqueCategories,
+                title: categoryCol
+              };
+            })() : {}),
+            showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridYMajor),
+            gridcolor: (() => {
+              // FIX: Legacy grid color check for Y axis
+              const userGrid = liveProps?.global?.gridColor;
+              const shouldUseUserGrid = userGrid && !(canvasMode === 'dark' && isLegacyLightDefault(userGrid, '#e5e5e5'));
+              return hexToRgba(shouldUseUserGrid ? userGrid : modeColors.gridColor, gridOpacity);
+            })(),
+            gridwidth: inchToPx(liveProps?.global?.gridThicknessInch || 0.01),
+            griddash: gridDash,
+            zeroline: false,
+            minor: {
+              showgrid: (liveProps?.global?.showGridLines ?? true) && (liveProps?.global?.gridLineStyle !== 'none') && (liveProps?.global?.gridYMinor),
+              gridcolor: hexToRgba(modeColors.gridColor, Math.max(0, Math.min(1, gridOpacity * 0.6))),
+              gridwidth: Math.max(1, Math.floor(inchToPx((liveProps?.global?.gridThicknessInch || 0.01) / 2))),
+              griddash: gridDash || 'dot',
+              // Minor tick marks
+              ticks: (() => {
+                const direction = liveProps?.global?.minorTickDirection || 'outward';
+                switch (direction) {
+                  case 'none': return '';
+                  case 'inward': return 'inside';
+                  case 'outward': return 'outside';
+                  case 'both': return 'outside';
+                  default: return 'outside';
+                }
+              })(),
+              ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickLength || 0.05))),
+              tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickThickness || 0.005))),
+              tickcolor: (() => {
+                // FIX: Legacy minor tick color check for Y axis
+                const userTick = liveProps?.global?.minorTickColor;
+                const shouldUseUserTick = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#888888'));
+                return hexToRgba(shouldUseUserTick ? userTick : modeColors.minorTickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.minorTickTransparency || 0) / 100))));
+              })(),
+              nticks: liveProps?.global?.minorTickInterval || 5,
+            },
+            layer: liveProps?.global?.gridLayering === 'gridFront' ? 'above traces' : 'below traces',
+            tickprefix: liveProps?.global?.majorTickPrefix || undefined,
+            ticksuffix: liveProps?.global?.majorTickSuffix || undefined,
+            showticklabels: liveProps?.global?.majorTickShowLeft || liveProps?.global?.majorTickShowRight,
+            tickformat: ((): any => {
+              const mode = liveProps?.global?.majorTickPrecisionMode;
+              const prec = liveProps?.global?.majorTickPrecision ?? 2;
+              const numeric = liveProps?.global?.majorTickNumericType;
+              if (numeric === 'percent') return mode === 'manual' ? `.${prec}%` : '.%';
+              if (numeric === 'scientific') return mode === 'manual' ? `.${prec}e` : '.e';
+              if (numeric === 'engineering') return mode === 'manual' ? `.${prec}s` : '.s';
+              return mode === 'manual' ? `.${prec}f` : undefined;
+            })(),
+            exponentformat: liveProps?.global?.majorTickExponentFormat,
+            tickformatstops: liveProps?.global?.majorTickFactor && liveProps.global.majorTickFactor !== '1' ? [{ enabled: true, dtickrange: [null, null], value: liveProps.global.majorTickFactor }] : undefined,
+            // Tick marks properties
+            ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickLength || 0.1))),
+            tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickThickness || 0.01))),
+            tickcolor: (() => {
+              // FIX: Legacy tick color check for Y axis
+              const userTick = liveProps?.global?.majorTickColor;
+              const shouldUse = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#444444'));
+              return hexToRgba(shouldUse ? userTick : modeColors.tickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.majorTickTransparency || 0) / 100))));
+            })(),
             ticks: (() => {
-              const direction = liveProps?.global?.minorTickDirection || 'outward';
+              const direction = liveProps?.global?.majorTickDirection || 'outward';
               switch (direction) {
                 case 'none': return '';
                 case 'inward': return 'inside';
@@ -657,88 +711,103 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
                 default: return 'outside';
               }
             })(),
-            ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickLength || 0.05))),
-            tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.minorTickThickness || 0.005))),
-            tickcolor: (() => {
-              // FIX: Legacy minor tick color check for Y axis
-              const userTick = liveProps?.global?.minorTickColor;
-              const shouldUseUserTick = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#888888'));
-              return hexToRgba(shouldUseUserTick ? userTick : modeColors.minorTickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.minorTickTransparency || 0) / 100))));
-            })(),
-            nticks: liveProps?.global?.minorTickInterval || 5,
-          },
-          layer: liveProps?.global?.gridLayering === 'gridFront' ? 'above traces' : 'below traces',
-          tickprefix: liveProps?.global?.majorTickPrefix || undefined,
-          ticksuffix: liveProps?.global?.majorTickSuffix || undefined,
-          showticklabels: liveProps?.global?.majorTickShowLeft || liveProps?.global?.majorTickShowRight,
-          tickformat: ((): any => {
-            const mode = liveProps?.global?.majorTickPrecisionMode;
-            const prec = liveProps?.global?.majorTickPrecision ?? 2;
-            const numeric = liveProps?.global?.majorTickNumericType;
-            if (numeric === 'percent') return mode === 'manual' ? `.${prec}%` : '.%';
-            if (numeric === 'scientific') return mode === 'manual' ? `.${prec}e` : '.e';
-            if (numeric === 'engineering') return mode === 'manual' ? `.${prec}s` : '.s';
-            return mode === 'manual' ? `.${prec}f` : undefined;
-          })(),
-          exponentformat: liveProps?.global?.majorTickExponentFormat,
-          tickformatstops: liveProps?.global?.majorTickFactor && liveProps.global.majorTickFactor !== '1' ? [{ enabled: true, dtickrange: [null, null], value: liveProps.global.majorTickFactor }] : undefined,
-          // Tick marks properties
-          ticklen: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickLength || 0.1))),
-          tickwidth: Math.max(1, Math.floor(inchToPx(liveProps?.global?.majorTickThickness || 0.01))),
-          tickcolor: (() => {
-            // FIX: Legacy tick color check for Y axis
-            const userTick = liveProps?.global?.majorTickColor;
-            const shouldUse = userTick && !(canvasMode === 'dark' && isLegacyLightDefault(userTick, '#444444'));
-            return hexToRgba(shouldUse ? userTick : modeColors.tickColor, Math.max(0, Math.min(1, 1 - ((liveProps?.global?.majorTickTransparency || 0) / 100))));
-          })(),
-          ticks: (() => {
-            const direction = liveProps?.global?.majorTickDirection || 'outward';
-            switch (direction) {
-              case 'none': return '';
-              case 'inward': return 'inside';
-              case 'outward': return 'outside';
-              case 'both': return 'outside';
-              default: return 'outside';
+            // Manual tick interval
+            ...(liveProps?.global?.majorTickInterval === 'manual' && liveProps?.global?.majorTickManualInterval
+              ? { dtick: liveProps.global.majorTickManualInterval }
+              : {}),
+            // Break properties for Y-axis
+            ...(liveProps?.global?.showBreak &&
+              typeof liveProps?.global?.omitRangeStart === 'number' &&
+              typeof liveProps?.global?.omitRangeEnd === 'number'
+              ? (() => {
+                return {
+                  rangebreaks: [{
+                    bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
+                  }]
+                };
+              })()
+              : {}),
+            automargin: true,
+            tickfont: {
+              color: modeColors.axisTextColor
             }
-          })(),
-          // Manual tick interval
-          ...(liveProps?.global?.majorTickInterval === 'manual' && liveProps?.global?.majorTickManualInterval
-            ? { dtick: liveProps.global.majorTickManualInterval }
-            : {}),
-          // Break properties for Y-axis
-          ...(liveProps?.global?.showBreak &&
-            typeof liveProps?.global?.omitRangeStart === 'number' &&
-            typeof liveProps?.global?.omitRangeEnd === 'number'
-            ? (() => {
-              return {
-                rangebreaks: [{
-                  bounds: [liveProps.global.omitRangeStart, liveProps.global.omitRangeEnd]
-                }]
-              };
-            })()
-            : {}),
-          automargin: true,
-          tickfont: {
-            color: modeColors.axisTextColor
-          }
-        },
+          },
 
-        // Mirror Y axis to requested side by adjusting side and overlaying the opposite if needed
-        // For simplicity, move y-axis side only
-        // Note: traces remain anchored to 'y' axis by default
-        margin: {
-          l: liveProps?.global?.marginSize ?? 20, r: 16, t: 64, b: liveProps?.global?.padding ?? 16
-        },
-        automargin: true,
-        paper_bgcolor: finalPaperBg,
-        plot_bgcolor: finalPlotBg,
-      };
+          // Mirror Y axis to requested side by adjusting side and overlaying the opposite if needed
+          // For simplicity, move y-axis side only
+          // Note: traces remain anchored to 'y' axis by default
+          margin: {
+            l: liveProps?.global?.marginSize ?? 20, r: 16, t: 64, b: liveProps?.global?.padding ?? 16
+          },
+          automargin: true,
+          paper_bgcolor: finalPaperBg,
+          plot_bgcolor: finalPlotBg,
+        };
+
+      } catch (e: any) {
+        console.error('Layout Generation FAILED:', e);
+        // Provide backup basic layout
+        layout = { title: 'Rendering Error', xaxis: { title: 'X' }, yaxis: { title: 'Y' } };
+      }
 
       // Remove axes for Pie Charts to prevent "Unrecognized subplot: xy" warning
       if (subType.toLowerCase().includes('pie')) {
         delete layout.xaxis;
         delete layout.yaxis;
         delete layout.boxmode; // Clean up other non-pie props if needed
+      }
+
+      // Merge Data Analytics specific layout
+      if (graphConfig.graphType === 'Data Analytics' && graphConfig.analyticsData) {
+        const plotConfig = graphConfig.analyticsData.plotConfig;
+        if (plotConfig.layout) {
+          // Merge axis titles
+          if (plotConfig.layout.xaxis) {
+            layout.xaxis = { ...layout.xaxis, ...plotConfig.layout.xaxis };
+            // Ensure title is an object
+            if (typeof layout.xaxis.title === 'string') {
+              layout.xaxis.title = { text: layout.xaxis.title };
+            }
+            // Ensure color matches theme if not specified
+            if (!layout.xaxis.title.font) layout.xaxis.title.font = {};
+            if (!layout.xaxis.title.font.color) layout.xaxis.title.font.color = modeColors.axisTextColor;
+          }
+          if (plotConfig.layout.yaxis) {
+            layout.yaxis = { ...layout.yaxis, ...plotConfig.layout.yaxis };
+            // Ensure title is an object
+            if (typeof layout.yaxis.title === 'string') {
+              layout.yaxis.title = { text: layout.yaxis.title };
+            }
+            // Ensure color matches theme if not specified
+            if (!layout.yaxis.title.font) layout.yaxis.title.font = {};
+            if (!layout.yaxis.title.font.color) layout.yaxis.title.font.color = modeColors.axisTextColor;
+          }
+        }
+        // Handle Reference Lines (Shapes)
+        if (plotConfig.referenceLines) {
+          layout.shapes = plotConfig.referenceLines.map((line: any) => ({
+            type: 'line',
+            x0: line.from ? line.from[0] : line.x0,
+            y0: line.from ? line.from[1] : line.y0,
+            x1: line.to ? line.to[0] : line.x1,
+            y1: line.to ? line.to[1] : line.y1,
+            line: {
+              color: line.color || modeColors.gridColor,
+              width: line.width || 2,
+              dash: line.dash || 'dash'
+            }
+          }));
+        }
+        // Handle Annotations
+        if (plotConfig.annotations) {
+          layout.annotations = plotConfig.annotations.map((ann: any) => ({
+            ...ann,
+            font: {
+              ...ann.font,
+              color: ann.font?.color || modeColors.textColor
+            }
+          }));
+        }
       }
 
       // Enable in-plot editing of title and axis titles
@@ -925,10 +994,21 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       } as any;
 
 
+
       if (containerRef.current) {
         (plot as any).graph.current = containerRef.current;
         const payload = { data: traces, layout, config } as any;
 
+        // Log payload summary for Analytics debugging
+        if (graphConfig.graphType === 'Data Analytics') {
+          console.log('[AnalyticsDebug] Plot Payload:', {
+            traces: payload.data,
+            layoutShapes: payload.layout?.shapes,
+            layoutAnnotations: payload.layout?.annotations,
+            layoutX: payload.layout?.xaxis,
+            layoutY: payload.layout?.yaxis
+          });
+        }
 
         // Check specifically for regression traces
         const regressionTraces = traces.filter(t => t.name?.includes('fit') || t.name?.includes('Regression') || t.name?.includes('Test Line'));
@@ -1062,6 +1142,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
     };
 
     generatePlot().catch((error) => {
+      console.error('generatePlot failed:', error);
     }).finally(() => {
       // Clear the loading timeout and hide loading state
       if (loadingTimeoutRef.current) {

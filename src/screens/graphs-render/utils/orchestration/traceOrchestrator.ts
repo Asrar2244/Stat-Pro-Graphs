@@ -61,6 +61,66 @@ export const orchestrateTraceGeneration = async (
     liveProps
   } = config;
 
+  // Handle Data Analytics graphs directly from pre-computed data
+  if (graphConfig.graphType === 'Data Analytics' && graphConfig.analyticsData) {
+    console.log('[AnalyticsDebug] Detected Analytics Graph. Computing...');
+
+    // Import getComputer dynamically to avoid circular dependencies if needed, or assume it's available
+    const { getComputer } = await import('../../../../features/graphs/2d/analytics/computers');
+    const computer = getComputer(graphConfig.analyticsData.type);
+
+    if (!computer) {
+      console.error('Computer not found for type:', graphConfig.analyticsData.type);
+      return { traces: [], legendLabels: [], categoryPlotResult: null };
+    }
+
+    // Re-compute using actual rows
+    const plotConfig = computer.compute(rows, graphConfig.analyticsData.variables, graphConfig.analyticsData.options);
+
+    console.log('[AnalyticsDebug] Computed Plot Config:', plotConfig);
+
+    // Ensure we have a valid trace structure
+    let traces: any[] = [];
+
+    if (Array.isArray(plotConfig.data)) {
+      // Multi-trace logic (e.g. X Many Y)
+      traces = plotConfig.data.map((traceData: any) => ({
+        type: plotConfig.plotType === 'line' ? 'scatter' : plotConfig.plotType,
+        mode: plotConfig.plotType === 'line' ? 'lines' : 'markers',
+        x: traceData.x,
+        y: traceData.y,
+        name: traceData.name || graphConfig.subType,
+        line: {
+          width: 2
+          // Let Plotly handle colors automatically for multiple traces
+        },
+      }));
+    } else {
+      // Single trace logic (Legacy/Single X/Y)
+      traces = [{
+        type: plotConfig.plotType === 'line' ? 'scatter' : plotConfig.plotType,
+        mode: plotConfig.plotType === 'line' ? 'lines' : 'markers',
+        x: plotConfig.data.x,
+        y: plotConfig.data.y,
+        name: plotConfig.data.name || graphConfig.subType,
+        line: {
+          color: liveProps?.global?.seriesColor || '#1f77b4',
+          width: 2
+        },
+      }];
+    }
+
+    // Update graphConfig with the new plotConfig for layout usage in GraphCanvas
+    // This is a bit of a mutation, but necessary for the layout merging downstream
+    graphConfig.analyticsData.plotConfig = plotConfig;
+
+    return {
+      traces: traces,
+      legendLabels: traces.map((t: any) => t.name),
+      categoryPlotResult: null
+    };
+  }
+
   const traces: any[] = [];
   const legendLabels = processedSeries.map(s => s.label);
 

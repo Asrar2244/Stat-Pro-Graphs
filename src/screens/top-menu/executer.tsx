@@ -156,6 +156,17 @@ const BarPlotModal = lazy(() =>
   ),
 );
 
+// Analytics Modal
+const AnalyticsModal = lazy(() =>
+  import('../../features/graphs/2d/analytics/AnalyticsModal').then(
+    (m) => ({ default: m.AnalyticsModal }),
+    (error) => {
+      console.error('Failed to load AnalyticsModal:', error);
+      throw error;
+    }
+  ),
+);
+
 export const withMenuEvents = <P extends object>(
   translationNs: string,
   WrappedComponent: React.ComponentType<P>,
@@ -614,6 +625,59 @@ const MenuSelector: FC<{
     return <BoxPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
+  // Analytics wrapper with real data integration
+  const AnalyticsWrapper: FC<IModal> = (m) => {
+    const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+    const projectNames = Object.keys(projects);
+    const { openNewTabAction } = useMenuCodeExecutor();
+    const { setRenderLatestRun } = useStartProStore();
+    const { t } = useTranslation('common');
+
+    // For now, use empty datasets array
+    const datasets: string[] = [];
+
+    const onCreateGraph = async (config: any) => {
+      try {
+        const workspacePath = projects[config.selectedProject]?.workspacePath;
+
+        // Persist a run immediately so history shows up
+        const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
+
+        await insertGraphRun(workspacePath, {
+          name: config?.subType || 'Data Analytics',
+          createdAt: new Date().toISOString(),
+          config: { graphConfig: config, workspacePath },
+          tabName: config?.selectedProject || '',
+          graphType: config?.graphType || 'Data Analytics',
+          properties: {},
+        });
+
+        setRenderLatestRun(true);
+
+        openNewTabAction({
+          id: GRAPHS,
+          isEmptyDataView: false,
+          extraConfig: {
+            tabName: projects[config.selectedProject]?.workspacePath,
+            name: config.selectedProject,
+            type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }),
+            bareType: GRAPHS,
+            id: projects[config.selectedProject]?.id,
+            lastModified: new Date().toISOString(),
+            isActive: 1,
+            workspacePath: projects[config.selectedProject]?.workspacePath,
+          }
+        });
+
+      } catch (error) {
+        console.error('Error creating Analytics Graph:', error);
+      }
+    };
+
+    // @ts-ignore - bypassing specific prop types for now
+    return <AnalyticsModal open={m.isOpen} onClose={m.closeModal} projects={projectNames} datasets={datasets} {...m} onCreateGraph={onCreateGraph} />;
+  };
+
   // Pie Plot wrapper with real data integration
   const PieWrapper: FC<IModal> = (m) => {
     const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
@@ -788,6 +852,8 @@ const MenuSelector: FC<{
         return <PieWrapper {...modal} />;
       case 'open-bar-plot-modal':
         return <BarPlotWrapper {...modal} />;
+      case 'open-analytics-modal':
+        return <AnalyticsWrapper {...modal} />;
       default:
         return null;
     }
