@@ -9,8 +9,12 @@ import { createLinePlotTrace as createLineTrace } from './line/lineTraceGenerati
 import { LineTraceConfig } from './line/types';
 import { parseLinePlotSubType, getLinePlotMode, getLineShape } from './line/linePlotProperties';
 import { create3DMeshTrace } from './3d-mesh/meshTraceGeneration';
-import { generateLineScatterTraces } from './line-scatter/lineScatterTraceGeneration';
-import { processLineScatterData } from './line-scatter/lineScatterDataProcessing';
+
+import { createPieTrace } from './pie/pieTraceGeneration';
+import { createBarTrace } from './bar/barTraceGeneration';
+import { createBoxTrace } from './box/boxTraceGeneration';
+import { createContourTrace } from './contour/contourTraceGeneration';
+import { create3DScatterTrace } from './3d-scatter/scatterTraceGeneration';
 import { hexToRgba } from './common/plotlyCommon';
 // Force rebuild
 
@@ -37,6 +41,12 @@ export interface TraceConfig {
   // For 3D mesh plots
   zv?: number[];
   graphConfig?: any;
+  isDarkTheme?: boolean;
+  // Matrix data
+  z?: number[][] | any;
+  x?: number[] | any;
+  y?: number[] | any;
+  isMatrix?: boolean;
 }
 
 export interface SeriesConfig {
@@ -792,17 +802,11 @@ export const createAreaTrace = (config: TraceConfig): any => {
 /**
  * Create trace based on plot type - automatically determines line vs scatter
  */
-import { create3DScatterTrace } from './3d-scatter/scatterTraceGeneration';
-import { createBoxTrace } from './box/boxTraceGeneration';
-import { createPieTrace } from './pie/pieTraceGeneration';
-import { createBarTrace } from './bar/barTraceGeneration';
-
-/**
- * Create trace based on plot type - automatically determines line vs scatter
- */
 export const createTrace = (config: TraceConfig, traceIndex: number = 0): any => {
   const { subType, label, graphConfig } = config;
   const lowerSubType = subType.toLowerCase();
+
+
 
   // Check if this is a Pie Plot
   if (graphConfig?.graphType === 'Pie Chart' || lowerSubType.includes('pie')) {
@@ -819,29 +823,16 @@ export const createTrace = (config: TraceConfig, traceIndex: number = 0): any =>
     return createBoxTrace(config, traceIndex);
   }
 
-  // Check if this is a 3D mesh plot
-  const is3DMeshPlot = lowerSubType.includes('3d mesh') ||
-    subType === '3D Mesh Plot' ||
-    config.graphConfig?.graphType === '3D Mesh Plot';
+  // Check if this is a 3D Contour Plot
+  const is3DContourPlot = lowerSubType.includes('3d contour') ||
+    subType === '3D Contour Plot' ||
+    subType === 'Contour Plot' ||
+    lowerSubType.includes('filled contour') ||
+    config.graphConfig?.graphType === '3D Contour Plot' ||
+    config.graphConfig?.graphType === 'Contour Plot';
 
-  if (is3DMeshPlot) {
-    return create3DMeshTrace(config);
-  }
-
-  // Check if this is a 3D scatter plot
-  const is3DScatterPlot = lowerSubType.includes('3d scatter') ||
-    subType === '3D Scatter Plot' ||
-    config.graphConfig?.graphType === '3D Scatter Plot';
-
-  if (is3DScatterPlot) {
-    return create3DScatterTrace(config);
-  }
-  lowerSubType.includes('3d-mesh') ||
-    subType === '3D Mesh Plot' ||
-    config.graphConfig?.graphType === '3D Mesh Plot';
-
-  if (is3DMeshPlot) {
-    return create3DMeshTrace(config);
+  if (is3DContourPlot) {
+    return createContourTrace(config);
   }
 
   // Check if this is an Area Plot
@@ -852,6 +843,24 @@ export const createTrace = (config: TraceConfig, traceIndex: number = 0): any =>
 
   if (isAreaPlot || config.graphConfig?.graphType === 'Area Plot') {
     return createAreaTrace(config);
+  }
+
+  // Check if this is a 3D Scatter Plot
+  const is3DScatterPlot = lowerSubType.includes('3d scatter') ||
+    subType === '3D Scatter Plot' ||
+    config.graphConfig?.graphType === '3D Scatter Plot';
+
+  if (is3DScatterPlot) {
+    return create3DScatterTrace(config);
+  }
+
+  // Check if this is a 3D Mesh Plot
+  const is3DMeshPlot = lowerSubType.includes('3d mesh') ||
+    subType === '3D Mesh Plot' ||
+    config.graphConfig?.graphType === '3D Mesh Plot';
+
+  if (is3DMeshPlot) {
+    return create3DMeshTrace(config);
   }
 
   // Check if this is a line-scatter plot

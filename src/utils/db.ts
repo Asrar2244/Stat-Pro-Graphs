@@ -210,9 +210,7 @@ export class Database {
       return Promise.reject('Query can not be empty');
     }
 
-    if (MODE === 'development') {
-      console.log(`Query: ${query} with parameters: ${parameters}`);
-    }
+
 
     return (await this.db).execute(query, parameters);
   }
@@ -222,9 +220,7 @@ export class Database {
       return Promise.reject('Query can not be empty');
     }
 
-    if (MODE === 'development') {
-      console.log(`Query: ${query} with parameters: ${parameters}`);
-    }
+
 
     return (await this.db).select(query, parameters);
   }
@@ -233,9 +229,7 @@ export class Database {
     if (query === '') {
       return Promise.reject('Query can not be empty');
     }
-    if (MODE === 'development') {
-      console.log(`Query: ${query} with parameters: ${parameters}`);
-    }
+
     return (await this.db).execute(query, parameters);
   }
 

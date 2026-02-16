@@ -949,6 +949,17 @@ function createXYManyZMesh(xv: number[], yv: number[], rows: any[], graphConfig:
       finalXGrid = smoothResult.xGrid[0]; // Take first row for X grid
       finalYGrid = smoothResult.yGrid.map(row => row[0]); // Take first column for Y grid
     } catch (error) {
+      // Fallback: Create Z matrix directly from actual data points
+      const uniqueX = [...new Set(sanitizedXv)].sort((a, b) => a - b);
+      const uniqueY = [...new Set(sanitizedYv)].sort((a, b) => a - b);
+
+      zMatrix = uniqueY.map(y =>
+        uniqueX.map(x => {
+          const index = sanitizedXv.findIndex((val, i) => val === x && sanitizedYv[i] === y);
+          return index >= 0 ? sanitizedZValues[index] : 0;
+        })
+      );
+
       finalXGrid = uniqueX;
       finalYGrid = uniqueY;
     }

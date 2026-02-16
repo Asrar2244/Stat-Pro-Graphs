@@ -112,6 +112,17 @@ const MeshPlotModal = lazy(() =>
   ),
 );
 
+// 3D Contour Plot Modal
+const ContourPlotModal = lazy(() =>
+  import('../../features/graphs/3d/contour').then(
+    (m) => ({ default: m.ContourPlotModal }),
+    (error) => {
+      console.error('Failed to load ContourPlotModal:', error);
+      throw error;
+    }
+  ),
+);
+
 // 3D Scatter Plot Modal
 const Scatter3DPlotModal = lazy(() =>
   import('../../features/graphs/3d/scatter').then(
@@ -512,6 +523,73 @@ const MenuSelector: FC<{
     return <MeshPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} {...m} />;
   };
 
+  // 3D Contour Plot wrapper with real data integration
+  const ContourWrapper: FC<IModal & { initialContourType?: 'contour' | 'filled' }> = ({ initialContourType, ...m }) => {
+    const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
+    const projectNames = Object.keys(projects);
+    const { openNewTabAction } = useMenuCodeExecutor();
+    const { setRenderLatestRun } = useStartProStore();
+    const { t } = useTranslation('common');
+
+    const datasets: string[] = [];
+
+    const onCreateGraph = async (config: any) => {
+      try {
+        const workspacePath = projects[config.selectedProject]?.workspacePath;
+
+        // Ensure Contour configuration is properly structured
+        const contourConfig = {
+          ...config,
+          graphType: '3D Contour Plot',
+          subType: '3D Contour Plot',
+          dataFormat: config.dataFormat || 'XYZ Triplets',
+          contourConfig: {
+            contourType: config.contourConfig?.contourType || 'contour',
+            colorScale: config.contourConfig?.colorScale || 'Viridis',
+            opacity: config.contourConfig?.opacity ?? 0.8,
+            showGrid: config.contourConfig?.showGrid !== false,
+            gridOpacity: config.contourConfig?.gridOpacity ?? 0.3,
+            zInterval: config.contourConfig?.zInterval ?? 5,
+            showLabels: config.contourConfig?.showLabels !== false,
+            ...config.contourSettings
+          }
+        };
+
+        const { insertGraphRun } = await import('../graphs-render/graph-body-render/graphs-store');
+        await insertGraphRun(workspacePath, {
+          name: contourConfig?.subType || '3D Contour Plot',
+          createdAt: new Date().toISOString(),
+          config: { graphConfig: contourConfig, workspacePath },
+          tabName: contourConfig?.selectedProject || '',
+          graphType: contourConfig?.graphType || '3D Contour Plot',
+          properties: {},
+        });
+
+        setRenderLatestRun(true);
+
+        openNewTabAction({
+          id: GRAPHS,
+          isEmptyDataView: false,
+          extraConfig: {
+            tabName: projects[config.selectedProject]?.workspacePath,
+            name: config.selectedProject,
+            type: t(GRAPHS.toLowerCase(), { ns: 'workspace' }),
+            bareType: GRAPHS,
+            id: projects[config.selectedProject]?.id,
+            lastModified: new Date().toISOString(),
+            isActive: 1,
+            workspacePath: projects[config.selectedProject]?.workspacePath,
+          }
+        });
+
+      } catch (error) {
+        console.error('Error creating 3D Contour Plot:', error);
+      }
+    };
+
+    return <ContourPlotModal projects={projectNames} datasets={datasets} onCreateGraph={onCreateGraph} initialContourType={initialContourType} {...m} />;
+  };
+
   // 3D Scatter Plot wrapper with real data integration
   const Scatter3DWrapper: FC<IModal> = (m) => {
     const { projects } = useStartProStore(useShallow((state) => ({ projects: state.projects })));
@@ -838,6 +916,10 @@ const MenuSelector: FC<{
         return <AreaWrapper {...modal} />;
       case '3d-mesh':
         return <MeshWrapper {...modal} />;
+      case '3d-contour':
+        return <ContourWrapper {...modal} initialContourType="contour" />;
+      case '3d-filled-contour':
+        return <ContourWrapper {...modal} initialContourType="filled" />;
       case '3d-scatter':
         return <Scatter3DWrapper {...modal} />;
       case exporters.tests:

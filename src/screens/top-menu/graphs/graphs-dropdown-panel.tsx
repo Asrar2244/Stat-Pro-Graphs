@@ -15,6 +15,8 @@ const IMPLEMENTED_GRAPHS = [
   'open-line-scatter-plot-modal',
   'open-area-plot-modal',
   '3d-mesh',
+  '3d-contour',
+  '3d-filled-contour',
   '3d-scatter',
   'open-box-plot-modal',
   'open-pie-plot-modal',

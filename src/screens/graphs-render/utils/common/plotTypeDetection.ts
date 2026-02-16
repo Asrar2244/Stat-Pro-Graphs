@@ -13,8 +13,21 @@ export const determinePlotType = (graphConfig: any): PlotType['type'] => {
   const dataFormat = graphConfig?.dataFormat || '';
   const graphType = graphConfig?.graphType || '';
 
+  // Check if this is a Contour plot (3D data, 2D projection)
+  const isContourPlot = graphType === '3D Contour Plot' ||
+    subType === '3D Contour Plot' ||
+    subType === 'Contour Plot' ||
+    graphType === 'Contour Plot' ||
+    lowerSubType.includes('contour');
+
+  if (isContourPlot) {
+    return 'contour';
+  }
+
   // Check if this is a 3D mesh plot based on graph type and data format
-  const is3DMeshPlot = (graphType === '3D Mesh Plot' || subType === '3D Mesh Plot' || lowerSubType.includes('3d mesh')) &&
+  const is3DMeshPlot = (
+    graphType === '3D Mesh Plot' || subType === '3D Mesh Plot' || lowerSubType.includes('3d mesh')
+  ) &&
     ['XYZ Triplets', 'Many Z', 'XY Many Z', 'xyz-columns', 'z-matrix', 'xy-z-columns'].includes(dataFormat);
 
   if (is3DMeshPlot) {

@@ -24,6 +24,7 @@ import {
 import { applyMesh3DProperties } from '../mesh3DProperties';
 import { transformArrayForScale } from '../axisTransforms';
 import { is3DMeshTrace } from '../common/plotlyCommon';
+import { determinePlotType } from '../common/plotTypeDetection';
 import { plotWithCategory } from '../categoryScatterPlot';
 import { optimizeTraceForWebGL } from '../webglOptimization';
 
@@ -63,7 +64,7 @@ export const orchestrateTraceGeneration = async (
 
   // Handle Data Analytics graphs directly from pre-computed data
   if (graphConfig.graphType === 'Data Analytics' && graphConfig.analyticsData) {
-    console.log('[AnalyticsDebug] Detected Analytics Graph. Computing...');
+
 
     // Import getComputer dynamically to avoid circular dependencies if needed, or assume it's available
     const { getComputer } = await import('../../../../features/graphs/2d/analytics/computers');
@@ -77,7 +78,7 @@ export const orchestrateTraceGeneration = async (
     // Re-compute using actual rows
     const plotConfig = computer.compute(rows, graphConfig.analyticsData.variables, graphConfig.analyticsData.options);
 
-    console.log('[AnalyticsDebug] Computed Plot Config:', plotConfig);
+
 
     // Ensure we have a valid trace structure
     let traces: any[] = [];
@@ -197,21 +198,39 @@ export const orchestrateTraceGeneration = async (
       const errorBarVariable = series.errorBarVariable;
       const startTime = performance.now();
 
+      const themeDebug = {
+        globalMode: liveProps?.global?.canvasMode,
+        rootMode: liveProps?.canvasMode,
+        isDark: liveProps?.global?.canvasMode === 'dark' || liveProps?.canvasMode === 'dark'
+      };
+
+
       // Optimize data for large datasets
-      const optimizedData = optimizeDataForPerformance(
-        xv,
-        yv,
+      // SKIP optimization for 3D plots to ensure X/Y/Z arrays remain aligned (Z is not optimized by this function)
+      const plotType = determinePlotType(graphConfig);
+      const is3D = plotType === '3d-mesh' || plotType === '3d-scatter' || plotType === 'contour';
+
+      const optimizedData = is3D ?
         {
-          maxPointsPerTrace: 15000,
-          enableSampling: true,
-          enableDecimation: true,
-          enableProgressiveRendering: true,
-          samplingThreshold: 5000,
-          decimationFactor: 2,
-          performanceWarningThreshold: 50000
-        },
-        errorBarVariable
-      );
+          xv,
+          yv,
+          originalLength: xv.length,
+          errorBarVariable
+        } :
+        optimizeDataForPerformance(
+          xv,
+          yv,
+          {
+            maxPointsPerTrace: 15000,
+            enableSampling: true,
+            enableDecimation: true,
+            enableProgressiveRendering: true,
+            samplingThreshold: 5000,
+            decimationFactor: 2,
+            performanceWarningThreshold: 50000
+          },
+          errorBarVariable
+        );
 
       const processingTime = performance.now() - startTime;
       const performanceMetrics = measurePerformance(optimizedData.originalLength, processingTime);
@@ -263,12 +282,24 @@ export const orchestrateTraceGeneration = async (
             processedSeries.length > 1 ? undefined : plotProperties.errorBar?.errorBarColor,
           rows,
           zv: series.zv,
-          graphConfig: graphConfig
+          graphConfig: graphConfig,
+          // Pass matrix data for contour plots
+          z: (series as any).z,
+          x: (series as any).x,
+          y: (series as any).y,
+          isMatrix: (series as any).isMatrix,
+          isDarkTheme: liveProps?.global?.canvasMode === 'dark' || liveProps?.canvasMode === 'dark',
+          // Pass live plot properties
+          plotProperties: plotProperties
         }, seriesIndex);
 
-        // Optimize trace for large datasets (skip for 3D mesh traces)
+
+
+        // Optimize trace for large datasets (skip for 3D mesh traces and contour traces)
         const isCurrentTrace3D = is3DMeshTrace(trace);
-        const optimizedTrace = isCurrentTrace3D
+        const isContourTrace = trace.type === 'contour';
+
+        const optimizedTrace = (isCurrentTrace3D || isContourTrace)
           ? trace
           : optimizeTraceForLargeData(trace, optimizedData.originalLength);
 
@@ -277,7 +308,7 @@ export const orchestrateTraceGeneration = async (
         const subTypeLower = (graphConfig?.subType || '').toLowerCase();
         const isAreaPlot = subTypeLower.includes('area');
 
-        if (!isCurrentTrace3D) {
+        if (!isCurrentTrace3D && !isContourTrace) {
           if (isAreaPlot && plotProperties.area) {
             finalTrace = applyAreaProperties(finalTrace, plotProperties.area);
           } else if (plotProperties.scatter && !isPointPlot && !isDotPlot && finalTrace.type !== 'pie') {
@@ -372,7 +403,7 @@ export const orchestrateTraceGeneration = async (
 
 
 
-  console.log('[PieDebug] Generated Traces:', traces);
+
 
   return {
     traces,

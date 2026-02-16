@@ -9,24 +9,26 @@ import { PlotSpecificProperties, DEFAULT_PLOT_PROPERTIES } from '../../graphs-re
 export const GraphBodyRender: FC<any> = (props) => {
   const classes = useGraphBodyLayout();
   const tools = useTools();
-  
+
   // State for plot properties
   const [plotProperties, setPlotProperties] = useState<PlotSpecificProperties>(DEFAULT_PLOT_PROPERTIES);
-  
+
   const handlePlotPropertiesChange = (newProperties: PlotSpecificProperties) => {
     setPlotProperties(newProperties);
   };
 
   // Reset properties when graphConfig changes
   useEffect(() => {
-    if (props?.graphConfig && props?.graphConfig?.subType?.toLowerCase().includes('mesh')) {
+    const subType = props?.graphConfig?.subType?.toLowerCase();
+    if (props?.graphConfig && (subType?.includes('mesh') || subType?.includes('contour'))) {
       setPlotProperties(DEFAULT_PLOT_PROPERTIES);
     }
   }, [props?.graphConfig?.subType]);
 
   // Initialize 3D mesh properties from graphConfig when available
   useEffect(() => {
-    if (props?.graphConfig && props?.graphConfig?.subType?.toLowerCase().includes('mesh')) {
+    const subType = props?.graphConfig?.subType?.toLowerCase();
+    if (props?.graphConfig && (subType?.includes('mesh') || subType?.includes('contour'))) {
       // Extract 3D mesh properties from graph config
       const mesh3dFromConfig = {
         surfaceType: props.graphConfig.surfaceType || props.graphConfig.meshConfig?.surfaceType,
@@ -43,7 +45,7 @@ export const GraphBodyRender: FC<any> = (props) => {
       // Update properties with mesh config values
       const updatedPlotProperties = { ...DEFAULT_PLOT_PROPERTIES };
       let hasChanges = false;
-      
+
       if (!updatedPlotProperties.mesh3d) {
         updatedPlotProperties.mesh3d = {};
       }
@@ -54,13 +56,13 @@ export const GraphBodyRender: FC<any> = (props) => {
           hasChanges = true;
         }
       });
-      
+
       // Preserve original color scale
       if (mesh3dFromConfig.colorScale) {
         updatedPlotProperties.mesh3d.originalColorScale = mesh3dFromConfig.colorScale;
         hasChanges = true;
       }
-      
+
       if (hasChanges) {
         setPlotProperties(updatedPlotProperties);
       }
@@ -75,28 +77,28 @@ export const GraphBodyRender: FC<any> = (props) => {
     global: tools.graphProperties.global,
     canvasMode: tools.canvasMode
   };
-  
-  
+
+
   // Track canvas mode changes
   useEffect(() => {
   }, [tools.canvasMode]);
 
   return (
     <div className={classes.graphBodyLayout}>
-      <ToolBar 
-        tools={tools} 
-        title={props?.graphConfig?.subType || ''} 
-        subTitle={props?.graphConfig?.dataFormat || ''} 
+      <ToolBar
+        tools={tools}
+        title={props?.graphConfig?.subType || ''}
+        subTitle={props?.graphConfig?.dataFormat || ''}
       />
       <GraphTabs />
-      <GraphProperty 
+      <GraphProperty
         graphConfig={props?.graphConfig}
         plotProperties={plotProperties}
         onPlotPropertiesChange={handlePlotPropertiesChange}
       />
-      <GraphCanvas 
-        {...props} 
-        liveProps={liveProps} 
+      <GraphCanvas
+        {...props}
+        liveProps={liveProps}
         key={`canvas-${tools.canvasMode}`} // Force re-render when canvas mode changes
       />
     </div>

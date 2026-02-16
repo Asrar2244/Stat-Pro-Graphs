@@ -14,7 +14,9 @@ import { process3DMeshData } from './3d-mesh/meshDataProcessing';
 import { process3DScatterData } from './3d-scatter/scatterDataProcessing';
 import { processBoxData } from './box/boxDataProcessing';
 import { processPieData } from './pie/pieDataProcessing';
+import { processPieData } from './pie/pieDataProcessing';
 import { processBarData } from './bar/barDataProcessing';
+import { processContourData } from './contour/contourDataProcessing';
 
 /**
  * Main data processing function that routes to appropriate plot type
@@ -39,6 +41,8 @@ export const processDataByFormat = (config: DataProcessingConfig): ProcessedSeri
       return processPieData(config);
     case 'bar':
       return processBarData(config);
+    case 'contour':
+      return processContourData(config);
     default:
       return processScatterData(config);
   }

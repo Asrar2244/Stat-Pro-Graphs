@@ -44,6 +44,7 @@ const loadByType = (graphType?: string) => {
   if (t.includes('pie')) return <PiePlotGraph />;
   if (t.includes('bar') || t.includes('column')) return <ScatterPlotGraph />; // Use ScatterPlotGraph (generic wrapper) for Bar plots
   if (t.includes('3d mesh') || t.includes('3d-mesh')) return <ScatterPlotGraph />; // Use ScatterPlotGraph for 3D mesh
+  if (t.includes('contour')) return <ScatterPlotGraph />; // Use ScatterPlotGraph for Contour plots
   if (t.includes('analytics')) return <ScatterPlotGraph />; // Use ScatterPlotGraph for Analytics
   return <></>;
 };

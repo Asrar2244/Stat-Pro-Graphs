@@ -46,6 +46,7 @@ interface IGraphProperties {
     hasPointPlot: boolean;
     hasDotPlot: boolean;
     is3DMesh: boolean;
+    isContour: boolean;
   };
   currentSubType?: string;
   // Add graphConfig for 3D mesh properties synchronization
@@ -78,10 +79,12 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
 
   // Track if 3D mesh properties have been initialized to prevent overriding user changes
   const [mesh3dInitialized, setMesh3dInitialized] = useState(false);
+  const [contourInitialized, setContourInitialized] = useState(false);
 
   // Reset initialization flag when graph changes
   useEffect(() => {
     setMesh3dInitialized(false);
+    setContourInitialized(false);
   }, [graphConfig]);
 
   // Initialize 3D mesh properties from graphConfig if available (only once)
@@ -110,6 +113,32 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
       setMesh3dInitialized(true);
     }
   }, [graphConfig, detectedFeatures.is3DMesh, updatePlotSpecificProperty, mesh3dInitialized]);
+
+  // Initialize Contour properties from graphConfig if available (only once)
+  useEffect(() => {
+    if (graphConfig && detectedFeatures.isContour && !contourInitialized) {
+      // Extract Contour properties from graph config
+      const contourFromConfig = {
+        contourType: graphConfig.contourConfig?.contourType,
+        colorScale: graphConfig.contourConfig?.colorScale,
+        opacity: graphConfig.contourConfig?.opacity,
+        showGrid: graphConfig.contourConfig?.showGrid,
+        gridOpacity: graphConfig.contourConfig?.gridOpacity,
+        showLabels: graphConfig.contourConfig?.showLabels,
+        zInterval: graphConfig.contourConfig?.zInterval
+      };
+
+      // Update properties - checks if undefined in plotProps to avoid overwriting live changes if re-triggered
+      Object.entries(contourFromConfig).forEach(([key, value]) => {
+        if (value !== undefined && (plotProps.contour as any)?.[key] === undefined) {
+          // Cast key to any to avoid strict type checking on partial object during iteration
+          updatePlotSpecificProperty('contour', key as any, value);
+        }
+      });
+
+      setContourInitialized(true);
+    }
+  }, [graphConfig, detectedFeatures.isContour, updatePlotSpecificProperty, contourInitialized]);
 
   // Create series labels based on current data format and variables
   const seriesLabels = currentDataFormat && currentVariables ?
@@ -514,6 +543,125 @@ const GraphPropertiesComponent: FC<{ properties: IGraphProperties }> = ({
             </AccordionItem>
 
 
+
+            {/* Contour Plot Properties Section */}
+            {detectedFeatures.isContour && (
+              <AccordionItem value="contour">
+                <AccordionHeader>
+                  <div className={classes.accordionHeader}>
+                    <MdScatterPlot size={20} />
+                    <Text weight="semibold">Contour Plot Properties</Text>
+                  </div>
+                </AccordionHeader>
+                <AccordionPanel>
+                  <div className={classes.propertyContent}>
+                    <Card style={{ marginBottom: '16px' }}>
+                      <CardHeader>
+                        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                          <Text weight="semibold">Contour Configuration</Text>
+                          <Button
+                            appearance="secondary"
+                            size="small"
+                            icon={<MdRefresh />}
+                            onClick={() => {
+                              // Reset contour properties to defaults
+                              updatePlotSpecificProperty('contour', 'contourType', 'contour');
+                              updatePlotSpecificProperty('contour', 'colorScale', 'viridis');
+                              updatePlotSpecificProperty('contour', 'opacity', 1.0);
+                              updatePlotSpecificProperty('contour', 'showGrid', true);
+                              updatePlotSpecificProperty('contour', 'gridOpacity', 0.5);
+                              updatePlotSpecificProperty('contour', 'showLabels', false);
+                            }}
+                          >
+                            Reset
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <div style={{ padding: '12px', display: 'grid', gap: '12px' }}>
+
+                        {/* Contour Type */}
+                        <Field label="Contour Type">
+                          <Dropdown
+                            value={plotProps.contour?.contourType === 'filled' ? 'Filled Contour' : 'Contour (Outlines)'}
+                            onOptionSelect={(_, data) => updatePlotSpecificProperty('contour', 'contourType', data.optionValue === 'filled' ? 'filled' : 'contour')}
+                          >
+                            <Option value="contour">Contour (Outlines)</Option>
+                            <Option value="filled">Filled Contour</Option>
+                          </Dropdown>
+                        </Field>
+
+                        {/* Opacity */}
+                        <Field label={`Opacity: ${Math.round((plotProps.contour?.opacity || 1.0) * 100)}%`}>
+                          <Slider
+                            min={0}
+                            max={1}
+                            step={0.1}
+                            value={plotProps.contour?.opacity || 1.0}
+                            onChange={(_, data) => updatePlotSpecificProperty('contour', 'opacity', data.value)}
+                          />
+                        </Field>
+
+                        {/* Color Scale */}
+                        <Field label="Color Scale">
+                          <Dropdown
+                            value={plotProps.contour?.colorScale ? (plotProps.contour.colorScale.charAt(0).toUpperCase() + plotProps.contour.colorScale.slice(1)) : 'Viridis'}
+                            onOptionSelect={(_, data) => updatePlotSpecificProperty('contour', 'colorScale', data.optionValue)}
+                            style={{ minWidth: '100%' }}
+                          >
+                            {Object.keys(COLOR_SCALE_DEFINITIONS).map((scaleName) => (
+                              <Option key={scaleName} value={scaleName} text={scaleName}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '12px' }}>
+                                  <span style={{ textTransform: 'capitalize' }}>{scaleName}</span>
+                                  <div
+                                    style={{
+                                      width: '80px',
+                                      height: '12px',
+                                      background: getColorScaleCSS(scaleName),
+                                      borderRadius: '2px',
+                                      border: '1px solid rgba(0,0,0,0.1)'
+                                    }}
+                                  />
+                                </div>
+                              </Option>
+                            ))}
+                          </Dropdown>
+                        </Field>
+
+                        {/* Show Labels */}
+                        <Field label="Show Z Values on Lines">
+                          <Switch
+                            checked={plotProps.contour?.showLabels ?? false}
+                            onChange={(_, data) => updatePlotSpecificProperty('contour', 'showLabels', data.checked)}
+                          />
+                        </Field>
+
+                        {/* Show Grid */}
+                        <Field label="Show Grid">
+                          <Switch
+                            checked={plotProps.contour?.showGrid ?? true}
+                            onChange={(_, data) => updatePlotSpecificProperty('contour', 'showGrid', data.checked)}
+                          />
+                        </Field>
+
+                        {/* Grid Opacity */}
+                        {(plotProps.contour?.showGrid ?? true) && (
+                          <Field label={`Grid Opacity: ${Math.round((plotProps.contour?.gridOpacity || 0.5) * 100)}%`}>
+                            <Slider
+                              min={0}
+                              max={1}
+                              step={0.1}
+                              value={plotProps.contour?.gridOpacity || 0.5}
+                              onChange={(_, data) => updatePlotSpecificProperty('contour', 'gridOpacity', data.value)}
+                            />
+                          </Field>
+                        )}
+
+                      </div>
+                    </Card>
+                  </div>
+                </AccordionPanel>
+              </AccordionItem>
+            )}
 
             {/* 3D Mesh Properties Section */}
             {detectedFeatures.is3DMesh && (

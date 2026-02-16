@@ -120,6 +120,23 @@ export interface AreaPlotProperties {
   pointSize: number;
 }
 
+export interface ContourPlotProperties {
+  /** Contour type: lines or filled */
+  contourType: 'contour' | 'filled';
+  /** Color scale */
+  colorScale: string;
+  /** Opacity (0-1) */
+  opacity: number;
+  /** Show grid */
+  showGrid: boolean;
+  /** Grid opacity (0-1) */
+  gridOpacity: number;
+  /** Show labels on contour lines */
+  showLabels: boolean;
+  /** Z Interval */
+  zInterval?: number;
+}
+
 export interface PlotSpecificProperties {
   scatter?: ScatterPointProperties;
   regression?: RegressionLineProperties;
@@ -128,6 +145,7 @@ export interface PlotSpecificProperties {
   dotPlot?: DotPlotProperties;
   mesh3d?: Mesh3DProperties;
   area?: AreaPlotProperties;
+  contour?: ContourPlotProperties;
 }
 
 export interface LiveProperties {
@@ -206,6 +224,15 @@ export const DEFAULT_PLOT_PROPERTIES: PlotSpecificProperties = {
     fillOpacity: 0.4,
     showPoints: false,
     pointSize: 6
+  },
+  contour: {
+    contourType: 'contour',
+    colorScale: 'viridis',
+    opacity: 1.0,
+    showGrid: true,
+    gridOpacity: 0.5,
+    showLabels: false,
+    zInterval: undefined
   }
 };
 
@@ -255,6 +282,11 @@ export const getPlotProperties = (liveProps?: LiveProperties, graphConfig?: any)
     area: {
       ...DEFAULT_PLOT_PROPERTIES.area,
       ...liveProps.plotSpecific.area
+    },
+    contour: {
+      ...DEFAULT_PLOT_PROPERTIES.contour,
+      ...(graphConfig?.contourConfig || {}), // Initialize from graphConfig
+      ...liveProps.plotSpecific.contour
     }
   };
 

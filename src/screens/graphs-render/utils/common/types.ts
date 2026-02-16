@@ -30,6 +30,10 @@ export interface TraceConfig {
   lineWidth?: number;
   markerSize?: number;
   showMarkers?: boolean;
+  // Theme context
+  isDarkTheme?: boolean;
+  // Live plot properties
+  plotProperties?: any;
 }
 
 export interface SeriesConfig {
@@ -79,7 +83,7 @@ export interface DataProcessingConfig {
 }
 
 export interface PlotType {
-  type: 'scatter' | 'line' | 'line-scatter' | '3d-mesh' | '3d-scatter' | 'box' | 'pie' | 'bar';
+  type: 'scatter' | 'line' | 'line-scatter' | '3d-mesh' | '3d-scatter' | 'box' | 'pie' | 'bar' | 'contour';
   dataFormat: string;
   subType: string;
 }

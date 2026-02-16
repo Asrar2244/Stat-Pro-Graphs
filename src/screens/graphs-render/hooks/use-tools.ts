@@ -381,6 +381,7 @@ export const useTools = () => {
         showPoints: false,
         pointSize: 6,
       },
+      contour: undefined,
     },
   });
 
@@ -503,27 +504,29 @@ export const useTools = () => {
 
   // Get detected plot features from subType
   const getDetectedPlotFeatures = (subType?: string): {
-    hasScatter: boolean;
-    hasRegression: boolean;
-    hasErrorBars: boolean;
-    hasPointPlot: boolean;
     hasDotPlot: boolean;
     hasArea: boolean;
     is3DMesh: boolean;
+    isContour: boolean;
   } => {
     if (!subType) {
-      return { hasScatter: false, hasRegression: false, hasErrorBars: false, hasPointPlot: false, hasDotPlot: false, hasArea: false, is3DMesh: false };
+      return { hasScatter: false, hasRegression: false, hasErrorBars: false, hasPointPlot: false, hasDotPlot: false, hasArea: false, is3DMesh: false, isContour: false };
     }
 
     const subTypeLower = subType.toLowerCase();
 
+    // Check for Contour Plot specifically
+    // Note: 'contour' usually implies 2D contour in Plotly, but might be grouped with 3D in some contexts
+    const isContour = subTypeLower.includes('contour') || subTypeLower.includes('filled contour');
+
     // Check for any 3D graph types (mesh, surface, scatter3d, bar3d, line3d, contour3d, volume, etc.)
-    const is3DMesh = subTypeLower.includes('3d') ||
+    // EXCLUDE generic 'contour' if it's handled as a specific 2D contour type, UNLESS it's explicitly 'contour3d'
+    const is3DMesh = (subTypeLower.includes('3d') ||
       subTypeLower.includes('mesh') ||
       subTypeLower.includes('surface') ||
       subTypeLower.includes('scatter3d') ||
       subTypeLower.includes('volume') ||
-      subTypeLower.includes('contour3d');
+      subTypeLower.includes('contour3d')) && !isContour; // Prioritize isContour for "Contour Plot"
 
     // If it's a 3D graph, don't show any 2D plot features
     if (is3DMesh) {
@@ -534,7 +537,22 @@ export const useTools = () => {
         hasPointPlot: false,
         hasDotPlot: false,
         hasArea: false,
-        is3DMesh: true
+        is3DMesh: true,
+        isContour: false
+      };
+    }
+
+    // If it's a Contour graph
+    if (isContour) {
+      return {
+        hasScatter: false,
+        hasRegression: false,
+        hasErrorBars: false,
+        hasPointPlot: false,
+        hasDotPlot: false,
+        hasArea: false,
+        is3DMesh: false,
+        isContour: true
       };
     }
 
@@ -545,7 +563,8 @@ export const useTools = () => {
       hasPointPlot: subTypeLower.includes('point'),
       hasDotPlot: subTypeLower.includes('dot'),
       hasArea: subTypeLower.includes('area'),
-      is3DMesh: false
+      is3DMesh: false,
+      isContour: false
     };
   };
 

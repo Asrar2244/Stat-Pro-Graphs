@@ -66,6 +66,13 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
     const canvasMode = liveProps?.canvasMode || liveProps?.global?.canvasMode || 'light';
   }, [liveProps?.canvasMode, liveProps?.global?.canvasMode]);
 
+  // DEBUG: Inspect incoming graph config for Contour vs Mesh
+  useEffect(() => {
+    if (graphConfig?.graphType !== 'Data Analytics') {
+
+    }
+  }, [graphConfig]);
+
 
   // Fetch data only when data-related config changes
   useEffect(() => {
@@ -122,12 +129,10 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
       };
 
 
-      console.log('[PieDebug] Fetched Data for Plot:', { rowsLength: rows?.length, normalizedFormat, xNames, yNames });
+
 
       // LOG THE FIRST ROW
-      if (rows && rows.length > 0) {
-        console.log('[PieDebug] First Row Sample:', rows[0]);
-      }
+
 
       // Process data by format
       const processedSeries = processDataByFormat({
@@ -140,12 +145,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         errorBarNames: graphConfig.variables?.errorBar || []
       });
 
-      console.log('[PieDebug] Processed Series:', processedSeries.map(s => ({
-        label: s.label,
-        xvLength: s.xv?.length,
-        yvLength: s.yv?.length,
-        subType: s.subType
-      })));
+
 
       // ✅ STEP 3: Generate traces using extracted orchestrator
       let orchestrationResult;
@@ -169,16 +169,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
 
 
 
-      console.log('[PieDebug] Orchestration Result:', {
-        tracesLength: traces.length,
-        legendLabels,
-        traceSamples: traces.map(t => ({
-          name: t.name,
-          xLength: t.x?.length,
-          yLength: t.y?.length,
-          type: t.type
-        }))
-      });
+
 
       // NOTE: All trace generation (quality assessment, optimization, transformations,
       // category plots, regression lines, dot plot lines) is now handled by the orchestrator
@@ -406,6 +397,15 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
             },
             borderpad,
             ...legendPos,
+            // FORCE Legend Position for Contour Plots to avoid Colorbar overlap
+            // Use top-left horizontal or vertical
+            ...(subType?.toLowerCase().includes('contour') || graphConfig?.graphType?.includes('Contour') ? {
+              x: 0,
+              y: 1.1, // Above plot area
+              xanchor: 'left',
+              yanchor: 'bottom',
+              orientation: 'h' // Horizontal legend
+            } : {}),
             // Legend Items properties
             ...(liveProps?.global?.legendWidth && { width: liveProps.global.legendWidth }),
             ...(liveProps?.global?.legendHeight && { height: liveProps.global.legendHeight }),
@@ -1001,13 +1001,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
 
         // Log payload summary for Analytics debugging
         if (graphConfig.graphType === 'Data Analytics') {
-          console.log('[AnalyticsDebug] Plot Payload:', {
-            traces: payload.data,
-            layoutShapes: payload.layout?.shapes,
-            layoutAnnotations: payload.layout?.annotations,
-            layoutX: payload.layout?.xaxis,
-            layoutY: payload.layout?.yaxis
-          });
+
         }
 
         // Check specifically for regression traces
@@ -1017,6 +1011,9 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, any>(({ graphConfig, works
         }
 
         lastPlotRef.current = payload;
+
+        // DEBUG: Log the exact payload being sent to Plotly used for Contour debugging
+
 
         try {
           plot.redraw(payload);

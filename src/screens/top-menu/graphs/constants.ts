@@ -39,7 +39,8 @@ export const graph3DOptions: GraphOption[] = [
   {
     label: 'Advanced 3D',
     children: [
-      { label: '3D Contour', value: 'contour3d', execute: '3d-contour', icon: MdMap },
+      { label: 'Contour Plot', value: 'contour', execute: '3d-contour', icon: MdMap },
+      { label: 'Filled Contour', value: 'filled_contour', execute: '3d-filled-contour', icon: MdMap },
       { label: '3D Volume', value: 'volume', execute: '3d-volume', icon: MdVolumeUp },
     ]
   }
